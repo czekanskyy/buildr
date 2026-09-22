@@ -30,4 +30,17 @@ describe('@buildr/core public API', () => {
     expect(typeof core.isAncestor).toBe('function');
     expect(typeof core.pathTo).toBe('function');
   });
+
+  it('exports the PB-009 invariants primitives', () => {
+    expect(typeof core.checkInvariants).toBe('function');
+    expect(typeof core.assertDocumentInvariants).toBe('function');
+  });
+
+  it('exports the PB-010 authoring format and fragment primitives', () => {
+    expect(typeof core.fromTree).toBe('function');
+    expect(typeof core.toTree).toBe('function');
+    expect(typeof core.extractFragment).toBe('function');
+    expect(typeof core.reId).toBe('function');
+    expect(typeof core.fragmentSchema.safeParse).toBe('function');
+  });
 });
