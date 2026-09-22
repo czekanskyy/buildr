@@ -20,4 +20,14 @@ describe('@buildr/core public API', () => {
     expect(core.DEFAULT_DOCUMENT_LIMITS.maxNodes).toBe(5000);
     expect(core.ROOT_COMPONENT_TYPE).toBe('buildr/page');
   });
+
+  it('exports the PB-008 document index and traversal primitives', () => {
+    expect(typeof core.createIndex).toBe('function');
+    expect(typeof core.walk).toBe('function');
+    expect(typeof core.ancestors).toBe('function');
+    expect(typeof core.descendants).toBe('function');
+    expect(typeof core.subtreeIds).toBe('function');
+    expect(typeof core.isAncestor).toBe('function');
+    expect(typeof core.pathTo).toBe('function');
+  });
 });
