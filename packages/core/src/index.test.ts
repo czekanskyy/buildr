@@ -43,4 +43,11 @@ describe('@buildr/core public API', () => {
     expect(typeof core.reId).toBe('function');
     expect(typeof core.fragmentSchema.safeParse).toBe('function');
   });
+
+  it('exports the PB-011 migration primitives', () => {
+    expect(typeof core.runMigrationChain).toBe('function');
+    expect(typeof core.migrateDocument).toBe('function');
+    expect(core.CURRENT_SCHEMA_VERSION).toBe(1);
+    expect(core.documentMigrations).toEqual([]);
+  });
 });

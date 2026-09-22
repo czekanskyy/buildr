@@ -4,4 +4,5 @@
 export * from './document/index.ts';
 export * from './ids/index.ts';
 export * from './json/index.ts';
+export * from './migrations/index.ts';
 export * from './result/index.ts';

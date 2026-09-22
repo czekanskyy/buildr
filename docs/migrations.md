@@ -27,6 +27,14 @@ Located in `packages/core/src/migrations/document`. `migrateDocument(raw)` walks
 
 Live alongside each component's own definition (`migrations: { 2: (props) => ({ ...props, size: props.level }) }` in the `defineComponent` call). `migrateComponents(doc, migrations)` walks the document once, migrating each node's props according to `doc.components[node.type]`, and updates the `components` version map. An unknown component type is left untouched, with a diagnostic. Migration context only ever has access to the node's own subtree — never the whole document — keeping migrations composable and easy to reason about.
 
+## The chain runner
+
+`runMigrationChain(input, fromVersion, toVersion, steps)` (`packages/core/src/migrations/runner.ts`) is the generic engine both migration kinds are built on: it walks `steps` one `from -> to` hop at a time, applying each matching step's `migrate`, until `toVersion` is reached. A run that starts and ends at the same version applies nothing (`applied: []`) and returns the input untouched. It rejects (rather than looping or silently truncating) when `fromVersion` is already newer than `toVersion`, when no registered step starts at the current version, when a step doesn't move the version forward, or when a step overshoots the target.
+
+`migrateDocument` (`packages/core/src/migrations/document/index.ts`) wires this runner up for the document shape: it rejects a `schemaVersion` newer than `CURRENT_SCHEMA_VERSION` with `document.newer-version` before ever calling the runner, then delegates the rest to `documentMigrations`. As of PB-011, `CURRENT_SCHEMA_VERSION` is still `1` and `documentMigrations` is empty — every document is already current, so `migrateDocument` is a no-op until the schema's first version bump ships a step here.
+
+`documentMigrationFixtures`, the fixture corpus this section's "every migration ships with a fixture" rule requires, lives at `packages/test-utils/src/fixtures/migrations` and is exercised by that directory's own "fixture vN -> latest" test harness. It's empty for the same reason.
+
 ## Writing a migration
 
 1. Add a fixture pair (before/after) to the relevant `fixtures/migrations/` directory.
