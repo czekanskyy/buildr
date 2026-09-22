@@ -1,6 +1,7 @@
 export { createEmptyDocument } from './create.ts';
 export type { DocumentIndex } from './document-index.ts';
 export { createIndex } from './document-index.ts';
+export { assertDocumentInvariants, checkInvariants } from './invariants.ts';
 export type { DocumentLimits } from './limits.ts';
 export { DEFAULT_DOCUMENT_LIMITS } from './limits.ts';
 export { parseDocument } from './parse.ts';
