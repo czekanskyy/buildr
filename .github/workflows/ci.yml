@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+env:
+  TURBO_TELEMETRY_DISABLED: '1'
+
+jobs:
+  quality:
+    name: Quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+      - name: Lint
+        run: pnpm lint
+      - name: Check architectural boundaries
+        run: pnpm check:boundaries
+      - name: Typecheck
+        run: pnpm typecheck ${{ github.event_name == 'pull_request' && '--affected' || '' }}
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+      - name: Test
+        run: pnpm test ${{ github.event_name == 'pull_request' && '--affected' || '' }}
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+      - name: Build
+        run: pnpm build ${{ github.event_name == 'pull_request' && '--affected' || '' }}
+
+  pr-title:
+    name: PR title
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            build
+            ci
+            chore
+            revert
+          scopes: |
+            core
+            react
+            components
+            editor
+            next
+            payload
+            repo
+            docs
+          requireScope: true
+          subjectPattern: ^.+\(PB-\d+\)$
+          subjectPatternError: >
+            The PR title must end with the task ID in parentheses, e.g.
+            "feat(core): add document index (PB-008)".

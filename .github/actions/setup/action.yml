@@ -1,0 +1,34 @@
+name: Setup
+description: Install pnpm and Node, restore the pnpm store and Turborepo caches, and install dependencies.
+
+inputs:
+  node-version:
+    description: Node.js version to use. Defaults to the version pinned in .nvmrc.
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        node-version-file: ${{ inputs.node-version == '' && '.nvmrc' || '' }}
+        cache: pnpm
+
+    - name: Restore turbo cache
+      uses: actions/cache@v4
+      with:
+        path: node_modules/.cache/turbo
+        key: turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'turbo.json') }}-${{ github.sha }}
+        restore-keys: |
+          turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'turbo.json') }}-
+          turbo-${{ runner.os }}-
+
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile

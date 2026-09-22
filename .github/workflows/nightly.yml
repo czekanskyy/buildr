@@ -1,0 +1,47 @@
+name: Nightly
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: nightly-${{ github.workflow }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  TURBO_TELEMETRY_DISABLED: '1'
+
+jobs:
+  full-suite:
+    name: Full suite (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ['22', '24']
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Lint
+        run: pnpm lint
+      - name: Check architectural boundaries
+        run: pnpm check:boundaries
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Test
+        run: pnpm test
+      - name: Build
+        run: pnpm build
+
+  # This is a skeleton: the Node x Next x SQLite/Postgres compatibility
+  # matrix, benchmarks, and the full Playwright end-to-end suite described in
+  # docs/contributing.md#ci depend on the example app and E2E setup that land
+  # in later tasks (PB-093+, PB-108+). Extend this workflow then.
