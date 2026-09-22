@@ -30,7 +30,7 @@ jobs:
       - name: Check architectural boundaries
         run: pnpm check:boundaries
       - name: Typecheck
-        run: pnpm typecheck -- ${{ github.event_name == 'pull_request' && '--affected' || '' }}
+        run: pnpm typecheck ${{ github.event_name == 'pull_request' && '--affected' || '' }}
 
   test:
     name: Test
@@ -41,7 +41,7 @@ jobs:
           fetch-depth: 0
       - uses: ./.github/actions/setup
       - name: Test
-        run: pnpm test -- ${{ github.event_name == 'pull_request' && '--affected' || '' }}
+        run: pnpm test ${{ github.event_name == 'pull_request' && '--affected' || '' }}
 
   build:
     name: Build
@@ -52,14 +52,14 @@ jobs:
           fetch-depth: 0
       - uses: ./.github/actions/setup
       - name: Build
-        run: pnpm build -- ${{ github.event_name == 'pull_request' && '--affected' || '' }}
+        run: pnpm build ${{ github.event_name == 'pull_request' && '--affected' || '' }}
 
   pr-title:
     name: PR title
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: amannn/action-semantic-pull-request@v5
+      - uses: amannn/action-semantic-pull-request@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -89,4 +89,3 @@ jobs:
           subjectPatternError: >
             The PR title must end with the task ID in parentheses, e.g.
             "feat(core): add document index (PB-008)".
-          wip: true
