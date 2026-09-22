@@ -12,6 +12,7 @@
     "dev": "turbo run dev",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
+    "check:boundaries": "depcruise --config .dependency-cruiser.cjs packages tooling/smoke",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
@@ -19,6 +20,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
+    "dependency-cruiser": "^18.4.0",
     "lefthook": "2.1.14",
     "turbo": "2.11.2",
     "typescript": "7.0.2",

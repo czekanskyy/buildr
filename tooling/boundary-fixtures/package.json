@@ -1,0 +1,13 @@
+{
+  "name": "@buildr/boundary-fixtures",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "dependency-cruiser": "^18.4.0",
+    "vitest": "5.0.1"
+  }
+}

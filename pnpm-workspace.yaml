@@ -1,3 +1,12 @@
 packages:
   - "packages/*"
   - "tooling/*"
+
+# dependency-cruiser doesn't declare `typescript` as its own dependency (it does an
+# optional dynamic import), so without this it resolves the workspace's typescript@7,
+# which is outside dependency-cruiser's supported `<7.0.0` range and silently disables
+# TS parsing. This gives dependency-cruiser its own isolated, compatible copy.
+packageExtensions:
+  dependency-cruiser:
+    dependencies:
+      typescript: "^5.7.0"
