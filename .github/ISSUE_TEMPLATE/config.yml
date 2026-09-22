@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a question / discuss an idea
+    url: https://github.com/czekanskyy/buildr/discussions
+    about: For questions and open-ended discussion, use Discussions instead of an issue.
+  - name: Report a security vulnerability
+    url: https://github.com/czekanskyy/buildr/security/advisories/new
+    about: Please don't file public issues for security vulnerabilities — see SECURITY.md.
