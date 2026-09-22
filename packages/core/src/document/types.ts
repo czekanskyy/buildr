@@ -1,4 +1,5 @@
 import type { JsonValue } from '../json/json-value.ts';
+import type { Value } from '../values/types.ts';
 
 /** `root`, or a random 10-character base62 string minted by `generateId` (see docs/document-model.md). */
 export type NodeId = string;
@@ -13,9 +14,9 @@ export type SlotName = string;
 export const ROOT_COMPONENT_TYPE: ComponentType = 'buildr/page';
 
 /**
- * The canonical, normalized document shape (see docs/document-model.md, ADR-002). Props and
- * styles are typed `unknown` here — the `Value` and `NodeStyles` shapes land in PB-013 and
- * PB-027 respectively.
+ * The canonical, normalized document shape (see docs/document-model.md, ADR-002). Props are
+ * typed `Value` as of PB-013; styles remain `unknown` until the `NodeStyles` shape lands in
+ * PB-027.
  */
 export interface BuilderDocument {
   readonly schemaVersion: 1;
@@ -29,7 +30,7 @@ export interface PageNode {
   readonly id: NodeId;
   readonly type: ComponentType;
   /** Only props declared in the component's schema; a missing key means "use the default". */
-  readonly props?: Readonly<Record<string, unknown>>;
+  readonly props?: Readonly<Record<string, Value>>;
   /** Order = render order. */
   readonly slots?: Readonly<Record<SlotName, readonly NodeId[]>>;
   /** Instance overrides only (see docs/styles.md). */

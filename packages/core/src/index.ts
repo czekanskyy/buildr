@@ -7,3 +7,4 @@ export * from './json/index.ts';
 export * from './migrations/index.ts';
 export * from './result/index.ts';
 export * from './schema/index.ts';
+export * from './values/index.ts';

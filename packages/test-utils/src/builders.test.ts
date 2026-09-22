@@ -1,4 +1,4 @@
-import { checkInvariants, createSeededIdGenerator, ROOT_COMPONENT_TYPE } from '@buildr/core';
+import { checkInvariants, createSeededIdGenerator, ROOT_COMPONENT_TYPE, s } from '@buildr/core';
 import { describe, expect, it } from 'vitest';
 import { doc, node } from './builders.ts';
 
@@ -10,11 +10,16 @@ describe('node', () => {
   });
 
   it('uses the given id, type, and fields verbatim', () => {
-    const n = node({ id: 'fixedid001', type: 'buildr/heading', props: { level: 2 }, anchor: 'h' });
+    const n = node({
+      id: 'fixedid001',
+      type: 'buildr/heading',
+      props: { level: s(2) },
+      anchor: 'h',
+    });
     expect(n).toEqual({
       id: 'fixedid001',
       type: 'buildr/heading',
-      props: { level: 2 },
+      props: { level: s(2) },
       anchor: 'h',
     });
   });

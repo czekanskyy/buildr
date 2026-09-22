@@ -60,4 +60,16 @@ describe('@buildr/core public API', () => {
     expect(typeof core.p.object).toBe('function');
     expect(typeof core.validatePropValue).toBe('function');
   });
+
+  it('exports the PB-013 Value<T> primitives', () => {
+    expect(typeof core.valueSchema).toBe('function');
+    expect(typeof core.formatSpecSchema.safeParse).toBe('function');
+    expect(typeof core.s).toBe('function');
+    expect(typeof core.bind).toBe('function');
+    expect(typeof core.expr).toBe('function');
+    expect(typeof core.withTranslation).toBe('function');
+    expect(typeof core.isStaticValue).toBe('function');
+    expect(typeof core.isBindingValue).toBe('function');
+    expect(typeof core.isExpressionValue).toBe('function');
+  });
 });
