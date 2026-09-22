@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
+    "@changesets/cli": "^2.29.7",
     "dependency-cruiser": "^18.4.0",
     "lefthook": "2.1.14",
     "turbo": "2.11.2",
