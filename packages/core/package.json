@@ -49,5 +49,8 @@
     "@buildr/tsconfig": "workspace:*",
     "typescript": "7.0.2",
     "vitest": "5.0.1"
+  },
+  "dependencies": {
+    "zod": "^4.6.5"
   }
 }
