@@ -50,4 +50,14 @@ describe('@buildr/core public API', () => {
     expect(core.CURRENT_SCHEMA_VERSION).toBe(1);
     expect(core.documentMigrations).toEqual([]);
   });
+
+  it('exports the PB-012 DataType and p.* props DSL primitives', () => {
+    expect(typeof core.dataTypeSchema.safeParse).toBe('function');
+    expect(typeof core.dataFieldSchema.safeParse).toBe('function');
+    expect(typeof core.p.text).toBe('function');
+    expect(typeof core.p.select).toBe('function');
+    expect(typeof core.p.list).toBe('function');
+    expect(typeof core.p.object).toBe('function');
+    expect(typeof core.validatePropValue).toBe('function');
+  });
 });
