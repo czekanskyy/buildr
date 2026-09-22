@@ -6,6 +6,15 @@
   "scripts": {
     "test": "vitest run"
   },
+  "dependencies": {
+    "@buildr/components": "workspace:*",
+    "@buildr/core": "workspace:*",
+    "@buildr/editor": "workspace:*",
+    "@buildr/next": "workspace:*",
+    "@buildr/payload": "workspace:*",
+    "@buildr/react": "workspace:*",
+    "@buildr/test-utils": "workspace:*"
+  },
   "devDependencies": {
     "vitest": "5.0.1"
   }
