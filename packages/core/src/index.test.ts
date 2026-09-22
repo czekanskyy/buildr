@@ -81,4 +81,12 @@ describe('@buildr/core public API', () => {
     expect(typeof core.matchesType).toBe('function');
     expect(core.CONTENT_CATEGORIES).toContain('heading');
   });
+
+  it('exports the PB-015 registry and manifest primitives', () => {
+    expect(typeof core.createRegistryMeta).toBe('function');
+    expect(typeof core.toManifest).toBe('function');
+    expect(typeof core.fromManifest).toBe('function');
+    expect(typeof core.manifestHash).toBe('function');
+    expect(typeof core.registryManifestSchema.safeParse).toBe('function');
+  });
 });
