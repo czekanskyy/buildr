@@ -1,4 +1,4 @@
-import { type BuilderDocument, createEmptyDocument } from '@buildr/core';
+import { type BuilderDocument, createEmptyDocument, s } from '@buildr/core';
 import { doc } from '../../builders.ts';
 import { baseTree } from './base.ts';
 
@@ -13,7 +13,7 @@ export const validDocumentFixtures: readonly BuilderDocument[] = [
         type: 'buildr/section',
         anchor: 'hero',
         children: [
-          { type: 'buildr/heading', props: { level: 1 } },
+          { type: 'buildr/heading', props: { level: s(1) } },
           { type: 'buildr/text', anchor: 'intro' },
         ],
       },
