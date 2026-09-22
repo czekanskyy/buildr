@@ -1,0 +1,5 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`hash > is a snapshot-stable digest of a JSON value 1`] = `"3ehevrrfrlesm"`;
+
+exports[`hash > is a snapshot-stable digest of a primitive 1`] = `"2i2l2dklrvivn"`;
