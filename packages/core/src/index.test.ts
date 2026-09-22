@@ -11,4 +11,13 @@ describe('@buildr/core public API', () => {
     expect(typeof core.ok).toBe('function');
     expect(typeof core.err).toBe('function');
   });
+
+  it('exports the PB-007 document primitives', () => {
+    expect(typeof core.createEmptyDocument).toBe('function');
+    expect(typeof core.parseDocument).toBe('function');
+    expect(typeof core.documentSchema.safeParse).toBe('function');
+    expect(typeof core.pageNodeSchema.safeParse).toBe('function');
+    expect(core.DEFAULT_DOCUMENT_LIMITS.maxNodes).toBe(5000);
+    expect(core.ROOT_COMPONENT_TYPE).toBe('buildr/page');
+  });
 });
