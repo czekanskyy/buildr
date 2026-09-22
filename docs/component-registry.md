@@ -88,7 +88,7 @@ export const registry = createRegistry({
 
 `createRegistry` returns an immutable registry; `registry.extend({...})` produces a new one. There is no global, mutation-based `registerComponent()` call — that pattern breaks under RSC (multiple concurrent requests, multiple module instances) and under test isolation. Registering a custom client component means calling `defineComponent({ ..., runtime: 'client', render: MyClientComponent })` and adding it to the list passed to `createRegistry` in the consuming application. `@buildr/core` is never touched.
 
-`createRegistry` validates at construction time: unique component types, valid names, `default` values that pass their own validator, slot consistency, and `runtime` consistency with the file naming convention (dev only).
+`createRegistry` validates at construction time: unique component types, valid names, `default` values that pass their own validator, slot consistency, and `runtime` consistency with the file naming convention (dev only). Per-component checks (type-name shape, prop defaults against their own kind's validator, slot consistency, and every `Matcher` — in `parents.*` and `SlotDef.allow`/`deny` — being a well-formed type reference or a recognized content category) live in `validateComponentMeta(meta) -> Diagnostic[]`, so they can also run standalone against one `ComponentMeta` before it reaches a registry.
 
 Manifest: `toManifest(registry)` returns `{ protocol, hash, components, templates }` with no functions attached. The canvas reports its own manifest hash at handshake time; a mismatch with the editor's manifest triggers a warning and a reload.
 

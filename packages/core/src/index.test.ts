@@ -72,4 +72,13 @@ describe('@buildr/core public API', () => {
     expect(typeof core.isBindingValue).toBe('function');
     expect(typeof core.isExpressionValue).toBe('function');
   });
+
+  it('exports the PB-014 registry metadata primitives', () => {
+    expect(typeof core.validateComponentMeta).toBe('function');
+    expect(typeof core.isCategoryMatcher).toBe('function');
+    expect(typeof core.categoryOf).toBe('function');
+    expect(typeof core.isValidContentCategory).toBe('function');
+    expect(typeof core.matchesType).toBe('function');
+    expect(core.CONTENT_CATEGORIES).toContain('heading');
+  });
 });
