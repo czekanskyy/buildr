@@ -110,4 +110,14 @@ describe('@buildr/core public API', () => {
     expect(typeof core.findLockRoot).toBe('function');
     expect(typeof core.isInsideRegion).toBe('function');
   });
+
+  it('exports the PB-019 safe-paths and DataSchema primitives', () => {
+    expect(typeof core.parsePath).toBe('function');
+    expect(typeof core.getPath).toBe('function');
+    expect(typeof core.pushScope).toBe('function');
+    expect(typeof core.schemaAtPath).toBe('function');
+    expect(typeof core.listPaths).toBe('function');
+    expect(typeof core.dataSchemaSchema.safeParse).toBe('function');
+    expect(core.MAX_PATH_DEPTH).toBe(12);
+  });
 });
