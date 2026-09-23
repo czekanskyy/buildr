@@ -98,4 +98,16 @@ describe('@buildr/core public API', () => {
     expect(typeof core.checkGlobalContentModel).toBe('function');
     expect(typeof core.reason).toBe('function');
   });
+
+  it('exports the PB-017 component migration primitives', () => {
+    expect(typeof core.migrateComponents).toBe('function');
+  });
+
+  it('exports the PB-018 template primitives', () => {
+    expect(typeof core.defineTemplate).toBe('function');
+    expect(typeof core.validateTemplateDefinition).toBe('function');
+    expect(typeof core.instantiateTemplate).toBe('function');
+    expect(typeof core.findLockRoot).toBe('function');
+    expect(typeof core.isInsideRegion).toBe('function');
+  });
 });
