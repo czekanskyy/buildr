@@ -64,6 +64,8 @@ Each `kind` defines: the resolved TypeScript value type (used to infer `Resolved
 
 `canInsert(doc, index, registry, target, typeOrFragment)` returns a `Result<true, Reason>` and is the single source of truth used by drag-and-drop, paste, insert, commands and document validation. It checks the target slot's `allow`/`deny` and the moved node's `parents.allow`/`deny`/`requireAncestor` (matched by exact type or by `#category`); global HTML content-model rules (`#interactive` cannot contain `#interactive`, `#heading` only accepts `#phrasing`, a form cannot nest a form, `#form-control` requires a form ancestor); `slot.max` and cycle prevention; and locks (the nearest ancestor with `lock.structure` blocks structural changes unless the target sits inside a `region`). A `Reason` carries a code and a human-readable message, for example "Heading cannot contain Button (heading only accepts phrasing content)".
 
+`canMove(doc, index, registry, nodeId, target)` relocates an existing node: it runs `canInsert`'s own checks against the node's live subtree at the new `target`, plus `capabilities.draggable` and a structural-lock check on the node's *current* slot. `canRemove(doc, index, registry, nodeId)` checks `capabilities.removable`, the parent slot's `min`, and the parent's structural lock. `canEdit(doc, index, nodeId, aspect)` (`aspect: 'content' | 'style'`) checks `lock.content`/`lock.style` on the node itself or the nearest ancestor carrying it, with the same `region` escape hatch. All four live in `packages/core/src/rules/` (PB-016), alongside the global-rules helper `checkGlobalContentModel`.
+
 ## Registering components
 
 ```ts

@@ -89,4 +89,13 @@ describe('@buildr/core public API', () => {
     expect(typeof core.manifestHash).toBe('function');
     expect(typeof core.registryManifestSchema.safeParse).toBe('function');
   });
+
+  it('exports the PB-016 nesting-rules primitives', () => {
+    expect(typeof core.canInsert).toBe('function');
+    expect(typeof core.canMove).toBe('function');
+    expect(typeof core.canRemove).toBe('function');
+    expect(typeof core.canEdit).toBe('function');
+    expect(typeof core.checkGlobalContentModel).toBe('function');
+    expect(typeof core.reason).toBe('function');
+  });
 });
