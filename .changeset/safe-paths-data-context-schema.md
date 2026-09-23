@@ -1,0 +1,5 @@
+---
+"@buildr/core": minor
+---
+
+Add safe binding paths, `DataContext`, and `DataSchema` (PB-019): `parsePath(path)` parses a `post.author.name` / `post.images[0].alt`-style path into segments, rejecting `__proto__`, `prototype`, and `constructor` at any position along with malformed syntax and paths deeper than `MAX_PATH_DEPTH` (12) — never throwing, since a path is data, not a programmer-controlled literal. `getPath(scopes, path)` resolves a path against a `DataContext`'s `scopes`, reading only own properties (`Object.hasOwn`) so no value from a prototype chain can ever come back; a missing/invalid path resolves to `undefined`. `DataSchema` describes a document's data statically (`scopes` + `entities`, reusing PB-012's `DataType`/`DataField`); `schemaAtPath` looks up the `DataField` at a path (following `ref` fields into `entities`, with cycle detection), and `listPaths(schema, filter)` enumerates every path a `DataSchema` tree exposes, for the editor's binding picker. `pushScope(ctx, scopes)` layers new scopes (e.g. a Loop's `item`/`index`/`loop`) onto a `DataContext`, shadowing by name.
