@@ -47,6 +47,13 @@ export function installInteractions(options: InteractionOptions): () => void {
 
   const pointer = (event: MouseEvent, type: 'node:click' | 'node:dblclick') => {
     if (!editing() || event.button !== 0) return;
+    // Inside text being edited a click places the caret: it is the author's, not a selection.
+    if (
+      type === 'node:click' &&
+      event.target instanceof Element &&
+      event.target.closest('[contenteditable]') !== null
+    )
+      return;
     const element = nodeElementOf(event.target);
     // Stopped even when it is on no node: a link outside every node must not navigate either.
     event.preventDefault();
