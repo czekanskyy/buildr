@@ -4,7 +4,8 @@
  * Dark mode follows `prefers-color-scheme`, or is forced with `data-theme="light" | "dark"`.
  */
 
-.buildr-editor {
+.buildr-editor,
+.bd-portal {
   --bd-bg: #f6f7f9;
   --bd-surface: #ffffff;
   --bd-surface-2: #eef0f4;
@@ -28,7 +29,8 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  .buildr-editor:not([data-theme="light"]) {
+  .buildr-editor:not([data-theme="light"]),
+  .bd-portal {
     --bd-bg: #14161a;
     --bd-surface: #1c1f25;
     --bd-surface-2: #252932;
@@ -412,4 +414,115 @@
 .buildr-editor .bd-canvas-detail {
   font-size: 12px;
   color: var(--bd-text-muted);
+}
+
+.bd-menu {
+  z-index: 1000;
+  min-width: 160px;
+  padding: var(--bd-space-1);
+  border: 1px solid var(--bd-border);
+  border-radius: var(--bd-radius);
+  background: var(--bd-surface);
+  color: var(--bd-text);
+  box-shadow: var(--bd-shadow);
+  font: var(--bd-font-size) / 1.4 var(--bd-font);
+}
+.bd-menu-item {
+  padding: var(--bd-space-1) var(--bd-space-3);
+  border-radius: var(--bd-radius);
+  cursor: pointer;
+  outline: none;
+}
+.bd-menu-item[data-highlighted] {
+  background: var(--bd-accent);
+  color: var(--bd-accent-text);
+}
+.bd-menu-item[data-disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+.bd-menu-item[data-danger]:not([data-highlighted]) {
+  color: var(--bd-danger);
+}
+
+.buildr-editor .bd-layers {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.buildr-editor .bd-layers-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+.buildr-editor .bd-layers-list {
+  position: relative;
+}
+.buildr-editor .bd-layer {
+  position: absolute;
+  right: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--bd-space-1);
+  padding-right: var(--bd-space-2);
+  cursor: default;
+  white-space: nowrap;
+}
+.buildr-editor .bd-layer[data-hovered="true"] {
+  background: var(--bd-surface-2);
+}
+.buildr-editor .bd-layer[data-selected="true"] {
+  background: var(--bd-accent);
+  color: var(--bd-accent-text);
+}
+.buildr-editor .bd-layers-scroll:focus-visible .bd-layer[data-selected="true"] {
+  outline: 2px solid var(--bd-focus);
+  outline-offset: -2px;
+}
+.buildr-editor .bd-layer-toggle {
+  flex: none;
+  width: 14px;
+  text-align: center;
+  cursor: pointer;
+}
+.buildr-editor .bd-layer-icon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: var(--bd-surface-2);
+  color: var(--bd-text-muted);
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+}
+.buildr-editor .bd-layer-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.buildr-editor .bd-layer-slot {
+  font-size: 11px;
+  opacity: 0.7;
+}
+.buildr-editor .bd-layer-badge {
+  flex: none;
+  font-size: 11px;
+}
+.buildr-editor .bd-layer-rename {
+  flex: 1;
+  min-width: 0;
+  height: 22px;
+}
+.buildr-editor .bd-layers-notice {
+  margin: 0;
+  padding: var(--bd-space-1) var(--bd-space-2);
+  color: var(--bd-danger);
+  font-size: 12px;
+}
+.buildr-editor .bd-layers-notice:empty {
+  display: none;
 }

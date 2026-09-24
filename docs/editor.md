@@ -145,6 +145,18 @@ The selection lives in the editor store (`selectedIds`, `anchorId`, `selectedIns
 
 `BuilderEditor` does not mount the frame yet: it needs the document the persistence task (PB-087) loads.
 
+### The layers panel (PB-077)
+
+`<LayersPanel wrapperType? />` (`packages/editor/src/panels/layers`) shows the document as a WAI-ARIA tree. It reads the store and the manifest (`<ManifestProvider manifest>`; without one the rows show the component's type) and changes the document only by dispatching commands.
+
+- **Rows.** `flattenTree(doc, expanded)` lists the visible rows (iteratively, and safe against a corrupt document that reaches a node twice); each has its ARIA level, position and set size. The label is the node's `name`, else the component's label, else its type; children in a slot other than `default` show the slot's name. The icon is a placeholder initial until the manifest's icon names have a set to map to (`data-icon` carries the name).
+- **Virtualization.** Every row is 28 px, so only the rows in view (plus a few) exist; the scroll height is that of all of them. 1000 nodes flatten in well under 50 ms.
+- **Keyboard.** Focus stays on the tree and `aria-activedescendant` names the active row, which is the anchor of the selection: Up/Down/Home/End move it (Shift adds to the selection), Right expands or goes to the first child, Left collapses or goes to the parent, Enter/Space select, F2 renames, Delete/Backspace remove the selection, the menu key opens the context menu. Nothing here needs a pointer.
+- **Selection and hover.** Click selects (Shift adds, Ctrl/Cmd toggles), the arrow toggles a row without selecting it, pointer hover sets `hoveredId` (which the canvas shows) and a hover set elsewhere marks the row. A node selected in the canvas opens its ancestors and scrolls into view; an edit elsewhere never moves the list.
+- **Rename** (F2 or double click) dispatches `node.setAttr` (`name`; empty clears it), once, whether ended by Enter, Escape or leaving the field.
+- **Badges** (each with an accessible name): lock, `visibleIf`, styles for other breakpoints, and a validation or accessibility issue on the node.
+- **Context menu**: rename, duplicate, wrap in container (`wrapperType`, `buildr/box` by default, only when the manifest has it), unwrap, delete. It acts on the row it opened on (selecting it first when it was not selected). A command the rules refuse shows its message in the panel's status line; a read-only document disables all of it.
+
 ## The postMessage protocol
 
 An **envelope**, Zod-validated on both sides (malformed messages are dropped and logged in dev):

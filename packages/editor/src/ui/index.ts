@@ -1,8 +1,10 @@
 export type {
   ButtonProps,
+  ContextMenuProps,
   DialogProps,
   IconButtonProps,
   InputProps,
+  MenuItem,
   PopoverProps,
   SelectOption,
   SelectProps,
@@ -13,6 +15,7 @@ export type {
 } from './primitives.tsx';
 export {
   Button,
+  ContextMenu,
   Dialog,
   IconButton,
   Input,
