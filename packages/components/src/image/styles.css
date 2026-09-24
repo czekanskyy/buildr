@@ -1,0 +1,27 @@
+@layer buildr.components {
+  .bc-image {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+  .bc-image[data-fit="contain"] {
+    object-fit: contain;
+  }
+  .bc-image[data-fit="fill"] {
+    object-fit: fill;
+  }
+  .bc-image[data-fit="none"] {
+    object-fit: none;
+  }
+  .bc-image[data-fit="scale-down"] {
+    object-fit: scale-down;
+  }
+
+  /* The editor's canvas only: where an empty image will go. */
+  .bc-image[data-empty] {
+    min-height: 8rem;
+    background-color: var(--b-color-surface-alt);
+    border: 1px dashed var(--b-color-border);
+  }
+}
