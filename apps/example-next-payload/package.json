@@ -1,0 +1,44 @@
+{
+  "name": "@buildr/example-next-payload",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "generate:importmap": "payload generate:importmap",
+    "seed": "payload run src/seed/run.ts",
+    "e2e": "echo \"e2e arrives with PB-112\""
+  },
+  "dependencies": {
+    "@buildr/components": "workspace:*",
+    "@buildr/core": "workspace:*",
+    "@buildr/editor": "workspace:*",
+    "@buildr/next": "workspace:*",
+    "@buildr/payload": "workspace:*",
+    "@buildr/react": "workspace:*",
+    "@payloadcms/db-postgres": "3.90.1",
+    "@payloadcms/db-sqlite": "3.90.1",
+    "@payloadcms/next": "3.90.1",
+    "@payloadcms/plugin-seo": "3.90.1",
+    "@payloadcms/richtext-lexical": "3.90.1",
+    "@payloadcms/ui": "3.90.1",
+    "graphql": "^16.9.0",
+    "next": "16.3.5",
+    "payload": "3.90.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "sharp": "^0.35.0"
+  },
+  "devDependencies": {
+    "@buildr/tsconfig": "workspace:*",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "7.0.2",
+    "vitest": "5.0.1"
+  }
+}

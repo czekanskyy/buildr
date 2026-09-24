@@ -170,3 +170,13 @@ return <BuildrPage config={buildr} entry={entry} />;
   export const config = { matcher: '/' };
   ```
 - The preview route takes `locales`: `/buildr/preview?path=/about&locale=en` redirects to `/en/about`; a path that already starts with a language is left alone.
+
+## The example application (PB-108)
+
+`apps/example-next-payload` is a complete Next.js + Payload host for Buildr: `pnpm dev:example` starts it (SQLite file by default, Postgres when `DATABASE_URL` is set; see `.env.example`), and the admin is served at `/admin`.
+
+- `src/payload.config.ts` — collections `users`, `media`, `authors`, `categories`, `product-categories`, `pages`, `posts`, `products`, the `site-settings` global, `pl` (default) and `en` localization, drafts on the three page collections, `plugin-seo`, and `buildrPlugin`.
+- `src/buildr.options.ts` — the plugin's collections, `queryable` allowlist and access rules, shared with the frontend so they cannot drift.
+- `src/buildr.registry.ts` — the component registry, theme and locales, importable from the Payload CLI.
+- `src/app/(payload)` — the admin and REST routes; `admin/importMap.js` is generated (`pnpm generate:importmap`) and must be regenerated when an admin component is added.
+- `src/app/(site)` — the public site (a placeholder until the routes of PB-109).

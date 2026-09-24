@@ -9,7 +9,18 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**", "!**/dist", "!**/.turbo", "!**/coverage", "!**/.claude", "!pnpm-lock.yaml"]
+    "includes": [
+      "**",
+      "!**/dist",
+      "!**/.turbo",
+      "!**/coverage",
+      "!**/.claude",
+      "!pnpm-lock.yaml",
+      "!**/.next",
+      "!**/payload-types.ts",
+      "!**/importMap.js",
+      "!**/next-env.d.ts"
+    ]
   },
   "formatter": {
     "enabled": true,
