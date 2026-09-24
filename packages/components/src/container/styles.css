@@ -1,0 +1,19 @@
+@layer buildr.components {
+  .bc-container {
+    width: 100%;
+    margin-inline: auto;
+    max-width: var(--b-container-lg);
+  }
+  .bc-container[data-width="sm"] {
+    max-width: var(--b-container-sm);
+  }
+  .bc-container[data-width="md"] {
+    max-width: var(--b-container-md);
+  }
+  .bc-container[data-width="lg"] {
+    max-width: var(--b-container-lg);
+  }
+  .bc-container[data-width="xl"] {
+    max-width: var(--b-container-xl);
+  }
+}

@@ -3,3 +3,6 @@
    Populated by docs/backlog/phase-07-components.md. */
 @layer buildr.components;
 @import "./styles/base.css";
+@import "./page/styles.css";
+@import "./section/styles.css";
+@import "./container/styles.css";

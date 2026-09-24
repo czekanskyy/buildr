@@ -1,0 +1,9 @@
+@layer buildr.components {
+  .bc-page {
+    min-height: 100%;
+    color: var(--b-color-text);
+    background-color: var(--b-color-surface);
+    font-family: var(--b-font-family-body);
+    line-height: var(--b-line-height-normal);
+  }
+}
