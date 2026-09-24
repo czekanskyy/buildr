@@ -1,34 +1,54 @@
-import { type NodeStyles, s, type TreeNode } from '@buildr/core';
+import { type FormatSpec, type NodeStyles, s, type TreeNode } from '@buildr/core';
 
 /** Small builders for template trees, so each template reads as the page it makes. */
+
+/** A property that is either fixed text or any value the document can hold (a binding, a formula). */
+export type Text = string | { readonly kind: 'binding' | 'expression' };
+
+const val = (value: Text): never => (typeof value === 'string' ? s(value) : value) as never;
+
+/** A binding to `path` in the data (`post.title`, `item.path`), optionally formatted and with a fallback. */
+export const bind = (
+  path: string,
+  options: { format?: FormatSpec; fallback?: string | number } = {},
+) =>
+  ({
+    kind: 'binding',
+    path,
+    ...(options.format === undefined ? {} : { format: options.format }),
+    ...(options.fallback === undefined ? {} : { fallback: options.fallback }),
+  }) as const;
+
+/** A formula over the data, for what a single format cannot say (`formatCurrency(product.price, product.currency)`). */
+export const formula = (expr: string) => ({ kind: 'expression', expr, mode: 'formula' }) as const;
 
 export const styled = (styles: unknown): { styles: NodeStyles } => ({
   styles: styles as NodeStyles,
 });
 
-export const heading = (text: string, level: number, styles?: unknown): TreeNode => ({
+export const heading = (text: Text, level: number, styles?: unknown): TreeNode => ({
   type: 'buildr/heading',
-  props: { text: s(text), level: s(level) } as never,
+  props: { text: val(text), level: s(level) } as never,
   ...(styles === undefined ? {} : styled(styles)),
 });
 
-export const text = (value: string, styles?: unknown): TreeNode => ({
+export const text = (value: Text, styles?: unknown): TreeNode => ({
   type: 'buildr/text',
-  props: { text: s(value) } as never,
+  props: { text: val(value) } as never,
   ...(styles === undefined ? {} : styled(styles)),
 });
 
 export const button = (
-  label: string,
-  props: { variant?: string; href?: string; size?: string; type?: string } = {},
+  label: Text,
+  props: { variant?: string; href?: Text; size?: string; type?: string } = {},
 ): TreeNode => ({
   type: 'buildr/button',
   props: {
-    label: s(label),
+    label: val(label),
     ...(props.variant === undefined ? {} : { variant: s(props.variant) }),
     ...(props.size === undefined ? {} : { size: s(props.size) }),
     ...(props.type === undefined ? {} : { type: s(props.type) }),
-    ...(props.href === undefined ? {} : { href: s(props.href) }),
+    ...(props.href === undefined ? {} : { href: val(props.href) }),
   } as never,
 });
 
@@ -73,12 +93,13 @@ export const grid = (
 /** A full-width band with the theme's vertical rhythm, tighter on small screens. */
 export const section = (
   children: readonly TreeNode[],
-  props: { container?: string; ariaLabel?: string } = {},
+  props: { container?: string; ariaLabel?: string; as?: string } = {},
   extraStyles: { base?: Record<string, unknown>; bp?: Record<string, unknown> } = {},
 ): TreeNode => ({
   type: 'buildr/section',
   props: {
     container: s(props.container ?? 'lg'),
+    ...(props.as === undefined ? {} : { as: s(props.as) }),
     ...(props.ariaLabel === undefined ? {} : { ariaLabel: s(props.ariaLabel) }),
   } as never,
   children,

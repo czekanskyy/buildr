@@ -1,6 +1,4 @@
 import {
-  type BuilderDocument,
-  type BuilderFragment,
   canInsert,
   createIndex,
   defaultTheme,
@@ -13,53 +11,12 @@ import {
 } from '@buildr/core';
 import { doc } from '@buildr/test-utils';
 import { describe, expect, it } from 'vitest';
-import { Accordion } from '../accordion/definition.ts';
-import { AccordionItem } from '../accordion-item/definition.ts';
-import { Badge } from '../badge/definition.ts';
-import { Button } from '../button/definition.ts';
-import { Card } from '../card/definition.ts';
-import { Checkbox } from '../checkbox/definition.ts';
-import { Form } from '../form/definition.ts';
-import { Grid } from '../grid/definition.ts';
-import { Heading } from '../heading/definition.ts';
-import { IconComponent } from '../icon/definition.ts';
-import { Image } from '../image/definition.ts';
-import { Input } from '../input/definition.ts';
-import { List } from '../list/definition.ts';
-import { ListItem } from '../list-item/definition.ts';
-import { Page } from '../page/definition.ts';
-import { Section } from '../section/definition.ts';
-import { Select } from '../select/definition.ts';
-import { Stack } from '../stack/definition.ts';
-import { createRegistry, problemsOf, render } from '../test-kit.tsx';
-import { Text } from '../text/definition.ts';
-import { Textarea } from '../textarea/definition.ts';
+import { problemsOf, render } from '../test-kit.tsx';
 import { marketingTemplateFixtures } from './fixtures.ts';
 import { marketingTemplates } from './index.ts';
+import { documentOf, templateRegistry } from './templates.test-kit.tsx';
 
-const components = [
-  Page,
-  Section,
-  Grid,
-  Stack,
-  Heading,
-  Text,
-  Button,
-  Badge,
-  IconComponent,
-  Image,
-  Card,
-  List,
-  ListItem,
-  Accordion,
-  AccordionItem,
-  Form,
-  Input,
-  Textarea,
-  Select,
-  Checkbox,
-];
-const registry = createRegistry({ components, templates: marketingTemplates });
+const registry = templateRegistry;
 
 /** Every (template, variant) pair: `undefined` is the template's own tree. */
 const cases = marketingTemplates.flatMap((template) =>
@@ -69,26 +26,6 @@ const cases = marketingTemplates.flatMap((template) =>
     name: variant === undefined ? template.id : `${template.id} (${variant})`,
   })),
 );
-
-function documentOf(
-  template: TemplateDefinition,
-  variant?: string,
-): { fragment: BuilderFragment; document: BuilderDocument } {
-  const fragment = instantiateTemplate(template, variant);
-  const page = doc({ type: 'buildr/page' });
-  const root = fragment.roots[0] as string;
-  const nodes = { ...page.nodes, ...fragment.nodes };
-  const pageNode = nodes[page.root];
-  if (pageNode === undefined) throw new Error('no page');
-  return {
-    fragment,
-    document: {
-      ...page,
-      components: { ...page.components, ...fragment.components },
-      nodes: { ...nodes, [page.root]: { ...pageNode, slots: { default: [root] } } },
-    },
-  };
-}
 
 // A hero is the page's headline; the other templates sit under the layout's own H1.
 const a11yConfig = (template: TemplateDefinition) =>
@@ -132,7 +69,7 @@ describe('marketing templates', () => {
 
   it('are known to the registry', () => {
     expect(registry.meta.listTemplates().map((t) => t.id)).toEqual(
-      marketingTemplates.map((t) => t.id),
+      expect.arrayContaining(marketingTemplates.map((t) => t.id)),
     );
   });
 
