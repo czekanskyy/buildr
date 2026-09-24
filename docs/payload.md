@@ -179,3 +179,10 @@ The plugin registers the [endpoint contract](#endpoint-contract) as Payload endp
 - `autosave: true` updates the current autosave version in place; an explicit save creates a version.
 - Publishing writes `_status: 'published'` for the whole latest draft, admin-edited fields included.
 - A document written by a newer component version is returned with `readOnly: true` and is never rewritten.
+
+## Access control and CSRF (PB-096)
+
+- **Authentication**: every builder endpoint answers `401` without a Payload user.
+- **Permissions** (`plugin/access.ts`): `access.edit`, `access.publish` and `access.unlockTemplates` decide per request; without a function any authenticated user may. Reading a document opens the builder, so it needs `edit` (`403` otherwise); saving needs `edit`; publishing needs `publish`. The session response reports `permissions: { canEdit, canPublish, canUnlockTemplates }` so the UI can hide what the server would refuse.
+- **Collection access**: every Local API call uses the caller's `req` and `overrideAccess: false`, so Payload's own read/update rules (and multi-tenant scoping) apply on top of the plugin's functions.
+- **CSRF** (`endpoints/guards.ts`): `PUT` and `POST` need `Content-Type: application/json` (`415`), and an `Origin` header, when present, must be the server's own origin or in Payload's `csrf` allowlist (`403`). Requests without an `Origin` (scripts) pass; browsers always send it.

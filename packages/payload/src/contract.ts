@@ -23,7 +23,11 @@ export const documentRefSchema = z.object({
 
 export const sessionResponseSchema = z.object({
   user: z.object({ id: z.union([z.string(), z.number()]), email: z.string().optional() }),
-  permissions: z.object({ canEdit: z.boolean(), canPublish: z.boolean() }),
+  permissions: z.object({
+    canEdit: z.boolean(),
+    canPublish: z.boolean(),
+    canUnlockTemplates: z.boolean(),
+  }),
   limits: z.object({ maxNodes: z.number(), maxBytes: z.number() }),
   /** The languages of the site; absent without Payload localization. */
   locales: z
