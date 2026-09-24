@@ -15,6 +15,12 @@ export {
 export type { BindingResolution } from './resolve-binding.ts';
 export { resolveBinding } from './resolve-binding.ts';
 export type {
+  ResolvedPropsResult,
+  ResolvedVisibility,
+  ResolvePropsOptions,
+} from './resolve-props.ts';
+export { resolveProps, resolveVisibility } from './resolve-props.ts';
+export type {
   RichTextBlockNode,
   RichTextHeadingNode,
   RichTextHeadingTag,

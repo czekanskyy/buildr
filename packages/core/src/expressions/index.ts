@@ -38,6 +38,7 @@ export { parseExpression } from './parser.ts';
 export { printExpression, printTemplate } from './printer.ts';
 export type { StdlibFunction, StdlibParam, StdlibParamType } from './stdlib/index.ts';
 export { MAX_LIST_ELEMENTS, MAX_RESULT_TEXT, stdlib } from './stdlib/index.ts';
+export { isTruthy } from './stdlib/logic.ts';
 export { parseTemplate } from './template.ts';
 export type { ExprType, TypecheckOptions, TypecheckResult } from './typecheck.ts';
 export { typecheck } from './typecheck.ts';
