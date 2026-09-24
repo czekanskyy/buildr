@@ -84,7 +84,8 @@ export interface DocumentAdapter {
       readonly cursor?: string;
       readonly mimeTypes?: readonly string[];
     }): Promise<MediaSearchResult>;
-    upload?(file: File): Promise<MediaAsset>;
+    /** Adds a file to the library. `alt` is required: an image without alternative text is an accessibility error. */
+    upload?(file: File, alt: string): Promise<MediaAsset>;
   };
   /** Where the site shows the page as a visitor would; `draft` asks for the unpublished version. */
   previewUrl(ref: DocumentRef, options?: { readonly draft?: boolean }): string;
