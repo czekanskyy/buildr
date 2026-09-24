@@ -371,3 +371,45 @@
   outline: 2px solid var(--bd-focus);
   outline-offset: 1px;
 }
+
+.buildr-editor .bd-canvas-host {
+  position: relative;
+  height: 100%;
+  overflow: auto;
+}
+.buildr-editor .bd-canvas-stage {
+  margin: 0 auto;
+  height: 100%;
+}
+.buildr-editor .bd-canvas-frame {
+  display: block;
+  height: 100%;
+  border: 0;
+  background: #fff;
+  transform-origin: top left;
+}
+.buildr-editor .bd-canvas-frame[data-status="connecting"] {
+  visibility: hidden;
+}
+.buildr-editor .bd-canvas-status,
+.buildr-editor .bd-canvas-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bd-space-3);
+  margin: 0;
+  padding: var(--bd-space-4);
+  text-align: center;
+  color: var(--bd-text-muted);
+}
+.buildr-editor .bd-canvas-error {
+  background: var(--bd-surface-2);
+  color: var(--bd-text);
+}
+.buildr-editor .bd-canvas-detail {
+  font-size: 12px;
+  color: var(--bd-text-muted);
+}

@@ -134,6 +134,17 @@ While the focus is inside the iframe the editor would not see the keyboard, so `
 
 The selection lives in the editor store (`selectedIds`, `anchorId`, `selectedInstance`, `hoveredId`); the canvas reports clicks and hovers, the host turns them into `store.select(id, { mode, instance })` (`replace`; `toggle` with Ctrl/Cmd; `add` with Shift) and `store.setHovered(id)`. The anchor is the last node selected: the inspector shows it and keyboard moves start from it. `store.moveSelection('parent' | 'child' | 'next' | 'previous')` steps through the tree (siblings across all slots, no wrapping) and returns the node now selected. After every change to the document, undo, redo or a replacement, nodes that no longer exist drop out of the selection and the hover, and the anchor moves to the last one left. `<Breadcrumbs />` lists the path from the root to the anchor; a button selects its node and hovering it highlights that node on the canvas.
 
+### The canvas host (PB-076)
+
+`packages/editor/src/canvas-host`. `createCanvasHost({ store, transport, manifestHash, locales, breakpoints, … })` is the editor's end of the channel; `<CanvasFrame canvasUrl manifestHash locales breakpoints />` creates the iframe (`?session=` is a fresh 128-bit nonce), the `createParentTransport` for it and the host, and shows the status screens. The host holds no document: the store is the truth.
+
+- **Handshake.** Every `canvas:hello` is answered with `editor:init` built from the store as it is then (document, version, selection, viewport, locale, context, mode), so `editor:init` is idempotent and a canvas that reloads or crashes is rebuilt without loss. The hello's `manifestHash` must equal the editor's and its protocol version must be ours; otherwise the status is `error` (`manifest` or `protocol`, with both values shown) and nothing is sent. No hello within 10 s is a `timeout` error that names the usual causes (URL, `frame-ancestors`, allowed origins). A fatal `canvas:error` is an error too. "Reload canvas" mounts a new frame with a new session.
+- **Changes to the canvas.** Store changes are queued and sent once per animation frame as one `doc:patch` (`from` of the first to `to` of the last); a replacement, or more than `MAX_PATCHES` patches, is sent as `doc:set`, and so is the answer to `doc:resync-request`. Nothing is sent to a canvas that is not `initializing` or `ready`; its `editor:init` carries whatever it missed. Selection and hover go out at once, and only when they changed.
+- **Viewport, zoom, locale, context, mode.** `setBreakpoint`, `setZoom` (`'fit'` scales the frame down to the room there is, or a number), `setLocale`, `setContextRef`, `setMode` update the host's state and inform the canvas. `dndOver`, `dndLeave` and `scrollTo` forward to the canvas for the drag-and-drop engine (PB-086).
+- **From the canvas.** `node:click` → `store.select` (Shift adds, Ctrl/Cmd toggles); `node:hover` → `setHovered`; `inline:commit` → `node.setProp` (into `l10n[locale]` when the editing locale is not the default); `intent:move` → `node.move`; a refused command goes to `onCommandError`. `key:down`, `contextmenu`, `node:dblclick` and `dnd:target` go to callbacks for the shortcuts, menus and dnd tasks; `diagnostics` is kept in the host's state.
+
+`BuilderEditor` does not mount the frame yet: it needs the document the persistence task (PB-087) loads.
+
 ## The postMessage protocol
 
 An **envelope**, Zod-validated on both sides (malformed messages are dropped and logged in dev):

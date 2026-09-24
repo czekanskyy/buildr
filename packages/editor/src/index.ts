@@ -14,6 +14,7 @@ export type {
 export { DEFAULT_BREAKPOINTS, resolveConfig } from './app/config.ts';
 export type { EditorLayoutProps } from './app/layout.tsx';
 export { EditorLayout } from './app/layout.tsx';
+export * from './canvas-host/index.ts';
 export type { MessageKey, Messages, Translate, UiLocale } from './messages/index.tsx';
 export { createTranslator, MessagesProvider, UI_LOCALES, useT } from './messages/index.tsx';
 export * from './panels/index.ts';
