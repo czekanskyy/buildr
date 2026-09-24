@@ -89,13 +89,30 @@ function withMediaAssets(
   return out ?? props;
 }
 
+/**
+ * Renders a child of a slot: in place, or, when the canvas asked for lazy children, as an element
+ * that renders it on its own later (`instrument.lazyChild`).
+ */
+export function renderChild(id: NodeId, run: RenderRun): ReactNode {
+  const lazy = run.options.instrument?.lazyChild;
+  if (lazy === undefined) return renderNode(id, run);
+  const child = Object.hasOwn(run.doc.nodes, id) ? run.doc.nodes[id] : undefined;
+  if (child === undefined) return null;
+  return lazy(child, {
+    context: run.options.context,
+    instance: run.instance,
+    parents: [...run.parents],
+    path: [...run.path],
+  });
+}
+
 function renderSlots(
   node: PageNode,
   def: ComponentDefinition,
   props: Readonly<Record<string, JsonValue>>,
   run: RenderRun,
 ): Record<SlotName, ReactNode> {
-  const loop = loopSlots(node, def, props, run, renderNode);
+  const loop = loopSlots(node, def, props, run, renderChild);
   if (loop !== undefined) return loop;
   const slots: Record<SlotName, ReactNode> = {};
   for (const slot of Object.keys(def.meta.slots ?? {})) {
@@ -105,7 +122,7 @@ function renderSlots(
       slots[slot] = run.options.instrument?.emptySlot?.(node, slot) ?? null;
       continue;
     }
-    slots[slot] = ids.map((id) => renderNode(id, run));
+    slots[slot] = ids.map((id) => renderChild(id, run));
   }
   return slots;
 }
@@ -116,7 +133,7 @@ function renderSlots(
  * diagnostic; otherwise the props are resolved and the component is created with them.
  * Synchronous, and uses no hooks or context: the same walk runs in an RSC and in the canvas.
  */
-export function renderNode(id: NodeId, run: RenderRun): ReactNode {
+export function renderNode(id: NodeId, run: RenderRun, bare = false): ReactNode {
   const node = Object.hasOwn(run.doc.nodes, id) ? run.doc.nodes[id] : undefined;
   if (node === undefined) return null;
 
@@ -139,7 +156,7 @@ export function renderNode(id: NodeId, run: RenderRun): ReactNode {
         node,
       ),
     ]);
-    return wrap(node, options.instrument?.unknownComponent?.(node) ?? null, run);
+    return wrap(node, options.instrument?.unknownComponent?.(node) ?? null, run, bare);
   }
 
   const resolved = resolveProps(node, def.meta, options.context, cacheOption(run));
@@ -173,7 +190,12 @@ export function renderNode(id: NodeId, run: RenderRun): ReactNode {
 
   if (run.devChecks && def.meta.runtime === 'client') assertSerializable(node, componentProps);
 
-  return wrap(node, createElement(def.render, { key: keyOf(node, run), ...componentProps }), run);
+  return wrap(
+    node,
+    createElement(def.render, { key: keyOf(node, run), ...componentProps }),
+    run,
+    bare,
+  );
 }
 
 /** `${id}:${index}` inside a loop, so the instances of one node never share a key. */
@@ -203,10 +225,10 @@ function cacheOption(
   return run.options.cache === undefined ? undefined : { cache: run.options.cache };
 }
 
-/** Puts the canvas's `NodeView` around a node, when there is one. */
-function wrap(node: PageNode, element: ReactNode, run: RenderRun): ReactNode {
+/** Puts the canvas's `NodeView` around a node, when there is one (a node rendered on its own, `bare`, is already inside its view). */
+function wrap(node: PageNode, element: ReactNode, run: RenderRun, bare: boolean): ReactNode {
   const View = run.options.instrument?.NodeView;
-  return View === undefined
+  return bare || View === undefined
     ? element
     : createElement(View, { key: keyOf(node, run), node }, element);
 }

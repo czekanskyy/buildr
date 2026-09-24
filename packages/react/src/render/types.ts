@@ -16,7 +16,25 @@ import type { ComponentEnv, NodeParent, NodeRoot, Platform } from '../define/typ
  * The hooks the canvas plugs into the one shared renderer (ADR-008). Everything here changes what
  * is *around* a component's output — attributes, wrappers, placeholders — never the output itself.
  */
+/**
+ * Everything needed to render a node later, on its own: where it was found (its containers, the
+ * loop instance it is part of and the scopes that instance sees). The canvas keeps one per node so
+ * a change to a node re-renders that node and nothing around it.
+ */
+export interface ResumeState {
+  readonly context: DataContext;
+  readonly instance: readonly number[];
+  readonly parents: readonly NodeParent[];
+  readonly path: readonly NodeId[];
+}
+
 export interface CanvasInstrumentation {
+  /**
+   * Renders a child lazily: instead of walking into `node`, the renderer asks for an element that
+   * will render it when React gets to it (the canvas's per-node view). With this set, `NodeView` is
+   * not used: the element returned here is the wrapper.
+   */
+  lazyChild?(node: PageNode, resume: ResumeState): ReactNode;
   /** Extra root attributes for a node (`data-bid`, …); merged over the generated ones. */
   rootAttributes?(node: PageNode): Partial<NodeRoot>;
   /** Wraps every rendered node (memoization, a per-node error boundary). Receives the element as `children`. */

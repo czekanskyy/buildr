@@ -52,6 +52,10 @@ export interface BuilderComponentProps<P> {
 | Unknown component | `null` plus a log entry | A visible placeholder |
 | Components used | **The same components, with no `if (editor)` branches** | Same |
 
+### The canvas renders node by node
+
+With `instrument.lazyChild` set, `renderTree` does not walk into a child: it asks the instrumentation for an element and gets the canvas's `NodeView`, together with a `ResumeState` (the data context, the Loop instance, the containers and the path it was found in). `NodeView` later calls `renderNodeAt(doc, id, resume, options)`, which renders that node alone with the same code (`renderNode`) and again returns lazy children. So a change to one node re-renders one node, not its ancestors. `lazyChild` replaces `NodeView` (the wrapper is the element it returns); the output of a component is never different.
+
 ## Server/client boundaries
 
 `renderTree` and every `shared`-runtime component avoid hooks, context and browser APIs, so they work identically in RSC and on the client. `runtime: 'client'` components live in a `*.client.tsx` file with `'use client'`; their metadata (in a file without the directive) stays importable from the server. Components never fetch their own data — everything arrives pre-resolved via `prepareRender`, which is exactly what lets the canvas (client-rendered) run the same components as RSC. Builder-level React context is not used to pass data — it would not survive RSC — everything flows explicitly through the render walk. Server-only (async, streaming) individual components are out of MVP scope; revisited as "server islands" in v1.0+.
