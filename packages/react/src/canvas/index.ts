@@ -6,6 +6,8 @@ export { createDataPreparer, DEFAULT_DATA_DEBOUNCE_MS, dataKey } from './data.ts
 export type { DndController, DndOptions } from './dnd/controller.ts';
 export { createDndController } from './dnd/controller.ts';
 export { buildHitPath, layoutAxisOf } from './dnd/hit-path.ts';
+export type { ForwardingOptions } from './forwarding.ts';
+export { installForwarding, isEditorShortcut } from './forwarding.ts';
 export type { InlineEditOptions } from './inline-edit.ts';
 export { installInlineEdit } from './inline-edit.ts';
 export type { InteractionOptions } from './interactions.ts';
