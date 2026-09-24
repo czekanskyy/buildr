@@ -20,13 +20,14 @@ export function buildrFields(options: {
   readonly templates: boolean;
   readonly editorRoute: string;
   readonly guard: (name: string) => FieldHook;
+  readonly layoutHook: FieldHook;
 }): Field[] {
   const fields: Field[] = [
     {
       name: LAYOUT,
       type: 'json',
       label: 'Layout',
-      hooks: { beforeChange: [options.guard(LAYOUT)] },
+      hooks: { beforeChange: [options.layoutHook] },
       admin: {
         components: {
           Field: {
