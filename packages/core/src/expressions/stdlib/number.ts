@@ -15,6 +15,7 @@ function roundTo(value: number, digits: number): number {
 export const numberFunctions: readonly StdlibFunction[] = [
   {
     name: 'round',
+    returns: 'number',
     params: [{ type: 'number' }, { type: 'number', optional: true }],
     doc: 'round(n, digits?) — n rounded half away from zero to `digits` decimals (default 0)',
     run: ([n, digits]) => {
@@ -27,24 +28,28 @@ export const numberFunctions: readonly StdlibFunction[] = [
   },
   {
     name: 'floor',
+    returns: 'number',
     params: [{ type: 'number' }],
     doc: 'floor(n) — the largest integer not above n',
     run: ([n]) => Math.floor(n as number),
   },
   {
     name: 'ceil',
+    returns: 'number',
     params: [{ type: 'number' }],
     doc: 'ceil(n) — the smallest integer not below n',
     run: ([n]) => Math.ceil(n as number),
   },
   {
     name: 'abs',
+    returns: 'number',
     params: [{ type: 'number' }],
     doc: 'abs(n) — the absolute value',
     run: ([n]) => Math.abs(n as number),
   },
   {
     name: 'min',
+    returns: 'number',
     params: [{ type: 'number' }],
     rest: { type: 'number' },
     doc: 'min(...) — the smallest argument',
@@ -52,6 +57,7 @@ export const numberFunctions: readonly StdlibFunction[] = [
   },
   {
     name: 'max',
+    returns: 'number',
     params: [{ type: 'number' }],
     rest: { type: 'number' },
     doc: 'max(...) — the largest argument',
@@ -59,6 +65,7 @@ export const numberFunctions: readonly StdlibFunction[] = [
   },
   {
     name: 'clamp',
+    returns: 'number',
     params: [{ type: 'number' }, { type: 'number' }, { type: 'number' }],
     doc: 'clamp(n, lo, hi) — n limited to the range lo..hi',
     run: ([n, lo, hi]) => {

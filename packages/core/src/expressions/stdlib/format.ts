@@ -69,6 +69,7 @@ function numberOptions(
 export const formatFunctions: readonly StdlibFunction[] = [
   {
     name: 'formatNumber',
+    returns: 'string',
     params: [{ type: 'number' }, { type: 'object', optional: true }],
     doc: "formatNumber(n, opts?) — n in the locale's number format; opts: style, minimumFractionDigits, maximumFractionDigits",
     run: ([n, opts], env) =>
@@ -80,6 +81,7 @@ export const formatFunctions: readonly StdlibFunction[] = [
   },
   {
     name: 'formatCurrency',
+    returns: 'string',
     params: [{ type: 'number' }, { type: 'string' }],
     doc: 'formatCurrency(n, currency) — n as money in an ISO 4217 currency, e.g. "PLN"',
     run: ([n, currency], env) =>
@@ -87,6 +89,7 @@ export const formatFunctions: readonly StdlibFunction[] = [
   },
   {
     name: 'formatDate',
+    returns: 'string',
     params: [{ type: 'any' }, { type: 'string' }],
     doc: "formatDate(d, style) — an ISO date string or epoch milliseconds as 'short' | 'medium' | 'long' | 'iso'",
     run: ([d, style], env) => {
@@ -99,6 +102,7 @@ export const formatFunctions: readonly StdlibFunction[] = [
   },
   {
     name: 'plural',
+    returns: 'string',
     params: [{ type: 'number' }, { type: 'object' }],
     doc: "plural(n, { one, few, many, other }) — the form for n per the locale's plural rules (`other` is required)",
     run: ([n, forms], env) => {

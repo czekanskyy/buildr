@@ -32,6 +32,11 @@ interface StdlibBase {
   readonly params: readonly StdlibParam[];
   /** When set, any number of further arguments of this type are accepted after `params`. */
   readonly rest?: StdlibParam | undefined;
+  /**
+   * The type of the result (`any` when it depends on the arguments, e.g. `first`, `if`) — what
+   * the typechecker infers for a call. `null` is always possible at runtime and is not modelled.
+   */
+  readonly returns: StdlibParamType;
   /** One-line description for the formula editor's autocomplete. */
   readonly doc: string;
 }
