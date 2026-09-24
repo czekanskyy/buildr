@@ -63,6 +63,17 @@ export { Select } from './select/definition.ts';
 export { selectFixtures } from './select/fixtures.ts';
 export { STACK_ROLES, Stack } from './stack/definition.ts';
 export { stackFixtures } from './stack/fixtures.ts';
+export { marketingTemplateFixtures } from './templates/fixtures.ts';
+export {
+  Contact,
+  Cta,
+  Faq,
+  FeatureGrid,
+  Hero,
+  marketingTemplates,
+  Pricing,
+  Testimonial,
+} from './templates/index.ts';
 export { TEXT_ELEMENTS, Text } from './text/definition.ts';
 export { textFixtures } from './text/fixtures.ts';
 export { Textarea } from './textarea/definition.ts';

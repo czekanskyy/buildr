@@ -135,6 +135,22 @@ Each renders one wrapper: a `label` tied to the control, an optional `hint` (wir
 
 Field ids are derived from the node id, so they are stable between server and client rendering.
 
+## Marketing templates
+
+`marketingTemplates` (in `@buildr/components`) are ordinary `TemplateDefinition`s built only from the components above, with tablet and mobile overrides on the nodes that need them (see [templates.md](templates.md)). Each is a detached, fully editable copy once inserted. Each has an SVG wireframe `thumbnail` (a data URI drawn from plain shapes) and a gallery fixture in `marketingTemplateFixtures` (one per template and variant).
+
+| Template | Id | Made of | Notes |
+|---|---|---|---|
+| Hero | `buildr/hero` | Section, Grid, Stack, Heading (H1), Text, Buttons, Image | `lock: structure`; the buttons are the editable `actions` region. Variants: default (picture first), `imageRight`, `centered` (no picture). Two columns, one on a phone. |
+| Feature grid | `buildr/feature-grid` | Section, Stack, Grid, Icon, Heading, Text | Six features; three columns, two on tablet, one on mobile. |
+| Call to action | `buildr/cta` | Section, Stack, Heading, Text, Button | On `$color.primary` with `$color.on-primary` text; `lock: structure` with an `actions` region. |
+| Testimonial | `buildr/testimonial` | Section, Stack, Text | A quote and its author. |
+| Pricing | `buildr/pricing` | Section, Grid, Card, Badge, List, Button | Three plans, one highlighted; stacked on tablet and mobile. |
+| FAQ | `buildr/faq` | Section, Accordion | Four questions, the first open. |
+| Contact | `buildr/contact` | Section, Grid, Form, Input, Textarea, Checkbox, Button | Name, email, message and a copy checkbox; the fields have static names so the server can derive the schema. |
+
+Headings start at level 2 (the layout renders the page's H1); only the Hero uses level 1, so a page using it should not also have a layout H1 (`expectH1: 'document'`). The Image in a Hero has no media until the author chooses one: it renders nothing on a published page and a marked empty state in the editor's canvas. Copy is placeholder text meant to be replaced.
+
 ## Form field derivation
 
 Any component may declare `ComponentMeta.formField` (see [component-registry.md](component-registry.md)) to participate in form schema derivation. `deriveFormSchema(doc, registryMeta, formNodeId)` (in `@buildr/core/forms`) walks a `buildr/form` node's descendants and reads `formField` metadata generically — it never imports specific components — so custom form controls participate automatically. It returns `{ schema: { formId, fields: [{ nodeId, name, valueType, required, maxLength?, options? }] }, diagnostics }`. Only static prop values are read: a dynamic `name` or `options` is reported (`form.name-dynamic`, `form.options-dynamic`) and the field is left out, as are missing, invalid, reserved or duplicate names (`form.name-missing`, `form.name-invalid`, `form.name-duplicate`) and fields beyond the limit (`form.too-many-fields`). This function is the server-side source of truth for what a submitted form is allowed to contain; see [payload.md](payload.md) and [security.md](security.md).
