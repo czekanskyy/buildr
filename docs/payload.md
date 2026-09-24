@@ -148,3 +148,16 @@ export interface MediaAsset { id: string; url: string; alt?: string; width?: num
 `LayoutField` shows the number of elements in the stored layout and the "Edit with Visual Builder" button. The button is disabled until the document has an id, and opens `{editor route}/{collection}/{id}` with `window.open(url, 'buildr-{collection}-{id}')`, so repeat clicks reuse the same window. The presentational `LayoutFieldView` has no Payload UI import, which keeps it testable; `LayoutField` loads the Payload-UI-connected component lazily, so the entry point still imports in plain Node (the Payload CLI, the smoke test).
 
 Tests run Payload's Local API on SQLite. Payload pushes the schema through drizzle-kit state shared by the whole process, so a test file can hold only one live Payload instance; structural checks use `buildConfig` without connecting.
+
+## Validation and migration on every write (PB-094)
+
+The `layout` field runs one `beforeChange` chain, so the data is protected whatever the write path (Local API, Payload REST, the builder endpoints, a script): the write-guard first, then — for the writes that may change the layout (a create, or `context.buildrWrite`) — `processLayout`:
+
+1. a missing layout becomes `createEmptyDocument()` (a new document starts with a valid one);
+2. the value is migrated to the current document schema (`migrateDocument`), then parsed against the limits (`parseDocument`; `limits.maxNodes` / `limits.maxBytes` can only tighten the model defaults);
+3. when the registry carries `migrations`, components are migrated to their current versions (`migrateComponents`); a component written by newer code rejects the write;
+4. when a registry is configured, `validateDocument` runs; issues with severity `error` reject the write, warnings are logged through `payload.logger.warn`.
+
+A rejected write throws Payload's `ValidationError` with one error on the path `layout`; its message lists every problem (`message (path)`), so the admin shows it under the field and REST returns it in `errors[0].data.errors`. The builder endpoints reuse `processLayout` (exported from `@buildr/payload/plugin`) and map its diagnostics to `422`. A layout that the write-guard keeps (an admin save) is not validated again.
+
+The `registry` option takes `{ meta, migrations? }`: a React registry fits, and so does `{ meta: registry.meta }` alone (then only structure and props are validated).

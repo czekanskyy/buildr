@@ -1,10 +1,19 @@
 import type { CollectionConfig, Config, Plugin } from 'payload';
 import { buildrFields, RESERVED_FIELDS } from './fields.ts';
+import { layoutHook } from './hooks/layout-hook.ts';
 import { type BuildrPluginOptions, resolveOptions } from './options.ts';
 import { writeGuard } from './write-guard.ts';
 
 export { LAYOUT_FIELD_COMPONENT, TEMPLATES_COLLECTION } from './fields.ts';
-export type { AccessArgs, AccessFn, BuildrPluginOptions, ResolvedOptions } from './options.ts';
+export type { ProcessedLayout, ProcessLayoutOptions } from './hooks/process-layout.ts';
+export { describeDiagnostics, documentLimits, processLayout } from './hooks/process-layout.ts';
+export type {
+  AccessArgs,
+  AccessFn,
+  BuildrPluginOptions,
+  BuildrRegistry,
+  ResolvedOptions,
+} from './options.ts';
 export { resolveOptions } from './options.ts';
 export { BUILDR_WRITE } from './write-guard.ts';
 
@@ -53,6 +62,7 @@ export function buildrPlugin(input: BuildrPluginOptions): Plugin {
               templates: own.templates,
               editorRoute: options.routes.editor,
               guard: writeGuard,
+              layoutHook: layoutHook(options),
             }),
           ],
         };

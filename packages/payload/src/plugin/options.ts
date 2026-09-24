@@ -1,4 +1,4 @@
-import type { RegistryMeta } from '@buildr/core';
+import type { ComponentMigrations, RegistryMeta } from '@buildr/core';
 import { z } from 'zod';
 
 /** A function the host supplies; Zod only checks that it is one, the plugin never runs it at startup. */
@@ -9,6 +9,12 @@ export interface AccessArgs {
   readonly req: { readonly user?: unknown; readonly [key: string]: unknown };
 }
 export type AccessFn = (args: AccessArgs) => boolean | Promise<boolean>;
+
+/** What the plugin needs of a registry: its metadata and, optionally, the component migrations. */
+export interface BuildrRegistry {
+  readonly meta: RegistryMeta;
+  readonly migrations?: ComponentMigrations | undefined;
+}
 
 const collectionOptions = z.object({
   /** The name the collection document is bound under in dynamic values (`page`, `post`, ...). */
@@ -29,9 +35,14 @@ const queryableOptions = z.object({
 });
 
 export const optionsSchema = z.object({
-  /** Only its metadata and migrations are used, so `registry.meta` is enough. */
+  /** Only its metadata and migrations are used, so `{ meta }` is enough (a React registry fits too). */
   registry: z
-    .custom<RegistryMeta>((value) => typeof value === 'object' && value !== null)
+    .custom<BuildrRegistry>(
+      (value) =>
+        typeof value === 'object' &&
+        value !== null &&
+        typeof (value as BuildrRegistry).meta === 'object',
+    )
     .optional(),
   routes: z
     .object({

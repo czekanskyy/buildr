@@ -1,6 +1,7 @@
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { createEmptyDocument } from '@buildr/core';
 import { sqliteAdapter } from '@payloadcms/db-sqlite';
 import { buildConfig, type CollectionConfig, getPayload, type Payload } from 'payload';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -17,7 +18,10 @@ const templates: CollectionConfig = {
   fields: [{ name: 'title', type: 'text' }],
 };
 
-const layoutOf = (text: string) => ({ schemaVersion: 1, root: 'root', nodes: { root: { text } } });
+const layoutOf = (name: string) => ({
+  ...createEmptyDocument(),
+  nodes: { root: { id: 'root', type: 'buildr/page', name } },
+});
 
 let dir: string;
 const configOf = (options: Parameters<typeof buildrPlugin>[0], collections = [pages, templates]) =>
