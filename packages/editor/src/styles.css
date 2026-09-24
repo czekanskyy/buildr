@@ -938,3 +938,63 @@
   font-size: 12px;
   opacity: 0.85;
 }
+
+/* Issues panel and publish dialog (PB-088) */
+.buildr-editor .bd-issues-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.buildr-editor .bd-issues-filters button[aria-pressed="true"] {
+  font-weight: 600;
+}
+.buildr-editor .bd-issues-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.buildr-editor .bd-issue {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--bd-border, rgba(128, 128, 128, 0.3));
+}
+.buildr-editor .bd-issue-target {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.buildr-editor .bd-issue-target:disabled {
+  cursor: default;
+}
+.buildr-editor .bd-issue[data-severity="error"] .bd-issue-severity,
+.bd-publish-blocked,
+.buildr-editor .bd-issue-error {
+  color: var(--bd-danger, #c62828);
+}
+.buildr-editor .bd-issue[data-severity="warning"] .bd-issue-severity {
+  color: var(--bd-warning, #b26a00);
+}
+.buildr-editor .bd-issue-source,
+.buildr-editor .bd-issue-help {
+  margin: 0;
+  font-size: 12px;
+  opacity: 0.75;
+}
+.bd-publish-summary {
+  display: flex;
+  gap: 12px;
+  margin: 8px 0;
+  padding: 0;
+  list-style: none;
+}

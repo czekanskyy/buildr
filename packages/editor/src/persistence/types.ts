@@ -53,6 +53,15 @@ export type PublishResult =
   | { readonly ok: false; readonly kind: 'conflict'; readonly currentRevision: number }
   | { readonly ok: false; readonly kind: 'invalid'; readonly diagnostics: readonly Diagnostic[] };
 
+/** What `PersistenceController.publish` came to. */
+export type PublishOutcome =
+  | { readonly ok: true; readonly revision: number; readonly updatedAt: string }
+  | { readonly ok: false; readonly kind: 'conflict'; readonly currentRevision: number }
+  | { readonly ok: false; readonly kind: 'invalid'; readonly diagnostics: readonly Diagnostic[] }
+  /** The document could not be saved first, so there is nothing consistent to publish. */
+  | { readonly ok: false; readonly kind: 'unsaved' }
+  | { readonly ok: false; readonly kind: 'network'; readonly message: string };
+
 export interface MediaSearchResult {
   readonly items: readonly MediaAsset[];
   readonly nextCursor?: string | undefined;
