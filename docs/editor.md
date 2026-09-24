@@ -130,6 +130,10 @@ While the focus is inside the iframe the editor would not see the keyboard, so `
 - **Never from a text field or from text being edited in place** (`input`, `textarea`, `select`, `contenteditable`, an inline-edit session): there the keys belong to the text. Nothing is forwarded in `interact` mode.
 - **`contextmenu { id, point }`** on a right click: the node under it (or `null`) and the pointer's position in the canvas viewport (the editor adds the iframe's offset and zoom); the browser's menu does not open, except in a text field or text being edited.
 
+### Selection, hover and breadcrumbs (PB-075)
+
+The selection lives in the editor store (`selectedIds`, `anchorId`, `selectedInstance`, `hoveredId`); the canvas reports clicks and hovers, the host turns them into `store.select(id, { mode, instance })` (`replace`; `toggle` with Ctrl/Cmd; `add` with Shift) and `store.setHovered(id)`. The anchor is the last node selected: the inspector shows it and keyboard moves start from it. `store.moveSelection('parent' | 'child' | 'next' | 'previous')` steps through the tree (siblings across all slots, no wrapping) and returns the node now selected. After every change to the document, undo, redo or a replacement, nodes that no longer exist drop out of the selection and the hover, and the anchor moves to the last one left. `<Breadcrumbs />` lists the path from the root to the anchor; a button selects its node and hovering it highlights that node on the canvas.
+
 ## The postMessage protocol
 
 An **envelope**, Zod-validated on both sides (malformed messages are dropped and logged in dev):

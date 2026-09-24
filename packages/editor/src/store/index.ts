@@ -8,12 +8,15 @@ export {
   useNodeChildren,
   useSelectedNode,
 } from './react.tsx';
+export type { SelectionMove, SelectMode } from './selection.ts';
+export { pathTo, relativeNode } from './selection.ts';
 export {
   selectChildren,
   selectIndex,
   selectIsDirty,
   selectNode,
   selectSelectedNode,
+  selectSelectionPath,
 } from './selectors.ts';
 export type {
   DispatchOptions,
