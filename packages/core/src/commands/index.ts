@@ -14,6 +14,8 @@ export type {
   RemovePayload,
   ResetStylesCommand,
   ResetStylesPayload,
+  SetAttrCommand,
+  SetAttrPayload,
   SetPropCommand,
   SetPropPayload,
   SetStyleCommand,
@@ -32,8 +34,10 @@ export {
   coreCommandHandlers,
   duplicateHandler,
   insertHandler,
+  MAX_NAME_LENGTH,
   moveHandler,
   removeHandler,
+  setAttrHandler,
   unwrapHandler,
   wrapHandler,
 } from './handlers/index.ts';
@@ -49,4 +53,5 @@ export type {
   CommandResult,
   DocumentPatch,
   HandlerEnv,
+  UnlockRequest,
 } from './types.ts';
