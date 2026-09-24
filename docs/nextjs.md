@@ -64,3 +64,15 @@ The `/buildr/*` prefix does not collide with Payload's own catch-all `/api/*`, o
 - **Caching**: published reads go through tagged functions (Next 16 Cache Components: `'use cache'` + `cacheTag`; `unstable_cache` as the fallback on 15.x). Tags: `buildr:doc:{c}:{id}`, `buildr:col:{c}` (via `collectionsUsed` for pages containing a Loop), `buildr:global:{slug}`, `buildr:template:{id}`, `buildr:theme`. Revalidation is triggered by Payload hooks (see [payload.md](payload.md#preview-url-and-revalidation)).
 - **Error boundaries**: `BuildrSectionBoundary` (client) wraps each top-level child of the root on production, so one broken section cannot take down the whole page (logged via `onError`), plus standard `error.tsx`/`not-found.tsx` routes. A document that fails envelope validation is logged and falls through to `error.tsx`.
 - **Headers**: `/buildr/canvas` -> `Content-Security-Policy: frame-ancestors 'self'`, `Cache-Control: private, no-store`, `X-Robots-Tag: noindex`. `/buildr/edit/*` -> `frame-ancestors 'none'`, `noindex`. Public site pages -> `frame-ancestors 'self'` (so the editor's own preview can embed them).
+
+## Implemented API: `BuildrPage` and the Next platform (PB-103)
+
+`@buildr/next` exports:
+
+- `createBuildrConfig({ registry, theme, platform, dataSource, messages?, onError?, cache? })` — a frozen bundle. `dataSource(context)` is called per render, so it can be a per-request Payload source; `messages(locale)` supplies the built-in strings.
+- `BuildrPage({ config, entry, fallback?, sectionBoundaries? })` — an async Server Component. `entry` is `{ document, context, layoutRef?, currentId? }` (the shape `getBuildrDocument` produces in PB-107). It calls `renderDocument` from `@buildr/react/server`. Error-level diagnostics go to `onError`; a document that cannot be rendered throws (for `error.tsx`) unless `fallback` is given. In production every top-level section is wrapped in a `BuildrSectionBoundary` (`sectionBoundaries` overrides this).
+- `createNextPlatform({ formAction? })` — internal paths (`/x`, `#x`, `?x`) use `next/link`; everything else is a plain `<a>` (with `noopener noreferrer` added for `target="_blank"`). `Image` uses `next/image` when width and height are known, else a plain `img`. `formAction` defaults to `/api/buildr/forms/:collection/:id/:nodeId` from the `{collection}:{id}` layout reference.
+- `BuildrSectionBoundary` (`'use client'`) — the only client module of the page path; it logs the failure and renders `fallback` (nothing by default).
+- `buildrMetadata(entry, defaults)` — maps SEO fields (`meta.title/description/image/noIndex/canonical`, with the title, excerpt and featured image as fallbacks) and `alternates` (hreflang) onto a `Metadata`-shaped object. `noIndex` and `draft` both give `robots: noindex`.
+
+`next` is a peer dependency; it is a devDependency only so the platform can be tested.

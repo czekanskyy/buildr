@@ -242,9 +242,6 @@ importers:
       '@buildr/react':
         specifier: workspace:*
         version: link:../react
-      next:
-        specifier: ^15.0.0 || ^16.0.0
-        version: 16.3.5(@playwright/test@1.63.0)(@types/node@26.6.2)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
     devDependencies:
       '@buildr/editor':
         specifier: workspace:*
@@ -258,6 +255,9 @@ importers:
       '@types/react-dom':
         specifier: ^19.0.0
         version: 19.3.0(@types/react@19.3.0)
+      next:
+        specifier: 16.3.5
+        version: 16.3.5(@playwright/test@1.63.0)(@types/node@26.6.2)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       react:
         specifier: ^19.0.0
         version: 19.3.0
