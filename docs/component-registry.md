@@ -120,3 +120,12 @@ export const Hero = defineTemplate({
 ```
 
 See [templates.md](templates.md) for the full model. `instantiateTemplate` assigns fresh IDs, sets `source` and `lock` on the root, and is validated by `canInsert`. Once inserted, a template instance is an ordinary, fully editable subtree — see [ADR-020](adr/ADR-020-composites.md).
+
+## `defineComponent` and `createRegistry` (`@buildr/react`)
+
+`defineComponent({ ...ComponentMeta, runtime, render, migrations? })` takes the metadata fields at the top level next to the implementation and returns `{ meta, render, migrations }`. It validates on the spot (`validateComponentMeta`, a `render` function, the migration map) and throws an `Error` naming the component — an authoring mistake, not user data.
+
+- **Typing.** `props` is captured as a const type, so `render` receives `BuilderComponentProps<P>` with `props: ResolvedProps<P>` (`p.text` gives `string`, `p.number` gives `number`, …). With `runtime: 'shared'` it also receives an optional `platform`; with `runtime: 'client'` it receives `ClientComponentProps<P>`, which has no `platform` — a client component only gets serializable values.
+- **Migrations.** Keyed by the version they migrate *to*: `{ 2: (props) => ..., 3: (props) => ... }` upgrades 1 to 2 to 3. Keys must be integers of at least 2, none above `version`, the newest equal to `version`, and contiguous. They become the `from -> to` steps `migrateComponents` runs.
+- **Registry.** `createRegistry({ components, templates? })` returns an immutable `ReactRegistry`: `meta` (a core `RegistryMeta`), `get`/`has`/`list` over the definitions, `migrations` (each type's `currentVersion` and steps, ready for `migrateComponents`) and `extend({ components?, templates? })`, which builds a new registry and throws on a duplicate type. Pass `registry.meta` wherever core wants a `RegistryMeta`, including `toManifest`.
+- **`Platform`** is `{ Link, Image, formAction(ref, nodeId) }`, injected by the adapter; see [renderer.md](renderer.md).
