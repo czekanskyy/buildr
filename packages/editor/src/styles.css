@@ -715,3 +715,34 @@
   flex-direction: column;
   gap: 2px;
 }
+
+/* Style inspector (PB-082) */
+.buildr-editor .bd-styles-layer {
+  margin: 0 0 6px;
+  font-size: 11px;
+  opacity: 0.75;
+}
+.buildr-editor .bd-style-group > summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 4px 0;
+}
+.buildr-editor .bd-style-box {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+}
+.buildr-editor .bd-style-source {
+  font-size: 11px;
+  opacity: 0.7;
+}
+.buildr-editor .bd-style-error {
+  margin: 0;
+  font-size: 11px;
+  color: var(--bd-danger, #b42318);
+}
+.buildr-editor .bd-style-check {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}

@@ -4,5 +4,7 @@ export type { InspectorProps } from './inspector.tsx';
 export { Inspector } from './inspector.tsx';
 export type { PropsPanelProps } from './props-panel.tsx';
 export { isAdvancedProp, PropsPanel, propLabel } from './props-panel.tsx';
+export type { StyleInput, StyleInspectorProps } from './styles/index.ts';
+export { checkStyleInput, StyleInspector } from './styles/index.ts';
 export type { PropReading } from './value.ts';
 export { readProp, translationLocale } from './value.ts';
