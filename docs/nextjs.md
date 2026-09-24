@@ -85,3 +85,31 @@ The `/buildr/*` prefix does not collide with Payload's own catch-all `/api/*`, o
 - `createExitPreviewRoute({ defaultPath? })` — the `GET` of `/buildr/preview/exit`: `draftMode().disable()` and the same redirect. It needs no authorization.
 - `safeRedirectPath(value, fallback = '/')` — the only source of redirect targets. A value is accepted only when it starts with a single `/` and contains no backslash or control character; `//host`, `/\host`, `https://…` and `javascript:` fall back to `defaultPath`. There is no open-redirect vector.
 - `PreviewBanner({ message, exitLabel, exitHref?, returnTo? })` — a Server Component that renders only in draft mode. The texts are props, so the application supplies them in the site's language.
+
+## Implemented API: the canvas route (PB-105)
+
+`@buildr/next/canvas` exports:
+
+- `BuildrCanvasPage({ authorize, children })` — the server wrapper of `app/(frontend)/buildr/canvas/page.tsx`. It reads request headers (which makes the route dynamic), calls `authorize()` and answers the site's own `notFound()` when it is not a yes, so the route does not reveal itself. `children` is the application's client file, rendered inside the site layout.
+- `canvasMetadata` — export it as `metadata` from the page: `robots: noindex, nofollow`.
+- `buildrSecurityHeaders({ canvasPath?, editPath? })` — the rules for `next.config` `headers()`: the canvas gets `frame-ancestors 'self'`, `Cache-Control: private, no-store` and `X-Robots-Tag: noindex`; `/buildr/edit/*` gets `frame-ancestors 'none'` and `noindex`; every other page gets `frame-ancestors 'self'`.
+
+The client file is the application's (functions cannot cross the server-to-client boundary):
+
+```tsx
+// app/(frontend)/buildr/canvas/canvas-client.tsx
+'use client';
+import { CanvasRuntime } from '@buildr/react';
+import { createNextPlatform } from '@buildr/next';
+import { registry, theme } from '@/buildr.registry';
+
+export function CanvasClient(props: { manifestHash: string; rendererVersion: string }) {
+  return <CanvasRuntime registry={registry} theme={theme} platform={createNextPlatform()} {...props} />;
+}
+
+// page.tsx
+export const metadata = canvasMetadata;
+export default function Page() {
+  return <BuildrCanvasPage authorize={isEditorSession}><CanvasClient manifestHash={hash} rendererVersion={version} /></BuildrCanvasPage>;
+}
+```
