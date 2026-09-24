@@ -38,6 +38,11 @@ export interface CommandHandler<C extends Command = Command> {
   readonly type: C['type'];
   /** Zod schema for the payload; checked before `validate` so a handler can trust its shape. */
   readonly schema?: z.ZodType<unknown> | undefined;
+  /**
+   * Commands with the same key that follow each other closely (dragging a slider, typing in a
+   * field) may be merged into one history entry. `undefined` means never merge.
+   */
+  mergeKey?(cmd: C): string | undefined;
   /** Rules and locks — everything that can reject the command, without touching the document. */
   validate(doc: BuilderDocument, cmd: C, env: HandlerEnv): Result<void, CommandError>;
   /** Mutates the Immer draft. Only called after `validate` succeeded. */
