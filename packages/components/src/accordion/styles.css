@@ -1,0 +1,9 @@
+@layer buildr.components {
+  .bc-accordion {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--b-color-border);
+    border-radius: var(--b-radius-md);
+    overflow: hidden;
+  }
+}

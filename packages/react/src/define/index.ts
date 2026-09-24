@@ -10,6 +10,7 @@ export type {
   DefineClientComponent,
   DefineComponentInput,
   DefineSharedComponent,
+  NodeParent,
   NodeRoot,
   Platform,
   PlatformImageProps,

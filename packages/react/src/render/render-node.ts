@@ -146,11 +146,14 @@ export function renderNode(id: NodeId, run: RenderRun): ReactNode {
   run.report(resolved.diagnostics);
   const props = withMediaAssets(node, def, resolved.props, run);
 
+  const parent = run.parents[run.parents.length - 1];
   run.path.add(id);
+  run.parents.push({ id: node.id, type: node.type, props });
   let slots: Record<SlotName, ReactNode>;
   try {
     slots = renderSlots(node, def, props, run);
   } finally {
+    run.parents.pop();
     run.path.delete(id);
   }
 
@@ -163,7 +166,7 @@ export function renderNode(id: NodeId, run: RenderRun): ReactNode {
     root,
     slots,
     ...(slots['default'] !== undefined ? { children: slots['default'] } : {}),
-    node: { id: node.id, type: node.type },
+    node: { id: node.id, type: node.type, ...(parent !== undefined ? { parent } : {}) },
     env: run.env,
     ...(def.meta.runtime === 'shared' ? { platform: options.platform } : {}),
   };

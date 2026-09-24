@@ -1,0 +1,52 @@
+@layer buildr.components {
+  .bc-accordion-item {
+    border-block-end: 1px solid var(--b-color-border);
+  }
+  .bc-accordion-item:last-child {
+    border-block-end: 0;
+  }
+
+  .bc-accordion-item__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--b-space-4);
+    padding: var(--b-space-4);
+    font-weight: var(--b-font-weight-semibold);
+    cursor: pointer;
+    list-style: none;
+  }
+  .bc-accordion-item__summary::-webkit-details-marker {
+    display: none;
+  }
+  .bc-accordion-item__summary::after {
+    content: "";
+    flex: none;
+    width: 0.5em;
+    height: 0.5em;
+    border: solid currentColor;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    transition: transform var(--b-transition-fast);
+  }
+  .bc-accordion-item[open] > .bc-accordion-item__summary::after {
+    transform: rotate(-135deg);
+  }
+  .bc-accordion-item__summary:focus-visible {
+    outline: 2px solid var(--b-color-focus);
+    outline-offset: -2px;
+  }
+
+  .bc-accordion-item__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--b-space-2);
+    padding: 0 var(--b-space-4) var(--b-space-4);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bc-accordion-item__summary::after {
+      transition: none;
+    }
+  }
+}

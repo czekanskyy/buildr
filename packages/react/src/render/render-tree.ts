@@ -31,6 +31,7 @@ export function renderTree(doc: BuilderDocument, options: RenderTreeOptions): Re
     },
     devChecks: options.devChecks ?? !inProduction(),
     path: new Set(),
+    parents: [],
     instance: [],
     report: (diagnostics: readonly Diagnostic[]) => {
       if (sink !== undefined) for (const d of diagnostics) sink.push(d);
