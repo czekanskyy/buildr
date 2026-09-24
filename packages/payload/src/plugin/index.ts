@@ -1,6 +1,7 @@
 import type { CollectionConfig, Config, Plugin } from 'payload';
+import { templatesCollection } from './collections/templates.ts';
 import { buildrEndpoints } from './endpoints/index.ts';
-import { buildrFields, RESERVED_FIELDS } from './fields.ts';
+import { buildrFields, RESERVED_FIELDS, TEMPLATES_COLLECTION } from './fields.ts';
 import { layoutHook } from './hooks/layout-hook.ts';
 import { type BuildrPluginOptions, resolveOptions } from './options.ts';
 import { writeGuard } from './write-guard.ts';
@@ -50,25 +51,36 @@ export function buildrPlugin(input: BuildrPluginOptions): Plugin {
         );
       }
     }
+    const targets = Object.entries(options.collections)
+      .filter(([, own]) => own.templates)
+      .map(([slug]) => slug);
+    if (targets.length > 0 && collections.some((c) => c.slug === TEMPLATES_COLLECTION)) {
+      throw new Error(
+        `buildrPlugin: the collection "${TEMPLATES_COLLECTION}" is added by the plugin and must not be defined`,
+      );
+    }
     return {
       ...config,
       endpoints: [...(config.endpoints ?? []), ...buildrEndpoints({ options })],
-      collections: collections.map((collection) => {
-        const own = options.collections[collection.slug];
-        if (own === undefined) return collection;
-        return {
-          ...collection,
-          fields: [
-            ...collection.fields,
-            ...buildrFields({
-              templates: own.templates,
-              editorRoute: options.routes.editor,
-              guard: writeGuard,
-              layoutHook: layoutHook(options),
-            }),
-          ],
-        };
-      }),
+      collections: [
+        ...collections.map((collection) => {
+          const own = options.collections[collection.slug];
+          if (own === undefined) return collection;
+          return {
+            ...collection,
+            fields: [
+              ...collection.fields,
+              ...buildrFields({
+                templates: own.templates,
+                editorRoute: options.routes.editor,
+                guard: writeGuard,
+                layoutHook: layoutHook(options),
+              }),
+            ],
+          };
+        }),
+        ...(targets.length === 0 ? [] : [templatesCollection({ resolved: options, targets })]),
+      ],
     };
   };
 }

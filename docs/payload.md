@@ -142,7 +142,7 @@ export interface MediaAsset { id: string; url: string; alt?: string; width?: num
 `buildrPlugin(options)` (`@buildr/payload/plugin`) validates its options with Zod at startup (every problem is listed in one error) and then, for each collection in `options.collections`:
 
 - checks that the collection exists, has `versions.drafts` enabled and does not already use the names `layout`, `buildrRevision` or `template`;
-- adds `layout` (`json`, admin component `@buildr/payload/admin#LayoutField`, receiving `editorRoute` as a client prop), the hidden read-only `buildrRevision` (default `0`) and, when `templates: true`, the `template` relationship to `buildr-templates` (the collection itself arrives with the templates task);
+- adds `layout` (`json`, admin component `@buildr/payload/admin#LayoutField`, receiving `editorRoute` as a client prop), the hidden read-only `buildrRevision` (default `0`) and, when `templates: true`, the `template` relationship to `buildr-templates` (the collection is added by the plugin, see "Templates and resolveLayout");
 - guards `layout` and `buildrRevision` with the **write-guard**: on `update`, the incoming value is used only when `req.context.buildrWrite === true` (`BUILDR_WRITE`); otherwise the stored value (`originalDoc`, which Payload sets to the latest draft when drafts are on) is kept. Creating a document accepts the value as sent.
 
 `LayoutField` shows the number of elements in the stored layout and the "Edit with Visual Builder" button. The button is disabled until the document has an id, and opens `{editor route}/{collection}/{id}` with `window.open(url, 'buildr-{collection}-{id}')`, so repeat clicks reuse the same window. The presentational `LayoutFieldView` has no Payload UI import, which keeps it testable; `LayoutField` loads the Payload-UI-connected component lazily, so the entry point still imports in plain Node (the Payload CLI, the smoke test).
@@ -226,3 +226,33 @@ Both need `edit`, the `media.collection` option and the caller's own access on t
 - **Session and locales**: the session is fetched once and cached (until it fails); `GET /buildr/session` now also sends `locales` when Payload localization is configured. `getContext` uses `options.locale()` (else the default language) and `options.timeZone` (else the browser's) to complete the `DataContext`.
 - **Media**: `media.search` maps `mimeTypes` (when all share one type) to `type`, the cursor is the page number; `media.upload(file, alt)` posts multipart and rejects with the server's reason on `422` (no `alt`).
 - `@buildr/editor` is an optional peer used for types only.
+
+## Templates and `resolveLayout` (PB-101)
+
+When at least one collection is configured with `templates: true`, the plugin adds the `buildr-templates` collection (drafts with autosave, up to 50 versions per template). Defining a collection with that slug yourself is an error.
+
+| Field | Meaning |
+|---|---|
+| `title` | Required. |
+| `targetCollection` | Required. One of the collections that take templates. |
+| `isDefault` | The collection's default template. At most one per `targetCollection`: saving a second default is rejected with a validation error on `isDefault` (unmark the other one first). |
+| `layout` | JSON. Validated and normalised like a document's layout (an invalid layout never reaches the database). |
+
+Access: anyone signed in reads templates, visitors read the published ones (a rendered page needs its template); create, update and delete need the builder's `edit` permission.
+
+### Resolution order
+
+`resolveLayout({ payload, req?, collection, doc, contextName, draft?, overrideAccess? })` (exported from `@buildr/payload/data`) returns `{ layout, source, layoutRef }`, taking the first that has content (a root with at least one child):
+
+1. `document`: the document's own `layout`.
+2. `template`: the template the document points at (`doc.template`). A template of another collection is never used.
+3. `default-template`: the collection's `isDefault` template.
+4. `builtin`: a minimal layout, a level-1 heading bound to `{contextName}.title` and a rich text bound to `{contextName}.content`. It belongs to no document, so `layoutRef` is `null`.
+
+Unless `draft` is set, only published templates count; access applies as for `req` (no `req` reads as a visitor, `overrideAccess: true` is for trusted server-side rendering). `layoutRef` is `{collection}:{id}`, the form the renderer and cache tags use.
+
+### In the editor
+
+`GET /buildr/documents/:collection/:id` adds `layoutSource` and `layoutRef` to the response. A document that inherits is opened with the template's layout as `document`, so saving writes it as an own layout ("create an own layout"). For `builtin` the canvas stays blank: the built-in layout is only a render fallback.
+
+Editing a template in the builder is not part of this task: for now the layout of a template is a validated JSON field.

@@ -13,18 +13,13 @@ const pages: CollectionConfig = {
   fields: [{ name: 'title', type: 'text' }],
   versions: { drafts: { autosave: true } },
 };
-const templates: CollectionConfig = {
-  slug: 'buildr-templates',
-  fields: [{ name: 'title', type: 'text' }],
-};
-
 const layoutOf = (name: string) => ({
   ...createEmptyDocument(),
   nodes: { root: { id: 'root', type: 'buildr/page', name } },
 });
 
 let dir: string;
-const configOf = (options: Parameters<typeof buildrPlugin>[0], collections = [pages, templates]) =>
+const configOf = (options: Parameters<typeof buildrPlugin>[0], collections = [pages]) =>
   buildConfig({
     secret: 'test-secret',
     collections,
@@ -60,7 +55,9 @@ describe('buildrPlugin', () => {
     expect(names('pages')).toEqual(
       expect.arrayContaining(['layout', 'buildrRevision', 'template']),
     );
-    expect(names('buildr-templates')).not.toContain('layout');
+    expect(names('buildr-templates')).toEqual(
+      expect.arrayContaining(['title', 'targetCollection', 'isDefault', 'layout']),
+    );
     const layout = config.collections[0]?.fields.find(
       (field) => (field as { name?: string }).name === 'layout',
     ) as { admin?: { components?: { Field?: { path: string; clientProps: unknown } } } };
@@ -74,6 +71,19 @@ describe('buildrPlugin', () => {
     const config = await configOf({ collections: { pages: { context: 'page' } } });
     const names = config.collections[0]?.fields.map((field) => (field as { name?: string }).name);
     expect(names).not.toContain('template');
+  });
+
+  it('adds buildr-templates only when a collection takes templates, and never twice', async () => {
+    const without = await configOf({ collections: { pages: { context: 'page' } } });
+    expect(without.collections.map((collection) => collection.slug)).not.toContain(
+      'buildr-templates',
+    );
+    await expect(
+      configOf({ collections: { pages: { context: 'page', templates: true } } }, [
+        pages,
+        { slug: 'buildr-templates', fields: [] },
+      ]),
+    ).rejects.toThrow(/added by the plugin/);
   });
 
   it('rejects bad options, listing each problem', () => {
