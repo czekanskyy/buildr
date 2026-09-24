@@ -106,3 +106,16 @@ describe('PreviewBanner', () => {
     expect(html).toContain('href="/buildr/preview/exit?path=%2Fa%20b"');
   });
 });
+
+describe('createPreviewRoute with locales', () => {
+  it('puts the requested language in front of the path', async () => {
+    const GET = createPreviewRoute({ authorize: () => true, locales: ['pl', 'en'] });
+    expect((await GET(request('?path=/about&locale=en'))).headers.get('Location')).toBe(
+      '/en/about',
+    );
+    expect((await GET(request('?path=/pl/about&locale=en'))).headers.get('Location')).toBe(
+      '/pl/about',
+    );
+    expect((await GET(request('?path=/about&locale=xx'))).headers.get('Location')).toBe('/about');
+  });
+});

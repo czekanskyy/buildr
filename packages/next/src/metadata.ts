@@ -24,6 +24,8 @@ export interface BuildrMetadataEntry {
 
 export interface BuildrMetadataDefaults {
   readonly siteName?: string;
+  /** With `alternates`: the language whose path also answers `x-default` in hreflang. */
+  readonly defaultLocale?: string;
   readonly description?: string;
   readonly image?: string;
   /** `%s` is replaced by the page title: `"%s | Site"`. */
@@ -78,7 +80,9 @@ export function buildrMetadata(
   if (canonical !== undefined || (languages !== undefined && Object.keys(languages).length > 0)) {
     out.alternates = {
       ...(canonical === undefined ? {} : { canonical }),
-      ...(languages === undefined ? {} : { languages: { ...languages } }),
+      ...(languages === undefined
+        ? {}
+        : { languages: withXDefault(languages, defaults.defaultLocale) }),
     };
   }
   out.openGraph = {
@@ -89,4 +93,12 @@ export function buildrMetadata(
     ...(image === undefined ? {} : { images: [image] }),
   };
   return out;
+}
+
+function withXDefault(
+  languages: Readonly<Record<string, string>>,
+  defaultLocale: string | undefined,
+): Record<string, string> {
+  const fallback = defaultLocale === undefined ? undefined : languages[defaultLocale];
+  return { ...languages, ...(fallback === undefined ? {} : { 'x-default': fallback }) };
 }
