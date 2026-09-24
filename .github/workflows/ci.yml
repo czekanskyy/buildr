@@ -41,7 +41,7 @@ jobs:
           fetch-depth: 0
       - uses: ./.github/actions/setup
       - name: Test
-        run: pnpm test ${{ github.event_name == 'pull_request' && '--affected' || '' }}
+        run: pnpm test --concurrency=2 ${{ github.event_name == 'pull_request' && '--affected' || '' }}
 
   build:
     name: Build
