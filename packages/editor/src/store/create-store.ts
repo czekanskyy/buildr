@@ -267,7 +267,7 @@ export function createEditorStore(options: EditorStoreOptions): EditorStore {
       announce({ kind: 'set', doc, version });
     },
 
-    markSaved: () => api.setState({ savedCursorId: history.cursorId }),
+    markSaved: (cursorId) => api.setState({ savedCursorId: cursorId ?? history.cursorId }),
     select: (id, selectOptions) =>
       api.setState((state) =>
         Object.hasOwn(state.doc.nodes, id)

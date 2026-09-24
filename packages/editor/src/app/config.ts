@@ -1,4 +1,7 @@
 import type { RegistryManifest } from '@buildr/core';
+import type { DocumentAdapter, DocumentRef } from '../persistence/types.ts';
+
+export type { DocumentRef };
 
 /** One canvas width the toolbar offers (PB-083). */
 export interface BreakpointConfig {
@@ -48,18 +51,12 @@ export function resolveConfig(config: EditorConfig = {}): ResolvedEditorConfig {
   };
 }
 
-/** Which document the editor opens: a collection and an id in the host's backend. */
-export interface DocumentRef {
-  readonly collection: string;
-  readonly id: string | number;
-}
-
 export interface BuilderEditorProps {
   /**
    * Loads, saves and publishes the document (`DocumentAdapter`, PB-087). The shell does not use it
    * yet; it is part of the mount API so hosts do not change when the panels arrive.
    */
-  readonly adapter: object;
+  readonly adapter: DocumentAdapter;
   /** What the palette, the inspector and the rules know about the components (`toManifest`). */
   readonly manifest: RegistryManifest;
   /** The canvas route the iframe loads (`@buildr/react/canvas` runs there). */

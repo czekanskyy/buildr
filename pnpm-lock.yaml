@@ -193,6 +193,9 @@ importers:
       lexical:
         specifier: ^0.51.0
         version: 0.51.0(typescript@7.0.2)
+      zod:
+        specifier: ^4.6.5
+        version: 4.6.5
       zustand:
         specifier: ^5.0.15
         version: 5.0.15(@types/react@19.3.0)(immer@11.1.18)(react@19.3.0)

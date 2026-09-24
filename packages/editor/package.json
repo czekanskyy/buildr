@@ -48,6 +48,7 @@
     "@radix-ui/react-toggle": "^1.1.18",
     "@radix-ui/react-tooltip": "^1.2.16",
     "lexical": "^0.51.0",
+    "zod": "^4.6.5",
     "zustand": "^5.0.15"
   },
   "peerDependencies": {
