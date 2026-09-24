@@ -1085,3 +1085,31 @@
   width: 100%;
   border: 0;
 }
+
+/* The composed editor (EditorApp) */
+.buildr-editor .bd-app-canvas {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.buildr-editor .bd-app-canvas > .bd-canvas-host {
+  flex: 1;
+  min-height: 0;
+}
+.buildr-editor .bd-app-status {
+  margin: 0;
+  padding: 24px;
+  color: var(--bd-text-muted, inherit);
+}
+.buildr-editor .bd-app-notice {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--bd-surface-1, #fff);
+  border: 1px solid var(--bd-border, #ccc);
+}

@@ -232,6 +232,8 @@ export const pl: Messages = {
   'preview.frame': 'Strona tak, jak widzą ją odwiedzający',
   'preview.unsaved': 'Nie udało się zapisać ostatnich zmian, więc podgląd byłby nieaktualny.',
   'preview.unsafe': 'Adres podglądu nie jest adresem internetowym.',
+  'app.loading': 'Wczytywanie edytora…',
+  'app.error': 'Nie udało się otworzyć dokumentu.',
   'layers.title': 'Warstwy',
   'layers.empty': 'Brak warstw.',
   'layers.rename': 'Nazwa warstwy',

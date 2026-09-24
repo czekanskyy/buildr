@@ -34,6 +34,9 @@ importers:
 
   apps/playground:
     dependencies:
+      '@buildr/components':
+        specifier: workspace:*
+        version: link:../../packages/components
       '@buildr/core':
         specifier: workspace:*
         version: link:../../packages/core

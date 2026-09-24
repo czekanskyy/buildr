@@ -12,6 +12,8 @@ export type {
   ResolvedEditorConfig,
 } from './app/config.ts';
 export { DEFAULT_BREAKPOINTS, resolveConfig } from './app/config.ts';
+export type { EditorAppProps } from './app/editor-app.tsx';
+export { EditorApp } from './app/editor-app.tsx';
 export type { EditorLayoutProps } from './app/layout.tsx';
 export { EditorLayout } from './app/layout.tsx';
 export { ManifestProvider, useManifest } from './app/manifest.tsx';

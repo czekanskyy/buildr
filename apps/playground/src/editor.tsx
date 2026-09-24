@@ -1,39 +1,25 @@
 import { toManifest } from '@buildr/core';
-import { BuilderEditor, type DocumentAdapter } from '@buildr/editor';
+import { EditorApp } from '@buildr/editor';
 import '@buildr/editor/styles.css';
-import { demoRegistry } from '@buildr/test-utils/demo/components';
 import { useMemo } from 'react';
+import { createMemoryAdapter, PLAYGROUND_LOCALES } from './memory-adapter.ts';
+import { registry } from './registry.ts';
 
-/** A placeholder until the playground gets its in-memory backend (PB-092): nothing is stored. */
-const adapter: DocumentAdapter = {
-  getSession: async () => ({ canEdit: true, canPublish: false }),
-  load: () => Promise.reject(new Error('the playground has no backend yet')),
-  save: async (_ref, { baseRevision }) => ({
-    ok: true,
-    revision: baseRevision + 1,
-    updatedAt: new Date().toISOString(),
-  }),
-  publish: async (_ref, { baseRevision }) => ({
-    ok: true,
-    revision: baseRevision + 1,
-    updatedAt: new Date().toISOString(),
-  }),
-  getDataSchema: async () => ({ scopes: {}, entities: {} }),
-  getContext: () => Promise.reject(new Error('the playground has no data context yet')),
-  media: { search: async () => ({ items: [] }) },
-  previewUrl: () => '/',
-};
+const documentRef = { collection: 'pages', id: 'playground' };
 
-/** The editor shell in the playground (`/editor`); the panels arrive with the editor tasks (PB-074 onwards). */
+/** `/`: the full editor, backed by `localStorage`. */
 export function EditorPage() {
-  const manifest = useMemo(() => toManifest(demoRegistry.meta), []);
+  const manifest = useMemo(() => toManifest(registry.meta), []);
+  const adapter = useMemo(() => createMemoryAdapter(), []);
   return (
     <div style={{ height: '100vh' }}>
-      <BuilderEditor
+      <EditorApp
         adapter={adapter}
         manifest={manifest}
+        registry={registry.meta}
         canvasUrl="/canvas"
-        documentRef={{ collection: 'pages', id: 'playground' }}
+        documentRef={documentRef}
+        locales={PLAYGROUND_LOCALES as never}
       />
     </div>
   );
