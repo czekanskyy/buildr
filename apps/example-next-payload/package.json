@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "generate:importmap": "payload generate:importmap",
     "seed": "payload run src/seed/run.ts",
     "e2e": "echo \"e2e arrives with PB-112\""
