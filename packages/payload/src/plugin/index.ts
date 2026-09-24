@@ -1,4 +1,5 @@
 import type { CollectionConfig, Config, Plugin } from 'payload';
+import { buildrEndpoints } from './endpoints/index.ts';
 import { buildrFields, RESERVED_FIELDS } from './fields.ts';
 import { layoutHook } from './hooks/layout-hook.ts';
 import { type BuildrPluginOptions, resolveOptions } from './options.ts';
@@ -51,6 +52,7 @@ export function buildrPlugin(input: BuildrPluginOptions): Plugin {
     }
     return {
       ...config,
+      endpoints: [...(config.endpoints ?? []), ...buildrEndpoints({ options })],
       collections: collections.map((collection) => {
         const own = options.collections[collection.slug];
         if (own === undefined) return collection;
