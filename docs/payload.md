@@ -136,3 +136,15 @@ export interface MediaAsset { id: string; url: string; alt?: string; width?: num
 
 - `previewUrl(ref)` returns `/buildr/preview?collection=posts&id=123`. Its route handler (`@buildr/next/draft`) checks the user, enables `draftMode()`, and redirects to `path(doc)` (relative paths only, preventing open redirect).
 - `@buildr/payload/next`'s `revalidateHooks()` wires `afterChange` (on publish, or a change to an already-published document) and `afterDelete` to call `revalidateTag` for `buildr:doc:{collection}:{id}`, `buildr:col:{collection}`; a global change triggers `buildr:global:{slug}`; a template change triggers `buildr:template:{id}` plus `buildr:col:{targetCollection}`.
+
+## The plugin scaffold (PB-093)
+
+`buildrPlugin(options)` (`@buildr/payload/plugin`) validates its options with Zod at startup (every problem is listed in one error) and then, for each collection in `options.collections`:
+
+- checks that the collection exists, has `versions.drafts` enabled and does not already use the names `layout`, `buildrRevision` or `template`;
+- adds `layout` (`json`, admin component `@buildr/payload/admin#LayoutField`, receiving `editorRoute` as a client prop), the hidden read-only `buildrRevision` (default `0`) and, when `templates: true`, the `template` relationship to `buildr-templates` (the collection itself arrives with the templates task);
+- guards `layout` and `buildrRevision` with the **write-guard**: on `update`, the incoming value is used only when `req.context.buildrWrite === true` (`BUILDR_WRITE`); otherwise the stored value (`originalDoc`, which Payload sets to the latest draft when drafts are on) is kept. Creating a document accepts the value as sent.
+
+`LayoutField` shows the number of elements in the stored layout and the "Edit with Visual Builder" button. The button is disabled until the document has an id, and opens `{editor route}/{collection}/{id}` with `window.open(url, 'buildr-{collection}-{id}')`, so repeat clicks reuse the same window. The presentational `LayoutFieldView` has no Payload UI import, which keeps it testable; `LayoutField` loads the Payload-UI-connected component lazily, so the entry point still imports in plain Node (the Payload CLI, the smoke test).
+
+Tests run Payload's Local API on SQLite. Payload pushes the schema through drizzle-kit state shared by the whole process, so a test file can hold only one live Payload instance; structural checks use `buildConfig` without connecting.
