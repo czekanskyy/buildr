@@ -320,6 +320,19 @@ describe('limit', () => {
     expect(nameOf(e)).toBe('b');
   });
 
+  it('gives the floor of a trimmed history its own cursor id (found by the property test)', () => {
+    const e = editor({ limit: 2 });
+    const start = e.history.cursorId;
+    for (const name of ['a', 'b', 'c']) {
+      e.tick(5_000);
+      e.dispatch(rename(A, name));
+    }
+    while (e.undo());
+    // The oldest step was dropped, so the document at the floor is not the one the start id named.
+    expect(nameOf(e)).toBe('a');
+    expect(e.history.cursorId).not.toBe(start);
+  });
+
   it('defaults to 200', () => {
     const e = editor();
     for (let i = 0; i < 250; i++) {

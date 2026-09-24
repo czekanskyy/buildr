@@ -4,6 +4,7 @@
 
 export * from './a11y/index.ts';
 export * from './data/index.ts';
+export * from './dnd/index.ts';
 export * from './document/index.ts';
 export * from './expressions/index.ts';
 export * from './ids/index.ts';
