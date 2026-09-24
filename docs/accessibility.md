@@ -40,3 +40,38 @@ export function runA11y(doc, registry, opts): A11yIssue[];
 **Where it runs**: live in the editor (debounced 300ms, Issues panel, clicking an issue selects the node, an optional `fix` command auto-resolves it where the fix is unambiguous); in Payload's publish hook (`publishPolicy: 'warn' | 'block'`, default `warn`); in CI against seeds and fixtures. `@axe-core/playwright` complements this in end-to-end tests against the real rendered DOM — the static validator catches issues at edit time, before anything ships.
 
 **Editor accessibility itself**: the layers panel is an ARIA tree navigable by keyboard, inspector controls are properly labeled, UI primitives come from Radix, and nodes can be reordered by keyboard (Alt+Up/Down). Target: WCAG 2.2 AA for the editor UI by v1.0.
+
+## Using the validator (`runA11y`)
+
+```ts
+const issues = runA11y(doc, registry, {
+  config: { expectH1: 'layout', disabledRules: [] },   // both optional
+  locales,                                              // LocaleConfig; without it only one language exists
+});
+```
+
+Issues come back in render order, then rule order. Never throws for bad data; a rule that throws is reported as an `a11y-internal` warning on the root so the other rules still run.
+
+**Values bound to data are not judged.** The validator has no visitor's data, so a prop that is a binding or an expression is treated as unknown and rules skip it. That is what keeps false positives out; the axe run against real DOM covers the rest.
+
+**Languages.** Rules marked `perLocale` (`image-alt`, `empty-heading`, `button-name`, `link-name`, `link-href`, `form-label`, `landmark-unique`, `accordion-structure`, `missing-translation`) run once per language in `locales.locales` and set `issue.locale`. A localizable prop with no translation counts as its default-language text when `fallback` is on, and as empty when it is off. `missing-translation` (info) lists text-bearing localizable props (`text`, `textarea`, `richText`) of the default language with no translation for a language; URLs, media and bindings are not reported. Mark semantic props (`as`, `type`) `localizable: false` so they are not listed.
+
+**`expectH1`.** `'layout'` (default): the page layout renders the H1, so the document starts at level 2 and any H1 inside it is a warning (with a fix to level 2). `'document'`: the document must contain exactly one H1.
+
+**Conventions the MVP rules read.** The rules are keyed on component types and prop names, and skip anything the component does not declare:
+
+| Rule | Component / props |
+|---|---|
+| `image-alt` | `buildr/image`: `alt`, `decorative`. Only an alt that was *explicitly* set to empty is flagged; an unset alt falls back to the media asset's own |
+| `heading-order`, `empty-heading` | `buildr/heading`: `level` (number), `text` |
+| `button-name`, `link-name` | `buildr/button`, `buildr/link`: `label`, `ariaLabel` (children also count as a name) |
+| `link-href`, `new-tab-link` | `buildr/link`: `href`, `newTab` |
+| `form-label` | `buildr/input/textarea/select/checkbox`, or any component with `formField`: `label`, `ariaLabel` |
+| `form-submit` | `buildr/form` with no descendant `buildr/button` whose `type` is not `button`/`reset` (no `type` prop means submit) |
+| `nested-interactive` | any component with the `interactive` content category |
+| `duplicate-anchor` | `node.anchor` |
+| `list-structure` | `buildr/list` children must be `buildr/list-item` (or a `buildr/loop`) |
+| `landmark-unique` | components with `a11y.landmark`; the element comes from an `as` prop or `a11y.element` |
+| `accordion-structure` | `buildr/accordion-item`: `summary` |
+
+A component can also opt into a custom rule by listing its id in `a11y.rules`; `ctx.nodesFor(rule)` returns those nodes together with the rule's `appliesTo` types. Sample-data resolution (`ctx.resolve` in the sketch above) is not implemented yet: dynamic values stay unknown.
