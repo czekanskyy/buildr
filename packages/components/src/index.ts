@@ -11,6 +11,8 @@ export {
   ICON_POSITIONS,
 } from './button/definition.ts';
 export { buttonFixtures } from './button/fixtures.ts';
+export { CARD_ELEMENTS, CARD_VARIANTS, Card } from './card/definition.ts';
+export { cardFixtures } from './card/fixtures.ts';
 export { CONTAINER_WIDTHS, Container } from './container/definition.ts';
 export { containerFixtures } from './container/fixtures.ts';
 export { Divider } from './divider/definition.ts';
