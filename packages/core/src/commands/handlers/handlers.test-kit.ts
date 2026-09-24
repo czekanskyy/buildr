@@ -26,6 +26,7 @@ export const registry = createRegistryMeta({
   components: [
     component('buildr/page', { capabilities: { root: true }, slots: { default: {} } }),
     component('buildr/section', { slots: { default: {} } }),
+    component('buildr/list', { slots: { default: { min: 1 } } }),
     component('buildr/pair', { slots: { default: { max: 2 } } }),
     component('buildr/text', { contentCategories: ['flow', 'phrasing'] }),
     component('buildr/sticky', { capabilities: { removable: false } }),

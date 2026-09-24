@@ -75,3 +75,7 @@ Payload `{ parentId, slot, index, fragment }`; the fragment is always a `Builder
 - `canInsert` for every root: slot `allow`/`deny`/`max`, the component's own parent rules, the content model, `insertable`/`root`, structural locks and the index range. Its `Reason` message is passed through as the error `message`.
 
 A fragment whose ids collide with nodes already in the document (a second paste) is given fresh ids from the injected `generateId`; otherwise its ids are kept. `doc.components` gains the fragment's versions, and the inserted roots become the selection.
+
+## `node.remove` details
+
+Payload `{ ids }`. A node listed together with one of its ancestors is redundant, not an error. Each top-level node must pass `canRemove` (root, `removable`, structural locks, slot `min`); siblings removed together are also checked together against the slot's `min`. Whole subtrees leave `doc.nodes` (no orphans); `doc.components` keeps its version entries. The selection moves to the neighbour that takes the first removed node's place (next sibling, else previous), else to the parent. `HandlerEnv.doc` gives `apply` the pre-command document.
