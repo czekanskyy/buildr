@@ -1,6 +1,14 @@
 // Public entry point of @buildr/components: component definitions, createDefaultRegistry,
 // defaultTheme, templates. Populated by docs/backlog/phase-07-components.md.
 
+export {
+  BUTTON_SIZES,
+  BUTTON_TYPES,
+  BUTTON_VARIANTS,
+  Button,
+  ICON_POSITIONS,
+} from './button/definition.ts';
+export { buttonFixtures } from './button/fixtures.ts';
 export { CONTAINER_WIDTHS, Container } from './container/definition.ts';
 export { containerFixtures } from './container/fixtures.ts';
 export type { ComponentFixture } from './fixtures.ts';
@@ -11,6 +19,10 @@ export { HEADING_LEVELS, Heading } from './heading/definition.ts';
 export { headingFixtures } from './heading/fixtures.ts';
 export type { IconName, IconNode, IconProps, IconShape } from './icons/index.ts';
 export { hasIcon, ICON_NAMES, ICON_NODES, Icon } from './icons/index.ts';
+export { Link } from './link/definition.ts';
+export { linkFixtures } from './link/fixtures.ts';
+export type { MessageKey } from './messages/index.ts';
+export { BUILT_IN_MESSAGES, message } from './messages/index.ts';
 export { Page } from './page/definition.ts';
 export { pageFixtures } from './page/fixtures.ts';
 export { RichText } from './rich-text/definition.ts';

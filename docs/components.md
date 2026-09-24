@@ -64,6 +64,18 @@ A paragraph. Props: `text` (multi-line, bindable, localizable; line breaks are k
 
 Formatted content from a `richText` prop (`content`, bindable, localizable): headings, paragraphs, lists, quotes, links, and bold/italic/strikethrough/underline/code/sub/superscript. Rendered by `renderRichText` from `@buildr/react`, so it is an allowlist walker with sanitized links (through `platform.Link`), never HTML. A bound plain string arrives as one paragraph (core coerces it). Its typography is scoped CSS (`.bc-rich-text :where(h2, p, ul, …)`), all from tokens; it does not affect the rest of the page. This is what the PostContent template uses.
 
+### Button (`buildr/button`)
+
+An action or a call to action. Props: `label` (bindable), `href` (bindable link), `type` (`button` or `submit`), `variant` (`primary`, `secondary`, `outline`, `ghost`), `size` (`sm`, `md`, `lg`), `icon` (a name from `ICON_NAMES`), `iconPosition` (`start`, `end`), `ariaLabel`, `newTab`. With a `href` it renders a link through `platform.Link` (the default platform and the Next.js one both work, since it only needs an `<a>`-like component); without one, a real `<button>`. A URL that fails sanitization (`javascript:`, `data:`, …) is dropped when the prop is resolved, so the component falls back to a plain button; it never renders an unsafe `href`. An icon-only button (`label` empty) must have an `ariaLabel`: the `button-name` a11y rule reports it otherwise. The icon is decorative.
+
+### Link (`buildr/link`)
+
+A text link: `label`, `href` (default `#`; an unsafe URL resolves to the default), `ariaLabel`, `newTab`.
+
+**New tab.** `newTab` adds `target="_blank"` and `rel="noopener noreferrer"`, and tells assistive technology: a visually hidden ` (opens in a new tab)` after the text, or, when `ariaLabel` replaces the text, the same notice appended to the name. The notice is a built-in message (`link.newTab`, in `BUILT_IN_MESSAGES` for `en` and `pl`); a site's own `messages` (passed to the renderer) win over it.
+
+Both are `interactive` content, so the content-model and `nested-interactive` rules keep other interactive content out of them; both are inline-editable through `label`.
+
 Fixtures: each component exports `<name>Fixtures` (`ComponentFixture`: an id, a title and a subtree that goes under the page), reviewed at `FIXTURE_WIDTHS` (1280, 768, 375). Tablet and mobile overrides live in the fixture's `styles.bp`.
 
 ## Form field derivation
