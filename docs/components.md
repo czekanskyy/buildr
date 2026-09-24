@@ -100,6 +100,10 @@ A boxed piece of content. Slots: `media` (one media item), `body` (flow content)
 
 **Stretched link.** With a `href` the card contains one real anchor (`.bc-card__link`), empty apart from its name (`linkLabel`, plus a hidden new-tab notice), whose `::after` covers the card. The card's own content is never inside the link, so a Button or Link in `actions` (raised with `z-index: 1`) does not nest interactive elements; the `nested-interactive` rule stays quiet. An unsafe URL drops the link. Give a linked card a `linkLabel`; it is the link's accessible name.
 
+### Accordion (`buildr/accordion`) and AccordionItem (`buildr/accordion-item`)
+
+Expandable sections built on native `<details>`/`<summary>`: no JavaScript, and the browser supplies the keyboard behaviour (Enter or Space on the summary) and the semantics. **Accordion**: `allowMultiple` (default on). Off, every item gets the same `name` (derived from the accordion's node id, so two accordions never share a group) and opening one closes the others; a browser without `name` support on `details` degrades to independent items. Its slot accepts only accordion items (or a Loop; items a Loop produces are not exclusive, since their parent is the Loop). A new accordion comes with three items. **AccordionItem**: `summary` (bindable, required by the `accordion-structure` rule), `defaultOpen`, and a content slot; inline-editable through `summary`, `editor.revealOnSelect` (the editor opens the item when it is selected), not insertable on its own.
+
 Fixtures: each component exports `<name>Fixtures` (`ComponentFixture`: an id, a title and a subtree that goes under the page), reviewed at `FIXTURE_WIDTHS` (1280, 768, 375). Tablet and mobile overrides live in the fixture's `styles.bp`.
 
 ## Form field derivation

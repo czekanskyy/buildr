@@ -1,6 +1,10 @@
 // Public entry point of @buildr/components: component definitions, createDefaultRegistry,
 // defaultTheme, templates. Populated by docs/backlog/phase-07-components.md.
 
+export { Accordion } from './accordion/definition.ts';
+export { accordionFixtures } from './accordion/fixtures.ts';
+export { AccordionItem } from './accordion-item/definition.ts';
+export { accordionItemFixtures } from './accordion-item/fixtures.ts';
 export { BADGE_VARIANTS, Badge } from './badge/definition.ts';
 export { badgeFixtures } from './badge/fixtures.ts';
 export {

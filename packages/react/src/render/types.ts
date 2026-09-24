@@ -10,7 +10,7 @@ import type {
 } from '@buildr/core';
 import type { FunctionComponent, ReactNode } from 'react';
 import type { ReactRegistry } from '../define/registry.ts';
-import type { ComponentEnv, NodeRoot, Platform } from '../define/types.ts';
+import type { ComponentEnv, NodeParent, NodeRoot, Platform } from '../define/types.ts';
 
 /**
  * The hooks the canvas plugs into the one shared renderer (ADR-008). Everything here changes what
@@ -60,6 +60,8 @@ export interface RenderRun {
   readonly devChecks: boolean;
   /** The nodes between the root and the one being rendered, to stop a cyclic document. */
   readonly path: Set<NodeId>;
+  /** The containers of the node being rendered, outermost first (its last entry is its parent). */
+  readonly parents: NodeParent[];
   /** The loop iteration indices this node is inside, outermost first; empty outside any loop. */
   readonly instance: readonly number[];
   report(diagnostics: readonly Diagnostic[]): void;

@@ -4,6 +4,7 @@ import type {
   ComponentMigrationContext,
   ComponentMigrationStep,
   DataContext,
+  JsonValue,
   LocaleCode,
   NodeId,
   PageNode,
@@ -46,6 +47,13 @@ export interface NodeRoot {
   readonly 'data-bi'?: number;
 }
 
+/** The container of a node, as a component sees it (`BuilderComponentProps.node.parent`). */
+export interface NodeParent {
+  readonly id: NodeId;
+  readonly type: BuilderComponentType;
+  readonly props: Readonly<Record<string, JsonValue>>;
+}
+
 export interface ComponentEnv {
   readonly mode: DataContext['mode'];
   readonly locale: LocaleCode;
@@ -66,7 +74,16 @@ export interface BuilderComponentProps<P extends PropSchema = PropSchema> {
   readonly slots: Readonly<Record<SlotName, ReactNode>>;
   /** Same as `slots.default`. */
   readonly children?: ReactNode;
-  readonly node: { readonly id: NodeId; readonly type: BuilderComponentType };
+  readonly node: {
+    readonly id: NodeId;
+    readonly type: BuilderComponentType;
+    /**
+     * The node whose slot this one is rendered into, with its resolved props: for a component that
+     * behaves according to its container (an accordion item's group, say). Absent for the root.
+     * A node rendered by a Loop has the Loop as its parent. Serializable, so client components get it too.
+     */
+    readonly parent?: NodeParent;
+  };
   readonly env: ComponentEnv;
   readonly platform?: Platform;
 }
