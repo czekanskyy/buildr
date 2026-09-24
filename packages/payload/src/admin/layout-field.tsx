@@ -1,23 +1,18 @@
 'use client';
-import { useDocumentInfo, useField } from '@payloadcms/ui';
-import { LayoutFieldView } from './layout-field-view.tsx';
+import { lazy, Suspense } from 'react';
 
-const countNodes = (value: unknown): number | undefined => {
-  if (typeof value !== 'object' || value === null) return undefined;
-  const nodes = (value as { nodes?: unknown }).nodes;
-  return typeof nodes === 'object' && nodes !== null ? Object.keys(nodes).length : undefined;
-};
+// Payload UI pulls in stylesheets, which a plain Node import (the Payload CLI, the entry-point
+// smoke test) cannot load; the bundler splits it out and only the admin ever renders it.
+const Connected = lazy(async () => {
+  const mod = await import('./layout-field-connected.tsx');
+  return { default: mod.ConnectedLayoutField };
+});
 
 /** The `layout` field of a collection with the plugin installed (referenced from the import map). */
 export function LayoutField(props: { readonly path: string; readonly editorRoute?: string }) {
-  const { value } = useField<unknown>({ path: props.path });
-  const info = useDocumentInfo();
   return (
-    <LayoutFieldView
-      nodeCount={countNodes(value)}
-      id={info.id}
-      collection={info.collectionSlug ?? ''}
-      editorRoute={props.editorRoute ?? '/buildr/edit'}
-    />
+    <Suspense fallback={null}>
+      <Connected {...props} />
+    </Suspense>
   );
 }
