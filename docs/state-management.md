@@ -16,6 +16,20 @@
 
 **Dirty state**: `dirty = history.cursorId !== persistence.savedCursorId`. Undoing back to the saved state correctly returns to "clean". Migrating a document on load does not itself set dirty — the save happens on the user's first actual change.
 
+## The store in code (`@buildr/editor`, PB-074)
+
+`createEditorStore({ doc, registry, ... })` returns a vanilla Zustand store (`getState`, `subscribe`) with these actions; there is no other way to change the document:
+
+- `dispatch(command, { label? })` runs `execute`, records the result in the history (`createHistory`; typing merges by the command's `mergeKey`), swaps the new document in and returns the `Result`. A failing command changes nothing. `dispatchBatch(commands)` is `executeBatch`: one undo step, all or nothing.
+- `transaction(label, fn)`: everything dispatched inside `fn` is one undo step. Returning `false`, or throwing, rolls it back (the inverse patches are applied). Transactions do not nest.
+- `undo()` / `redo()` apply the history's patches with `applyDocumentPatches` and restore the selection that went with the step.
+- `replaceDocument(doc)` loads another document and starts the history over.
+- `markSaved()` records `savedCursorId`; `selectIsDirty` is `cursorId !== savedCursorId`.
+- `onChange(listener)` hears every change: `{ kind: 'patch', from, to, patches }` (the very patches the canvas applies as `doc:patch`) or `{ kind: 'set', doc, version }`. `docVersion` goes up by one per change, undo and redo included.
+- A read-only store (`readOnly`) refuses every change with `editor.read-only`.
+
+**Derived state**: `selectIndex(state)` builds the parent index lazily and keeps it per document; `state.validation` (`validateDocument` + `runA11y`, tagged with the `docVersion` it describes) is recomputed 300 ms after the last change (`validateNow()` runs it at once; `validationDelayMs: null` turns it off). Selectors: `selectNode`, `selectChildren`, `selectSelectedNode`; in React `useNode(id)`, `useNodeChildren`, `useSelectedNode`, `useIsDirty` under `<EditorStoreProvider>`, each re-rendering only when its part changes (Immer keeps untouched nodes identical).
+
 ## Autosave (state machine)
 
 ```
