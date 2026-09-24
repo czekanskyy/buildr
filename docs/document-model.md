@@ -111,3 +111,20 @@ export interface TreeNode {
 `serializeDocument` is a stable stringify (sorted keys, no `undefined`/empty objects) used for content hashes (CSS cache, manifest hash, snapshot tests). Storage may reorder keys freely — that has no semantic meaning.
 
 There are **two independent version axes**: `schemaVersion` (the document shape, migrated in `core/migrations/document`) and `components[type]` (a component's prop schema, migrated alongside the component's own definition). Both are forward-only, pure and deterministic (see [`migrations.md`](migrations.md) and [ADR-014](adr/ADR-014-schema-migrations.md)).
+
+## Validation
+
+`validateDocument(input, { registry, theme?, locales?, dataSchema?, limits? })` (`@buildr/core`) checks a document that came from outside — the database, an import, a migration — and returns `{ ok, issues, doc }`. It never throws.
+
+Every issue is a `Diagnostic` with an extra `blocking` flag. `ok` is `false` only when something blocking was found; the rest is reported so the editor can show it and rendering can fall back.
+
+| Blocking (`ok: false`) | Not blocking |
+|---|---|
+| envelope, byte-size and structural limits (`parseDocument`) | `validation.unknown-component`, `validation.component-outdated` |
+| invariants (`document.*`) | `validation.unknown-slot`, `slot-min`, `slot-max`, and the placement reasons (`validation.slot-denied`, `parent-not-allowed`, `missing-required-ancestor`, …) |
+| `validation.component-version-ahead` (written by newer code) and `validation.missing-component-version` | `validation.unknown-prop`, `missing-required-prop`, `invalid-prop-value`, `invalid-value-shape`, `not-bindable`, `not-localizable` |
+| | `validation.unknown-locale` (warning) — an `l10n` key that is not in `LocaleConfig` |
+| | `validation.unknown-binding-path`, `expr.*` — bindings and expressions against `dataSchema` (skipped without one) |
+| | `style.*` — from the style compiler |
+
+Nesting uses the same `checkPlacement` as `canInsert`, so a document built only by commands never fails it. Expressions and bindings that read a Loop's `item`/`index`/`loop` are not checked against the schema unless the schema declares those scopes, since their type depends on the list being iterated.

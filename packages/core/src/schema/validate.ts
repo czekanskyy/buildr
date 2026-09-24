@@ -20,7 +20,7 @@ function asPropDef(def: PropDefBase): PropDef {
   return def as PropDef;
 }
 
-function schemaFor(def: PropDef): z.ZodType {
+function buildSchema(def: PropDef): z.ZodType {
   switch (def.kind) {
     case 'text':
       return textValueSchema(def);
@@ -57,10 +57,23 @@ function schemaFor(def: PropDef): z.ZodType {
   }
 }
 
+// A definition is immutable data, so its schema is derived once per object. A WeakMap keeps this
+// cache from being a global registry: entries live and die with the definitions themselves.
+const schemaCache = new WeakMap<object, z.ZodType>();
+
+function schemaFor(def: PropDef): z.ZodType {
+  let schema = schemaCache.get(def);
+  if (schema === undefined) {
+    schema = buildSchema(def);
+    schemaCache.set(def, schema);
+  }
+  return schema;
+}
+
 /**
  * Validates `value` against `def`'s own kind (docs/component-registry.md#props-dsl-p). The Zod
- * schema is derived from `def` fresh on every call, since a `PropDef` that round-tripped through
- * the JSON manifest (ADR-003) carries no live functions of its own.
+ * schema is derived from `def` (once per definition object), since a `PropDef` that round-tripped
+ * through the JSON manifest (ADR-003) carries no live functions of its own.
  */
 export function validatePropValue(def: PropDef, value: unknown): Result<unknown, Diagnostic> {
   const result = schemaFor(def).safeParse(value);
