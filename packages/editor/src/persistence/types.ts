@@ -74,7 +74,8 @@ export interface DocumentAdapter {
   save(ref: DocumentRef, request: SaveRequest): Promise<SaveResult>;
   publish(ref: DocumentRef, request: { readonly baseRevision: number }): Promise<PublishResult>;
   getDataSchema(ref: DocumentRef): Promise<DataSchema>;
-  getContext(ref: DocumentRef): Promise<DataContext>;
+  /** The data the page is shown with; `sampleId` (one of `listSamples`) picks the entry a template is previewed against. */
+  getContext(ref: DocumentRef, options?: { readonly sampleId?: string }): Promise<DataContext>;
   listSamples?(
     ref: DocumentRef,
   ): Promise<readonly { readonly id: string; readonly label: string }[]>;

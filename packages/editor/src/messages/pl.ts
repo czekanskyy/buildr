@@ -225,6 +225,8 @@ export const pl: Messages = {
   'media.choose': 'Wybierz plik',
   'media.replace': 'Zmień',
   'media.remove': 'Usuń',
+  'sample.label': 'Przykładowy wpis',
+  'sample.default': 'Wpis domyślny',
   'layers.title': 'Warstwy',
   'layers.empty': 'Brak warstw.',
   'layers.rename': 'Nazwa warstwy',
