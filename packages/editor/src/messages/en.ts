@@ -8,6 +8,16 @@ export const en = {
   'editor.leftPanel': 'Insert and layers',
   'editor.canvas': 'Canvas',
   'editor.inspector': 'Inspector',
+  'editor.canvas.connecting': 'Connecting to the canvas…',
+  'editor.canvas.frame': 'Page preview',
+  'editor.canvas.reload': 'Reload canvas',
+  'editor.canvas.error.timeout':
+    'The canvas did not answer. Check its URL, its Content-Security-Policy (frame-ancestors) and the origins it allows.',
+  'editor.canvas.error.manifest':
+    'The canvas was built with other components than the editor. Rebuild the canvas or reload the editor.',
+  'editor.canvas.error.protocol':
+    'The canvas and the editor are different versions. Update them together.',
+  'editor.canvas.error.canvas': 'The canvas stopped working.',
   'editor.issues': 'Issues',
   'editor.breadcrumbs': 'Selection path',
   'editor.issues.show': 'Show issues',
