@@ -1,7 +1,7 @@
 import type { BuilderDocument, Diagnostic } from '@buildr/core';
 import type { ReactNode } from 'react';
-import { renderNode } from './render-node.ts';
-import type { RenderRun, RenderTreeOptions } from './types.ts';
+import { renderChild, renderNode } from './render-node.ts';
+import type { RenderRun, RenderTreeOptions, ResumeState } from './types.ts';
 
 /** `process.env.NODE_ENV`, without requiring Node's types in a package that also runs in the browser. */
 function inProduction(): boolean {
@@ -38,5 +38,38 @@ export function renderTree(doc: BuilderDocument, options: RenderTreeOptions): Re
       if (sink !== undefined) for (const d of diagnostics) sink.push(d);
     },
   };
-  return renderNode(doc.root, run);
+  return renderChild(doc.root, run);
+}
+
+/**
+ * Renders one node on its own, from the state a lazy child was found in (docs/renderer.md, the
+ * canvas). The node's children come back as `instrument.lazyChild` elements, so nothing below it
+ * is walked; the node itself is not wrapped, since the caller is its view.
+ */
+export function renderNodeAt(
+  doc: BuilderDocument,
+  id: string,
+  resume: ResumeState,
+  options: RenderTreeOptions,
+): ReactNode {
+  const sink = options.diagnostics;
+  const scoped: RenderTreeOptions = { ...options, context: resume.context };
+  const run: RenderRun = {
+    doc,
+    options: scoped,
+    env: {
+      mode: scoped.context.mode,
+      locale: scoped.context.locale,
+      messages: scoped.messages ?? {},
+      ...(scoped.layoutRef !== undefined ? { layoutRef: scoped.layoutRef } : {}),
+    },
+    devChecks: scoped.devChecks ?? !inProduction(),
+    path: new Set(resume.path),
+    parents: [...resume.parents],
+    instance: resume.instance,
+    report: (diagnostics: readonly Diagnostic[]) => {
+      if (sink !== undefined) for (const d of diagnostics) sink.push(d);
+    },
+  };
+  return renderNode(id, run, true);
 }

@@ -28,7 +28,7 @@ const LOCALE = /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8}){0,3}$/;
 const PROP_NAME = /^[A-Za-z][A-Za-z0-9_]{0,63}$/;
 
 export const MAX_SELECTION = 1000;
-export const MAX_PATCHES = 20_000;
+export const MAX_PATCHES = 10_000;
 export const MAX_PATCH_PATH = 24;
 export const MAX_DIAGNOSTICS = 500;
 export const MAX_INLINE_TEXT = 20_000;
