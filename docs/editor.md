@@ -266,3 +266,14 @@ Messages are posted only to a concrete origin: the option values are validated a
 ## Drag and drop, editing features, state and commands
 
 See dedicated pages: [drag-and-drop.md](drag-and-drop.md), [state-management.md](state-management.md), [commands.md](commands.md).
+
+## Persistence (PB-087)
+
+`packages/editor/src/persistence`. The editor talks to its backend only through a `DocumentAdapter` (`getSession`, `load`, `save`, `publish`, `getDataSchema`, `getContext`, `listSamples?`, `media`, `previewUrl`, `cmsUrl?`); `@buildr/payload` implements it over the endpoints of [payload.md](payload.md#endpoints).
+
+- **Loading.** `loadDocument(adapter, ref)` fetches the session and the document together and validates the reply with a Zod schema and `parseDocument`; a malformed reply throws `LoadError`. A session without edit rights, or `readOnly` in the reply, gives `readOnly: true` (pass it to `replaceDocument` / the store).
+- **Save results are values.** `save` resolves `{ ok: true, revision, updatedAt }`, `{ ok: false, kind: 'conflict', currentRevision }` (HTTP 409) or `{ ok: false, kind: 'invalid', diagnostics }` (422); it rejects only when the adapter could not tell (network, 5xx). Every reply is checked with `saveResultSchema`; a malformed one counts as a failed save.
+- **The state machine.** `createPersistence({ store, adapter, ref, revision, debounceMs, maxWaitMs, clock? })` follows [state-management.md](state-management.md#autosave): `clean → dirty → saving → clean`. A save starts after `debounceMs` without a change or `maxWaitMs` after the first unsaved one. One save is in flight at a time; changes made meanwhile are saved by the next one (`markSaved(cursorId)` marks only the snapshot that was sent). Dirty is derived from the history cursor, so undoing back to the saved state is clean again. A read-only document never saves.
+- **Failures.** A network error sets `error` and retries after 2 s, 5 s, then every 15 s, staying dirty. A `422` is not retried (the same document cannot pass); the next change re-arms the autosave. A `409` sets `conflict` and stops all saving until the author chooses: `reload()` takes the backend's document (history starts again), `overwrite()` saves over it on the backend's revision.
+- **UI.** `<PersistenceProvider controller>` starts the controller, warns with `beforeunload` while there is unsaved work (dirty, saving, error or conflict), and shows the conflict dialog (which cannot be dismissed without choosing). `<SaveStatus />` is the toolbar's status line; `useSaveAction()` is the handler for `ShortcutProvider`'s `actions.save` (Ctrl+S, saves at once with `autosave: false`); `usePersistenceState(selector)` reads the state.
+- **Time is injected** (`Clock`), so the tests run the whole machine with fake timers against a fake adapter. There is no global state: a controller belongs to one store.

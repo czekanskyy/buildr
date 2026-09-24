@@ -116,8 +116,8 @@ export interface EditorStore extends StoreApi<EditorState> {
   redo(): Result<true, CommandError>;
   /** Loads another document; the history starts again. */
   replaceDocument(doc: BuilderDocument, options?: { readonly readOnly?: boolean }): void;
-  /** Says that the document as it is now is the saved one. */
-  markSaved(): void;
+  /** Says that the document as it is now (or as it was at `cursorId`, when saving took a while) is the saved one. */
+  markSaved(cursorId?: string): void;
   /** Selects a node: replaces the selection, toggles it (Ctrl/Cmd) or adds to it (Shift). */
   select(id: NodeId, options?: { readonly mode?: SelectMode; readonly instance?: string }): void;
   /** Replaces the selection; the last id becomes the anchor. */

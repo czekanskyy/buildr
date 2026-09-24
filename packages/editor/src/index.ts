@@ -19,6 +19,7 @@ export * from './canvas-host/index.ts';
 export type { MessageKey, Messages, Translate, UiLocale } from './messages/index.tsx';
 export { createTranslator, MessagesProvider, UI_LOCALES, useT } from './messages/index.tsx';
 export * from './panels/index.ts';
+export * from './persistence/index.ts';
 export * from './shortcuts/index.ts';
 export * from './store/index.ts';
 export * from './ui/index.ts';

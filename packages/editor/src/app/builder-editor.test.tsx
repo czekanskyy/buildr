@@ -20,7 +20,7 @@ const manifest = {
   templates: [],
 } as unknown as RegistryManifest;
 const props = (overrides: Partial<BuilderEditorProps> = {}): BuilderEditorProps => ({
-  adapter: {},
+  adapter: {} as unknown as BuilderEditorProps['adapter'],
   manifest,
   canvasUrl: '/buildr/canvas',
   documentRef: { collection: 'pages', id: '1' },

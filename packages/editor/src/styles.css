@@ -765,3 +765,23 @@
   border: 1px solid var(--bd-border, #ccc);
   border-radius: 3px;
 }
+
+.buildr-editor .bd-conflict-actions,
+.bd-conflict-actions {
+  display: flex;
+  gap: var(--bd-space-2, 8px);
+  justify-content: flex-end;
+}
+
+.buildr-editor .bd-save-status,
+.bd-save-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bd-space-2, 8px);
+  font-size: 12px;
+}
+
+.bd-save-status[data-status="error"],
+.bd-save-status[data-status="conflict"] {
+  color: var(--bd-danger, #b42318);
+}

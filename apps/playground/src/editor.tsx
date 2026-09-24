@@ -1,10 +1,28 @@
 import { toManifest } from '@buildr/core';
-import { BuilderEditor } from '@buildr/editor';
+import { BuilderEditor, type DocumentAdapter } from '@buildr/editor';
 import '@buildr/editor/styles.css';
 import { demoRegistry } from '@buildr/test-utils/demo/components';
 import { useMemo } from 'react';
 
-const adapter = {};
+/** A placeholder until the playground gets its in-memory backend (PB-092): nothing is stored. */
+const adapter: DocumentAdapter = {
+  getSession: async () => ({ canEdit: true, canPublish: false }),
+  load: () => Promise.reject(new Error('the playground has no backend yet')),
+  save: async (_ref, { baseRevision }) => ({
+    ok: true,
+    revision: baseRevision + 1,
+    updatedAt: new Date().toISOString(),
+  }),
+  publish: async (_ref, { baseRevision }) => ({
+    ok: true,
+    revision: baseRevision + 1,
+    updatedAt: new Date().toISOString(),
+  }),
+  getDataSchema: async () => ({ scopes: {}, entities: {} }),
+  getContext: () => Promise.reject(new Error('the playground has no data context yet')),
+  media: { search: async () => ({ items: [] }) },
+  previewUrl: () => '/',
+};
 
 /** The editor shell in the playground (`/editor`); the panels arrive with the editor tasks (PB-074 onwards). */
 export function EditorPage() {
