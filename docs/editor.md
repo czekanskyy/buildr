@@ -145,6 +145,15 @@ The selection lives in the editor store (`selectedIds`, `anchorId`, `selectedIns
 
 `BuilderEditor` does not mount the frame yet: it needs the document the persistence task (PB-087) loads.
 
+### The insert panel (PB-078)
+
+`<InsertPanel />` (`packages/editor/src/panels/insert`) is the palette. It reads the manifest (`<ManifestProvider>`) and lists the components that may be inserted (not `root`, not `insertable: false`) and the templates, each grouped by category and sorted by label. Search matches every word against label, type, description and keywords (templates: label, id, category). Every entry is a real button, so the palette works with the keyboard alone and without drag and drop.
+
+- **Where it goes.** `placeInsertion(doc, registry, selectedId, what)` picks the first position `canInsert` accepts: at the end of the first slot of the selected node that takes it, else right after the selection, else after each ancestor in turn; with nothing selected, inside the root. The result is a position `node.insert` will accept, so a click is one `node.insert` command (one undo step) and the new node becomes the selection.
+- **When it cannot.** Nothing is changed; the status line says "It cannot be inserted here." followed by the rule's own message (for example a slot's `max`). A read-only document says so instead.
+- **Templates** are instantiated with `instantiateTemplate` (detached copies that remember their `source`). A template's `thumbnail` is shown only when it is an `http(s):` or root-relative address or a raster `data:image/` URL; anything else falls back to the initial.
+- `EditorStore.registry` exposes the registry the commands run against.
+
 ### The layers panel (PB-077)
 
 `<LayersPanel wrapperType? />` (`packages/editor/src/panels/layers`) shows the document as a WAI-ARIA tree. It reads the store and the manifest (`<ManifestProvider manifest>`; without one the rows show the component's type) and changes the document only by dispatching commands.

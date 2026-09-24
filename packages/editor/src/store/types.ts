@@ -98,6 +98,8 @@ export interface EditorStoreOptions {
 
 /** The store and what changes it. Every change to the document goes through `dispatch`, `undo`, `redo` or `replaceDocument`. */
 export interface EditorStore extends StoreApi<EditorState> {
+  /** The registry the commands run against; the palette asks it what may go where. */
+  readonly registry: RegistryMeta;
   /** Runs a command (`execute`) on the document and records it in the history. */
   dispatch(command: Command, options?: DispatchOptions): Result<CommandResult, CommandError>;
   /** Runs commands as one undo step, all or nothing (`executeBatch`). */

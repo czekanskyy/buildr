@@ -1,0 +1,248 @@
+// @vitest-environment jsdom
+import {
+  type BuilderDocument,
+  type ComponentMeta,
+  createRegistryMeta,
+  createSeededIdGenerator,
+  defineTemplate,
+  p,
+  s,
+  toManifest,
+} from '@buildr/core';
+import { act } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { axe } from 'vitest-axe';
+import * as matchers from 'vitest-axe/matchers';
+import { ManifestProvider } from '../../app/manifest.tsx';
+import { MessagesProvider } from '../../messages/index.tsx';
+import { createEditorStore, EditorStoreProvider } from '../../store/index.ts';
+import { filterItems, paletteItems, safeThumbnail } from './catalog.ts';
+import { InsertPanel } from './insert-panel.tsx';
+
+expect.extend(matchers);
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
+const meta = (type: string, overrides: Partial<ComponentMeta> = {}): ComponentMeta => ({
+  type,
+  version: 1,
+  label: type.split('/')[1] ?? type,
+  category: 'content',
+  props: {},
+  contentCategories: ['flow'],
+  styles: { groups: [] },
+  runtime: 'shared',
+  ...overrides,
+});
+
+const registry = createRegistryMeta({
+  components: [
+    meta('buildr/page', {
+      capabilities: { root: true },
+      slots: { default: { max: 2 } },
+    }),
+    meta('buildr/box', { label: 'Box', category: 'layout', slots: { default: {} } }),
+    meta('buildr/text', {
+      label: 'Text',
+      keywords: ['paragraph', 'copy'],
+      props: { text: p.text({ default: '' }) },
+    }),
+    meta('buildr/hidden', { label: 'Hidden', capabilities: { insertable: false } }),
+  ],
+  templates: [
+    defineTemplate({
+      id: 'site/hero',
+      version: 1,
+      label: 'Hero',
+      category: 'sections',
+      thumbnail: '/thumbs/hero.png',
+      lock: 'none',
+      tree: { type: 'buildr/box', children: [{ type: 'buildr/text' }] },
+    }),
+    defineTemplate({
+      id: 'site/evil',
+      version: 1,
+      label: 'Evil',
+      category: 'sections',
+      thumbnail: 'javascript:alert(1)',
+      lock: 'none',
+      tree: { type: 'buildr/box' },
+    }),
+  ],
+});
+const manifest = toManifest(registry);
+
+const fixture = (): BuilderDocument => ({
+  schemaVersion: 1,
+  root: 'root',
+  nodes: {
+    root: { id: 'root', type: 'buildr/page', slots: { default: ['boxNode001', 'boxNode002'] } },
+    boxNode001: { id: 'boxNode001', type: 'buildr/box', slots: { default: ['textNodeA1'] } },
+    boxNode002: { id: 'boxNode002', type: 'buildr/box' },
+    textNodeA1: { id: 'textNodeA1', type: 'buildr/text', props: { text: s('A') } },
+  },
+  components: {},
+});
+
+let container: HTMLElement;
+let root: Root;
+
+beforeEach(() => {
+  container = document.createElement('div');
+  document.body.append(container);
+  root = createRoot(container);
+});
+afterEach(() => {
+  act(() => root.unmount());
+  document.body.innerHTML = '';
+});
+
+async function mount(readOnly = false) {
+  const store = createEditorStore({
+    doc: fixture(),
+    registry,
+    generateId: createSeededIdGenerator(5),
+    validationDelayMs: null,
+    readOnly,
+  });
+  await act(async () =>
+    root.render(
+      <MessagesProvider locale="en">
+        <ManifestProvider manifest={manifest}>
+          <EditorStoreProvider store={store}>
+            <InsertPanel />
+          </EditorStoreProvider>
+        </ManifestProvider>
+      </MessagesProvider>,
+    ),
+  );
+  return store;
+}
+
+const button = (label: string) =>
+  [...container.querySelectorAll('button')].find(
+    (b) => b.querySelector('.bd-insert-label')?.textContent === label,
+  ) as HTMLElement;
+const click = (label: string) => act(async () => button(label).click());
+const notice = () => container.querySelector('[role=status]')?.textContent;
+const children = (store: Awaited<ReturnType<typeof mount>>, id: string) =>
+  store.getState().doc.nodes[id]?.slots?.['default'] ?? [];
+
+describe('catalog', () => {
+  it('lists only what can be inserted, sorted, with templates apart', () => {
+    const { components, templates } = paletteItems(manifest);
+    expect(components.map((c) => c.label)).toEqual(['Box', 'Text']);
+    expect(templates.map((t) => t.label)).toEqual(['Evil', 'Hero']);
+  });
+
+  it('searches by label, type, keyword and every word', () => {
+    const { components } = paletteItems(manifest);
+    expect(filterItems(components, 'para').map((c) => c.label)).toEqual(['Text']);
+    expect(filterItems(components, 'BUILDR/box').map((c) => c.label)).toEqual(['Box']);
+    expect(filterItems(components, 'copy text').map((c) => c.label)).toEqual(['Text']);
+    expect(filterItems(components, 'copy box')).toEqual([]);
+    expect(filterItems(components, '  ')).toHaveLength(2);
+  });
+
+  it('shows a thumbnail only when it is an image address', () => {
+    expect(safeThumbnail('/thumbs/a.png')).toBe('/thumbs/a.png');
+    expect(safeThumbnail('https://cdn.example.com/a.png')).toBe('https://cdn.example.com/a.png');
+    expect(safeThumbnail('data:image/png;base64,AAAA')).toBeDefined();
+    expect(safeThumbnail('javascript:alert(1)')).toBeUndefined();
+    expect(safeThumbnail('//evil.example.com/a.png')).toBeUndefined();
+    expect(safeThumbnail('data:text/html,<script>')).toBeUndefined();
+    expect(safeThumbnail(undefined)).toBeUndefined();
+  });
+});
+
+describe('InsertPanel', () => {
+  it('is accessible and groups by category', async () => {
+    await mount();
+    expect(await axe(container)).toHaveNoViolations();
+    const groups = [...container.querySelectorAll('[role=group]')].map((g) =>
+      g.getAttribute('aria-label'),
+    );
+    expect(groups).toEqual(['Layout', 'Content', 'Sections']);
+    expect(container.querySelector('img')?.getAttribute('src')).toBe('/thumbs/hero.png');
+    expect(container.querySelectorAll('img')).toHaveLength(1);
+  });
+
+  it('inserts into the selected container, at the end, and selects the new node', async () => {
+    const store = await mount();
+    await act(async () => store.select('boxNode001'));
+    await click('Text');
+    const kids = children(store, 'boxNode001');
+    expect(kids).toHaveLength(2);
+    expect(kids[0]).toBe('textNodeA1');
+    expect(store.getState().doc.nodes[kids[1] as string]?.type).toBe('buildr/text');
+    expect(store.getState().selectedIds).toEqual([kids[1]]);
+    expect(notice()).toBe('Inserted: Text');
+    expect(store.getState().undoLabel).toBe('node.insert');
+  });
+
+  it('inserts after a selection that cannot hold children', async () => {
+    const store = await mount();
+    await act(async () => store.select('textNodeA1'));
+    await click('Box');
+    const kids = children(store, 'boxNode001');
+    expect(kids).toHaveLength(2);
+    expect(kids[0]).toBe('textNodeA1');
+    expect(store.getState().doc.nodes[kids[1] as string]?.type).toBe('buildr/box');
+  });
+
+  it('inserts a template as one undo step', async () => {
+    const store = await mount();
+    await act(async () => store.select('boxNode002'));
+    await click('Hero');
+    const [box] = children(store, 'boxNode002');
+    const inserted = store.getState().doc.nodes[box as string];
+    expect(inserted?.type).toBe('buildr/box');
+    expect(inserted?.source).toEqual({ template: 'site/hero', version: 1 });
+    await act(async () => store.undo());
+    expect(children(store, 'boxNode002')).toEqual([]);
+  });
+
+  it('says why when there is no place for it', async () => {
+    const store = await mount();
+    // The page holds two children at most, and nothing is selected, so there is nowhere to go.
+    await click('Box');
+    expect(notice()).toContain('cannot be inserted here');
+    expect(notice()?.length).toBeGreaterThan('It cannot be inserted here.'.length);
+    expect(children(store, 'root')).toHaveLength(2);
+  });
+
+  it('does nothing to a read-only document', async () => {
+    const store = await mount(true);
+    await act(async () => store.select('boxNode002'));
+    await click('Text');
+    expect(notice()).toBe('The page is read-only.');
+    expect(children(store, 'boxNode002')).toEqual([]);
+  });
+
+  it('filters while typing and says when nothing matches', async () => {
+    await mount();
+    const input = container.querySelector('input') as HTMLInputElement;
+    const type = async (value: string) =>
+      act(async () => {
+        const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+        set?.call(input, value);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+    await type('paragraph');
+    expect(container.querySelectorAll('.bd-insert-item')).toHaveLength(1);
+    await type('zzzz');
+    expect(container.querySelector('.bd-insert-empty')?.textContent).toBe(
+      'Nothing matches the search.',
+    );
+  });
+
+  it('is operable with the keyboard alone (real buttons in tab order)', async () => {
+    await mount();
+    const items = [...container.querySelectorAll('.bd-insert-item')] as HTMLButtonElement[];
+    expect(items.length).toBe(4);
+    for (const item of items) {
+      expect(item.tagName).toBe('BUTTON');
+      expect(item.tabIndex).toBe(0);
+    }
+  });
+});

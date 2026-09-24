@@ -526,3 +526,71 @@
 .buildr-editor .bd-layers-notice:empty {
   display: none;
 }
+
+.buildr-editor .bd-insert {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  gap: 8px;
+}
+.buildr-editor .bd-insert-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+.buildr-editor .bd-insert-heading {
+  margin: 8px 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.buildr-editor .bd-insert-category {
+  margin: 6px 0 4px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: var(--bd-text-muted, inherit);
+}
+.buildr-editor .bd-insert-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.buildr-editor .bd-insert-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 8px 4px;
+  border: 1px solid var(--bd-border, currentColor);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.buildr-editor .bd-insert-item:hover {
+  background: var(--bd-surface-hover, rgb(127 127 127 / 12%));
+}
+.buildr-editor .bd-insert-thumb {
+  width: 100%;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+.buildr-editor .bd-insert-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgb(127 127 127 / 18%);
+  font-weight: 600;
+}
+.buildr-editor .bd-insert-notice[data-ok="false"] {
+  color: var(--bd-danger, inherit);
+}
