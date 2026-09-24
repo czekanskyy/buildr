@@ -95,6 +95,14 @@ module.exports = {
       to: { path: `(${['next', 'payload'].map(npmPackage).join('|')})` },
     },
     {
+      name: 'react-server-no-client',
+      severity: 'error',
+      comment:
+        "./server never imports the 'use client' entry (./client); registry components are the only client code it may reach.",
+      from: { path: '^packages/react/src/server/' },
+      to: { path: '^packages/react/src/client/' },
+    },
+    {
       name: 'react-no-downstream-packages',
       severity: 'error',
       comment: '@buildr/react may only depend on @buildr/core.',
