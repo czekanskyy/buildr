@@ -1,4 +1,4 @@
-import type { BuilderDocument, Diagnostic, NodeId, PageNode } from '@buildr/core';
+import type { BuilderDocument, Diagnostic, NodeId, PageNode, Rect } from '@buildr/core';
 import { applyDocumentPatches } from '@buildr/core/commands';
 
 /** The locales the editor's project has, as `editor:init` carries them. */
@@ -7,6 +7,14 @@ export interface CanvasLocales {
   readonly default: string;
   readonly fallback: boolean;
   readonly intl: Readonly<Record<string, string>>;
+}
+
+/** What the canvas draws for a drag in progress: the insertion line, a container that will take the drop, or a refusal. */
+export interface DropView {
+  readonly kind: 'line' | 'inside' | 'forbidden';
+  readonly rect: Rect;
+  /** Why a drop is refused, for `forbidden`. */
+  readonly message?: string;
 }
 
 /** What the editor last told the canvas. The canvas never edits any of it: it only receives. */
@@ -24,6 +32,8 @@ export interface CanvasState {
   readonly locale: string;
   readonly locales: CanvasLocales | undefined;
   readonly contextRef: string | null;
+  /** The drag indicator, drawn by the overlay; owned by the canvas itself. */
+  readonly drop: DropView | null;
 }
 
 /** How a `doc:patch` was received. */
@@ -60,7 +70,7 @@ export interface CanvasStore {
   setDocument(doc: BuilderDocument, version: number): void;
   applyPatches(from: number, to: number, patches: readonly unknown[]): PatchOutcome;
   /** Records an `editor:init`, whose other parts (viewport, locale, ...) come with it. */
-  init(state: Omit<CanvasState, 'initCount'>): void;
+  init(state: Omit<CanvasState, 'initCount' | 'drop'>): void;
   update(partial: Partial<Omit<CanvasState, 'doc' | 'version' | 'initCount'>>): void;
   /** What each node reported while rendering; replaces what it reported before. */
   setDiagnostics(key: string, items: readonly Diagnostic[]): void;
@@ -80,6 +90,7 @@ const INITIAL: CanvasState = {
   locale: 'en',
   locales: undefined,
   contextRef: null,
+  drop: null,
 };
 
 /** Every id whose node differs between two documents, in either direction. */

@@ -6,6 +6,8 @@ export interface OverlayOptions {
   readonly store: CanvasStore;
   /** Warns about a selected node with no `data-bid` element; on outside production by default. */
   readonly warn?: boolean;
+  /** The pointer went down on the drag handle of the selected node. */
+  readonly onHandleDown?: (event: PointerEvent) => void;
 }
 
 export interface Overlay {
@@ -26,6 +28,8 @@ export interface Box {
   readonly height: number;
   /** The type label, on the primary box of a selected node only. */
   readonly label?: string;
+  /** Whether the node can be moved with a handle (a selected node other than the root). */
+  readonly movable?: boolean;
 }
 
 const STYLE = `
@@ -38,6 +42,15 @@ const STYLE = `
 .label { position: absolute; left: -1px; top: -20px; padding: 1px 6px; font: 600 11px/18px system-ui, sans-serif;
   color: #fff; background: #2563eb; white-space: nowrap; }
 .label.inside { top: 0; }
+.handle { position: absolute; right: -1px; top: -20px; width: 20px; height: 18px; background: #2563eb; color: #fff;
+  font: 700 12px/18px system-ui, sans-serif; text-align: center; cursor: grab; pointer-events: auto; touch-action: none; }
+.handle.inside { top: 0; }
+.drop { position: fixed; box-sizing: border-box; pointer-events: none; }
+.drop.line { background: #f59e0b; }
+.drop.inside { background: rgba(245, 158, 11, 0.16); outline: 2px solid #f59e0b; outline-offset: -1px; }
+.drop.forbidden { background: rgba(220, 38, 38, 0.12); outline: 2px solid #dc2626; outline-offset: -1px; }
+.drop .reason { position: absolute; left: 0; top: 0; max-width: 320px; padding: 2px 6px; background: #dc2626; color: #fff;
+  font: 500 11px/16px system-ui, sans-serif; }
 `;
 
 function inProduction(): boolean {
@@ -71,7 +84,8 @@ export function openAncestorDetails(element: Element): boolean {
  * fixed or sticky element is drawn where it is).
  */
 export function computeBoxes(doc: Document, store: CanvasStore): Box[] {
-  const { selection, hover } = store.getState();
+  const { selection, hover, doc: replica } = store.getState();
+  const root = replica?.root;
   const boxes: Box[] = [];
   const add = (kind: Box['kind'], id: NodeId) => {
     const elements = elementsOf(doc, id);
@@ -87,6 +101,9 @@ export function computeBoxes(doc: Document, store: CanvasStore): Box[] {
         width: rect.width,
         height: rect.height,
         ...(kind === 'selected' && index === 0 && type !== undefined ? { label: type } : {}),
+        ...(kind === 'selected' && index === 0 && root !== undefined && id !== root
+          ? { movable: true }
+          : {}),
       });
     });
   };
@@ -185,9 +202,38 @@ export function createOverlay(options: OverlayOptions): Overlay {
           label.textContent = box.label;
           el.append(label);
         }
+        if (
+          box.movable === true &&
+          options.onHandleDown !== undefined &&
+          store.getState().mode === 'edit'
+        ) {
+          const handle = doc.createElement('span');
+          handle.className = box.top < 22 ? 'handle inside' : 'handle';
+          handle.setAttribute('data-buildr-handle', '');
+          handle.textContent = '✥';
+          handle.addEventListener('pointerdown', options.onHandleDown);
+          el.append(handle);
+        }
         return el;
       }),
     );
+    const drop = store.getState().drop;
+    if (drop !== null) {
+      const el = doc.createElement('div');
+      el.className = `drop ${drop.kind}`;
+      el.setAttribute('data-buildr-drop', drop.kind);
+      el.style.left = `${drop.rect.x}px`;
+      el.style.top = `${drop.rect.y}px`;
+      el.style.width = `${drop.rect.width}px`;
+      el.style.height = `${drop.rect.height}px`;
+      if (drop.kind === 'forbidden' && drop.message !== undefined) {
+        const reason = doc.createElement('span');
+        reason.className = 'reason';
+        reason.textContent = drop.message;
+        el.append(reason);
+      }
+      layer.append(el);
+    }
   };
 
   function schedule() {

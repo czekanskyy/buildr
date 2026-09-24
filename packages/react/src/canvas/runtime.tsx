@@ -6,6 +6,7 @@ import {
   type DataContext,
   type DataSource,
   type Diagnostic,
+  type DragItem,
   type NodeId,
   type PreparedData,
   prepareRender,
@@ -26,6 +27,7 @@ import type { Platform } from '../define/types.ts';
 import { loadDocument } from '../render/pipeline.ts';
 import { BuildrStyles } from '../render/styles.tsx';
 import type { CanvasInstrumentation, ResumeState } from '../render/types.ts';
+import { createDndController, type DndController } from './dnd/controller.ts';
 import { installInlineEdit } from './inline-edit.ts';
 import { installInteractions } from './interactions.ts';
 import { type CanvasEnv, CanvasEnvContext, NodeView } from './node-view.tsx';
@@ -123,6 +125,7 @@ export function CanvasRuntime(props: CanvasRuntimeProps) {
     { generation: number; data: PreparedData } | undefined
   >();
   const readyFor = useRef(0);
+  const dndRef = useRef<DndController | null>(null);
   const propsRef = useRef(props);
   propsRef.current = props;
 
@@ -198,6 +201,8 @@ export function CanvasRuntime(props: CanvasRuntimeProps) {
           transport.send('doc:resync-request', { have: store.getState().version });
         }
       }),
+      transport.on('dnd:over', (p) => dndRef.current?.over(p.point, p.item as DragItem)),
+      transport.on('dnd:leave', () => dndRef.current?.leave()),
       transport.on('selection:set', (p) => store.update({ selection: p.ids })),
       transport.on('hover:set', (p) => store.update({ hover: p.id })),
       transport.on('viewport:set', (p) => store.update({ viewport: p })),
@@ -260,11 +265,20 @@ export function CanvasRuntime(props: CanvasRuntimeProps) {
       inlineProp: (type) => propsRef.current.registry.meta.get(type)?.editor?.inlineProp,
     });
     const stop = installInteractions({ document: doc, store, transport });
-    const overlay = createOverlay({ document: doc, store });
+    const dnd = createDndController({
+      document: doc,
+      store,
+      transport,
+      registry: () => propsRef.current.registry.meta,
+    });
+    dndRef.current = dnd;
+    const overlay = createOverlay({ document: doc, store, onHandleDown: dnd.beginMove });
     return () => {
       stop();
       stopInline();
       overlay.destroy();
+      dnd.destroy();
+      dndRef.current = null;
     };
   }, [store, interactive]);
 
