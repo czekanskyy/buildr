@@ -1,12 +1,20 @@
 // @vitest-environment jsdom
-import { type BuilderDocument, defaultTheme, type PageNode, p, s } from '@buildr/core';
+import {
+  type BuilderDocument,
+  createMemoryDataSource,
+  type DataSource,
+  defaultTheme,
+  type PageNode,
+  p,
+  s,
+} from '@buildr/core';
 import type { CanvasMessage, EditorMessage } from '@buildr/core/protocol';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { defineComponent } from '../define/define-component.ts';
 import { createRegistry } from '../define/registry.ts';
-import { doc, node, Page, platform, Section } from '../render/render.test-kit.tsx';
+import { doc, Image, node, Page, platform, Section } from '../render/render.test-kit.tsx';
 import { CanvasRuntime, type CanvasRuntimeProps, type CanvasTransport } from './runtime.tsx';
 import type { CanvasStore } from './store.ts';
 
@@ -32,7 +40,7 @@ const Probe = defineComponent({
   },
 });
 
-const registry = createRegistry({ components: [Page, Section, Probe] });
+const registry = createRegistry({ components: [Page, Section, Probe, Image] });
 
 /** The canvas's end of the channel, replaced by a double that records what is sent and lets a test speak as the editor. */
 class FakeTransport {
@@ -494,5 +502,103 @@ describe('CanvasRuntime: inline editing', () => {
     await deliver('mode:set', { mode: 'interact' });
     await dbl('node000002');
     expect(el('node000002').hasAttribute('contenteditable')).toBe(false);
+  });
+});
+
+describe('CanvasRuntime: data', () => {
+  const withImage = (id: string) =>
+    doc(
+      [
+        node(1, 'buildr/image', { image: s({ source: 'x', collection: 'media', id }) }),
+        node(2, 'buildr/text', { text: s('One') }),
+      ],
+      {},
+      ['node000001', 'node000002'],
+    );
+  const source = () => {
+    const inner = createMemoryDataSource({
+      media: {
+        m1: { id: 'm1', url: '/one.png', mimeType: 'image/png' },
+        m2: { id: 'm2', url: '/two.png', mimeType: 'image/png' },
+      },
+    });
+    const calls: (readonly string[])[] = [];
+    const counting: DataSource = {
+      ...inner,
+      getMedia: (ids, ctx) => {
+        calls.push(ids);
+        return inner.getMedia(ids, ctx);
+      },
+    };
+    return { counting, calls };
+  };
+  const advance = (ms: number) => act(async () => void vi.advanceTimersByTime(ms));
+  const srcOf = () => container.querySelector('img')?.getAttribute('src');
+
+  it('fetches media with the document, never for a text edit, and once after a media edit', async () => {
+    vi.useFakeTimers();
+    const { counting, calls } = source();
+    await mount({ dataSource: counting });
+    await deliver('editor:init', init(withImage('m1')));
+    expect(calls).toEqual([['m1']]);
+    expect(srcOf()).toBe('/one.png');
+    expect(transport.of('canvas:ready')).toHaveLength(1);
+
+    await deliver('doc:patch', setText('node000002', 'Changed', 1));
+    await advance(2000);
+    expect(calls).toHaveLength(1);
+
+    await deliver('doc:patch', {
+      from: 2,
+      to: 3,
+      patches: [
+        {
+          op: 'replace',
+          path: ['nodes', 'node000001', 'props', 'image'],
+          value: s({ source: 'x', collection: 'media', id: 'm2' }),
+        },
+      ],
+    });
+    expect(calls).toHaveLength(1);
+    await advance(299);
+    expect(calls).toHaveLength(1);
+    await advance(1);
+    expect(calls).toEqual([['m1'], ['m2']]);
+    expect(srcOf()).toBe('/two.png');
+  });
+
+  it('loads the scopes of the context and of the locale, and shows a failure as a diagnostic', async () => {
+    vi.useFakeTimers();
+    const loadScopes = vi.fn(async (ref: string | null, locale: string) => {
+      if (ref === 'bad') throw new Error('no such entry');
+      return { page: { title: `${ref}-${locale}` } };
+    });
+    await mount({ loadScopes });
+    const bound = doc([
+      node(1, 'buildr/text', { text: { kind: 'binding', path: 'page.title' } as never }),
+    ]);
+    await deliver('editor:init', { ...init(bound), contextRef: 'post' });
+    await advance(10);
+    expect(loadScopes).toHaveBeenLastCalledWith('post', 'en');
+    expect(textOf('node000001')).toBe('post-en');
+
+    await deliver('locale:set', { locale: 'pl' });
+    await advance(10);
+    expect(textOf('node000001')).toBe('post-pl');
+
+    await deliver('context:set', { contextRef: 'bad' });
+    await advance(400);
+    expect(transport.of('diagnostics').at(-1)).toMatchObject({
+      items: expect.arrayContaining([expect.objectContaining({ code: 'canvas.context-failed' })]),
+    });
+  });
+
+  it('fetches again at once when the locale changes', async () => {
+    vi.useFakeTimers();
+    const { counting, calls } = source();
+    await mount({ dataSource: counting });
+    await deliver('editor:init', init(withImage('m1')));
+    await deliver('locale:set', { locale: 'pl' });
+    expect(calls).toHaveLength(2);
   });
 });

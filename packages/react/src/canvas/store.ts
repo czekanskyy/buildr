@@ -34,6 +34,8 @@ export interface CanvasState {
   readonly contextRef: string | null;
   /** The drag indicator, drawn by the overlay; owned by the canvas itself. */
   readonly drop: DropView | null;
+  /** Whether media or queries are being fetched for the document: what is shown is the last data. */
+  readonly dataLoading: boolean;
 }
 
 /** How a `doc:patch` was received. */
@@ -70,7 +72,7 @@ export interface CanvasStore {
   setDocument(doc: BuilderDocument, version: number): void;
   applyPatches(from: number, to: number, patches: readonly unknown[]): PatchOutcome;
   /** Records an `editor:init`, whose other parts (viewport, locale, ...) come with it. */
-  init(state: Omit<CanvasState, 'initCount' | 'drop'>): void;
+  init(state: Omit<CanvasState, 'initCount' | 'drop' | 'dataLoading'>): void;
   update(partial: Partial<Omit<CanvasState, 'doc' | 'version' | 'initCount'>>): void;
   /** What each node reported while rendering; replaces what it reported before. */
   setDiagnostics(key: string, items: readonly Diagnostic[]): void;
@@ -91,6 +93,7 @@ const INITIAL: CanvasState = {
   locales: undefined,
   contextRef: null,
   drop: null,
+  dataLoading: false,
 };
 
 /** Every id whose node differs between two documents, in either direction. */
