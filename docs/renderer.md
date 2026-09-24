@@ -93,3 +93,13 @@ Any component with a `listSource` prop renders as a loop (the `buildr/loop` comp
 - **`@buildr/react/client` — `DocumentRenderer`** (`'use client'`): the same pipeline for single-page apps. Give it `document`, `registry`, `theme`, `context`, `platform` and either `data` (`PreparedData` from elsewhere) or `dataSource` (it prepares the data itself and shows `fallback` meanwhile; a late answer for a document that has since changed is ignored). `onDiagnostics` receives what went wrong.
 - **`BuildrStyles`** (shared, no hooks): renders `compileStyles`'s result as `<style href precedence="buildr">`. React 19 hoists them into `<head>` and emits each `href` once per page. The layer order and the theme's tokens are one element (`buildr-theme-<hash>`), the node rules another (`buildr-<hash>`), so several documents on one theme send the shared part once.
 - `./server` never imports `./client` (a dependency-cruiser rule); the only `'use client'` code it can reach is a registry component that declares `runtime: 'client'`.
+
+## Rich text
+
+`renderRichText(value, { platform?, converters?, diagnostics? })` turns a rich text value (the Lexical subset of ADR-017) into React. It walks the JSON; it never builds HTML, and nothing in the package uses `dangerouslySetInnerHTML` (a test scans the sources).
+
+- **Allowlist.** Node types are looked up in `richTextConverters` (`root`, `paragraph`, `heading` h1–h6, `list` bullet/number, `listitem`, `quote`, `link`, `text`, `linebreak`). Anything else, including `__proto__` or `toString`, is dropped with its children and reported as `richtext.unknown-node`.
+- **Text formats.** The `format` bitmask (1 bold, 2 italic, 4 strikethrough, 8 underline, 16 code, 32 subscript, 64 superscript) becomes nested `strong`, `em`, `s`, `u`, `sup`, `sub`, `code`. Text is a React child, so it is escaped.
+- **Links.** The URL is checked again with `sanitizeUrl` because the value may not have passed core's normalization. An unsafe or missing URL leaves the link text without the link (`url.unsafe-scheme` diagnostic). Safe links render through `platform.Link`, or a plain `<a>` when no platform is given.
+- **Limits.** Nesting deeper than `MAX_RICH_TEXT_DEPTH` and more than `MAX_RICH_TEXT_NODES` nodes are cut and reported.
+- **Extending.** `converters` is merged over the defaults per call (no global registry): e.g. `@buildr/payload` adds `upload`. A converter gets the node, `ctx.children(...)` to render its children, `ctx.report(...)`, and `ctx.platform`.
