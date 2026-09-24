@@ -42,7 +42,8 @@ const STYLE = `
 
 function inProduction(): boolean {
   const proc = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process;
-  return proc?.env?.NODE_ENV === 'production';
+  // biome-ignore lint/complexity/useLiteralKeys: an index signature must be read with brackets
+  return proc?.env?.['NODE_ENV'] === 'production';
 }
 
 /** Every element that renders `id`: one, or one per Loop repetition. */
