@@ -142,3 +142,16 @@ export const dataMediaRequestSchema = z.object({
 });
 export type DataMediaRequest = z.infer<typeof dataMediaRequestSchema>;
 export const dataMediaResponseSchema = z.record(z.string(), mediaAssetSchema);
+
+/** `GET /buildr/media?search&type&page`: the picker's listing. */
+export const mediaListQuerySchema = z.object({
+  search: z.string().max(200).optional(),
+  type: z.enum(['image', 'video', 'audio']).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+});
+export const mediaListResponseSchema = z.object({
+  items: z.array(mediaAssetSchema),
+  page: z.number().int(),
+  totalPages: z.number().int(),
+});
+export type MediaListResponse = z.infer<typeof mediaListResponseSchema>;
