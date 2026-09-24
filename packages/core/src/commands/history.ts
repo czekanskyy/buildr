@@ -114,7 +114,12 @@ export function createHistory(options: HistoryOptions = {}): HistoryManager {
 
   function push(entry: HistoryEntry): void {
     past.push(entry);
-    if (past.length > limit) past = past.slice(past.length - limit);
+    if (past.length > limit) {
+      past = past.slice(past.length - limit);
+      // The state before the oldest kept entry is now the floor of the history — a different
+      // document from the one the old base id named, so it needs its own id.
+      baseId = nextId('b');
+    }
   }
 
   function record(input: HistoryRecord): HistoryEntry | undefined {
