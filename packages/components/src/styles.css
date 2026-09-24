@@ -2,3 +2,4 @@
    `.bc-<name>` rules inside `@layer buildr.components`, built on design tokens.
    Populated by docs/backlog/phase-07-components.md. */
 @layer buildr.components;
+@import "./styles/base.css";
