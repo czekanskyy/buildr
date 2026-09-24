@@ -60,6 +60,10 @@ A grid container. Columns come from the `layout.columns` style (a whole number 1
 
 A paragraph. Props: `text` (multi-line, bindable, localizable; line breaks are kept, markup is never interpreted) and `as` (`p`, `span`, `small`, `div`; anything else renders `p`). Use `span` inside parents that only take phrasing content (buttons, links). `editor.inlineProp` is `text`.
 
+### RichText (`buildr/rich-text`)
+
+Formatted content from a `richText` prop (`content`, bindable, localizable): headings, paragraphs, lists, quotes, links, and bold/italic/strikethrough/underline/code/sub/superscript. Rendered by `renderRichText` from `@buildr/react`, so it is an allowlist walker with sanitized links (through `platform.Link`), never HTML. A bound plain string arrives as one paragraph (core coerces it). Its typography is scoped CSS (`.bc-rich-text :where(h2, p, ul, …)`), all from tokens; it does not affect the rest of the page. This is what the PostContent template uses.
+
 Fixtures: each component exports `<name>Fixtures` (`ComponentFixture`: an id, a title and a subtree that goes under the page), reviewed at `FIXTURE_WIDTHS` (1280, 768, 375). Tablet and mobile overrides live in the fixture's `styles.bp`.
 
 ## Form field derivation
