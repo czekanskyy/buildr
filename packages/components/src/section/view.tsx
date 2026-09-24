@@ -1,20 +1,11 @@
 import type { MediaAsset } from '@buildr/core';
 import type { BuilderComponentProps } from '@buildr/react';
 import { createElement } from 'react';
-import type { sectionProps } from './definition.ts';
+import { SECTION_ELEMENTS, type sectionProps } from './props.ts';
 
 type Props = BuilderComponentProps<typeof sectionProps>;
 
-const ELEMENTS: ReadonlySet<string> = new Set([
-  'section',
-  'div',
-  'header',
-  'footer',
-  'main',
-  'aside',
-  'nav',
-  'article',
-]);
+const ELEMENTS: ReadonlySet<string> = new Set(SECTION_ELEMENTS);
 
 /**
  * One root element (the chosen `as`, `section` if it is not on the allowlist). The content column

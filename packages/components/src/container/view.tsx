@@ -1,5 +1,5 @@
 import type { BuilderComponentProps } from '@buildr/react';
-import type { containerProps } from './definition.ts';
+import type { containerProps } from './props.ts';
 
 export function ContainerView({
   props,

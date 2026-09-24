@@ -1,12 +1,8 @@
-import { p } from '@buildr/core';
 import { defineComponent } from '@buildr/react';
+import { containerProps } from './props.ts';
 import { ContainerView } from './view.tsx';
 
-export const CONTAINER_WIDTHS = ['sm', 'md', 'lg', 'xl'] as const;
-
-export const containerProps = {
-  width: p.select({ label: 'Max width', options: CONTAINER_WIDTHS, default: 'lg' }),
-} as const;
+export { CONTAINER_WIDTHS } from './props.ts';
 
 /** Centres its content in a column no wider than a `container` token. */
 export const Container = defineComponent({
