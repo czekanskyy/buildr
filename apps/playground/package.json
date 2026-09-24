@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@buildr/core": "workspace:*",
+    "@buildr/editor": "workspace:*",
     "@buildr/react": "workspace:*",
     "@buildr/test-utils": "workspace:*",
     "react": "^19.0.0",
