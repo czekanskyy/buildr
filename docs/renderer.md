@@ -60,3 +60,19 @@ export interface BuilderComponentProps<P> {
 
 - **Loop** renders the `item` slot N times with an `item`/`index`/`loop` scope. React keys are `${nodeId}:${index}`. Every instance shares the same `data-bid` (editing one edits all) with `data-bi` set to the index. Anchors on instances get a `-${index}` suffix. An empty result renders the `empty` slot; the `after` slot (with a `loop` scope) hosts pagination.
 - **Rich text** rendering is a JSON walker (`richTextConverters`, extensible), never `dangerouslySetInnerHTML`. See [ADR-017](adr/ADR-017-rich-text-format.md).
+
+## `renderTree` in practice
+
+`renderTree(doc, { registry, data, context, platform, instrument?, messages?, cache?, diagnostics?, devChecks? })` is synchronous and returns a `ReactNode`. It calls no hooks and reads no React context, so it runs identically in an RSC and in the canvas (a test calls every component without a React dispatcher, and another scans the sources).
+
+Per node, in order:
+
+1. `visibleIf` — `resolveVisibility`; falsy, missing data or an invalid condition renders nothing.
+2. The component is looked up in the `ReactRegistry`. An unregistered type renders `null` plus a `render.unknown-component` diagnostic, or `instrument.unknownComponent(node)` in the canvas.
+3. `resolveProps` with the `DataContext` (bindings, expressions, translations, fallbacks, defaults, sanitization).
+4. **Media**: a `media` prop that resolves to a reference receives the asset from `data.media`; without it the reference's own `snapshot` (with `render.media-snapshot`), else the reference itself (`render.media-missing`).
+5. Slots: every slot the component declares is rendered (an empty one gets `instrument.emptySlot`, else `null`) and handed over as `slots[name]`; `children` is `slots.default`. A node that contains itself stops with `render.cycle`.
+6. `root`: `className` is `bc-<name> b-<id>` (`buildr/heading` is `bc-heading`; another namespace is kept, `acme/pricing-table` is `bc-acme-pricing-table`), `id` is the node's anchor, plus whatever `instrument.rootAttributes(node)` adds (`withNodeIds` adds `data-bid`).
+7. `createElement(render, { node, env, root, slots, props, platform })`. `platform` is left out for `runtime: 'client'`, and with `devChecks` (on outside production) the props that cross the boundary are asserted to be plain JSON. `instrument.NodeView`, when set, wraps the element.
+
+Nothing here throws for data problems; each is a `Diagnostic` pushed onto `options.diagnostics` (each carries `details.nodeId`).
