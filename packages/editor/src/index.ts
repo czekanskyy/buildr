@@ -22,4 +22,5 @@ export * from './panels/index.ts';
 export * from './persistence/index.ts';
 export * from './shortcuts/index.ts';
 export * from './store/index.ts';
+export * from './toolbar/index.ts';
 export * from './ui/index.ts';

@@ -22,6 +22,11 @@ import { createShortcutRegistry, type ShortcutRegistry } from './registry.ts';
 
 const RegistryContext = createContext<ShortcutRegistry | undefined>(undefined);
 
+/** The registry of the enclosing `<ShortcutProvider>`, or `undefined` outside one (a toolbar shown without shortcuts). */
+export function useOptionalShortcutRegistry(): ShortcutRegistry | undefined {
+  return useContext(RegistryContext);
+}
+
 /** The registry of the enclosing `<ShortcutProvider>`, for modules that bind actions of their own. */
 export function useShortcutRegistry(): ShortcutRegistry {
   const registry = useContext(RegistryContext);
@@ -148,4 +153,13 @@ export function ShortcutProvider({
       </Dialog>
     </RegistryContext.Provider>
   );
+}
+
+/** How the first key of `action` is written on this platform (`Ctrl+Z`), for tooltips; `undefined` when it has none. */
+export function useShortcutHint(action: string): string | undefined {
+  const registry = useOptionalShortcutRegistry();
+  const combo = registry?.keysFor(action)[0];
+  return registry === undefined || combo === undefined
+    ? undefined
+    : displayCombo(combo, registry.platform);
 }

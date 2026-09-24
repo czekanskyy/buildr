@@ -27,12 +27,14 @@ export interface IconButtonProps extends Omit<ButtonProps, 'children' | 'aria-la
   /** What the button does: it has no text, so this is its name for everyone who cannot see the icon. */
   readonly label: string;
   readonly icon: ReactNode;
+  /** Shown after the name in the tooltip only (a keyboard shortcut), not part of the accessible name. */
+  readonly hint?: string | undefined;
 }
 
 /** A button with an icon and a required accessible name; the name is also its tooltip. */
-export function IconButton({ label, icon, className, ...rest }: IconButtonProps) {
+export function IconButton({ label, icon, hint, className, ...rest }: IconButtonProps) {
   return (
-    <Tooltip content={label}>
+    <Tooltip content={hint === undefined ? label : `${label} (${hint})`}>
       <Button {...rest} aria-label={label} className={cx('bd-icon-button', className)}>
         <span aria-hidden="true">{icon}</span>
       </Button>
