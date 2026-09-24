@@ -8,3 +8,8 @@ export type { StyleInput, StyleInspectorProps } from './styles/index.ts';
 export { checkStyleInput, StyleInspector } from './styles/index.ts';
 export type { PropReading } from './value.ts';
 export { readProp, translationLocale } from './value.ts';
+export type { BindingOption, BindingStatus, FormulaCheck, Preview } from './values/analyze.ts';
+export { bindingOptions, checkBinding, checkFormula, previewValue } from './values/analyze.ts';
+export type { InspectorDataProviderProps } from './values/data.tsx';
+export { InspectorDataProvider, useInspectorData } from './values/data.tsx';
+export { ValueChip, ValueEditor } from './values/value-editor.tsx';

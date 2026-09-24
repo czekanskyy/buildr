@@ -1,4 +1,4 @@
-import type { PageNode, PropDef } from '@buildr/core';
+import type { PageNode, PropDef, Value } from '@buildr/core';
 import { canEdit, createIndex } from '@buildr/core';
 import type { Command } from '@buildr/core/commands';
 import type { ReactNode } from 'react';
@@ -109,6 +109,16 @@ export function Inspector({ locale, defaultLocale, renderStyle }: InspectorProps
     }
     report(store.dispatch(translate));
   };
+  // A binding or a formula is the prop's value in the default language; translations belong to fixed values.
+  const setValue = (prop: string, _def: PropDef, value: Value) =>
+    report(store.dispatch({ type: 'node.setProp', payload: { id: node.id, prop, value } }));
+  const fixed = (prop: string, def: PropDef) =>
+    report(
+      store.dispatch({
+        type: 'node.setProp',
+        payload: { id: node.id, prop, value: { kind: 'static', value: def.default } },
+      }),
+    );
   const reset = (prop: string, def: PropDef) => {
     const target = translationLocale(def, locale, defaultLocale);
     report(
@@ -149,6 +159,8 @@ export function Inspector({ locale, defaultLocale, renderStyle }: InspectorProps
         disabled={disabled}
         onChange={write}
         onReset={reset}
+        onSetValue={setValue}
+        onFixed={fixed}
       />
     );
   };

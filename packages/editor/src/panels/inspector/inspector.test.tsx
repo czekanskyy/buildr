@@ -262,7 +262,7 @@ describe('Inspector', () => {
     expect(field('title').querySelector('.bd-field-reset')).toBeNull();
   });
 
-  it('shows a binding or a formula as a chip, not a control', async () => {
+  it('shows a bound prop in the data mode, with its path', async () => {
     const doc = fixture();
     const bound: BuilderDocument = {
       ...doc,
@@ -279,9 +279,12 @@ describe('Inspector', () => {
       },
     };
     await mount('widget0001', {}, bound);
-    expect(field('title').querySelector('input')).toBeNull();
-    expect(field('title').textContent).toContain('Bound to data: post.title');
-    expect(field('href').textContent).toContain('Formula: post.slug');
+    expect((field('title').querySelector('input') as HTMLInputElement).value).toBe('post.title');
+    expect(field('title').querySelector('[aria-pressed=true]')?.textContent).toBe('Data');
+    expect(field('href').querySelector('[aria-pressed=true]')?.textContent).toBe('Formula');
+    expect((field('href').querySelector('textarea') as HTMLTextAreaElement).value).toBe(
+      'post.slug',
+    );
   });
 
   it('writes a translation to the language being edited, only for translatable props', async () => {
