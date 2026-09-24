@@ -103,6 +103,8 @@ export async function boot(
   options: Partial<BuildrPluginOptions> = {},
   extra: {
     readonly pageFields?: Field[];
+    /** Access control of the pages collection (default: Payload default, authenticated only). */
+    readonly pageAccess?: CollectionConfig['access'];
     readonly collections?: CollectionConfig[];
     readonly globals?: GlobalConfig[];
     readonly email?: EmailAdapter;
@@ -122,6 +124,7 @@ export async function boot(
           { name: 'slug', type: 'text' },
           ...(extra.pageFields ?? []),
         ],
+        ...(extra.pageAccess === undefined ? {} : { access: extra.pageAccess }),
         versions: { drafts: { autosave: true }, maxPerDoc: 50 },
       },
       ...(extra.collections ?? []),
