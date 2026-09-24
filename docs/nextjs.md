@@ -123,3 +123,35 @@ export default function Page() {
 - `editorMetadata` — `robots: noindex, nofollow`.
 
 The manifest is computed on the server (`toManifest(registry.meta)`), so the palette never depends on a client-side import of component code. The `(builder)` route group has its own root layout with no site chrome.
+
+## Implemented API: `getBuildrDocument`, tags and revalidation (PB-107)
+
+`@buildr/payload/next` (server code of a Next.js app; it imports `next/cache`):
+
+```ts
+const entry = await getBuildrDocument({
+  payload, collection: 'pages', slug, locale, draft, user,
+  contextName: 'page', path: (doc) => `/${doc.slug}`,
+});
+if (!entry) notFound();
+return <BuildrPage config={buildr} entry={entry} />;
+```
+
+- `getBuildrDocument({ payload, collection, slug | id, slugField?, locale?, draft?, user?, contextName?, path?, depth?, timeZone?, cache? })` finds the document, resolves its layout (`resolveLayout`), builds the `DataContext` (`buildContext`, with the `site` global when `site-settings` exists) and returns `{ document, context, layoutRef, layoutSource, currentId, doc, tags }`, or `null` for a `404` (no such document, an unpublished one for a visitor, an unconfigured locale). The first five fields are what `BuildrPage` takes. Exactly one of `slug` and `id` is required.
+- **Published reads are cached** (`unstable_cache`, keyed by collection, slug or id, locale and depth) and tagged; a **draft read** (`draft: true` with a `user`) uses that user's permissions and is never cached. `draft: true` without a user is a visitor's read.
+- `listPublishedSlugs({ payload, collection, slugField?, locale?, limit? })` gives the slugs for `generateStaticParams`.
+- `seoFromDocument(doc, { locale, draft, alternates })` maps `@payloadcms/plugin-seo` fields onto `buildrMetadata`; `alternatesOf({ payload, collection, id, path })` gives the hreflang paths.
+
+### Cache tag convention
+
+| Tag | Set for | Revalidated when |
+|---|---|---|
+| `buildr:doc:{collection}:{id}` | a document, and a page whose layout is that document's own | it is published, was published (unpublish), or is deleted |
+| `buildr:col:{collection}` | every read of the collection (a slug may resolve to another document) and pages whose queries read it (`collectionsUsed`) | any published change or delete in it, or a change of a template that targets it |
+| `buildr:global:{slug}` | pages that read a global (`site-settings`) | the global changes |
+| `buildr:template:{id}` | a page whose layout came from that template | the template changes |
+| `buildr:theme` | every page | the theme changes (call `revalidateTag('buildr:theme')` where the theme is deployed) |
+
+`tagsFor({ collection, id, layoutRef, collectionsUsed, globals })` computes the full set; the helpers `docTag`, `collectionTag`, `globalTag` and `templateTag` build single tags.
+
+`revalidateHooks(revalidate?)` returns the Payload hooks: `collection` (`afterChange`, `afterDelete`) for page collections, `global.afterChange` for globals and `templates` (`afterChange`, `afterDelete`) for `buildr-templates`. Wire them in the application's collection configs. A draft save of a page that was never published revalidates nothing. Outside a Next.js request (a seed script) revalidation is a no-op.
