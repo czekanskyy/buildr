@@ -6,6 +6,7 @@ import { BooleanControl } from './boolean.tsx';
 import { IconControl } from './icon.tsx';
 import { propLabel } from './label.ts';
 import { LinkControl } from './link.tsx';
+import { MediaControl } from './media.tsx';
 import { NumberControl } from './number.tsx';
 import { RichTextControl } from './rich-text.tsx';
 import { SelectControl } from './select.tsx';
@@ -30,6 +31,8 @@ export function renderControl(def: PropDef, common: ControlProps): ReactNode {
       return <LinkControl {...common} def={def} />;
     case 'icon':
       return <IconControl {...common} def={def} />;
+    case 'media':
+      return <MediaControl {...common} def={def} />;
     case 'richText':
       return <RichTextControl {...common} def={def} />;
     case 'list':
