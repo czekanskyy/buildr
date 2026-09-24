@@ -11,14 +11,7 @@ import {
   prepareRender,
   type Theme,
 } from '@buildr/core';
-import {
-  type CanvasMessage,
-  createChildTransport,
-  type EditorMessage,
-  MAX_DIAGNOSTICS,
-  PROTOCOL_VERSION,
-  type Transport,
-} from '@buildr/core/protocol';
+import { createChildTransport, MAX_DIAGNOSTICS, PROTOCOL_VERSION } from '@buildr/core/protocol';
 import {
   type ReactNode,
   useCallback,
@@ -37,9 +30,9 @@ import { installInteractions } from './interactions.ts';
 import { type CanvasEnv, CanvasEnvContext, NodeView } from './node-view.tsx';
 import { createOverlay } from './overlay/overlay.ts';
 import { type CanvasStore, createCanvasStore } from './store.ts';
+import type { CanvasTransport } from './types.ts';
 
-/** The channel to the editor, as the runtime uses it. */
-export type CanvasTransport = Transport<CanvasMessage, EditorMessage>;
+export type { CanvasTransport };
 
 export interface CanvasRuntimeProps {
   readonly registry: ReactRegistry;

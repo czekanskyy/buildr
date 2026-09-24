@@ -1,6 +1,6 @@
 import type { NodeId } from '@buildr/core';
-import type { CanvasTransport } from './runtime.tsx';
 import type { CanvasStore } from './store.ts';
+import type { CanvasTransport } from './types.ts';
 
 export interface InteractionOptions {
   readonly document: Document;

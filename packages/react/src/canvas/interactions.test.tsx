@@ -2,8 +2,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { installInteractions, instanceOf } from './interactions.ts';
 import { computeBoxes, createOverlay, openAncestorDetails } from './overlay/overlay.ts';
-import type { CanvasTransport } from './runtime.tsx';
 import { createCanvasStore } from './store.ts';
+import type { CanvasTransport } from './types.ts';
 
 const sent: { type: string; payload: unknown }[] = [];
 const transport = {

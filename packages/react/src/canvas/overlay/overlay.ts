@@ -42,7 +42,7 @@ const STYLE = `
 
 function inProduction(): boolean {
   const proc = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process;
-  return proc?.env?.['NODE_ENV'] === 'production';
+  return proc?.env?.NODE_ENV === 'production';
 }
 
 /** Every element that renders `id`: one, or one per Loop repetition. */
