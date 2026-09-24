@@ -41,7 +41,21 @@ export {
   unwrapHandler,
   wrapHandler,
 } from './handlers/index.ts';
-export { checkPayload, commandSchema, createCommandRegistry, parseCommand } from './registry.ts';
+export type {
+  HistoryEntry,
+  HistoryManager,
+  HistoryOptions,
+  HistoryRecord,
+  HistoryStep,
+} from './history.ts';
+export { createHistory, DEFAULT_HISTORY_LIMIT, DEFAULT_MERGE_WINDOW_MS } from './history.ts';
+export {
+  checkPayload,
+  commandMergeKey,
+  commandSchema,
+  createCommandRegistry,
+  parseCommand,
+} from './registry.ts';
 export type { ReplayResult } from './replay.ts';
 export { replay } from './replay.ts';
 export type {

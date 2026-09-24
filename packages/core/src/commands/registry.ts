@@ -68,3 +68,16 @@ export function checkPayload(
   }
   return ok(cmd);
 }
+
+/**
+ * The history coalescing key for a dispatch: the handler's `mergeKey` when exactly one command
+ * ran, otherwise `undefined` (a batch or a transaction is never merged).
+ */
+export function commandMergeKey(
+  commands: CommandRegistry,
+  batch: readonly Command[],
+): string | undefined {
+  const [only] = batch;
+  if (batch.length !== 1 || only === undefined) return undefined;
+  return commands.get(only.type)?.mergeKey?.(only);
+}
