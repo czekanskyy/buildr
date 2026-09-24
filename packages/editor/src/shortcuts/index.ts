@@ -7,4 +7,10 @@ export { applyOverrides, DEFAULT_SHORTCUTS } from './map.ts';
 export type { ShortcutHandler, ShortcutRegistry, ShortcutRegistryOptions } from './registry.ts';
 export { createShortcutRegistry } from './registry.ts';
 export type { ShortcutProviderProps } from './shortcuts.tsx';
-export { ShortcutProvider, useForwardedKeys, useShortcutRegistry } from './shortcuts.tsx';
+export {
+  ShortcutProvider,
+  useForwardedKeys,
+  useOptionalShortcutRegistry,
+  useShortcutHint,
+  useShortcutRegistry,
+} from './shortcuts.tsx';

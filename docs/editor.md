@@ -277,3 +277,13 @@ See dedicated pages: [drag-and-drop.md](drag-and-drop.md), [state-management.md]
 - **Failures.** A network error sets `error` and retries after 2 s, 5 s, then every 15 s, staying dirty. A `422` is not retried (the same document cannot pass); the next change re-arms the autosave. A `409` sets `conflict` and stops all saving until the author chooses: `reload()` takes the backend's document (history starts again), `overwrite()` saves over it on the backend's revision.
 - **UI.** `<PersistenceProvider controller>` starts the controller, warns with `beforeunload` while there is unsaved work (dirty, saving, error or conflict), and shows the conflict dialog (which cannot be dismissed without choosing). `<SaveStatus />` is the toolbar's status line; `useSaveAction()` is the handler for `ShortcutProvider`'s `actions.save` (Ctrl+S, saves at once with `autosave: false`); `usePersistenceState(selector)` reads the state.
 - **Time is injected** (`Clock`), so the tests run the whole machine with fake timers against a fake adapter. There is no global state: a controller belongs to one store.
+
+## Toolbar (PB-083)
+
+`<Toolbar title breakpoints breakpoint onBreakpointChange cmsUrl? historyUrl? onPreview? onPublish? canPublish? />` (`packages/editor/src/toolbar`) fills the shell's `toolbar` slot. It reads the store and the persistence controller from context, so it sits inside `EditorStoreProvider` and `PersistenceProvider` (and, for the shortcut hints, `ShortcutProvider`).
+
+- **Breakpoints.** A group of buttons with `aria-pressed`; `desktop`, `tablet` and `mobile` are translated, any other id is shown as it is, and the width is the button's `title`. The host wires `onBreakpointChange` to `host.setBreakpoint` and the inspector's style layer.
+- **Undo / redo.** Enabled from `canUndo` / `canRedo`, disabled for a read-only document; the tooltip carries the shortcut (`Undo (Ctrl+Z)`) while the accessible name stays `Undo` (`IconButton`'s `hint`; `useShortcutHint(action)` reads it from the registry, so a host override shows up).
+- **Save status.** `<SaveStatus />` of the persistence module: saved, unsaved, saving, retrying, rejected, edited elsewhere, read only, with a Save button while unsaved or failing.
+- **Preview and Publish.** The toolbar only calls `onPreview` (PB-091, flushes the save first) and `onPublish` (the dialog of PB-088). Both are disabled without a handler; Publish is also disabled without `canPublish`, for a read-only document and during a conflict.
+- **Links.** Back to the CMS (`adapter.cmsUrl`) and the version history are plain links, left out when the adapter has no such URL.

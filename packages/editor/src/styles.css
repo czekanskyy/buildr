@@ -785,3 +785,31 @@
 .bd-save-status[data-status="conflict"] {
   color: var(--bd-danger, #b42318);
 }
+
+/* Toolbar (PB-083) */
+.buildr-editor .bd-toolbar-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.buildr-editor .bd-toolbar-spacer {
+  flex: 1;
+}
+
+.buildr-editor .bd-breakpoints,
+.buildr-editor .bd-toolbar-group {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  display: inline-flex;
+  gap: 2px;
+}
+
+.buildr-editor .bd-toolbar-link {
+  text-decoration: none;
+}
