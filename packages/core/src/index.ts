@@ -7,6 +7,7 @@ export * from './expressions/index.ts';
 export * from './ids/index.ts';
 export * from './json/index.ts';
 export * from './migrations/index.ts';
+export * from './prepare/index.ts';
 export * from './registry/index.ts';
 export * from './result/index.ts';
 export * from './rules/index.ts';
