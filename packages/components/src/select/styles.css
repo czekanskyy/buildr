@@ -1,0 +1,5 @@
+@layer buildr.components {
+  .bc-select select {
+    appearance: auto;
+  }
+}

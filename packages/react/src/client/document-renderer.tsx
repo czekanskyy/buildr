@@ -34,6 +34,8 @@ export interface DocumentRendererProps {
   readonly data?: PreparedData;
   readonly dataSource?: DataSource;
   readonly messages?: Readonly<Record<string, string>>;
+  /** Which document the layout came from; forms use it to find their action. */
+  readonly layoutRef?: string;
   readonly currentId?: string | number;
   readonly limits?: DocumentLimits;
   readonly cache?: CompileCache;
@@ -94,6 +96,7 @@ export function DocumentRenderer(props: DocumentRendererProps) {
       platform: props.platform,
       diagnostics,
       ...(props.messages !== undefined ? { messages: props.messages } : {}),
+      ...(props.layoutRef !== undefined ? { layoutRef: props.layoutRef } : {}),
       ...(cache !== undefined ? { cache } : {}),
       ...(props.instrument !== undefined ? { instrument: props.instrument } : {}),
     });
@@ -107,6 +110,7 @@ export function DocumentRenderer(props: DocumentRendererProps) {
     props.theme,
     props.platform,
     props.messages,
+    props.layoutRef,
     props.instrument,
   ]);
 

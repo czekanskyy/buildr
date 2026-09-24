@@ -1,0 +1,6 @@
+@layer buildr.components {
+  /* The field wrapper and its control are styled in field/styles.css. */
+  .bc-input {
+    min-width: 0;
+  }
+}

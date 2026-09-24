@@ -1,0 +1,6 @@
+@layer buildr.components {
+  .bc-textarea textarea {
+    resize: vertical;
+    min-height: 4rem;
+  }
+}

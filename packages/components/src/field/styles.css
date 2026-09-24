@@ -1,0 +1,67 @@
+@layer buildr.components {
+  .bc-input,
+  .bc-textarea,
+  .bc-select,
+  .bc-checkbox {
+    display: flex;
+    flex-direction: column;
+    gap: var(--b-space-1);
+  }
+  .bc-checkbox[data-layout="inline"] {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    column-gap: var(--b-space-2);
+  }
+  .bc-checkbox[data-layout="inline"] > .bc-field__hint,
+  .bc-checkbox[data-layout="inline"] > .bc-field__error {
+    grid-column: 2;
+  }
+
+  .bc-field__label {
+    font-weight: var(--b-font-weight-medium);
+  }
+  .bc-field__required {
+    color: var(--b-color-danger);
+  }
+  .bc-field__hint {
+    margin: 0;
+    color: var(--b-color-text-muted);
+    font-size: var(--b-font-size-sm);
+  }
+  .bc-field__error {
+    margin: 0;
+    color: var(--b-color-danger);
+    font-size: var(--b-font-size-sm);
+  }
+  .bc-field__error[hidden] {
+    display: none;
+  }
+
+  .bc-field__control {
+    width: 100%;
+    padding: var(--b-space-2) var(--b-space-3);
+    border: 1px solid var(--b-color-border);
+    border-radius: var(--b-radius-sm);
+    background-color: var(--b-color-surface);
+    color: var(--b-color-text);
+    font: inherit;
+  }
+  .bc-field__control:focus-visible {
+    outline: 2px solid var(--b-color-focus);
+    outline-offset: 1px;
+  }
+  .bc-field__control[aria-invalid="true"] {
+    border-color: var(--b-color-danger);
+  }
+  .bc-field__check {
+    width: 1.125rem;
+    height: 1.125rem;
+    margin: 0.2em 0 0;
+    accent-color: var(--b-color-primary);
+  }
+  .bc-field__check:focus-visible {
+    outline: 2px solid var(--b-color-focus);
+    outline-offset: 2px;
+  }
+}

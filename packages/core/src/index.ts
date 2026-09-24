@@ -7,6 +7,7 @@ export * from './data/index.ts';
 export * from './dnd/index.ts';
 export * from './document/index.ts';
 export * from './expressions/index.ts';
+export * from './forms/index.ts';
 export * from './ids/index.ts';
 export * from './json/index.ts';
 export * from './migrations/index.ts';

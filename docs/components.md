@@ -116,6 +116,25 @@ A `nav` landmark of real page links: `page` and `totalPages` (bindable; in a Loo
 
 Fixtures: each component exports `<name>Fixtures` (`ComponentFixture`: an id, a title and a subtree that goes under the page), reviewed at `FIXTURE_WIDTHS` (1280, 768, 375). Tablet and mobile overrides live in the fixture's `styles.bp`.
 
+## Form components
+
+A form is a plain HTML `<form method="post">` whose action comes from `platform.formAction(env.layoutRef, node.id)`, so it works without JavaScript; a small client enhancement (`FormEnhancer`) sends it with `fetch`, keeps the person on the page and reports the result in a live region. The enhancement validates nothing: the server checks the submission against the schema derived from the document (see below) and returns per-field errors, which are shown next to the fields.
+
+### Form (`buildr/form`)
+
+Container for fields and a submit button (`form-submit` a11y rule). Props: `successMessage`, `errorMessage` (default to the built-in `form.success`/`form.error` messages for the locale), `ariaLabel`. It renders a hidden honeypot field `_hp` (out of the tab order, `aria-hidden`); a submission that fills it is treated as spam. Nested forms are not allowed and their fields are ignored by the schema.
+
+### Input (`buildr/input`), Textarea (`buildr/textarea`), Select (`buildr/select`), Checkbox (`buildr/checkbox`)
+
+Each renders one wrapper: a `label` tied to the control, an optional `hint` (wired with `aria-describedby`), a required marker (`*`, hidden from screen readers; the `required` attribute carries the meaning) and an empty error region. `name` is a static, non-bindable prop (letters, digits, `_`, `-`; starting with a letter; at most 64 characters; `_hp` and other reserved names are refused). All four are only valid inside a form (`requireAncestor`).
+
+- **Input**: `type` is one of `text email tel url number date` (anything else falls back to `text`); `maxLength` (0 = no limit).
+- **Textarea**: `rows` (2–30), `maxLength`.
+- **Select**: `options` is a list of `{ label, value }`; entries without a value are skipped and an empty label shows the value. `placeholder` becomes an empty first choice, unselectable when the field is required. The values shown are exactly those the server accepts.
+- **Checkbox**: label after the box (always visible), `defaultChecked`; a boolean field.
+
+Field ids are derived from the node id, so they are stable between server and client rendering.
+
 ## Form field derivation
 
-Any component may declare `ComponentMeta.formField` (see [component-registry.md](component-registry.md)) to participate in form schema derivation. `deriveFormSchema(doc, registryMeta, formNodeId)` (in `@buildr/core/forms`) walks a `buildr/form` node's descendants and reads `formField` metadata generically — it never imports specific components — so custom form controls participate automatically. This function is the server-side source of truth for what a submitted form is allowed to contain; see [payload.md](payload.md) and [security.md](security.md).
+Any component may declare `ComponentMeta.formField` (see [component-registry.md](component-registry.md)) to participate in form schema derivation. `deriveFormSchema(doc, registryMeta, formNodeId)` (in `@buildr/core/forms`) walks a `buildr/form` node's descendants and reads `formField` metadata generically — it never imports specific components — so custom form controls participate automatically. It returns `{ schema: { formId, fields: [{ nodeId, name, valueType, required, maxLength?, options? }] }, diagnostics }`. Only static prop values are read: a dynamic `name` or `options` is reported (`form.name-dynamic`, `form.options-dynamic`) and the field is left out, as are missing, invalid, reserved or duplicate names (`form.name-missing`, `form.name-invalid`, `form.name-duplicate`) and fields beyond the limit (`form.too-many-fields`). This function is the server-side source of truth for what a submitted form is allowed to contain; see [payload.md](payload.md) and [security.md](security.md).

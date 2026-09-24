@@ -1,0 +1,5 @@
+@layer buildr.components {
+  .bc-checkbox .bc-field__label {
+    font-weight: var(--b-font-weight-regular);
+  }
+}
