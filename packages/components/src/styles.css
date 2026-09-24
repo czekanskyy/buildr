@@ -11,3 +11,6 @@
 @import "./heading/styles.css";
 @import "./text/styles.css";
 @import "./rich-text/styles.css";
+@import "./styles/utilities.css";
+@import "./button/styles.css";
+@import "./link/styles.css";

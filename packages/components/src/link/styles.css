@@ -1,0 +1,14 @@
+@layer buildr.components {
+  .bc-link {
+    color: var(--b-color-primary);
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+  .bc-link:hover {
+    text-decoration-thickness: 2px;
+  }
+  .bc-link:focus-visible {
+    outline: 2px solid var(--b-color-focus);
+    outline-offset: 2px;
+  }
+}
