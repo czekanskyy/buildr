@@ -1,3 +1,7 @@
+export type { CoercedValue, CoercibleKind } from './coerce.ts';
+export { coerceValue } from './coerce.ts';
+export type { FormatContext } from './format.ts';
+export { formatValue } from './format.ts';
 export type { BindValueOptions, ExprValueOptions, StaticValueOptions } from './helpers.ts';
 export {
   bind,
@@ -8,6 +12,8 @@ export {
   s,
   withTranslation,
 } from './helpers.ts';
+export type { BindingResolution } from './resolve-binding.ts';
+export { resolveBinding } from './resolve-binding.ts';
 export type {
   RichTextBlockNode,
   RichTextHeadingNode,
