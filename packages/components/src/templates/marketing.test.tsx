@@ -141,13 +141,12 @@ describe('marketing templates', () => {
     }
   });
 
-  it('give every band the theme rhythm, tighter on small screens', async () => {
+  it('give every band the theme rhythm, tighter on a phone', async () => {
     for (const template of marketingTemplates) {
       const { document } = documentOf(template);
       const bands = Object.values(document.nodes).filter((n) => n.type === 'buildr/section');
       expect(bands, template.id).toHaveLength(1);
-      const styles = bands[0]?.styles as { base: object; bp: { tablet: object; mobile: object } };
-      expect(styles.bp.tablet).toBeDefined();
+      const styles = bands[0]?.styles as { base: object; bp: { mobile: object } };
       expect(styles.bp.mobile).toBeDefined();
     }
   });

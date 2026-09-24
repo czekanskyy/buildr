@@ -121,7 +121,7 @@ describe('content templates', () => {
 
   describe('the listing', () => {
     const titles = (html: string) =>
-      [...html.matchAll(/<h3[^>]*>(Post number \d+)<\/h3>/g)].map((m) => m[1]);
+      [...html.matchAll(/<h2[^>]*>(Post number \d+)<\/h2>/g)].map((m) => m[1]);
 
     it('lists the newest posts first, six to a page, each a linked card', async () => {
       const { html } = await renderTemplate('buildr/blog-listing');

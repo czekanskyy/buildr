@@ -27,6 +27,8 @@ export type { ComponentFixture } from './fixtures.ts';
 export { FIXTURE_WIDTHS } from './fixtures.ts';
 export { Form } from './form/definition.ts';
 export { formFixtures } from './form/fixtures.ts';
+export type { GalleryEntry } from './gallery.ts';
+export { createGalleryDataSource, galleryEntries, gallerySampleScopes } from './gallery.ts';
 export { Grid } from './grid/definition.ts';
 export { gridFixtures } from './grid/fixtures.ts';
 export { HEADING_LEVELS, Heading } from './heading/definition.ts';
@@ -55,6 +57,7 @@ export { Pagination } from './pagination/definition.ts';
 export { paginationFixtures } from './pagination/fixtures.ts';
 export type { PageItem } from './pagination/pages.ts';
 export { pageItems } from './pagination/pages.ts';
+export { createDefaultRegistry, defaultComponents, defaultTemplates } from './registry.ts';
 export { RichText } from './rich-text/definition.ts';
 export { richTextFixtures } from './rich-text/fixtures.ts';
 export { SECTION_CONTAINERS, SECTION_ELEMENTS, Section } from './section/definition.ts';
@@ -63,7 +66,7 @@ export { Select } from './select/definition.ts';
 export { selectFixtures } from './select/fixtures.ts';
 export { STACK_ROLES, Stack } from './stack/definition.ts';
 export { stackFixtures } from './stack/fixtures.ts';
-export { marketingTemplateFixtures } from './templates/fixtures.ts';
+export { contentTemplateFixtures, marketingTemplateFixtures } from './templates/fixtures.ts';
 export {
   AuthorBox,
   BlogListing,
@@ -87,3 +90,4 @@ export { TEXT_ELEMENTS, Text } from './text/definition.ts';
 export { textFixtures } from './text/fixtures.ts';
 export { Textarea } from './textarea/definition.ts';
 export { textareaFixtures } from './textarea/fixtures.ts';
+export { defaultTheme } from './theme.ts';

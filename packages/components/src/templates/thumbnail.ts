@@ -11,15 +11,20 @@ const FILL = { line: '#d1d5db', media: '#9ca3af', action: '#2563eb' } as const;
 
 /**
  * A wireframe of a template as an SVG data URI (the `thumbnail` of a `TemplateDefinition`). It is
- * drawn from plain shapes with fixed colours, so it needs no request and cannot carry script.
+ * drawn from plain shapes with fixed colours, so it needs no request and cannot carry script. It
+ * is kept small on purpose: thumbnails travel in the registry manifest, which has a size budget.
+ * Blocks of one tone share a single path, and only the characters a data URI cannot hold are escaped.
  */
 export function thumbnail(blocks: readonly Block[]): string {
-  const rects = blocks
-    .map(([x, y, w, h, tone = 'line']) => {
-      const radius = tone === 'action' ? 3 : 2;
-      return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${radius}" fill="${FILL[tone]}"/>`;
+  const layers = (Object.keys(FILL) as (keyof typeof FILL)[])
+    .map((tone) => {
+      const d = blocks
+        .filter((block) => (block[4] ?? 'line') === tone)
+        .map(([x, y, w, h]) => `M${x} ${y}h${w}v${h}h-${w}z`)
+        .join('');
+      return d === '' ? '' : `<path fill='${FILL[tone]}' d='${d}'/>`;
     })
     .join('');
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 100"><rect width="160" height="100" fill="#f9fafb"/>${rects}</svg>`;
-  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'>${layers}</svg>`;
+  return `data:image/svg+xml,${svg.replace(/</g, '%3C').replace(/>/g, '%3E').replace(/#/g, '%23')}`;
 }

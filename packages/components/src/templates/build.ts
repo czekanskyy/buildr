@@ -90,7 +90,10 @@ export const grid = (
   }),
 });
 
-/** A full-width band with the theme's vertical rhythm, tighter on small screens. */
+/**
+ * A full-width band with the theme's vertical rhythm, tighter on a phone. (Tablets keep the
+ * desktop rhythm: every template is part of the registry manifest, which has a size budget.)
+ */
 export const section = (
   children: readonly TreeNode[],
   props: { container?: string; ariaLabel?: string; as?: string } = {},
@@ -109,7 +112,6 @@ export const section = (
       ...extraStyles.base,
     },
     bp: {
-      tablet: { spacing: { padding: { top: '$space.12', bottom: '$space.12' } } },
       mobile: { spacing: { padding: { top: '$space.8', bottom: '$space.8' } } },
       ...extraStyles.bp,
     },
