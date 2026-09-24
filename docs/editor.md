@@ -40,6 +40,16 @@ packages/editor/src/
 />
 ```
 
+## The shell (`@buildr/editor`, PB-073)
+
+`<BuilderEditor adapter manifest canvasUrl documentRef config />` fills its container (give it a height) and renders the layout above: a toolbar, the left panel, the canvas and the inspector between two **resizable splitters**, and the collapsible issues bar. The panels are slots (`EditorLayout`'s `toolbar`, `left`, `center`, `right`, `issues`) that the following tasks fill; the props are already the final mount API. In the playground it is mounted at `/editor`.
+
+- **Splitters** follow the WAI-ARIA window splitter pattern: `role="separator"` with `aria-valuenow/min/max`, dragged with a pointer or moved with the arrow keys (16 px), Home and End. The left panel is 200-480 px, the right one 240-520 px.
+- **Interface strings** are never written into components: every one is a key of the catalog in `messages/en.ts`, translated in `messages/pl.ts` (a missing Polish key is a type error), read with `useT()`. `config.uiLocale` picks the language (`en` or `pl`, English for any other); it is the language of the *editor*, not of the content (docs/i18n.md).
+- **Theme**: tokens are CSS variables scoped to `.buildr-editor`, light and dark. The scheme follows the system's, or is forced with `config.theme`. Import `@buildr/editor/styles.css` once in the host.
+- **UI primitives** (`Button`, `IconButton`, `Input`, `Select`, `Tabs`, `Popover`, `Dialog`, `Tooltip`, `Toggle`) wrap Radix UI: keyboard, focus management and ARIA come from Radix, the looks from the tokens. An `IconButton` requires a `label` (its accessible name and tooltip).
+- Every region is a landmark with a translated name (`role="toolbar"`, `aside`, `main`, `section`); the shell is checked with axe in the tests.
+
 ## Iframe vs. rendering inside the editor's own tree
 
 | Criterion | Iframe (a real Next.js page route) | Rendering inside the editor's React tree |
