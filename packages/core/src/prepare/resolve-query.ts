@@ -49,7 +49,7 @@ function resolveOperand(
  * Resolves the `Value`s of a `QuerySpec` against `ctx` (docs/dynamic-bindings.md#lists-and-
  * queries-loop-query). An operand that does not resolve makes the whole query fail (`Err`) rather
  * than dropping its condition — a dropped condition would widen the result set. An explicit `null`
- * operand is a legitimate value. `page` defaults to 1, and an invalid one is a warning and 1.
+ * operand is a legitimate value. `page` defaults to 1, and an invalid one is a warning and 1; a whole number written as text (a route parameter) counts as that number.
  * Never throws.
  */
 export function resolveQuerySpec(
@@ -83,7 +83,11 @@ export function resolveQuerySpec(
   if (spec.page !== undefined) {
     const resolved = resolveOperand(spec.page, ctx, options);
     diagnostics.push(...resolved.diagnostics);
-    const raw = resolved.value;
+    // A route parameter is always text, so `route.params.page` arrives as "2".
+    const raw =
+      typeof resolved.value === 'string' && /^\d{1,9}$/.test(resolved.value)
+        ? Number(resolved.value)
+        : resolved.value;
     if (typeof raw === 'number' && Number.isInteger(raw) && raw >= 1) page = raw;
     else if (raw !== undefined && raw !== null) {
       diagnostics.push({

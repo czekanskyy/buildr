@@ -65,15 +65,24 @@ export { STACK_ROLES, Stack } from './stack/definition.ts';
 export { stackFixtures } from './stack/fixtures.ts';
 export { marketingTemplateFixtures } from './templates/fixtures.ts';
 export {
+  AuthorBox,
+  BlogListing,
   Contact,
   Cta,
+  contentTemplates,
   Faq,
   FeatureGrid,
   Hero,
   marketingTemplates,
+  PostCard,
+  PostContent,
+  PostHeader,
   Pricing,
+  ProductDetails,
+  ProductHero,
   Testimonial,
 } from './templates/index.ts';
+export { templateSampleCollections, templateSampleScopes } from './templates/sample-data.ts';
 export { TEXT_ELEMENTS, Text } from './text/definition.ts';
 export { textFixtures } from './text/fixtures.ts';
 export { Textarea } from './textarea/definition.ts';

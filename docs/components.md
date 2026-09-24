@@ -151,6 +151,22 @@ Field ids are derived from the node id, so they are stable between server and cl
 
 Headings start at level 2 (the layout renders the page's H1); only the Hero uses level 1, so a page using it should not also have a layout H1 (`expectH1: 'document'`). The Image in a Hero has no media until the author chooses one: it renders nothing on a published page and a marked empty state in the editor's canvas. Copy is placeholder text meant to be replaced.
 
+## Blog and product templates
+
+`contentTemplates` are for a collection's document or a list of them. They are bound to `post.*`, `product.*`, `item.*` and `loop.*` (fields as in [payload.md](payload.md)), so they belong on a post or product page or inside a Loop. Nothing in them is a special component: each is a tree of the primitives above, fully editable once inserted. `templateSampleScopes` and `templateSampleCollections` are sample data of those shapes, used by the tests and the gallery.
+
+| Template | Id | Binds to | Notes |
+|---|---|---|---|
+| Post header | `buildr/post-header` | `post.title` (the page's H1, "Untitled" if empty), `post.publishedAt` (long date), `post.featuredImage` | Smaller heading on tablet and mobile. |
+| Post content | `buildr/post-content` | `post.content` (rich text) | Reading-width column. |
+| Author box | `buildr/author-box` | `post.author.{avatar,name,jobTitle,bio}` | An `aside` labelled "About the author". |
+| Post card | `buildr/post-card` | `item.{path,title,featuredImage,publishedAt,excerpt}` | For a Loop's `item` slot. The whole card links to `item.path` (the adapter supplies the URL of each item) and is named by `item.title`. |
+| Blog listing | `buildr/blog-listing` | query `posts`, newest first, 6 per page, `page` from `route.params.page` | A Loop as a grid (three columns, two, one) with the Post card, an empty message and a Pagination bound to `loop.page`/`loop.totalPages`. Its heading is the page's H1. |
+| Product hero | `buildr/product-hero` | `product.images` (a Loop), `product.title` (H1), price, `product.shortDescription`, `product.buyUrl` | The price is the formula `formatCurrency(product.price, product.currency)`. A buy link that is not safe is dropped and the button is left without one. |
+| Product details | `buildr/product-details` | `product.description` (rich text), `product.attributes` (a Loop of name and value) | |
+
+A binding that finds nothing falls back (the post title to "Untitled") or renders empty and reports `binding.missing`, so these templates show diagnostics if they are put where the data does not exist.
+
 ## Form field derivation
 
 Any component may declare `ComponentMeta.formField` (see [component-registry.md](component-registry.md)) to participate in form schema derivation. `deriveFormSchema(doc, registryMeta, formNodeId)` (in `@buildr/core/forms`) walks a `buildr/form` node's descendants and reads `formField` metadata generically — it never imports specific components — so custom form controls participate automatically. It returns `{ schema: { formId, fields: [{ nodeId, name, valueType, required, maxLength?, options? }] }, diagnostics }`. Only static prop values are read: a dynamic `name` or `options` is reported (`form.name-dynamic`, `form.options-dynamic`) and the field is left out, as are missing, invalid, reserved or duplicate names (`form.name-missing`, `form.name-invalid`, `form.name-duplicate`) and fields beyond the limit (`form.too-many-fields`). This function is the server-side source of truth for what a submitted form is allowed to contain; see [payload.md](payload.md) and [security.md](security.md).

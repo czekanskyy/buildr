@@ -404,6 +404,18 @@ describe('resolveQuerySpec', () => {
     expect(frac.ok && frac.value.spec.page).toBe(1);
   });
 
+  it('takes a page written as text, as a route parameter is', () => {
+    const at = (value: string) => {
+      const result = resolveQuerySpec({ ...base, page: s(value as never) }, ctx);
+      return result.ok ? [result.value.spec.page, result.value.diagnostics.length] : undefined;
+    };
+    expect(at('2')).toEqual([2, 0]);
+    expect(at('12')).toEqual([12, 0]);
+    for (const bad of ['0', '-1', '1.5', 'x', '', ' 2', '2 ', '1e3', '9999999999']) {
+      expect(at(bad), bad).toEqual([1, 1]);
+    }
+  });
+
   it('accepts an explicit null operand but not an unresolved one', () => {
     const nul = resolveQuerySpec(
       { ...base, where: { field: 'x', op: 'eq', value: s(null as JsonValue) } },
