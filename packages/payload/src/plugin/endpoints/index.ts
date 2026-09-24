@@ -5,6 +5,7 @@ import { dataContextEndpoint } from './data-context.ts';
 import { dataSchemaEndpoint } from './data-schema.ts';
 import { getDocumentEndpoint } from './document.ts';
 import { manifestEndpoint } from './manifest.ts';
+import { mediaListEndpoint, mediaUploadEndpoint } from './media.ts';
 import { publishEndpoint } from './publish.ts';
 import { samplesEndpoint } from './samples.ts';
 import { saveEndpoint } from './save.ts';
@@ -22,6 +23,8 @@ export const buildrEndpoints = (env: EndpointEnv): Endpoint[] => [
   samplesEndpoint(env),
   dataQueryEndpoint(env),
   dataMediaEndpoint(env),
+  mediaListEndpoint(env),
+  mediaUploadEndpoint(env),
 ];
 
 export type { EndpointEnv } from './context.ts';

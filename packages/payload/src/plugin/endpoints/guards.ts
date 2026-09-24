@@ -16,10 +16,18 @@ const originOf = (value: string | null | undefined): string | undefined => {
  * or one of Payload's `csrf` allowlist. Requests without an `Origin` (scripts, server-to-server)
  * pass: browsers always send it on `PUT`/`POST`. Returns the response to send, or `undefined`.
  */
-export function mutationGuard(req: PayloadRequest): Response | undefined {
+export function mutationGuard(
+  req: PayloadRequest,
+  kind: 'json' | 'multipart' = 'json',
+): Response | undefined {
   const contentType = req.headers.get('content-type') ?? '';
-  if (!/^application\/json\s*(;|$)/i.test(contentType)) {
-    return fail(415, 'The content type must be application/json.');
+  // An upload is multipart, which a cross-site form can send: only the Origin check protects it.
+  const expected = kind === 'json' ? /^application\/json\s*(;|$)/i : /^multipart\/form-data\s*;/i;
+  if (!expected.test(contentType)) {
+    return fail(
+      415,
+      `The content type must be ${kind === 'json' ? 'application/json' : 'multipart/form-data'}.`,
+    );
   }
   const origin = req.headers.get('origin');
   if (origin === null) return undefined;

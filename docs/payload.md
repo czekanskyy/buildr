@@ -206,3 +206,11 @@ The plugin registers the [endpoint contract](#endpoint-contract) as Payload endp
 - **Translation**: conditions Payload evaluates like the contract (typed scalars, missing values; a nullable field's `neq`/`nin` also match a missing value) go to the database, so paging and `total` are the database's. What it cannot decide (case-sensitive `contains`, lists, ranges over booleans/ids, an optional sort key, since missing values must sort last in both directions) is finished in memory by `MemoryDataSource` over the documents the database already narrowed. More than `scanLimit` (default 1000) candidates is a `DataQueryError`: narrow the filter.
 - **Limitation**: Payload stores no difference between a missing `hasMany` field and `[]`, so `exists` is only meaningful on scalar fields.
 - **Endpoints** (need `edit`, JSON body, CSRF guard): `POST /buildr/data/query { spec, locale? }` returns a `QueryResult` (`mode: 'canvas'`); `POST /buildr/data/media { ids, locale? }` returns `{ [id]: MediaAsset }` from `options.media.collection`; unknown ids are left out.
+
+## Media endpoints (PB-099)
+
+Both need `edit`, the `media.collection` option and the caller's own access on that collection (`overrideAccess: false`); without the option they answer `404`.
+
+- `GET /buildr/media?search&type&page`: `{ items: MediaAsset[], page, totalPages }`, newest first, 24 per page. `search` matches `alt` and `filename`; `type` is `image`, `video` or `audio` (by `mimeType` prefix). A bad `type` or `page` is `400`.
+- `POST /buildr/media` (multipart `file` + `alt`): creates the upload through the Local API and answers the `MediaAsset` (`201`). A missing or empty file is `400`, a blank `alt` `422`, a file over 10 MB `413`. The CSRF guard for multipart requires a valid `Origin` when one is sent (`403`), since a cross-site form can send multipart without a preflight.
+- **Hosting limit**: the file is buffered in memory, and serverless hosts cap request bodies (often 4.5 MB); the builder does not raise that cap, so large uploads may be refused by the host before they reach the endpoint.
