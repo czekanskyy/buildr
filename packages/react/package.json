@@ -9,6 +9,14 @@
       "types": "./src/index.ts",
       "default": "./src/index.ts"
     },
+    "./server": {
+      "types": "./src/server/index.ts",
+      "default": "./src/server/index.ts"
+    },
+    "./client": {
+      "types": "./src/client/index.ts",
+      "default": "./src/client/index.ts"
+    },
     "./canvas": {
       "types": "./src/canvas/index.ts",
       "default": "./src/canvas/index.ts"
@@ -21,6 +29,14 @@
       ".": {
         "types": "./dist/index.d.ts",
         "default": "./dist/index.js"
+      },
+      "./server": {
+        "types": "./dist/server/index.d.ts",
+        "default": "./dist/server/index.js"
+      },
+      "./client": {
+        "types": "./dist/client/index.d.ts",
+        "default": "./dist/client/index.js"
       },
       "./canvas": {
         "types": "./dist/canvas/index.d.ts",
@@ -48,6 +64,7 @@
     "@buildr/tsconfig": "workspace:*",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "jsdom": "^30.1.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "typescript": "7.0.2",
