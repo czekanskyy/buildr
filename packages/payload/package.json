@@ -62,12 +62,14 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@buildr/core": "workspace:*"
+    "@buildr/core": "workspace:*",
+    "zod": "^4.6.5"
   },
   "peerDependencies": {
     "@buildr/next": "workspace:*",
     "next": "^15.0.0 || ^16.0.0",
-    "payload": "^3.0.0"
+    "payload": "^3.0.0",
+    "@payloadcms/ui": "^3.0.0"
   },
   "peerDependenciesMeta": {
     "@buildr/next": {
@@ -78,13 +80,19 @@
     },
     "payload": {
       "optional": true
+    },
+    "@payloadcms/ui": {
+      "optional": true
     }
   },
   "devDependencies": {
     "@buildr/next": "workspace:*",
     "@buildr/tsconfig": "workspace:*",
+    "@payloadcms/db-sqlite": "3.90.1",
+    "@payloadcms/ui": "3.90.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "jsdom": "^30.1.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "typescript": "7.0.2",
