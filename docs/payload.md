@@ -161,3 +161,21 @@ The `layout` field runs one `beforeChange` chain, so the data is protected whate
 A rejected write throws Payload's `ValidationError` with one error on the path `layout`; its message lists every problem (`message (path)`), so the admin shows it under the field and REST returns it in `errors[0].data.errors`. The builder endpoints reuse `processLayout` (exported from `@buildr/payload/plugin`) and map its diagnostics to `422`. A layout that the write-guard keeps (an admin save) is not validated again.
 
 The `registry` option takes `{ meta, migrations? }`: a React registry fits, and so does `{ meta: registry.meta }` alone (then only structure and props are validated).
+
+## The document endpoints (PB-095)
+
+The plugin registers the [endpoint contract](#endpoint-contract) as Payload endpoints under `/api`. The Zod schemas of every request and response live in `packages/payload/src/contract.ts` (the editor's HTTP adapter parses with the same ones).
+
+| Endpoint | Purpose | Failures |
+|---|---|---|
+| `GET /buildr/session` | user, `canEdit` / `canPublish`, limits | `401` |
+| `GET /buildr/manifest` | the registry manifest | `401`, `404` without a registry |
+| `GET /buildr/documents/:collection/:id` | latest draft: layout (migrated in memory), title, slug, status, revision, `previewPath`, `readOnly` | `401`, `404` |
+| `PUT /buildr/documents/:collection/:id` | save `{ document, baseRevision, autosave }` | `400`, `401`, `403`, `404`, `409 { currentRevision }`, `422 { diagnostics }` |
+| `POST /buildr/documents/:collection/:id/publish` | publish the latest draft, `{ baseRevision }` | as above; `422` also for a11y errors when `a11y.publish: 'block'` |
+
+- Every call is made with the caller's `req` and `overrideAccess: false`, so Payload's own access control applies; `options.access` may narrow `edit` / `publish` further.
+- A save sets `buildrRevision = current + 1`. A stale `baseRevision` is a `409`, so an admin edit and a builder edit never overwrite each other silently. An admin save that leaves `layout` untouched keeps the builder's layout (the write-guard).
+- `autosave: true` updates the current autosave version in place; an explicit save creates a version.
+- Publishing writes `_status: 'published'` for the whole latest draft, admin-edited fields included.
+- A document written by a newer component version is returned with `readOnly: true` and is never rewritten.

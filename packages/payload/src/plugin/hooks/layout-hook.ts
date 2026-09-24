@@ -14,6 +14,8 @@ export const layoutHook =
     const guarded = writeGuard('layout')(args);
     const accepted = args.operation === 'create' || args.req.context[BUILDR_WRITE] === true;
     if (!accepted) return guarded;
+    // An update that does not carry a layout (a publish, a title edit) leaves it as it is.
+    if (args.operation === 'update' && guarded === undefined) return undefined;
     const result = processLayout(guarded, options);
     if (!result.ok) {
       throw new ValidationError({

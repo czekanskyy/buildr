@@ -1,12 +1,13 @@
 import type { ComponentMigrations, RegistryMeta } from '@buildr/core';
+import type { PayloadRequest } from 'payload';
 import { z } from 'zod';
 
 /** A function the host supplies; Zod only checks that it is one, the plugin never runs it at startup. */
 const fn = <T>() => z.custom<T>((value) => typeof value === 'function', 'must be a function');
 
-/** The slice of Payload's `PayloadRequest` the access functions read (`req.user`, ...). */
+/** What the access functions get (`req.user`, ...). */
 export interface AccessArgs {
-  readonly req: { readonly user?: unknown; readonly [key: string]: unknown };
+  readonly req: PayloadRequest;
 }
 export type AccessFn = (args: AccessArgs) => boolean | Promise<boolean>;
 
