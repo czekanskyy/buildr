@@ -895,3 +895,46 @@
   outline: 2px solid var(--bd-danger, #b91c1c);
   outline-offset: -2px;
 }
+
+.buildr-editor .bd-value {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.buildr-editor .bd-value-modes {
+  display: flex;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.buildr-editor .bd-value-modes button[aria-pressed="true"] {
+  background: var(--bd-accent-soft, rgba(80, 100, 255, 0.15));
+  font-weight: 600;
+}
+.buildr-editor .bd-value-fields {
+  display: flex;
+  flex-direction: column;
+  max-height: 160px;
+  overflow: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.buildr-editor .bd-value-fields button[aria-pressed="true"] {
+  font-weight: 600;
+}
+.buildr-editor .bd-value-chip[data-invalid="true"],
+.buildr-editor .bd-value-error,
+.buildr-editor .bd-value-diagnostics [data-severity="error"] {
+  color: var(--bd-danger, #c62828);
+}
+.buildr-editor .bd-value-diagnostics {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 12px;
+}
+.buildr-editor .bd-value-preview {
+  font-size: 12px;
+  opacity: 0.85;
+}

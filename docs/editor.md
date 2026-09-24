@@ -309,3 +309,14 @@ See dedicated pages: [drag-and-drop.md](drag-and-drop.md), [state-management.md]
 - **Keyboard.** "Move to…" in the layers context menu lists the places the rules allow (`moveDestinations`) and moves through the same drop.
 - **Performance.** A tree hit-test on 1,000 nodes takes far less than a frame (tested); canvas forwarding is one message per frame.
 - **Not here yet.** Dragging nodes out of the canvas itself and the Playwright scenarios (palette → canvas, tree → tree, a forbidden drop) need the assembled editor, PB-092.
+
+## Value modes and the binding picker (PB-081)
+
+A prop whose definition has `accepts` can hold a static value, a data binding or a formula. The inspector shows a **Fixed / Data / Formula** switch next to it (`ValueEditor`, `panels/inspector/values`). Props without `accepts` keep the plain control; a non-static value there shows a chip.
+
+- **Data**: a path input plus a searchable list of the schema's fields whose type the prop accepts (`bindingOptions`). Choosing one writes `bind(path, { format, fallback })` through `node.setProp`. A format editor offers the families that fit the field type (`formatKindsFor`). A path missing from the schema, or of the wrong type, is flagged (`checkBinding`).
+- **Formula**: an expression or a `{{ }}` template. The draft is parsed and typechecked on every change (`checkFormula`); diagnostics are listed with their span, and only a formula without errors is written. An invalid draft stays local ("Not saved").
+- **Preview**: with a sample `DataContext`, `previewValue` shows the resolved (and formatted) value; it never throws.
+- Switching back to Fixed writes a static value again (`node.unsetProp` when it equals the default).
+
+The schema and sample data come from `<InspectorDataProvider schema context>`; without them, paths are unchecked and there is no preview.

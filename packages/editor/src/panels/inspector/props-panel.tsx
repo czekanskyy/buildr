@@ -1,9 +1,10 @@
-import type { ComponentMeta, PageNode, PropDef } from '@buildr/core';
+import type { ComponentMeta, PageNode, PropDef, Value } from '@buildr/core';
 import { useId } from 'react';
 import { type MessageKey, useT } from '../../messages/index.tsx';
 import { Button } from '../../ui/index.ts';
 import { propLabel, renderControl } from './controls/index.ts';
 import { type PropReading, readProp, translationLocale } from './value.ts';
+import { ValueEditor } from './values/value-editor.tsx';
 
 /** Groups that live on the Advanced tab; everything else is content. */
 const ADVANCED_GROUPS: ReadonlySet<string> = new Set(['advanced', 'accessibility']);
@@ -25,6 +26,10 @@ export interface PropsPanelProps {
   readonly disabled: boolean;
   readonly onChange: (prop: string, def: PropDef, value: unknown) => void;
   readonly onReset: (prop: string, def: PropDef) => void;
+  /** Writes a binding or a formula (PB-081). */
+  readonly onSetValue?: (prop: string, def: PropDef, value: Value) => void;
+  /** Back from a binding or a formula to a fixed value. */
+  readonly onFixed?: (prop: string, def: PropDef) => void;
 }
 
 /** A hint shown under a control: what the default is, and the limits a value must keep. */
@@ -48,10 +53,13 @@ function Field(props: {
   readonly name: string;
   readonly def: PropDef;
   readonly reading: PropReading;
+  readonly raw: Value | undefined;
   readonly disabled: boolean;
   readonly translating: boolean;
   readonly onChange: PropsPanelProps['onChange'];
   readonly onReset: PropsPanelProps['onReset'];
+  readonly onSetValue: PropsPanelProps['onSetValue'];
+  readonly onFixed: PropsPanelProps['onFixed'];
 }) {
   const { name, def, reading, disabled, translating } = props;
   const t = useT();
@@ -60,23 +68,21 @@ function Field(props: {
   const label = propLabel(name, def);
   const hint = hintFor(def, t);
   const editable = reading.mode === 'static';
-  const control = editable
-    ? renderControl(def, {
-        id,
-        def,
-        label,
-        describedBy: hint === '' ? undefined : hintId,
-        value: reading.value,
-        disabled,
-        onChange: (value) => props.onChange(name, def, value),
-      })
-    : null;
+  const control = renderControl(def, {
+    id,
+    def,
+    label,
+    describedBy: hint === '' ? undefined : hintId,
+    value: reading.value,
+    disabled,
+    onChange: (value) => props.onChange(name, def, value),
+  });
   const inline = def.kind === 'boolean';
 
   return (
     <div className="bd-field" data-prop={name} data-kind={def.kind} data-inline={inline}>
       <div className="bd-field-head">
-        {control !== null ? (
+        {control !== null && editable ? (
           <label htmlFor={id} className="bd-field-label">
             {label}
             {translating ? (
@@ -98,13 +104,15 @@ function Field(props: {
           </Button>
         ) : null}
       </div>
-      {control}
-      {!editable ? (
-        <p className="bd-field-chip">
-          {reading.mode === 'binding' ? t('inspector.bound') : t('inspector.formula')}:{' '}
-          <code>{reading.source}</code>
-        </p>
-      ) : null}
+      <ValueEditor
+        def={def}
+        label={label}
+        raw={props.raw}
+        disabled={disabled}
+        staticControl={control}
+        onSet={(value) => props.onSetValue?.(name, def, value)}
+        onFixed={() => props.onFixed?.(name, def)}
+      />
       {editable && control === null ? (
         <p className="bd-field-unsupported">{t('inspector.unsupported')}</p>
       ) : null}
@@ -151,10 +159,17 @@ export function PropsPanel(props: PropsPanelProps) {
               name={name}
               def={def}
               reading={readProp(node, name, def, locale, defaultLocale)}
+              raw={
+                node.props !== undefined && Object.hasOwn(node.props, name)
+                  ? node.props[name]
+                  : undefined
+              }
               disabled={props.disabled}
               translating={translationLocale(def, locale, defaultLocale) !== undefined}
               onChange={props.onChange}
               onReset={props.onReset}
+              onSetValue={props.onSetValue}
+              onFixed={props.onFixed}
             />
           ))}
         </section>
