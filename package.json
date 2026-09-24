@@ -17,7 +17,8 @@
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
     "prepare": "lefthook install",
-    "e2e": "turbo run e2e"
+    "e2e": "turbo run e2e",
+    "gen:component": "node scripts/gen-component.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",

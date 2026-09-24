@@ -1,0 +1,45 @@
+/* A minimal reset, in the lowest layer so anything else overrides it without a specificity fight.
+   Scoped to the page root (`.bc-page`) so it never touches the host site. It only removes browser
+   defaults that fight the component styles; it does not style anything. */
+@layer buildr.reset {
+  .bc-page,
+  .bc-page *,
+  .bc-page *::before,
+  .bc-page *::after {
+    box-sizing: border-box;
+  }
+
+  .bc-page :where(h1, h2, h3, h4, h5, h6, p, figure, blockquote, dl, dd) {
+    margin: 0;
+  }
+
+  .bc-page :where(ul, ol) {
+    margin: 0;
+    padding: 0;
+  }
+
+  .bc-page :where(img, svg, video, canvas) {
+    display: block;
+    max-width: 100%;
+  }
+
+  .bc-page :where(button, input, select, textarea) {
+    font: inherit;
+    color: inherit;
+  }
+
+  .bc-page :where(button) {
+    cursor: pointer;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bc-page *,
+    .bc-page *::before,
+    .bc-page *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

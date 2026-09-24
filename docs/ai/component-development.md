@@ -50,3 +50,15 @@ A generator exists (or will, once task PB-050 lands): `pnpm gen:component <name>
 - `docs/templates.md` (or `docs/components.md`) is updated.
 
 See also [testing-rules.md](testing-rules.md) for the exact test types required per change, and [../accessibility.md](../accessibility.md) for the accessibility rules a new component must satisfy.
+
+## Scaffolding and shared pieces (PB-050)
+
+`pnpm gen:component <name>` creates `packages/components/src/<name>/` with `definition.ts`, `view.tsx`, `styles.css`, `fixtures.ts` and `<name>.test.tsx`. Options: `--client` (a `view.client.tsx` with `'use client'` and `runtime: 'client'`), `--namespace <ns>` (default `buildr`; a non-`buildr` namespace gives `bc-<ns>-<name>` classes). It refuses to overwrite an existing directory. After generating: fill in the metadata, export the definition from `src/index.ts`, add it to `docs/components.md`, add a changeset.
+
+The prop schema is its own constant (`<name>Props`) in `definition.ts`, and the view is typed from it (`BuilderComponentProps<typeof <name>Props>`); typing the view from the component itself is a type cycle.
+
+A convention test (`src/scaffold.test.tsx`) checks every component directory: `runtime: 'client'` requires `view.client.tsx` starting with `'use client'`, a shared component has no client module, `definition.ts` is never a client module, and `styles.css` lives in `@layer buildr.components`.
+
+**Reset.** `styles/base.css` puts a minimal reset in `@layer buildr.reset`, scoped to `.bc-page` so it never touches the host site.
+
+**Icons.** `<Icon name="check" label? size? />` draws one of about 90 icons (`ICON_NAMES`) from path data as React elements, never an HTML string. Without `label` the icon is decorative (`aria-hidden`); with it, `role="img"`. An unknown name renders nothing. The data is generated from [lucide-static](https://lucide.dev) v1.48.0 (ISC; some icons MIT); the licence text is `packages/components/LICENSE-lucide.txt` (listed in `files`) and must ship with the package.
