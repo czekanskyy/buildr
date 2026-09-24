@@ -63,6 +63,13 @@ export const documentResponseSchema = z.object({
   document: z.unknown(),
   /** What the canvas gets as its data context: `{collection}:{id}`. */
   contextRef: z.string(),
+  /**
+   * Where `document` came from: the document's own layout, its template, the collection's default
+   * template, or nothing yet (`builtin`: the canvas is blank and the site shows the built-in layout).
+   */
+  layoutSource: z.enum(['document', 'template', 'default-template', 'builtin']),
+  /** `{collection}:{id}` of the document that holds the layout; `null` for `builtin`. */
+  layoutRef: z.string().nullable(),
   /** The public path of the document, when the collection defines one. */
   previewPath: z.string().nullable(),
   readOnly: z.boolean().optional(),

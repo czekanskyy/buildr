@@ -51,6 +51,8 @@ const documentBody = {
   document: doc,
   contextRef: 'pages:7',
   previewPath: '/home',
+  layoutSource: 'document',
+  layoutRef: 'pages:1',
 };
 
 describe('createPayloadAdapter', () => {

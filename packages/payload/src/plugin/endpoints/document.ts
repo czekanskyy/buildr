@@ -4,6 +4,7 @@ import {
   documentQuerySchema,
   documentResponseSchema,
 } from '../../contract.ts';
+import { resolveLayout } from '../../data/index.ts';
 import { readLayout } from '../hooks/read-layout.ts';
 import {
   allowed,
@@ -35,10 +36,23 @@ export const getDocumentEndpoint = (env: EndpointEnv): Endpoint => ({
     const found = await latestOf(req, target.value, { locale: query.data.locale });
     if (!found.ok) return found.response;
     const doc = found.value;
-    const layout = readLayout(doc['layout'], env.options);
+    const own = env.options.collections[target.value.collection];
+    const resolved = await resolveLayout({
+      payload: req.payload,
+      req,
+      collection: target.value.collection,
+      doc,
+      contextName: own?.context ?? target.value.collection,
+      draft: true,
+    });
+    // A blank canvas for a document nobody gave a layout: the built-in one is only a render fallback.
+    const layout = readLayout(
+      resolved.source === 'builtin' ? undefined : resolved.layout,
+      env.options,
+    );
     if (!layout.ok) return invalid(layout.diagnostics);
 
-    const path = env.options.collections[target.value.collection]?.path;
+    const path = own?.path;
     const body: DocumentResponse = {
       ref: target.value,
       title: titleOf(req, target.value, doc),
@@ -48,6 +62,8 @@ export const getDocumentEndpoint = (env: EndpointEnv): Endpoint => ({
       revision: revisionOf(doc),
       document: layout.doc,
       contextRef: `${target.value.collection}:${target.value.id}`,
+      layoutSource: resolved.source,
+      layoutRef: resolved.layoutRef,
       previewPath: path === undefined ? null : path(doc),
       ...(layout.readOnly ? { readOnly: true } : {}),
     };

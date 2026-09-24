@@ -6,6 +6,12 @@ export { normalizeDoc, normalizeMedia } from './normalize.ts';
 export type { PayloadDataSourceOptions, QueryableCollection } from './payload-data-source.ts';
 export { createPayloadDataSource, DataQueryError } from './payload-data-source.ts';
 export type {
+  LayoutSource,
+  ResolvedLayout,
+  ResolveLayoutInput,
+} from './resolve-layout.ts';
+export { builtinLayout, hasContent, resolveLayout } from './resolve-layout.ts';
+export type {
   CollectionLike,
   FieldLike,
   SchemaOptions,
