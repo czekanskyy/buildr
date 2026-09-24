@@ -1,3 +1,12 @@
+export type { CompiledStyles } from './compile.ts';
+export { compileStyles } from './compile.ts';
+export type { NodeDeclarations, NodeRules } from './compile-node.ts';
+export {
+  compileNodeDeclarations,
+  compileNodeRules,
+  nodeClassName,
+  STYLE_STATES,
+} from './compile-node.ts';
 export type { LengthUnit, ParseOptions, StyleGrammar, TokenScale } from './grammar.ts';
 export { LENGTH_UNITS, MAX_STYLE_VALUE_LENGTH, parseStyleValue, TOKEN_SCALES } from './grammar.ts';
 export type {
