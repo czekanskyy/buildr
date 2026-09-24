@@ -91,7 +91,8 @@ function checkStatic(def: PropDef, value: unknown, what: string): Result<void, C
 }
 
 /** The prop's own kind validator for a static value, `bindable` and syntax for the dynamic kinds. */
-function checkValue(def: PropDef, value: Value): Result<void, CommandError> {
+/** The prop's own validation of a whole `Value` (shared with `node.wrap`'s wrapper props). */
+export function checkPropValue(def: PropDef, value: Value): Result<void, CommandError> {
   if (value.kind === 'static') {
     const main = checkStatic(def, value.value, 'the value');
     if (!main.ok) return main;
@@ -198,7 +199,7 @@ export const setPropHandler: CommandHandler<SetPropCommand> = {
     if (locale !== undefined) {
       return checkTranslation(def, node.props?.[prop] as Value | undefined, value);
     }
-    return checkValue(def, value);
+    return checkPropValue(def, value);
   },
 
   apply(draft, cmd) {

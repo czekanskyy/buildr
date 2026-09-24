@@ -4,6 +4,8 @@ export type { CommandError, CommandErrorCode } from './errors.ts';
 export { atIndex, commandError, fromReason } from './errors.ts';
 export { canExecute, execute, executeBatch } from './execute.ts';
 export type {
+  DuplicateCommand,
+  DuplicatePayload,
   InsertCommand,
   InsertPayload,
   MoveCommand,
@@ -21,12 +23,19 @@ export type {
   UnsetPropPayload,
   UnsetStyleCommand,
   UnsetStylePayload,
+  UnwrapCommand,
+  UnwrapPayload,
+  WrapCommand,
+  WrapPayload,
 } from './handlers/index.ts';
 export {
   coreCommandHandlers,
+  duplicateHandler,
   insertHandler,
   moveHandler,
   removeHandler,
+  unwrapHandler,
+  wrapHandler,
 } from './handlers/index.ts';
 export { checkPayload, commandSchema, createCommandRegistry, parseCommand } from './registry.ts';
 export type { ReplayResult } from './replay.ts';
