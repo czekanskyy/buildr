@@ -243,12 +243,11 @@ module.exports = {
       name: 'core-expressions-isolated',
       severity: 'error',
       comment:
-        'core/expressions may only use L0 and DataType (schema/registry) - everything else is forbidden.',
+        'core/expressions may only use L0, DataType (schema/registry) and data (DataContext/getPath, for evaluation) - everything else is forbidden.',
       from: { path: '^packages/core/src/expressions/' },
       to: {
         path: coreModules([
           'document',
-          'data',
           'values',
           'prepare',
           'styles',
