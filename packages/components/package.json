@@ -43,6 +43,7 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@buildr/test-utils": "workspace:*",
     "@buildr/tsconfig": "workspace:*",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",

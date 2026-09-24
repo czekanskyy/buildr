@@ -28,6 +28,22 @@ Each entry below is expanded with full detail once its implementation task lands
 - **Forms**: Form, Input, Textarea, Select, Checkbox
 - **Templates**: Hero, CTA, Feature, FeatureGrid, Testimonial, Pricing, FAQ, Contact, PostHeader, PostCard, BlogListing, AuthorBox, PostContent, ProductHero, ProductDetails
 
+## Layout components
+
+### Page (`buildr/page`)
+
+The document root: one per document, never inserted, moved, removed or duplicated (`capabilities.root`). A plain `div` with a `default` slot; landmarks are Sections, so a page can have several. Its CSS sets the base text colour, surface and body font from tokens.
+
+### Section (`buildr/section`)
+
+A band of the page. Props: `as` (`section`, `div`, `header`, `footer`, `main`, `aside`, `nav`, `article`; anything else renders `section`), `container` (`full`, `sm`, `md`, `lg`, `xl`: the content column, taken from the theme's `container` tokens and done with padding, so there is no wrapper element), `backgroundImage` (bindable media, drawn as a decorative `<img>` behind the content, through `platform.Image`), `ariaLabel` (localizable). A landmark element (`section`, `aside`, `nav`, `header`, `footer`) should be named with `ariaLabel`; the a11y rules check one `main` and named navigations.
+
+### Container (`buildr/container`)
+
+Centres its content in a column no wider than `width` (`sm`, `md`, `lg`, `xl`, from the `container` tokens). One `div`, `default` slot.
+
+Fixtures: each component exports `<name>Fixtures` (`ComponentFixture`: an id, a title and a subtree that goes under the page), reviewed at `FIXTURE_WIDTHS` (1280, 768, 375). Tablet and mobile overrides live in the fixture's `styles.bp`.
+
 ## Form field derivation
 
 Any component may declare `ComponentMeta.formField` (see [component-registry.md](component-registry.md)) to participate in form schema derivation. `deriveFormSchema(doc, registryMeta, formNodeId)` (in `@buildr/core/forms`) walks a `buildr/form` node's descendants and reads `formField` metadata generically — it never imports specific components — so custom form controls participate automatically. This function is the server-side source of truth for what a submitted form is allowed to contain; see [payload.md](payload.md) and [security.md](security.md).

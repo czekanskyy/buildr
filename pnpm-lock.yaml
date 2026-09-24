@@ -84,6 +84,9 @@ importers:
         specifier: workspace:*
         version: link:../react
     devDependencies:
+      '@buildr/test-utils':
+        specifier: workspace:*
+        version: link:../test-utils
       '@buildr/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig

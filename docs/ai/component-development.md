@@ -6,6 +6,7 @@ Step-by-step recipe for adding or changing a component in `@buildr/components`. 
 
 ```
 packages/components/src/<name>/
+  props.ts            # the prop schema (p.*), its own module so the view can be typed from it without an import cycle
   definition.ts       # ComponentMeta + defineComponent(...) — no 'use client'
   view.tsx             # the render function, for runtime: 'shared'
   view.client.tsx      # the render function, for runtime: 'client' (starts with 'use client')
@@ -53,9 +54,9 @@ See also [testing-rules.md](testing-rules.md) for the exact test types required 
 
 ## Scaffolding and shared pieces (PB-050)
 
-`pnpm gen:component <name>` creates `packages/components/src/<name>/` with `definition.ts`, `view.tsx`, `styles.css`, `fixtures.ts` and `<name>.test.tsx`. Options: `--client` (a `view.client.tsx` with `'use client'` and `runtime: 'client'`), `--namespace <ns>` (default `buildr`; a non-`buildr` namespace gives `bc-<ns>-<name>` classes). It refuses to overwrite an existing directory. After generating: fill in the metadata, export the definition from `src/index.ts`, add it to `docs/components.md`, add a changeset.
+`pnpm gen:component <name>` creates `packages/components/src/<name>/` with `props.ts`, `definition.ts`, `view.tsx`, `styles.css`, `fixtures.ts` and `<name>.test.tsx`. Options: `--client` (a `view.client.tsx` with `'use client'` and `runtime: 'client'`), `--namespace <ns>` (default `buildr`; a non-`buildr` namespace gives `bc-<ns>-<name>` classes). It refuses to overwrite an existing directory. After generating: fill in the metadata, export the definition from `src/index.ts`, add it to `docs/components.md`, add a changeset.
 
-The prop schema is its own constant (`<name>Props`) in `definition.ts`, and the view is typed from it (`BuilderComponentProps<typeof <name>Props>`); typing the view from the component itself is a type cycle.
+The prop schema is its own module (`props.ts`, exporting `<name>Props`), and the view is typed from it (`BuilderComponentProps<typeof <name>Props>`): typing the view from the component itself, or importing anything from `definition.ts` in the view, is an import cycle (`no-circular` in `pnpm check:boundaries`). Add `props.ts` to the directory structure above for any component that has props.
 
 A convention test (`src/scaffold.test.tsx`) checks every component directory: `runtime: 'client'` requires `view.client.tsx` starting with `'use client'`, a shared component has no client module, `definition.ts` is never a client module, and `styles.css` lives in `@layer buildr.components`.
 

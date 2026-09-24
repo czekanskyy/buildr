@@ -47,14 +47,16 @@ export function componentFiles(name, options = {}) {
   const propsType = client ? 'ClientComponentProps' : 'BuilderComponentProps';
 
   return {
-    'definition.ts': `import { p } from '@buildr/core';
-import { defineComponent } from '@buildr/react';
-import { ${P}View } from '${viewImport}';
+    'props.ts': `import { p } from '@buildr/core';
 
-/** The prop schema is its own constant so the view can be typed from it without a type cycle. */
+/** The prop schema is its own module: the view is typed from it, and importing it from the definition would be a cycle. */
 export const ${c}Props = {
   text: p.text({ default: '', bindable: true }),
 } as const;
+`,
+    'definition.ts': `import { defineComponent } from '@buildr/react';
+import { ${c}Props } from './props.ts';
+import { ${P}View } from '${viewImport}';
 
 /** ${label(name)}. Describe what it is for and what it is not. */
 export const ${P} = defineComponent({
@@ -73,7 +75,7 @@ export const ${P} = defineComponent({
 });
 `,
     [view]: `${client ? "'use client';\n\n" : ''}import type { ${propsType} } from '@buildr/react';
-import type { ${c}Props } from './definition.ts';
+import type { ${c}Props } from './props.ts';
 
 type Props = ${propsType}<typeof ${c}Props>;
 
