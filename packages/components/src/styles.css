@@ -25,3 +25,9 @@
 @import "./accordion-item/styles.css";
 @import "./loop/styles.css";
 @import "./pagination/styles.css";
+@import "./field/styles.css";
+@import "./form/styles.css";
+@import "./input/styles.css";
+@import "./textarea/styles.css";
+@import "./select/styles.css";
+@import "./checkbox/styles.css";

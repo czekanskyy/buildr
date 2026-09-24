@@ -23,6 +23,8 @@ export interface RenderDocumentOptions {
   readonly context: DataContext;
   readonly platform: Platform;
   readonly messages?: Readonly<Record<string, string>>;
+  /** Which document the layout came from; forms use it to find their action. */
+  readonly layoutRef?: string;
   /** The id of the document being rendered, so a query can exclude it (`excludeCurrent`). */
   readonly currentId?: string | number;
   readonly limits?: DocumentLimits;
@@ -85,6 +87,7 @@ export async function renderDocument(
     platform: options.platform,
     diagnostics,
     ...(options.messages !== undefined ? { messages: options.messages } : {}),
+    ...(options.layoutRef !== undefined ? { layoutRef: options.layoutRef } : {}),
     ...(options.cache !== undefined ? { cache: options.cache } : {}),
     ...(options.instrument !== undefined ? { instrument: options.instrument } : {}),
   });

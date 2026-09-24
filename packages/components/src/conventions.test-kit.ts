@@ -24,7 +24,10 @@ export function conventionProblems(
     if (files['view.client.tsx'] !== undefined) {
       problems.push(`${name}: view.client.tsx exists but the runtime is 'shared'`);
     }
+    // A shared component may render a client module of its own (an enhancement), named `*.client.tsx`;
+    // any other file that is a client module would make the component itself one.
     for (const [file, text] of Object.entries(files)) {
+      if (file.endsWith('.client.tsx')) continue;
       if (/^\s*['"]use client['"]/.test(text)) problems.push(`${name}: ${file} is a client module`);
     }
   }

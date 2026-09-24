@@ -10,6 +10,10 @@ export const BUILT_IN_MESSAGES = {
     'pagination.previous': 'Previous page',
     'pagination.next': 'Next page',
     'pagination.page': 'Page {page}',
+    'form.honeypot': 'Leave this field empty',
+    'form.sending': 'Sending…',
+    'form.success': 'Thank you, your message was sent.',
+    'form.error': 'Something went wrong. Please check the form and try again.',
   },
   pl: {
     'link.newTab': 'otwiera się w nowej karcie',
@@ -17,6 +21,10 @@ export const BUILT_IN_MESSAGES = {
     'pagination.previous': 'Poprzednia strona',
     'pagination.next': 'Następna strona',
     'pagination.page': 'Strona {page}',
+    'form.honeypot': 'Zostaw to pole puste',
+    'form.sending': 'Wysyłanie…',
+    'form.success': 'Dziękujemy, wiadomość została wysłana.',
+    'form.error': 'Coś poszło nie tak. Sprawdź formularz i spróbuj ponownie.',
   },
 } as const satisfies Readonly<Record<string, Readonly<Record<string, string>>>>;
 

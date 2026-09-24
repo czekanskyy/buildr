@@ -111,3 +111,23 @@ describe('node.parent', () => {
     expect(out.match(/&quot;id&quot;:&quot;node000001&quot;/g)).toHaveLength(2);
   });
 });
+
+describe('env.layoutRef', () => {
+  const Reporter = defineComponent({
+    ...base,
+    type: 'test/reporter',
+    label: 'Reporter',
+    runtime: 'shared',
+    props: {},
+    render: ({ root, env }) => <span {...root}>{`ref=${env.layoutRef ?? 'none'}`}</span>,
+  });
+  const reg = createRegistry({ components: [Page, Reporter] });
+  const d = doc([node(1, 'test/reporter')], {}, [ID(1)]);
+
+  it('reaches every component, and is absent when the renderer was not given one', () => {
+    expect(html(renderTree(d, options({ registry: reg, layoutRef: 'pages:42' })))).toContain(
+      'ref=pages:42',
+    );
+    expect(html(renderTree(d, options({ registry: reg })))).toContain('ref=none');
+  });
+});

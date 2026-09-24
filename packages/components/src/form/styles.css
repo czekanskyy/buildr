@@ -1,0 +1,20 @@
+@layer buildr.components {
+  .bc-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--b-space-4);
+  }
+
+  /* Off screen, not display: none, or some bots skip it. */
+  .bc-form__honeypot {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .bc-form__status:empty {
+    display: none;
+  }
+}

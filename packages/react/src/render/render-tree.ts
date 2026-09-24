@@ -28,6 +28,7 @@ export function renderTree(doc: BuilderDocument, options: RenderTreeOptions): Re
       mode: options.context.mode,
       locale: options.context.locale,
       messages: options.messages ?? {},
+      ...(options.layoutRef !== undefined ? { layoutRef: options.layoutRef } : {}),
     },
     devChecks: options.devChecks ?? !inProduction(),
     path: new Set(),

@@ -113,6 +113,10 @@ Any component with a `listSource` prop renders as a loop (the `buildr/loop` comp
 - `renderFixtureToHtml(document, { theme?, dataSource? })` from `@buildr/test-utils/render` renders the same documents to static HTML through the production `renderDocument`, for snapshot tests.
 - `pnpm e2e` runs the Playwright smoke tests (`apps/playground/e2e`); browsers are installed once with `pnpm --filter @buildr/playground exec playwright install chromium`.
 
+## The layout reference
+
+`env.layoutRef` is the reference of the document the layout came from (`layoutRef` in `renderDocument`, `RenderTreeOptions` and the `DocumentRenderer` props); it is absent when not given. Components that need to address the layout, such as a form building its action, pass it to the platform (`platform.formAction(env.layoutRef ?? '', node.id)`).
+
 ## The parent of a node
 
 A component receives `node.parent` (`{ id, type, props }`): the node whose slot it is rendered into, with that node's resolved props, absent for the root. It is for components whose behaviour depends on their container (an accordion item joining its accordion's exclusive group). A node produced by a Loop has the Loop as its parent. The props are resolved JSON, so client components receive it too. The renderer keeps a stack of containers while it walks (`RenderRun.parents`), so nothing is looked up afterwards and no context is involved.

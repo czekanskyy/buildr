@@ -55,6 +55,8 @@ export interface NodeParent {
 }
 
 export interface ComponentEnv {
+  /** Which document the layout being rendered came from; `platform.formAction(layoutRef, nodeId)` takes it. Empty when unknown. */
+  readonly layoutRef?: string;
   readonly mode: DataContext['mode'];
   readonly locale: LocaleCode;
   /** Built-in strings ("opens in a new tab", form messages) for `locale`. Serializable. */
