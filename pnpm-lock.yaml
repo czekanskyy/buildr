@@ -65,6 +65,9 @@ importers:
 
   packages/core:
     dependencies:
+      immer:
+        specifier: ^11.1.18
+        version: 11.1.18
       zod:
         specifier: ^4.6.5
         version: 4.6.5
@@ -1458,6 +1461,9 @@ packages:
     resolution: {integrity: sha512-It7CkTNp7IYA8jhvGgz8K18OAbHF3/Juk8RNEyTyMFfolJOIU1Y2wGDnzDQPbGCjyxVF/++pwIZE0BKJUEOb1g==}
     engines: {node: '>=18'}
     hasBin: true
+
+  immer@11.1.18:
+    resolution: {integrity: sha512-EQyQtLiYW029lyoczMl/Hh4Xu7cDecSc58JRYpHyL4tIAu3eqd1yJzQX04d2BZHDkzFFvm6qJEJWOtfDSWAXbQ==}
 
   ini@4.1.1:
     resolution: {integrity: sha512-QQnnxNyfvmHFIsj7gkPcYymR8Jdw/o7mp5ZFihxn6h8Ci6fh3Dx4E1gPjpQEpIuPo9XVNY/ZUwh4BPMjGyL01g==}
@@ -3219,6 +3225,8 @@ snapshots:
   ignore@7.0.9: {}
 
   image-dimensions@2.5.1: {}
+
+  immer@11.1.18: {}
 
   ini@4.1.1: {}
 

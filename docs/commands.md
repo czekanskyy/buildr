@@ -18,20 +18,32 @@ See also [ADR-013](adr/ADR-013-command-system.md) and [ADR-012](adr/ADR-012-undo
 | — | `doc.replace` | Full document swap (load, resync, conflict resolution). **Outside history**, clears the history stack |
 
 ```ts
+export interface Command<T extends string = string, P = unknown> { readonly type: T; readonly payload: P }
+
 export interface CommandHandler<C extends Command> {
   type: C['type'];
-  validate(doc: BuilderDocument, cmd: C, env: CommandEnv): Result<void, CommandError>;   // canInsert, locks, schemas
-  apply(draft: Draft<BuilderDocument>, cmd: C, env: CommandEnv): { affected: NodeId[]; select?: NodeId[] };
+  schema?: z.ZodType<unknown>;                                   // payload shape, checked before validate
+  validate(doc: BuilderDocument, cmd: C, env: HandlerEnv): Result<void, CommandError>;   // canInsert, locks
+  apply(draft: Draft<BuilderDocument>, cmd: C, env: HandlerEnv): { affected: NodeId[]; select?: NodeId[] };
 }
-export interface CommandEnv { registry: RegistryMeta; generateId(): NodeId; index: DocumentIndex }
+// HandlerEnv = { registry, generateId, index }  (index of the document *before* this command)
+// CommandEnv  = { registry, commands: CommandRegistry, generateId, checkInvariants? }
+
+export function createCommandRegistry(handlers): CommandRegistry;          // a value, not a global
 export function execute(doc, cmd, env): Result<CommandResult, CommandError>;       // CommandResult = { doc, patches, inverse, affected, select }
-export function executeBatch(doc, cmds, env): Result<CommandResult, CommandError>; // atomic: one draft, all-or-nothing
+export function executeBatch(doc, cmds, env): Result<CommandResult, CommandError>; // atomic: all-or-nothing, one inverse
 export function canExecute(doc, cmd, env): Result<void, CommandError>;
+export function replay(doc, commands, env): Result<{ doc, steps }, CommandError>;
+export function parseCommand(commands, input: unknown): Result<Command, CommandError>;  // untrusted input
+export function applyDocumentPatches(doc, patches: unknown[]): Result<BuilderDocument, CommandError>; // the canvas
 ```
 
+- `executeBatch` runs the commands in order, each against the previous result (so a later `validate` sees the earlier changes); one failure returns `Err` with `commandIndex` and no document. Its `inverse` is the per-command inverses in reverse order, so one undo reverts the whole batch.
+- A rejected command is an `Err` (`command.rejected` with the rule's user-facing `reason`, `command.invalid-payload`, `command.unknown-type`, `command.invariant-violated`), never an exception. `applyDocumentPatches` validates patches from `postMessage` (ops, path shape, no `__proto__`/`constructor`/`prototype` segments, at most 10 000).
+- Immer is used only inside `core/commands`; `patches`/`inverse` are Immer's own, so undo correctness does not depend on hand-written inverses.
+- `checkInvariants` (default on) runs `checkInvariants` on every result and rejects a command that leaves the document invalid; the editor turns it off in production. Cost at 5000 nodes: a command runs in about 2.5ms with the check off on an idle machine (the test allows 10ms for loaded CI).
 - Commands are **serializable** JSON, enabling logging, replay, and golden/property-based tests.
 - `generateId` is injected, so tests get deterministic snapshots via a seeded generator.
-- `assertDocumentInvariants` runs after every command in dev/test builds.
 - **Debug**: a ring buffer of the last 500 commands in the editor's dev panel, plus `replay(doc, commands)`. A user can optionally attach the log to a bug report.
 
 ## Undo/redo, transactions, batching
