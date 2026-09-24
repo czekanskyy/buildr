@@ -3,6 +3,7 @@
 // (see docs/backlog/phase-01-core-document.md onward).
 export * from './data/index.ts';
 export * from './document/index.ts';
+export * from './expressions/index.ts';
 export * from './ids/index.ts';
 export * from './json/index.ts';
 export * from './migrations/index.ts';

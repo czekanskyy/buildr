@@ -23,7 +23,15 @@ call     := IDENT '(' ( expr ( ',' expr )* )? ')'      // IDENT must be an allow
 template := ( TEXT | '{{' expr '}}' )*                  // mode: 'template'; '\{{' is a literal
 ```
 
-The AST node kinds are `Literal | Path | Array | Unary | Binary | Logical | Conditional | Call`, each carrying a `span: [start, end]` for editor error underlines. A printer (AST -> normalized source) supports round-trip tests.
+The AST node kinds are `Literal | Path | Array | Unary | Binary | Logical | Conditional | Call`, each carrying a `span: [start, end)` (UTF-16 offsets into the source) for editor error underlines. A printer (AST -> normalized source) supports round-trip tests.
+
+Lexical details: `NUMBER` is `digits ('.' digits)? ([eE] [+-]? digits)?` (never negative — `-1` is a unary minus; a literal that overflows to `Infinity` is a syntax error); `STRING` is single- or double-quoted with the escapes `\\ \' \" \n \r \t \uXXXX`; `IDENT` is `[A-Za-z_][A-Za-z0-9_]*`; `true`/`false`/`null` are keywords. A `[ ... ]` index must be a non-negative integer, and `a['b']` is the same AST as `a.b`. Postfix steps on a path are folded into one `Path` node (`(a.b).c` is `a.b.c`); a step on any other primary (`(c ? a : b).x`, `[1, 2][0]`, `f(x).y`) gives a `Path` with an `object`.
+
+The parser does not know the stdlib: any identifier followed by `(` parses as a `Call`, and the evaluator/typechecker enforce the allowlist and arity. Likewise it does not reject `__proto__`/`constructor` steps — those can never be read, because evaluation goes through `getPath`.
+
+### Template mode
+
+`parseTemplate` splits text from `{{ expr }}` interpolations (a `Template` of `Text | Interpolation` parts). A run of `n` backslashes directly before `{{` stands for `floor(n / 2)` literal backslashes, and the `{{` is literal text when `n` is odd (so `\{{` is the literal `{{`); a backslash anywhere else, and a stray `}}`, is plain text. A `}}` inside a string in an interpolation does not close it. A `{` immediately before an interpolation cannot be written (`{{{` opens at its first two braces); use `{{ "{" }}`.
 
 ## Semantics
 
@@ -47,7 +55,7 @@ There is no `now()` and no source of randomness — evaluation is fully determin
 
 ## Parser
 
-A hand-written lexer plus a Pratt parser (~400 LOC, zero dependencies), with position-tagged error messages.
+A hand-written lexer plus a Pratt parser (~400 LOC, zero dependencies), with position-tagged error messages: `parseExpression(source)` and `parseTemplate(source)` return `Result<Ast, Diagnostic>` and never throw. There is no error recovery — the first problem is reported as a `Diagnostic` with code `expr.syntax` (or `expr.limit`) and `details.start`/`details.end` giving the offending source range. `printExpression`/`printTemplate` emit normalized source with only the parentheses precedence requires.
 
 ## Validation
 
@@ -59,7 +67,7 @@ Evaluation is a tree-walking interpreter with a step budget. Data access goes ex
 
 ## Limits
 
-Source length <= 2000 characters, <= 500 tokens, AST depth <= 32, <= 10,000 evaluation steps, result text <= 10,000 characters, list operations <= 1000 elements.
+Source length <= 2000 characters (for a template, the whole source), <= 500 tokens (per expression), AST depth <= 32 (a left-leaning chain like `a + b + c + ...` adds one level per operator; parentheses and path steps add none), <= 10,000 evaluation steps, result text <= 10,000 characters, list operations <= 1000 elements.
 
 ## Why not an existing engine
 
