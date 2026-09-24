@@ -23,6 +23,7 @@ const Probe = defineComponent({
   type: 'buildr/text',
   label: 'Text',
   runtime: 'shared',
+  editor: { inlineProp: 'text' },
   props: { text: p.text({ default: '', bindable: true }) },
   render: ({ props, root, node: self }) => {
     renders.push(self.id);
@@ -382,5 +383,116 @@ describe('CanvasRuntime: state', () => {
     renders.length = 0;
     await deliver('selection:set', { ids: ['node000002'] });
     expect(renders).toEqual([]);
+  });
+});
+
+describe('CanvasRuntime: inline editing', () => {
+  const dbl = async (id: string) =>
+    act(async () => {
+      container
+        .querySelector(`[data-bid="${id}"]`)
+        ?.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, cancelable: true }));
+    });
+  const el = (id: string) => container.querySelector(`[data-bid="${id}"]`) as HTMLElement;
+  const key = async (id: string, k: string) =>
+    act(async () => {
+      el(id).dispatchEvent(
+        new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }),
+      );
+    });
+  const commits = () => transport.of('inline:commit');
+
+  it('makes the text editable on a double click, and still tells the editor about it', async () => {
+    await mount();
+    await deliver('editor:init', init(three()));
+    await dbl('node000002');
+    expect(el('node000002').hasAttribute('contenteditable')).toBe(true);
+    expect(transport.of('node:dblclick')).toEqual([expect.objectContaining({ id: 'node000002' })]);
+  });
+
+  it('commits once on Enter, and not again when the element loses focus', async () => {
+    await mount();
+    await deliver('editor:init', init(three()));
+    await dbl('node000002');
+    el('node000002').textContent = 'Typed';
+    await key('node000002', 'Enter');
+    await act(async () => {
+      el('node000002').dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+    });
+    expect(commits()).toEqual([{ id: 'node000002', prop: 'text', value: 'Typed' }]);
+    expect(el('node000002').hasAttribute('contenteditable')).toBe(false);
+  });
+
+  it('commits when the element loses focus', async () => {
+    await mount();
+    await deliver('editor:init', init(three()));
+    await dbl('node000002');
+    el('node000002').textContent = 'Blurred';
+    await act(async () => {
+      el('node000002').dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+    });
+    expect(commits()).toEqual([{ id: 'node000002', prop: 'text', value: 'Blurred' }]);
+  });
+
+  it('sends nothing when the text did not change', async () => {
+    await mount();
+    await deliver('editor:init', init(three()));
+    await dbl('node000002');
+    await key('node000002', 'Enter');
+    expect(commits()).toEqual([]);
+  });
+
+  it('puts the old text back on Escape', async () => {
+    await mount();
+    await deliver('editor:init', init(three()));
+    await dbl('node000002');
+    el('node000002').textContent = 'Nope';
+    await key('node000002', 'Escape');
+    expect(commits()).toEqual([]);
+    expect(textOf('node000002')).toBe('One');
+    expect(el('node000002').hasAttribute('contenteditable')).toBe(false);
+  });
+
+  it('keeps a patch that arrives mid-edit away from the text being typed, then shows it', async () => {
+    await mount();
+    await deliver('editor:init', init(three()));
+    await dbl('node000002');
+    el('node000002').textContent = 'Typed';
+    const textNode = el('node000002').firstChild;
+    renders.length = 0;
+    await deliver('doc:patch', setText('node000002', 'Server', 1));
+    expect(renders).toEqual([]);
+    expect(el('node000002').firstChild).toBe(textNode);
+    expect(textOf('node000002')).toBe('Typed');
+
+    await key('node000002', 'Escape');
+    await deliver('doc:patch', setText('node000003', 'Other', 2));
+    expect(textOf('node000002')).toBe('Server');
+    expect(textOf('node000003')).toBe('Other');
+  });
+
+  it('does not select when the click is inside the text being edited', async () => {
+    await mount();
+    await deliver('editor:init', init(three()));
+    await dbl('node000002');
+    await act(async () => {
+      el('node000002').dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    });
+    expect(transport.of('node:click')).toEqual([]);
+  });
+
+  it('edits static text only, and only in edit mode', async () => {
+    const bound = doc([
+      node(1, 'buildr/text', { text: { kind: 'binding', path: 'item.title' } as never }),
+      node(2, 'buildr/text', { text: s('Plain') }),
+    ]);
+    await mount();
+    await deliver('editor:init', init(bound));
+    await dbl('node000001');
+    expect(el('node000001').hasAttribute('contenteditable')).toBe(false);
+
+    await deliver('mode:set', { mode: 'interact' });
+    await dbl('node000002');
+    expect(el('node000002').hasAttribute('contenteditable')).toBe(false);
   });
 });

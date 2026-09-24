@@ -26,6 +26,7 @@ import type { Platform } from '../define/types.ts';
 import { loadDocument } from '../render/pipeline.ts';
 import { BuildrStyles } from '../render/styles.tsx';
 import type { CanvasInstrumentation, ResumeState } from '../render/types.ts';
+import { installInlineEdit } from './inline-edit.ts';
 import { installInteractions } from './interactions.ts';
 import { type CanvasEnv, CanvasEnvContext, NodeView } from './node-view.tsx';
 import { createOverlay } from './overlay/overlay.ts';
@@ -250,14 +251,19 @@ export function CanvasRuntime(props: CanvasRuntimeProps) {
   useEffect(() => {
     const doc = (globalThis as { document?: Document }).document;
     if (!interactive || doc === undefined) return;
-    const stop = installInteractions({
+    const transport = () => transportRef.current;
+    // Inline editing first: its double click listener must run before the capture one stops it.
+    const stopInline = installInlineEdit({
       document: doc,
       store,
-      transport: () => transportRef.current,
+      transport,
+      inlineProp: (type) => propsRef.current.registry.meta.get(type)?.editor?.inlineProp,
     });
+    const stop = installInteractions({ document: doc, store, transport });
     const overlay = createOverlay({ document: doc, store });
     return () => {
       stop();
+      stopInline();
       overlay.destroy();
     };
   }, [store, interactive]);

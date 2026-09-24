@@ -88,6 +88,14 @@ packages/editor/src/
 - Selecting a node inside a collapsed `<details>` opens its `<details>` ancestors, for any component.
 - Outside production, a selected node with no `data-bid` element logs one warning: it cannot be outlined.
 
+### Inline editing (PB-069)
+
+A double click on a component whose `editor.inlineProp` names a prop holding a **static, non-localized string** makes the component's root element editable in place (`installInlineEdit`; `contenteditable="plaintext-only"`, or `true` plus pasting as plain text where the browser has no `plaintext-only`). The double click still reaches the editor as `node:dblclick`.
+
+- **Enter** (without Shift) or **leaving the element** sends `inline:commit { id, prop, value }` — once, and only when the text changed; the editor turns it into one `node.setProp` and so one history entry. **Escape** puts the old text back and sends nothing. Text over 20 000 characters is not sent.
+- The node's view is **frozen** for the session (`store.beginEdit`): typing re-renders nothing, so the caret never moves, and a patch that arrives mid-edit reaches the replica but is not shown until the session ends (then the latest state is).
+- A click inside the text being edited places the caret and is not reported as a selection. Nothing is editable in `interact` mode, for a bound or localized value, or for a component with no `inlineProp`.
+
 ## The postMessage protocol
 
 An **envelope**, Zod-validated on both sides (malformed messages are dropped and logged in dev):

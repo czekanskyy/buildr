@@ -1,4 +1,4 @@
-import type { BuilderDocument, Diagnostic, NodeId } from '@buildr/core';
+import type { BuilderDocument, Diagnostic, NodeId, PageNode } from '@buildr/core';
 import { applyDocumentPatches } from '@buildr/core/commands';
 
 /** The locales the editor's project has, as `editor:init` carries them. */
@@ -47,6 +47,15 @@ export interface CanvasStore {
    * in the document, patches included, leaves the node's identity alone.
    */
   subscribeNode(id: NodeId, listener: () => void): () => void;
+  /**
+   * Freezes what a node's view sees while its text is being edited in place: patches still reach
+   * the replica, but the view keeps its node (and so its DOM, and the caret in it) until
+   * `endEdit`, which shows the latest.
+   */
+  beginEdit(id: NodeId): void;
+  endEdit(): void;
+  /** The node being edited in place, if any. */
+  editing(): NodeId | null;
   /** Replaces the replica (`editor:init`, `doc:set`). */
   setDocument(doc: BuilderDocument, version: number): void;
   applyPatches(from: number, to: number, patches: readonly unknown[]): PatchOutcome;
@@ -100,6 +109,8 @@ export function createCanvasStore(): CanvasStore {
   const diagnostics = new Map<string, readonly Diagnostic[]>();
   let flat: readonly Diagnostic[] = [];
 
+  let edit: { id: NodeId; node: PageNode | undefined } | null = null;
+
   const emit = () => {
     for (const listener of [...listeners]) listener();
   };
@@ -126,9 +137,25 @@ export function createCanvasStore(): CanvasStore {
       };
     },
     getNode: (id) =>
-      state.doc !== undefined && Object.hasOwn(state.doc.nodes, id)
-        ? state.doc.nodes[id]
-        : undefined,
+      edit?.id === id
+        ? edit.node
+        : state.doc !== undefined && Object.hasOwn(state.doc.nodes, id)
+          ? state.doc.nodes[id]
+          : undefined,
+    beginEdit(id) {
+      const node =
+        state.doc !== undefined && Object.hasOwn(state.doc.nodes, id)
+          ? state.doc.nodes[id]
+          : undefined;
+      edit = { id, node };
+    },
+    endEdit() {
+      if (edit === null) return;
+      const { id } = edit;
+      edit = null;
+      notifyNodes([id]);
+    },
+    editing: () => edit?.id ?? null,
     subscribeNode(id, listener) {
       const set = nodeListeners.get(id) ?? new Set();
       set.add(listener);
