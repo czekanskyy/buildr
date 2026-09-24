@@ -76,3 +76,12 @@ The `/buildr/*` prefix does not collide with Payload's own catch-all `/api/*`, o
 - `buildrMetadata(entry, defaults)` — maps SEO fields (`meta.title/description/image/noIndex/canonical`, with the title, excerpt and featured image as fallbacks) and `alternates` (hreflang) onto a `Metadata`-shaped object. `noIndex` and `draft` both give `robots: noindex`.
 
 `next` is a peer dependency; it is a devDependency only so the platform can be tested.
+
+## Implemented API: draft mode and preview (PB-104)
+
+`@buildr/next/draft` exports:
+
+- `createPreviewRoute({ authorize, defaultPath? })` — the `GET` of `/buildr/preview`. `authorize(request)` decides (a session check, a shared secret in the query); without a yes the answer is `401` and draft mode stays off. Then it calls `draftMode().enable()` and answers `307` to `?path=`.
+- `createExitPreviewRoute({ defaultPath? })` — the `GET` of `/buildr/preview/exit`: `draftMode().disable()` and the same redirect. It needs no authorization.
+- `safeRedirectPath(value, fallback = '/')` — the only source of redirect targets. A value is accepted only when it starts with a single `/` and contains no backslash or control character; `//host`, `/\host`, `https://…` and `javascript:` fall back to `defaultPath`. There is no open-redirect vector.
+- `PreviewBanner({ message, exitLabel, exitHref?, returnTo? })` — a Server Component that renders only in draft mode. The texts are props, so the application supplies them in the site's language.
