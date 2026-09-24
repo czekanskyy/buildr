@@ -1,3 +1,4 @@
+import * as ContextMenuPrimitive from '@radix-ui/react-context-menu';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import * as SelectPrimitive from '@radix-ui/react-select';
@@ -241,5 +242,45 @@ export function Toggle({ pressed, onPressedChange, children, label, disabled }: 
     >
       {children}
     </TogglePrimitive.Root>
+  );
+}
+
+// --- ContextMenu -------------------------------------------------------------------------------
+
+export interface MenuItem {
+  readonly id: string;
+  readonly label: string;
+  readonly onSelect: () => void;
+  readonly disabled?: boolean;
+  readonly danger?: boolean;
+}
+
+export interface ContextMenuProps {
+  /** The area the menu opens on (right click, the menu key, Shift+F10). */
+  readonly children: ReactNode;
+  readonly items: readonly MenuItem[];
+  readonly label: string;
+}
+
+export function ContextMenu({ children, items, label }: ContextMenuProps) {
+  return (
+    <ContextMenuPrimitive.Root>
+      <ContextMenuPrimitive.Trigger asChild>{children}</ContextMenuPrimitive.Trigger>
+      <ContextMenuPrimitive.Portal>
+        <ContextMenuPrimitive.Content className="bd-menu bd-portal" aria-label={label}>
+          {items.map((item) => (
+            <ContextMenuPrimitive.Item
+              key={item.id}
+              className="bd-menu-item"
+              disabled={item.disabled ?? false}
+              data-danger={item.danger === true ? '' : undefined}
+              onSelect={item.onSelect}
+            >
+              {item.label}
+            </ContextMenuPrimitive.Item>
+          ))}
+        </ContextMenuPrimitive.Content>
+      </ContextMenuPrimitive.Portal>
+    </ContextMenuPrimitive.Root>
   );
 }
