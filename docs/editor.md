@@ -91,7 +91,7 @@ interface Envelope<T extends string, P> {
 | E->C | `locale:set` | `{ locale }` | switch the content language |
 | E->C | `dnd:over` / `dnd:leave` | `{ point, item }` | forwarding a palette/tree drag |
 | E->C | `scroll:to` | `{ id }` | |
-| E->C | `mode:set` | `'edit' \| 'interact'` | `interact` lets clicks reach components (v0.2) |
+| E->C | `mode:set` | `{ mode: 'edit' \| 'interact' }` | `interact` lets clicks reach components (v0.2) |
 | C->E | `canvas:hello` / `canvas:ready` | | |
 | C->E | `doc:resync-request` | `{ have: docVersion }` | the editor replies with `doc:set` |
 | C->E | `node:click` / `node:hover` / `node:dblclick` | `{ id, instance?, modifiers }` | |
@@ -102,6 +102,17 @@ interface Envelope<T extends string, P> {
 | C->E | `contextmenu` | `{ id, point }` | point translated to editor coordinates |
 | C->E | `diagnostics` | `{ items: Diagnostic[] }` | bindings, per-node render errors |
 | C->E | `canvas:error` | `{ message, nodeId?, fatal }` | fatal shows a "Reload canvas" affordance (lossless) |
+
+### Schemas (`@buildr/core/protocol`)
+
+Every message of the table above has a Zod schema (`editorMessageSchema` for what the editor sends, `canvasMessageSchema` for what the canvas sends, `messageSchema` for both), and a test keeps this table and the schemas identical. All schemas are strict (an unknown field refuses the message).
+
+- `parseEditorMessage`, `parseCanvasMessage`, `parseMessage` take whatever arrived in a `MessageEvent` and return a `Result`; a refused message is one `protocol.invalid-message` diagnostic and is never thrown. `parseEnvelope` reads just the envelope, and accepts any protocol version so that a `canvas:hello` of another version can be told apart from noise.
+- `createMessage(type, payload, { session, id?, replyTo? })` builds a typed message. `MESSAGE_DIRECTION` says which side sends each type, so a receiver drops a type its peer may not send.
+- `PROTOCOL_VERSION` is 1 and is in every envelope. Changing the shape or meaning of any message bumps it in the same change.
+- The session is 16 to 128 URL-safe characters; `id` and `replyTo` are 1 to 64.
+- `doc:patch` carries Immer patches with JSON values only, at most 20 000 patches of at most 24 path segments, and no path segment may be `__proto__`, `constructor` or `prototype`. Its `to` must be later than `from`. `doc:set` and `editor:init` carry a document that must pass `documentSchema` (the canvas still runs the document limits on it).
+- Other limits: 1000 ids in a selection or a move, 500 diagnostics, 20 000 characters of inline text, a viewport width of 240 to 4096, a prop name of letters, digits and `_` (never a prototype key).
 
 **Synchronization**: the editor is the source of truth. Every command produces patches, batched once per animation frame. The canvas applies them with `applyPatches` to its own replica; structural sharing preserves identity for unchanged nodes, so only what actually changed re-renders. Undo/redo sends inverse patches through the same channel. Selection/hover state lives in the editor; the canvas is purely a receiver, and a click in the canvas sends an intent rather than mutating local state. A canvas reload (HMR, navigation, crash) simply re-sends `canvas:hello`; the editor replies with `editor:init` carrying current state, so state loss is impossible by construction. A component error is caught by a per-node error boundary (a placeholder plus a non-fatal `canvas:error`); `window.onerror`/`unhandledrejection` are also reported; no handshake reply shows the error screen. See [security.md](security.md) for the origin/source/nonce/CSP details.
 
