@@ -1,4 +1,9 @@
-import { dataSchemaSchema } from '@buildr/core';
+import {
+  dataSchemaSchema,
+  mediaAssetSchema,
+  queryResultSchema,
+  resolvedQuerySpecSchema,
+} from '@buildr/core';
 import { z } from 'zod';
 
 /**
@@ -121,3 +126,19 @@ export const samplesResponseSchema = z.object({
   items: z.array(z.object({ id: z.string(), title: z.string() })),
 });
 export type SamplesResponse = z.infer<typeof samplesResponseSchema>;
+
+/** `POST /buildr/data/query`: one resolved query, answered with the access of the editing user. */
+export const dataQueryRequestSchema = z.object({
+  spec: resolvedQuerySpecSchema,
+  locale: z.string().optional(),
+});
+export type DataQueryRequest = z.infer<typeof dataQueryRequestSchema>;
+export const dataQueryResponseSchema = queryResultSchema;
+
+/** `POST /buildr/data/media`: media assets by id; unknown ids are left out. */
+export const dataMediaRequestSchema = z.object({
+  ids: z.array(z.string().min(1)).max(100),
+  locale: z.string().optional(),
+});
+export type DataMediaRequest = z.infer<typeof dataMediaRequestSchema>;
+export const dataMediaResponseSchema = z.record(z.string(), mediaAssetSchema);

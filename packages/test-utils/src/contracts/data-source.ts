@@ -106,10 +106,10 @@ export function runDataSourceContract(
         ['gt across types matches nothing', { field: 'views', op: 'gt', value: 'a' }, []],
         [
           'exists true',
-          { field: 'tags', op: 'exists', value: true },
+          { field: 'author.name', op: 'exists', value: true },
           ['Alpha', 'Beta', 'Gamma', 'Delta'],
         ],
-        ['exists false', { field: 'tags', op: 'exists', value: false }, ['Epsilon']],
+        ['exists false', { field: 'author.name', op: 'exists', value: false }, ['Epsilon']],
         [
           'and',
           { and: [eq('live', true), { field: 'views', op: 'gte', value: 20 }] },

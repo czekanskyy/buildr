@@ -1,5 +1,6 @@
 import type { Endpoint } from 'payload';
 import type { EndpointEnv } from './context.ts';
+import { dataMediaEndpoint, dataQueryEndpoint } from './data.ts';
 import { dataContextEndpoint } from './data-context.ts';
 import { dataSchemaEndpoint } from './data-schema.ts';
 import { getDocumentEndpoint } from './document.ts';
@@ -19,6 +20,8 @@ export const buildrEndpoints = (env: EndpointEnv): Endpoint[] => [
   dataSchemaEndpoint(env),
   dataContextEndpoint(env),
   samplesEndpoint(env),
+  dataQueryEndpoint(env),
+  dataMediaEndpoint(env),
 ];
 
 export type { EndpointEnv } from './context.ts';

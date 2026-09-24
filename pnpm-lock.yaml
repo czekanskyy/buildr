@@ -289,6 +289,9 @@ importers:
       '@buildr/next':
         specifier: workspace:*
         version: link:../next
+      '@buildr/test-utils':
+        specifier: workspace:*
+        version: link:../test-utils
       '@buildr/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig

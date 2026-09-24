@@ -87,6 +87,7 @@
   },
   "devDependencies": {
     "@buildr/next": "workspace:*",
+    "@buildr/test-utils": "workspace:*",
     "@buildr/tsconfig": "workspace:*",
     "@payloadcms/db-sqlite": "3.90.1",
     "@payloadcms/ui": "3.90.1",
