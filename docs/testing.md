@@ -22,3 +22,11 @@
 **Coverage thresholds**: `core` >= 90% lines and branches; `react`, `payload` >= 80%; `editor`, `components` >= 70%.
 
 See also [ai/testing-rules.md](ai/testing-rules.md) for the concrete rules coding agents must follow when writing tests for a given change.
+
+## Property-based command tests
+
+`packages/core/src/commands/__property__/` holds the model-based suites for commands and history. A run is a list of *choices* (small tuples of random numbers) interpreted against the **current** document, so most generated commands reference real nodes and are accepted while a healthy share is deliberately invalid. Properties: no handler ever leaves the document invalid (`command.invariant-violated` never occurs), inputs are never mutated, every accepted command is undone by its `inverse` and redone by its `patches`, `canExecute` agrees with `execute`, replaying the accepted log with a seeded id generator reproduces the document, batches are atomic and equal sequential execution, and for random sessions of commands, undo/redo, transactions and time: undo-all restores the original, redo-all restores the final state, and a `cursorId` always identifies exactly one document.
+
+- **Run count**: 1000 per property by default (CI). The nightly run raises it: `FC_NUM_RUNS=10000 pnpm test --filter @buildr/core`.
+- **Failing seeds**: fast-check prints the shrunk counterexample (a list of choices, plus the id seed). A bug found this way is fixed and its counterexample pinned as an ordinary test next to the handler's own tests, in addition to the general property.
+- The generators live in `arbitraries.test-kit.ts` next to the suites (not in `@buildr/test-utils`, which depends on `@buildr/core` and so cannot be imported by core's own tests).
