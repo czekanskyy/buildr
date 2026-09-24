@@ -475,10 +475,12 @@ describe('caching and cost', () => {
       ...doc,
       nodes: { ...doc.nodes, n5: { ...doc.nodes.n5, styles: { base: { layout: { gap: '0' } } } } },
     } as unknown as BuilderDocument;
-    const start = performance.now();
+    const untouched = doc.nodes.n6?.styles as NodeStyles;
+    const before = compileNodeRules('n6', untouched, defaultTheme);
     const { css } = compileStyles(edited, defaultTheme);
-    expect(performance.now() - start).toBeLessThan(150);
     expect(css).toContain('.b-n5 { gap: 0; }');
+    // The unchanged node's rules are the very same cached object, not recompiled.
+    expect(compileNodeRules('n6', untouched, defaultTheme)).toBe(before);
   });
 
   it('keeps the payload within budget', () => {
