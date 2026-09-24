@@ -163,6 +163,15 @@ The selection lives in the editor store (`selectedIds`, `anchorId`, `selectedIns
 - **List** (`ListControl`). Items are edited with the control of `def.of`; add (up to `max`, a new item is a copy of the item default), remove (down to `min`) and move up/down, each button named with the item's number. A value that is not an array is an empty list. Every change writes the whole list.
 - **Object** (`ObjectControl`). One labelled control per field of `def.fields`, showing the field default where the object has no value; a change writes the whole object.
 
+### The style inspector (PB-082)
+
+`<StyleInspector node breakpoint? theme? />` (`panels/inspector/styles`) is what `Inspector`'s `renderStyle` slot takes. It lists the style groups the component allows (`styles.groups`), each property from core's property registry, and edits them at `breakpoint` (`'base'`/desktop by default, else a breakpoint id of the theme; an id the theme lacks disables editing).
+
+- **Nothing outside the grammar is written.** Typed text goes through `checkStyleInput`: numeric text becomes a number where the grammar takes one, then `parseStyleValue` must accept it and every `$scale.name` token must exist in the theme; otherwise the field is `aria-invalid`, shows the reason and dispatches nothing. Pure enumerations are a select of their keywords; `visibility.hidden` is a checkbox; box (margin, padding, inset, border width) and corner (radius) properties get one field per side/corner. Tokens and keywords are offered as suggestions.
+- **Writing.** `node.setStyle` with `layer: {}` (desktop) or `{ bp }`; typing coalesces through the command's merge key. An emptied field or "Reset" dispatches `node.unsetStyle` for this layer only.
+- **Sources.** `effectiveStyles` gives each value and the layer it comes from; one inherited from a wider breakpoint is labelled "from desktop"/"from tablet" and a reset button appears only where this layer sets the value. Groups holding a value start open.
+- The active breakpoint comes from the toolbar (PB-083); styles locks disable the fields.
+
 ### The insert panel (PB-078)
 
 `<InsertPanel />` (`packages/editor/src/panels/insert`) is the palette. It reads the manifest (`<ManifestProvider>`) and lists the components that may be inserted (not `root`, not `insertable: false`) and the templates, each grouped by category and sorted by label. Search matches every word against label, type, description and keywords (templates: label, id, category). Every entry is a real button, so the palette works with the keyboard alone and without drag and drop.
