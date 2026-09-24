@@ -76,6 +76,14 @@ A text link: `label`, `href` (default `#`; an unsafe URL resolves to the default
 
 Both are `interactive` content, so the content-model and `nested-interactive` rules keep other interactive content out of them; both are inline-editable through `label`.
 
+## Media components
+
+### Image (`buildr/image`)
+
+A picture from the media library or bound to a CMS field. Props: `image` (bindable media), `alt` (bindable, localizable; empty falls back to the alt stored with the media asset), `decorative` (empty `alt` and `role="presentation"`; the `image-alt` rule then does not apply), `sizes` (display-width preset: `full`, `half`, `third`, `quarter`, giving the `sizes` attribute), `fit` (`object-fit`), `priority` (passed to the platform image; a plain `<img>` gets `loading="eager"` instead of `lazy`).
+
+Rendering: through `platform.Image` (`next/image` in a Next.js site, a plain `<img>` otherwise), with `src`, intrinsic `width`/`height`, a `srcset` built from the sizes the media library generated (plus the original, narrowest first), and the asset's focal point as `object-position`. Every URL goes through `sanitizeUrl` again: an unsafe or missing URL renders nothing, except in the editor's canvas (`mode: 'canvas'`), where an empty-state placeholder (`data-empty`) marks the spot.
+
 Fixtures: each component exports `<name>Fixtures` (`ComponentFixture`: an id, a title and a subtree that goes under the page), reviewed at `FIXTURE_WIDTHS` (1280, 768, 375). Tablet and mobile overrides live in the fixture's `styles.bp`.
 
 ## Form field derivation

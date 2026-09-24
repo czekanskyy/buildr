@@ -19,6 +19,8 @@ export { HEADING_LEVELS, Heading } from './heading/definition.ts';
 export { headingFixtures } from './heading/fixtures.ts';
 export type { IconName, IconNode, IconProps, IconShape } from './icons/index.ts';
 export { hasIcon, ICON_NAMES, ICON_NODES, Icon } from './icons/index.ts';
+export { IMAGE_FITS, IMAGE_SIZES, Image } from './image/definition.ts';
+export { imageFixtureMedia, imageFixtures } from './image/fixtures.ts';
 export { Link } from './link/definition.ts';
 export { linkFixtures } from './link/fixtures.ts';
 export type { MessageKey } from './messages/index.ts';
