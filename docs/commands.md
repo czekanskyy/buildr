@@ -120,3 +120,18 @@ Each is **one command, hence one history entry**.
 | `visibleIf` | a binding or an expression (never a fixed value) | path / expression syntax checked; content lock applies |
 
 The root accepts only `name`. **Locks are a permission matter**: switching a lock flag off, or changing a `region` inside a structurally locked subtree, calls `CommandEnv.canUnlock({ nodeId, aspects })` (the host maps this to the `unlockTemplates` permission) and is refused (`command.unlock-not-permitted`) when it is absent or returns `false` — the default fails closed. Adding a lock is always allowed. Coalescing key: `attr:<id>:<key>`.
+
+## The history manager (`createHistory`)
+
+```ts
+const history = createHistory({ limit: 200, clock: Date.now, mergeWindowMs: 800 });
+history.record({ label, commands, patches, inverse, selectionBefore, selectionAfter, mergeKey });
+const step = history.undo();   // { entry, patches: entry.inverse, selection: entry.selectionBefore }
+```
+
+It stores patches, never a document: `undo()` / `redo()` return the patches to apply (with `applyDocumentPatches`) and the selection to restore, so the store stays in charge of state and a different implementation can be swapped in (ADR-012). `commandMergeKey(commands, batch)` gives the handler's `mergeKey` for a single command (a batch is never merged).
+
+- **Coalescing**: a record with the same `mergeKey` as the newest entry, at most `mergeWindowMs` after it (the window slides with every record), merges into it: patches concatenated, `inverse` = the new inverse followed by the old one, `selectionAfter` of the newest. The merged entry gets a **new id**. Nothing merges across an undo/redo, into or out of a transaction, or without a key. A record without patches (a command that changed nothing) is ignored.
+- **Transactions**: `begin(label)` … `commit()` yields one entry; `rollback()` returns the patches that revert what was recorded (nothing is recorded). Misuse (`history.transaction-open`, `history.no-transaction`) is an `Err`; `undo`/`redo` are unavailable while one is open.
+- **`cursorId`**: the id of the newest undo step (or of the empty state); undoing back to a point returns to the same id, so `dirty = cursorId !== savedCursorId` is right after undo/redo, and a merge cannot make a saved point look clean. `clear()` (for `doc.replace`) gives a fresh cursor.
+- The oldest steps are dropped beyond `limit` (default 200).
