@@ -16,6 +16,8 @@ export interface FieldLike {
   readonly options?: readonly unknown[];
   readonly hasMany?: boolean;
   readonly relationTo?: unknown;
+  readonly required?: boolean;
+  readonly defaultValue?: unknown;
 }
 
 /** A collection as the mapping sees it. */
