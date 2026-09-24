@@ -55,12 +55,13 @@ export async function render(
   registry: ReactRegistry,
   document: BuilderDocument,
   dataSource: DataSource = createMemoryDataSource(),
+  scopes: DataContext['scopes'] = {},
 ): Promise<Rendered> {
   const result = await renderDocument(document, {
     registry,
     theme: defaultTheme,
     dataSource,
-    context,
+    context: { ...context, scopes },
     platform: demoPlatform,
   });
   const html = renderToStaticMarkup(createElement(Fragment, null, result.element as ReactNode));

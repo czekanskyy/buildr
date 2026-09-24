@@ -1,0 +1,26 @@
+@layer buildr.components {
+  .bc-heading {
+    font-family: var(--b-font-family-heading);
+    font-weight: var(--b-font-weight-bold);
+    line-height: var(--b-line-height-tight);
+    overflow-wrap: anywhere;
+  }
+  .bc-heading[data-level="1"] {
+    font-size: var(--b-font-size-5xl);
+  }
+  .bc-heading[data-level="2"] {
+    font-size: var(--b-font-size-4xl);
+  }
+  .bc-heading[data-level="3"] {
+    font-size: var(--b-font-size-3xl);
+  }
+  .bc-heading[data-level="4"] {
+    font-size: var(--b-font-size-2xl);
+  }
+  .bc-heading[data-level="5"] {
+    font-size: var(--b-font-size-xl);
+  }
+  .bc-heading[data-level="6"] {
+    font-size: var(--b-font-size-lg);
+  }
+}

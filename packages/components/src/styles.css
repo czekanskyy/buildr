@@ -8,3 +8,5 @@
 @import "./container/styles.css";
 @import "./stack/styles.css";
 @import "./grid/styles.css";
+@import "./heading/styles.css";
+@import "./text/styles.css";
