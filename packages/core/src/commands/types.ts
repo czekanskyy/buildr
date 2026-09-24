@@ -18,6 +18,8 @@ export type DocumentPatch = Patch;
 
 /** What a handler sees: the registry, the injected id generator and the index of the *current* document. */
 export interface HandlerEnv {
+  /** The document before this command — `apply` reads it instead of walking the draft. */
+  readonly doc: BuilderDocument;
   readonly registry: RegistryMeta;
   readonly generateId: IdGenerator;
   /** Built on first access (memoized per document), so a handler that does not read it pays nothing. */

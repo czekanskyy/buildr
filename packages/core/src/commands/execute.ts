@@ -19,6 +19,7 @@ enablePatches();
 function handlerEnv(doc: BuilderDocument, env: CommandEnv): HandlerEnv {
   // Lazy: most handlers never need the index, and building it is a full O(n) traversal.
   return {
+    doc,
     registry: env.registry,
     generateId: env.generateId,
     get index() {
