@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import type { DocumentIndex } from '../../document/document-index.ts';
 import { subtreeIds } from '../../document/traverse.ts';
 import type { NodeId } from '../../document/types.ts';
 import { err, ok } from '../../result/result.ts';
@@ -7,6 +6,7 @@ import { canRemove } from '../../rules/can-remove.ts';
 import { reason } from '../../rules/reasons.ts';
 import { commandError, fromReason } from '../errors.ts';
 import type { Command, CommandHandler } from '../types.ts';
+import { topLevelIds } from './shared.ts';
 
 export interface RemovePayload {
   /** Nodes to remove, each with its whole subtree. */
@@ -20,23 +20,6 @@ const MAX_REMOVE_IDS = 5000;
 const removeSchema = z.strictObject({
   ids: z.array(z.string().min(1).max(64)).min(1).max(MAX_REMOVE_IDS),
 });
-
-/**
- * The ids that are not inside another removed node's subtree, in document order — removing a
- * node takes its descendants with it, so listing both is not an error, just redundant.
- */
-function topLevel(ids: readonly NodeId[], index: DocumentIndex): NodeId[] {
-  const wanted = new Set(ids);
-  const covered = (id: NodeId): boolean => {
-    for (let p = index.parentOf[id]; p !== undefined; p = index.parentOf[p]) {
-      if (wanted.has(p)) return true;
-    }
-    return false;
-  };
-  return [...wanted]
-    .filter((id) => !covered(id))
-    .sort((a, b) => index.order.indexOf(a) - index.order.indexOf(b));
-}
 
 /**
  * `node.remove` — removes nodes with their subtrees (docs/commands.md). Each top-level node must
@@ -57,7 +40,7 @@ export const removeHandler: CommandHandler<RemoveCommand> = {
         );
       }
     }
-    const roots = topLevel(cmd.payload.ids, env.index);
+    const roots = topLevelIds(cmd.payload.ids, env.index);
 
     const removedPerSlot = new Map<string, number>();
     for (const id of roots) {
@@ -96,7 +79,7 @@ export const removeHandler: CommandHandler<RemoveCommand> = {
   apply(draft, cmd, env) {
     const base = env.doc;
     const index = env.index;
-    const roots = topLevel(cmd.payload.ids, index);
+    const roots = topLevelIds(cmd.payload.ids, index);
     const removed = new Set(roots.flatMap((id) => subtreeIds(base, id)));
 
     // Where the selection goes, decided against the pre-removal layout.
