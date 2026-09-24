@@ -6,9 +6,17 @@
 export const BUILT_IN_MESSAGES = {
   en: {
     'link.newTab': 'opens in a new tab',
+    'pagination.label': 'Pagination',
+    'pagination.previous': 'Previous page',
+    'pagination.next': 'Next page',
+    'pagination.page': 'Page {page}',
   },
   pl: {
     'link.newTab': 'otwiera się w nowej karcie',
+    'pagination.label': 'Paginacja',
+    'pagination.previous': 'Poprzednia strona',
+    'pagination.next': 'Następna strona',
+    'pagination.page': 'Strona {page}',
   },
 } as const satisfies Readonly<Record<string, Readonly<Record<string, string>>>>;
 

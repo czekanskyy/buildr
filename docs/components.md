@@ -104,6 +104,16 @@ A boxed piece of content. Slots: `media` (one media item), `body` (flow content)
 
 Expandable sections built on native `<details>`/`<summary>`: no JavaScript, and the browser supplies the keyboard behaviour (Enter or Space on the summary) and the semantics. **Accordion**: `allowMultiple` (default on). Off, every item gets the same `name` (derived from the accordion's node id, so two accordions never share a group) and opening one closes the others; a browser without `name` support on `details` degrades to independent items. Its slot accepts only accordion items (or a Loop; items a Loop produces are not exclusive, since their parent is the Loop). A new accordion comes with three items. **AccordionItem**: `summary` (bindable, required by the `accordion-structure` rule), `defaultOpen`, and a content slot; inline-editable through `summary`, `editor.revealOnSelect` (the editor opens the item when it is selected), not insertable on its own.
 
+## CMS components
+
+### Loop (`buildr/loop`)
+
+Repeats its `item` slot once per entry of a list: `source` is a collection query (with `limit` and an optional `page`) or a list from the data (`post.related`). Inside the template `item` is the entry (or the name given in `as`, so nested loops can reach the outer item), `index` its position and `loop` the list (`loop.page`, `loop.totalPages`, `loop.total`). `empty` shows when the list has no entries; `after` shows once below the entries, with the `loop` scope in reach. Layout is the Loop's own styles: make it a grid (`layout.display: grid`, `layout.columns`) or a stack; `after` spans every column. At most 1000 entries are rendered.
+
+### Pagination (`buildr/pagination`)
+
+A `nav` landmark of real page links: `page` and `totalPages` (bindable; in a Loop's `after` slot bind them to `loop.page` and `loop.totalPages`), `hrefPattern` (`{page}` is replaced by the page number; default `?page={page}`; the result is sanitized again, and an unsafe pattern gives items without links) and `ariaLabel`. It shows the first and last page and the current one with a neighbour either side, with gaps (`1 … 4 5 6 … 12`), the current page marked with `aria-current="page"`, and previous and next links. `page` is clamped to `1..totalPages`. One page or none renders nothing on a published page, and still renders in the editor's canvas so it can be selected. Its texts are built-in messages (`pagination.*`, `en` and `pl`).
+
 Fixtures: each component exports `<name>Fixtures` (`ComponentFixture`: an id, a title and a subtree that goes under the page), reviewed at `FIXTURE_WIDTHS` (1280, 768, 375). Tablet and mobile overrides live in the fixture's `styles.bp`.
 
 ## Form field derivation

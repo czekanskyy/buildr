@@ -1,0 +1,42 @@
+@layer buildr.components {
+  .bc-pagination__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--b-space-1);
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .bc-pagination__item {
+    display: inline-flex;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0 var(--b-space-2);
+    border: 1px solid var(--b-color-border);
+    border-radius: var(--b-radius-sm);
+    color: var(--b-color-text);
+    text-decoration: none;
+  }
+  a.bc-pagination__item:hover {
+    background-color: var(--b-color-surface-alt);
+  }
+  a.bc-pagination__item:focus-visible {
+    outline: 2px solid var(--b-color-focus);
+    outline-offset: 2px;
+  }
+  .bc-pagination__item[aria-current="page"] {
+    border-color: var(--b-color-primary);
+    background-color: var(--b-color-primary);
+    color: var(--b-color-on-primary);
+  }
+
+  .bc-pagination__gap {
+    padding: 0 var(--b-space-1);
+    color: var(--b-color-text-muted);
+  }
+}
