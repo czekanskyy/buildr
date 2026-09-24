@@ -180,3 +180,13 @@ return <BuildrPage config={buildr} entry={entry} />;
 - `src/buildr.registry.ts` — the component registry, theme and locales, importable from the Payload CLI.
 - `src/app/(payload)` — the admin and REST routes; `admin/importMap.js` is generated (`pnpm generate:importmap`) and must be regenerated when an admin component is added.
 - `src/app/(site)` — the public site (a placeholder until the routes of PB-109).
+
+## The example application's public routes (PB-109)
+
+`apps/example-next-payload/src/app/(frontend)/[locale]` implements the route tree above:
+
+- `layout.tsx` validates the `[locale]` segment (`notFound()` for an unknown language) and renders `<html lang>`; `error.tsx` and `not-found.tsx` sit beside it.
+- `[[...slug]]` — pages (`home` is the bare `/{locale}`), `blog/[slug]` — posts, `products/[slug]` — products, `blog/page/[page]` — the "blog" page rendered with `route.params.page` for the listing's pagination.
+- `src/lib/site.ts` — `load` (one cached read per request through `getBuildrDocument`, a draft read only when draft mode is on and a user is signed in), `metadataFor` (`seoFromDocument` + `alternatesOf` + `buildrMetadata`, so every language gets hreflang and `x-default`), `publishedSlugs` for `generateStaticParams` (a build without a reachable database prerenders nothing; `dynamicParams` renders on first visit).
+- `src/proxy.ts` — Next 16 renamed `middleware.ts` to `proxy.ts`; it is `createLocaleMiddleware` for the bare `/`.
+- `src/buildr.server.ts` — `createBuildrConfig` with `createNextPlatform()`, a per-render Payload data source, and the built-in messages.
