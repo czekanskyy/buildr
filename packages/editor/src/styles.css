@@ -813,3 +813,25 @@
 .buildr-editor .bd-toolbar-link {
   text-decoration: none;
 }
+
+/* Clipboard notice (PB-085) */
+.buildr-editor .bd-clipboard-notice {
+  position: fixed;
+  bottom: var(--bd-space-3, 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 480px;
+  font-size: 13px;
+}
+
+.buildr-editor .bd-clipboard-notice:not(:empty) {
+  padding: var(--bd-space-2, 8px) var(--bd-space-3, 12px);
+  background: var(--bd-surface);
+  border: 1px solid var(--bd-border);
+  border-radius: var(--bd-radius, 6px);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.15);
+}
+
+.buildr-editor .bd-clipboard-detail {
+  color: var(--bd-text-muted, inherit);
+}
