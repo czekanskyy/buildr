@@ -29,3 +29,19 @@ A pure function, tested with no DOM. Input: a point, a hit path from the deepest
 - **Keyboard**: Alt+Up/Down moves a node among its siblings; a "Move to..." action opens a dialog with the tree.
 
 See also the editor engine implementation notes in [editor.md](editor.md#drag-and-drop-1) and risk R1 in the [backlog](backlog/README.md#risks).
+
+## `computeDropTarget` in practice
+
+```ts
+computeDropTarget({ point, hitPath, doc, registry, item, maxEdgeZone? }): DropResult
+```
+
+`hitPath` runs from the deepest hit node up to the root. Each `HitEntry` is `{ nodeId, rect, axis, childRects, slotRects? }`: `axis` is how the node lays out its *own* children (`'x'` row, `'y'` column or block, `'grid'`), `childRects` are the rendered boxes of its children in order (a child with no box, hidden by a condition, is simply absent), and `slotRects` optionally gives the placeholder of each slot, empty ones included. All rects share one coordinate space — the editor has already applied zoom and the iframe offset. No DOM is needed.
+
+- **Inside**: a node with slots whose interior contains the pointer (clear of an edge zone of `min(maxEdgeZone = 12, 25%)` per dimension) offers a gap in one of its slots: the slot whose placeholder is under the pointer, else the slot of the nearest child, else `default`. The index counts the rendered children that come before the pointer (centre before the pointer on the layout axis; on a grid, rows above, then boxes to the left on the same row). An empty slot gives index 0 and an `inside` indicator (highlight the container); otherwise the indicator is the 2px line at the gap.
+- **Before / after**: the parent's axis decides. For a row or column, which half of the node the pointer is in; for a grid, the nearest of the four edges, which also sets the direction of the line.
+- **Walking up**: candidates are tried deepest node first — inside, then before/after — and the first one `canInsert` (component, template) or `canMove` (every dragged node) accepts wins. Before/after is tried for the deepest node always, and for an ancestor only when the pointer is in its edge zone, so the indicator stays near the pointer.
+- **Refusal**: when nothing is accepted, `target` is `null` and `reason` is the refusal of the *first* (closest) candidate — that is the message the forbidden state shows. Locks, `slot.max`, cycles and `draggable` all come from the rules.
+- **The dragged node itself** offers nothing; hovering it drops into the container around it. A template is checked as a fragment of its variant (or default) tree.
+
+The result is deterministic and the input is never modified.
