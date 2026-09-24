@@ -49,7 +49,11 @@ describe('session and manifest', () => {
     expect(status).toBe(200);
     const session = sessionResponseSchema.parse(body);
     expect(session.user.email).toBe('editor@example.com');
-    expect(session.permissions).toEqual({ canEdit: true, canPublish: true });
+    expect(session.permissions).toEqual({
+      canEdit: true,
+      canPublish: true,
+      canUnlockTemplates: true,
+    });
     expect(session.limits).toEqual({ maxNodes: 5000, maxBytes: 2_000_000 });
   });
 

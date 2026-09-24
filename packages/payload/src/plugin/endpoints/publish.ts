@@ -4,6 +4,7 @@ import { publishRequestSchema, publishResponseSchema } from '../../contract.ts';
 import { processLayout } from '../hooks/process-layout.ts';
 import { BUILDR_WRITE } from '../write-guard.ts';
 import { allowed, bodyOf, type EndpointEnv, latestOf, revisionOf, targetOf } from './context.ts';
+import { mutationGuard } from './guards.ts';
 import { conflict, fail, invalid, json } from './respond.ts';
 
 /**
@@ -17,6 +18,8 @@ export const publishEndpoint = (env: EndpointEnv): Endpoint => ({
   handler: async (req) => {
     const target = targetOf(env, req);
     if (!target.ok) return target.response;
+    const rejected = mutationGuard(req);
+    if (rejected !== undefined) return rejected;
     if (!(await allowed(env, 'publish', req))) {
       return fail(403, 'You may not publish with the builder.');
     }

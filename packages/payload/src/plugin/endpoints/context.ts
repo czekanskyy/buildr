@@ -1,15 +1,14 @@
 import type { PayloadRequest } from 'payload';
+import { type Action, allowed as isAllowed } from '../access.ts';
 import type { ResolvedOptions } from '../options.ts';
 import { fail, notFound, unauthorized } from './respond.ts';
-
-export type Action = 'edit' | 'publish';
 
 export interface DocumentTarget {
   readonly collection: string;
   readonly id: string;
 }
 
-/** Who may do what; decided per request (PB-096 adds the roles and the CSRF checks). */
+/** Who may do what; decided per request. */
 export interface EndpointEnv {
   readonly options: ResolvedOptions;
 }
@@ -42,16 +41,9 @@ export async function bodyOf(req: PayloadRequest): Promise<Guarded<unknown>> {
   }
 }
 
-/** Whether the user of `req` may `action`; the plugin `access` option decides, an authenticated user by default. */
-export async function allowed(
-  env: EndpointEnv,
-  action: Action,
-  req: PayloadRequest,
-): Promise<boolean> {
-  if (req.user === null || req.user === undefined) return false;
-  const check = env.options.access[action];
-  return check === undefined ? true : Boolean(await check({ req }));
-}
+/** Whether the user of `req` may `action` (see `plugin/access.ts`). */
+export const allowed = (env: EndpointEnv, action: Action, req: PayloadRequest): Promise<boolean> =>
+  isAllowed(env.options, action, req);
 
 /** Loads the latest draft of the target, or the response to send instead (`404`). */
 export async function latestOf(
