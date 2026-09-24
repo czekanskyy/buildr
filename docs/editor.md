@@ -145,6 +145,16 @@ The selection lives in the editor store (`selectedIds`, `anchorId`, `selectedIns
 
 `BuilderEditor` does not mount the frame yet: it needs the document the persistence task (PB-087) loads.
 
+### The inspector (PB-079)
+
+`<Inspector locale? defaultLocale? renderStyle? />` (`packages/editor/src/panels/inspector`) edits the node the selection is centred on. Its header names the component (from the manifest); with nothing selected it says so; a node locked for content, or a read-only document, disables every control.
+
+- **Tabs.** *Content* lists the component's props (`PropsPanel`), grouped by `PropDef.group`; *Style* renders `renderStyle(node)` (the style inspector, PB-082) or a pointer to it; *Advanced* has the node's `name` and `anchor` (`node.setAttr`, cleared with an empty field; an anchor the command refuses stays on screen with the reason in the status line), a display condition to remove, and the props in the `advanced` or `accessibility` group.
+- **Controls** (`inspector/controls`): text and textarea (`maxLength`), number (a draft that is written only when it is a finite number inside `min`/`max`; leaving the field shows the stored value), boolean (a checkbox), select (options may be numbers), link and icon (free text; the picker comes with the icon library). Every control gets its accessible name from the prop's label (or its name split into words) and is described by a hint with the default and the limits. Other kinds (rich text, list, object, media) say they cannot be edited here yet (PB-080).
+- **Writing.** A control dispatches `node.setProp` with a static value; the command's merge key folds a run of typing into one undo step. "Reset" (shown only when the node carries a value) dispatches `node.unsetProp` and the default shows again.
+- **Languages.** With `locale` different from `defaultLocale`, a translatable prop shows that language's translation (falling back to the default-language value) and writes to `l10n[locale]`; a prop with no fixed value yet first gets its default, in the same undo step. Reset removes only the translation.
+- **Dynamic values.** A binding or a formula shows as a chip ("Bound to data: post.title") instead of a control; picking and editing them is PB-081.
+
 ### The insert panel (PB-078)
 
 `<InsertPanel />` (`packages/editor/src/panels/insert`) is the palette. It reads the manifest (`<ManifestProvider>`) and lists the components that may be inserted (not `root`, not `insertable: false`) and the templates, each grouped by category and sorted by label. Search matches every word against label, type, description and keywords (templates: label, id, category). Every entry is a real button, so the palette works with the keyboard alone and without drag and drop.

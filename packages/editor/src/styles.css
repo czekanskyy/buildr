@@ -594,3 +594,56 @@
 .buildr-editor .bd-insert-notice[data-ok="false"] {
   color: var(--bd-danger, inherit);
 }
+
+.buildr-editor .bd-inspector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.buildr-editor .bd-inspector-title {
+  margin: 0;
+  font-size: 14px;
+}
+.buildr-editor .bd-props-heading {
+  margin: 12px 0 4px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+.buildr-editor .bd-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 8px 0;
+}
+.buildr-editor .bd-field-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.buildr-editor .bd-field-label {
+  font-size: 12px;
+  font-weight: 500;
+}
+.buildr-editor .bd-field-hint,
+.buildr-editor .bd-field-unsupported {
+  margin: 0;
+  font-size: 11px;
+  opacity: 0.75;
+}
+.buildr-editor .bd-field-chip {
+  margin: 0;
+  padding: 4px 8px;
+  border: 1px solid var(--bd-border);
+  border-radius: var(--bd-radius);
+  font-size: 12px;
+}
+.buildr-editor .bd-textarea {
+  min-height: 72px;
+  padding: var(--bd-space-2);
+  resize: vertical;
+}
+.buildr-editor .bd-inspector-notice:empty {
+  display: none;
+}
