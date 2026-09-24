@@ -1,3 +1,18 @@
-// @buildr/core/commands: execute, executeBatch, canExecute, command types, createHistory.
-// Populated by PB-034+ (see docs/backlog/phase-05-core-commands.md).
-export {};
+// @buildr/core/commands: the only way to change a document (ADR-013).
+export { applyDocumentPatches } from './apply-patches.ts';
+export type { CommandError, CommandErrorCode } from './errors.ts';
+export { atIndex, commandError, fromReason } from './errors.ts';
+export { canExecute, execute, executeBatch } from './execute.ts';
+export { checkPayload, commandSchema, createCommandRegistry, parseCommand } from './registry.ts';
+export type { ReplayResult } from './replay.ts';
+export { replay } from './replay.ts';
+export type {
+  ApplyOutcome,
+  Command,
+  CommandEnv,
+  CommandHandler,
+  CommandRegistry,
+  CommandResult,
+  DocumentPatch,
+  HandlerEnv,
+} from './types.ts';
