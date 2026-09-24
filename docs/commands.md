@@ -79,3 +79,7 @@ A fragment whose ids collide with nodes already in the document (a second paste)
 ## `node.remove` details
 
 Payload `{ ids }`. A node listed together with one of its ancestors is redundant, not an error. Each top-level node must pass `canRemove` (root, `removable`, structural locks, slot `min`); siblings removed together are also checked together against the slot's `min`. Whole subtrees leave `doc.nodes` (no orphans); `doc.components` keeps its version entries. The selection moves to the neighbour that takes the first removed node's place (next sibling, else previous), else to the parent. `HandlerEnv.doc` gives `apply` the pre-command document.
+
+## `node.move` details
+
+Payload `{ ids, parentId, slot, index }`. `index` is the gap the user pointed at, as a position in the destination slot **as it is before the move** (`0..children.length`); when the nodes move within their own slot the handler corrects for them being taken out first, so dropping `A` before `D` in `[A, B, C, D]` is `index: 3`. `ids` must be siblings (same parent and slot; otherwise `command.move-not-siblings`), need not be contiguous, and keep their document order. Each node must pass `canMove` (not the root, draggable, current location not locked, destination rules and lock, no move into its own subtree) and together they must fit the destination's `max`. Dropping a node where it already is is a no-op (same document, no patches). Undo restores the exact position.
