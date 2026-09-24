@@ -1,7 +1,7 @@
 import type { BuilderDocument, Diagnostic } from '@buildr/core';
 import type { ReactNode } from 'react';
-import { type RenderRun, renderNode } from './render-node.ts';
-import type { RenderTreeOptions } from './types.ts';
+import { renderNode } from './render-node.ts';
+import type { RenderRun, RenderTreeOptions } from './types.ts';
 
 /** `process.env.NODE_ENV`, without requiring Node's types in a package that also runs in the browser. */
 function inProduction(): boolean {
@@ -31,6 +31,7 @@ export function renderTree(doc: BuilderDocument, options: RenderTreeOptions): Re
     },
     devChecks: options.devChecks ?? !inProduction(),
     path: new Set(),
+    instance: [],
     report: (diagnostics: readonly Diagnostic[]) => {
       if (sink !== undefined) for (const d of diagnostics) sink.push(d);
     },

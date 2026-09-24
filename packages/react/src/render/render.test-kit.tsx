@@ -105,6 +105,22 @@ export const Link = defineComponent({
     ),
 });
 
+export const Loop = defineComponent({
+  ...base,
+  type: 'buildr/loop',
+  label: 'Loop',
+  runtime: 'shared',
+  props: { source: p.listSource(), as: p.text({ default: '' }) },
+  slots: { item: {}, empty: {}, after: {} },
+  render: ({ root, slots }) => (
+    <div {...root}>
+      {slots['item']}
+      {slots['empty']}
+      <footer>{slots['after']}</footer>
+    </div>
+  ),
+});
+
 /** Reports what it was handed, so tests can see what a client component receives. */
 export const ClientProbe = defineComponent({
   ...base,
@@ -120,7 +136,7 @@ export const ClientProbe = defineComponent({
 });
 
 export const registry = createRegistry({
-  components: [Page, Section, Heading, Text, Card, Image, Link, ClientProbe],
+  components: [Page, Section, Heading, Text, Card, Image, Link, Loop, ClientProbe],
 });
 
 export const platform: Platform = {

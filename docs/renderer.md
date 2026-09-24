@@ -76,3 +76,13 @@ Per node, in order:
 7. `createElement(render, { node, env, root, slots, props, platform })`. `platform` is left out for `runtime: 'client'`, and with `devChecks` (on outside production) the props that cross the boundary are asserted to be plain JSON. `instrument.NodeView`, when set, wraps the element.
 
 Nothing here throws for data problems; each is a `Diagnostic` pushed onto `options.diagnostics` (each carries `details.nodeId`).
+
+### Loops
+
+Any component with a `listSource` prop renders as a loop (the `buildr/loop` component, PB-060, is one). The list is read from the prop: `{ type: 'binding', path }` is resolved against the data context (it must be a list; otherwise `render.loop-source`), `{ type: 'query', spec }` uses the result `prepareRender` stored under `queryKey(nodeId, prop)` (`render.loop-query-missing` when it is absent), and a `Value` binding that already resolved to an array is used as is. An unset source is an empty list.
+
+- `item` — rendered once per entry with `item`, `index` (from 0) and `loop` (`{ page, totalPages, total }`; a bound list is page 1 of 1) in scope, plus the `as` alias (`as: 'post'` makes `post.title` work). A nested loop's `item` shadows the outer one.
+- `empty` — rendered, in the outer scope, only when the list is empty.
+- `after` — rendered once with the `loop` scope, for pagination; it renders for an empty list too.
+- Instances of a node all share its `.b-<id>` class and are keyed `<id>:<index>`. An anchor gets the instance path as a suffix (`row-2`, `tag-1-0` in nested loops) so ids stay unique. When the canvas instruments the render, every node inside an instance also carries `data-bi` (the innermost index) next to the shared `data-bid`; production output has neither.
+- At most `MAX_LOOP_ITEMS` (1000) entries are rendered; the rest is cut with `render.loop-truncated`.
