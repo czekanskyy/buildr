@@ -746,3 +746,22 @@
   gap: 6px;
   align-items: center;
 }
+
+/* Keyboard shortcuts help (PB-084) */
+.buildr-editor .bd-shortcut-row,
+.bd-shortcut-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 2px 0;
+}
+.bd-shortcut-help dt,
+.bd-shortcut-help dd {
+  margin: 0;
+}
+.bd-shortcut-help kbd {
+  font-family: inherit;
+  padding: 0 4px;
+  border: 1px solid var(--bd-border, #ccc);
+  border-radius: 3px;
+}

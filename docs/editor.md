@@ -172,6 +172,15 @@ The selection lives in the editor store (`selectedIds`, `anchorId`, `selectedIns
 - **Sources.** `effectiveStyles` gives each value and the layer it comes from; one inherited from a wider breakpoint is labelled "from desktop"/"from tablet" and a reset button appears only where this layer sets the value. Groups holding a value start open.
 - The active breakpoint comes from the toolbar (PB-083); styles locks disable the fields.
 
+### Keyboard shortcuts (PB-084)
+
+`<ShortcutProvider overrides? actions? platform?>` (`packages/editor/src/shortcuts`) must sit inside the store provider. It makes one registry (`createShortcutRegistry`; nothing global), binds the store's actions to it, listens for `keydown` on the document and shows a help dialog on `?`.
+
+- **Map** (`DEFAULT_SHORTCUTS`, by action id): `edit.undo` Mod+Z · `edit.redo` Mod+Shift+Z / Mod+Y · `edit.copy|cut|paste` Mod+C/X/V · `edit.duplicate` Mod+D · `edit.delete` Delete / Backspace · `node.moveUp|moveDown` Alt+↑/↓ · `selection.all` Mod+A (the anchor's siblings) · `selection.clear` Esc · `file.save` Mod+S · `help.shortcuts` ?. **Mod** is Cmd on a Mac and Ctrl elsewhere. `config.shortcuts` overrides by action id (`{ 'edit.duplicate': 'mod+j' }`; an empty string turns one off). Combinations are canonical text (`mod+shift+z`, `normalizeCombo`).
+- **Actions.** Undo, redo, duplicate (`node.duplicate`), delete (`node.remove`), move (`node.move` past the neighbour), select siblings and clear act on the store; the root is never removed or moved. Copy, cut, paste (PB-085) and save (PB-087) come in through `actions`. A handler that could not act returns `false`, so the key is not swallowed; a handled key gets `preventDefault`.
+- **Never while typing.** Nothing runs when the focus is in an input, textarea, select or editable region (`isTypingTarget`; checkboxes and buttons do not count as text). Keys forwarded from the canvas (`key:down`, PB-072) already exclude text there; `useForwardedKeys()` returns the function for the canvas host's `onKeyDown`.
+- **Scopes.** `bind(action, handler, scope = 'editor')` and `setScopes([...])`: only bindings of an active scope fire, the latest first, so a dialog can take a key from the editor. The help dialog narrows the scope to `dialog` while it is open.
+
 ### The insert panel (PB-078)
 
 `<InsertPanel />` (`packages/editor/src/panels/insert`) is the palette. It reads the manifest (`<ManifestProvider>`) and lists the components that may be inserted (not `root`, not `insertable: false`) and the templates, each grouped by category and sorted by label. Search matches every word against label, type, description and keywords (templates: label, id, category). Every entry is a real button, so the palette works with the keyboard alone and without drag and drop.
