@@ -64,3 +64,14 @@ interface HistoryEntry {
 - A new command issued after an undo clears `future`. `doc.replace` clears the entire history.
 
 See [drag-and-drop.md](drag-and-drop.md) for how commands are produced from pointer interactions, and [state-management.md](state-management.md) for how the store wires commands to persistence.
+
+## `node.insert` details
+
+Payload `{ parentId, slot, index, fragment }`; the fragment is always a `BuilderFragment` (a single component, a template's tree or pasted content). It is checked as untrusted input before `canInsert` decides placement:
+
+- shape (`fragmentSchema`), and that it is a proper forest — every child exists, every node is reachable from a root exactly once (`command.invalid-fragment`);
+- every type is registered and every used slot exists on its component (`unknown-component-type`, `slot-not-found`);
+- its component versions agree with the document's (`command.component-version-mismatch`), and the document limits hold — nodes, depth, slot children (`command.limit-exceeded`);
+- `canInsert` for every root: slot `allow`/`deny`/`max`, the component's own parent rules, the content model, `insertable`/`root`, structural locks and the index range. Its `Reason` message is passed through as the error `message`.
+
+A fragment whose ids collide with nodes already in the document (a second paste) is given fresh ids from the injected `generateId`; otherwise its ids are kept. `doc.components` gains the fragment's versions, and the inserted roots become the selection.

@@ -3,6 +3,8 @@ export { applyDocumentPatches } from './apply-patches.ts';
 export type { CommandError, CommandErrorCode } from './errors.ts';
 export { atIndex, commandError, fromReason } from './errors.ts';
 export { canExecute, execute, executeBatch } from './execute.ts';
+export type { InsertCommand, InsertPayload } from './handlers/index.ts';
+export { coreCommandHandlers, insertHandler } from './handlers/index.ts';
 export { checkPayload, commandSchema, createCommandRegistry, parseCommand } from './registry.ts';
 export type { ReplayResult } from './replay.ts';
 export { replay } from './replay.ts';
