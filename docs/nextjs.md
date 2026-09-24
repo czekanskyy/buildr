@@ -155,3 +155,18 @@ return <BuildrPage config={buildr} entry={entry} />;
 `tagsFor({ collection, id, layoutRef, collectionsUsed, globals })` computes the full set; the helpers `docTag`, `collectionTag`, `globalTag` and `templateTag` build single tags.
 
 `revalidateHooks(revalidate?)` returns the Payload hooks: `collection` (`afterChange`, `afterDelete`) for page collections, `global.afterChange` for globals and `templates` (`afterChange`, `afterDelete`) for `buildr-templates`. Wire them in the application's collection configs. A draft save of a page that was never published revalidates nothing. Outside a Next.js request (a seed script) revalidation is a no-op.
+
+## Implemented API: routing and rendering per locale (PB-117)
+
+- **The language reaches the renderer through the entry**: `getBuildrDocument({ locale })` reads the document in that language (a locale that is not configured is a `404`, the cache key includes the locale) and puts it in `context.locale`; `BuildrPage` takes the built-in strings from `config.messages(context.locale)`. The site layout sets `<html lang={locale}>` from the same `[locale]` segment.
+- `isLocale(value, { locales })` guards the `[locale]` segment (`notFound()` when false).
+- `generateLocaleStaticParams({ locales, slugs, homeSlug? })` returns `{ locale, slug? }` per published slug of each language (`'a/b'` becomes `['a', 'b']`, the home slug becomes the bare `/{locale}`); feed `slugs` with `listPublishedSlugs({ locale })`.
+- `buildrMetadata(entry, { defaultLocale })` turns `entry.alternates` (from `alternatesOf`) into `alternates.languages`, adding `x-default` for the default language.
+- `negotiateLocale(acceptLanguage, { locales, default })` picks the best-weighted exact or primary-subtag match. `createLocaleMiddleware({ locales, default })` redirects **only the bare `/`** to `/{locale}` (with `Vary: Accept-Language`), so a cached page path never depends on a header or cookie:
+
+  ```ts
+  const locale = createLocaleMiddleware({ locales: ['pl', 'en'], default: 'pl' });
+  export default (request: NextRequest) => locale(request) ?? NextResponse.next();
+  export const config = { matcher: '/' };
+  ```
+- The preview route takes `locales`: `/buildr/preview?path=/about&locale=en` redirects to `/en/about`; a path that already starts with a language is left alone.

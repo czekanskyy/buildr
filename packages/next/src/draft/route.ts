@@ -1,4 +1,5 @@
 import { draftMode } from 'next/headers';
+import { withLocalePrefix } from './locale-path.ts';
 
 /**
  * A redirect target that stays on this site: a path starting with a single `/`. Anything that a
@@ -25,6 +26,8 @@ export interface PreviewRouteOptions {
   readonly authorize: (request: Request) => boolean | Promise<boolean>;
   /** Where to go when the request names no (valid) `path`. Default `/`. */
   readonly defaultPath?: string;
+  /** The site's languages: with `?locale=`, a path without one gets that language as its first segment. */
+  readonly locales?: readonly string[];
 }
 
 /**
@@ -36,9 +39,11 @@ export function createPreviewRoute(options: PreviewRouteOptions) {
     if (!(await options.authorize(request))) {
       return new Response('Unauthorized', { status: 401 });
     }
-    const path = safeRedirectPath(
-      new URL(request.url).searchParams.get('path'),
-      safeRedirectPath(options.defaultPath),
+    const params = new URL(request.url).searchParams;
+    const path = withLocalePrefix(
+      safeRedirectPath(params.get('path'), safeRedirectPath(options.defaultPath)),
+      params.get('locale'),
+      options.locales,
     );
     (await draftMode()).enable();
     return redirect(path);
