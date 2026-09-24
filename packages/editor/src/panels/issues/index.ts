@@ -4,6 +4,7 @@ export type {
   IssueItem,
   IssueSeverity,
   IssueSource,
+  MissingGroup,
   PublishGate,
   PublishPolicy,
   SeverityFilter,
@@ -12,6 +13,8 @@ export {
   collectIssues,
   countIssues,
   filterIssues,
+  groupMissingTranslations,
+  MISSING_TRANSLATION,
   nodeOfDiagnostic,
   publishGate,
 } from './collect.ts';

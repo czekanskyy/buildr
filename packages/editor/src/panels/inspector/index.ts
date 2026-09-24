@@ -12,4 +12,5 @@ export type { BindingOption, BindingStatus, FormulaCheck, Preview } from './valu
 export { bindingOptions, checkBinding, checkFormula, previewValue } from './values/analyze.ts';
 export type { InspectorDataProviderProps } from './values/data.tsx';
 export { InspectorDataProvider, useInspectorData } from './values/data.tsx';
+export { TranslationBanner, TranslationHint } from './values/translation.tsx';
 export { ValueChip, ValueEditor } from './values/value-editor.tsx';

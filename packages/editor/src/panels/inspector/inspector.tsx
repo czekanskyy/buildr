@@ -9,6 +9,7 @@ import { useEditor, useEditorState, useSelectedNode } from '../../store/index.ts
 import { Button, Input, Tabs } from '../../ui/index.ts';
 import { PropsPanel } from './props-panel.tsx';
 import { translationLocale } from './value.ts';
+import { TranslationBanner } from './values/translation.tsx';
 
 export interface InspectorProps {
   /** The language being edited; translatable props write to it. */
@@ -174,6 +175,7 @@ export function Inspector({ locale, defaultLocale, renderStyle }: InspectorProps
         ) : null}
         {locked ? <p className="bd-inspector-locked">{t('inspector.locked')}</p> : null}
       </header>
+      <TranslationBanner locale={locale} defaultLocale={defaultLocale} />
       <Tabs
         label={t('inspector.tabs')}
         items={[

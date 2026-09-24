@@ -1,3 +1,5 @@
+export type { LocaleSwitcherProps } from './locale-switcher.tsx';
+export { LocaleSwitcher } from './locale-switcher.tsx';
 export type { PublishDialogProps } from './publish-dialog.tsx';
 export { PublishDialog } from './publish-dialog.tsx';
 export type { SamplePickerProps } from './sample-picker.tsx';

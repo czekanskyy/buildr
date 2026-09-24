@@ -238,6 +238,13 @@ export const en = {
   'preview.unsafe': 'The preview address is not a web address.',
   'app.loading': 'Loading the editor…',
   'app.error': 'The document could not be opened.',
+  'locale.label': 'Content language',
+  'translation.banner':
+    'Texts are translated per language. Structure and style are shared by every language.',
+  'translation.showingDefault': 'The default-language text is shown.',
+  'translation.translate': 'Translate',
+  'translation.remove': 'Remove translation',
+  'issues.missingTranslations': 'Missing translations',
   'layers.title': 'Layers',
   'layers.empty': 'There are no layers.',
   'layers.rename': 'Layer name',

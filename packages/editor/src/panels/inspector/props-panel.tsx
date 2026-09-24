@@ -4,6 +4,7 @@ import { type MessageKey, useT } from '../../messages/index.tsx';
 import { Button } from '../../ui/index.ts';
 import { propLabel, renderControl } from './controls/index.ts';
 import { type PropReading, readProp, translationLocale } from './value.ts';
+import { TranslationHint } from './values/translation.tsx';
 import { ValueEditor } from './values/value-editor.tsx';
 
 /** Groups that live on the Advanced tab; everything else is content. */
@@ -80,7 +81,13 @@ function Field(props: {
   const inline = def.kind === 'boolean';
 
   return (
-    <div className="bd-field" data-prop={name} data-kind={def.kind} data-inline={inline}>
+    <div
+      className="bd-field"
+      data-prop={name}
+      data-kind={def.kind}
+      data-inline={inline}
+      data-untranslated={translating && !reading.isSet ? true : undefined}
+    >
       <div className="bd-field-head">
         {control !== null && editable ? (
           <label htmlFor={id} className="bd-field-label">
@@ -97,10 +104,10 @@ function Field(props: {
             variant="ghost"
             className="bd-field-reset"
             disabled={disabled}
-            aria-label={`${t('inspector.reset')}: ${label}`}
+            aria-label={`${t(translating ? 'translation.remove' : 'inspector.reset')}: ${label}`}
             onClick={() => props.onReset(name, def)}
           >
-            {t('inspector.reset')}
+            {t(translating ? 'translation.remove' : 'inspector.reset')}
           </Button>
         ) : null}
       </div>
@@ -113,6 +120,14 @@ function Field(props: {
         onSet={(value) => props.onSetValue?.(name, def, value)}
         onFixed={() => props.onFixed?.(name, def)}
       />
+      {translating && editable ? (
+        <TranslationHint
+          translated={reading.isSet}
+          disabled={disabled}
+          label={label}
+          onTranslate={() => props.onChange(name, def, reading.value)}
+        />
+      ) : null}
       {editable && control === null ? (
         <p className="bd-field-unsupported">{t('inspector.unsupported')}</p>
       ) : null}

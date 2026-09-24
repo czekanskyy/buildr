@@ -1113,3 +1113,32 @@
   background: var(--bd-surface-1, #fff);
   border: 1px solid var(--bd-border, #ccc);
 }
+
+/* Content language (PB-115) */
+.buildr-editor .bd-translation-banner {
+  margin: 0;
+  padding: 8px 12px;
+  font-size: 12px;
+  border-bottom: 1px solid var(--bd-border);
+  background: var(--bd-surface-2);
+  color: var(--bd-text-muted);
+}
+.buildr-editor .bd-field[data-untranslated] [data-prop] {
+  opacity: 0.6;
+}
+.buildr-editor .bd-field[data-untranslated] input,
+.buildr-editor .bd-field[data-untranslated] textarea {
+  color: var(--bd-text-muted);
+  font-style: italic;
+}
+.buildr-editor .bd-translation-hint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.buildr-editor .bd-issues-group > summary {
+  cursor: pointer;
+  padding: 4px 0;
+  font-weight: 600;
+}

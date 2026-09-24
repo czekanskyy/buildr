@@ -1,6 +1,6 @@
-import type { DataContext, DataSchema, RegistryMeta } from '@buildr/core';
+import type { DataContext, DataSchema, LocaleConfig, RegistryMeta } from '@buildr/core';
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { CanvasFrame, type CanvasHost, type LocalesConfig } from '../canvas-host/index.ts';
+import { CanvasFrame, type CanvasHost } from '../canvas-host/index.ts';
 import { ClipboardProvider, useClipboardActions } from '../clipboard/index.ts';
 import { MediaLibraryProvider } from '../dialogs/index.ts';
 import {
@@ -30,8 +30,16 @@ import {
 } from '../persistence/index.ts';
 import { usePreview } from '../preview/index.ts';
 import { ShortcutProvider, useForwardedKeys } from '../shortcuts/index.ts';
-import { createEditorStore, type EditorStore, EditorStoreProvider } from '../store/index.ts';
-import { PublishDialog, SamplePicker, Toolbar } from '../toolbar/index.ts';
+import {
+  createEditorStore,
+  createLocaleStore,
+  type EditorStore,
+  EditorStoreProvider,
+  LocaleProvider,
+  type LocaleStore,
+  useLocaleState,
+} from '../store/index.ts';
+import { LocaleSwitcher, PublishDialog, SamplePicker, Toolbar } from '../toolbar/index.ts';
 import { Tabs } from '../ui/index.ts';
 import { type BuilderEditorProps, type DocumentRef, resolveConfig } from './config.ts';
 import { EditorLayout } from './layout.tsx';
@@ -40,11 +48,11 @@ import { ManifestProvider } from './manifest.tsx';
 export interface EditorAppProps extends BuilderEditorProps {
   /** The registry the commands run against (`registry.meta` of the host's registry). */
   readonly registry: RegistryMeta;
-  /** The languages the content can be written in; one language (`en`) when left out. */
-  readonly locales?: LocalesConfig;
+  /** The languages the content can be written in; the session's (`getSession().locales`), else one language (`en`), when left out. */
+  readonly locales?: LocaleConfig;
 }
 
-const SINGLE_LOCALE: LocalesConfig = {
+const SINGLE_LOCALE: LocaleConfig = {
   locales: ['en'],
   default: 'en',
   fallback: true,
@@ -56,6 +64,7 @@ interface Ready {
   readonly store: EditorStore;
   readonly persistence: PersistenceController;
   readonly canPublish: boolean;
+  readonly localeStore: LocaleStore;
 }
 
 type Phase =
@@ -84,10 +93,12 @@ export function EditorApp(props: EditorAppProps) {
           adapter.getSession(documentRef),
         ]);
         if (cancelled) return;
+        const locales = props.locales ?? session.locales ?? SINGLE_LOCALE;
         const store = createEditorStore({
           doc: loaded.document,
           registry,
           readOnly: loaded.readOnly === true,
+          locales,
         });
         const persistence = createPersistence({
           store,
@@ -97,7 +108,14 @@ export function EditorApp(props: EditorAppProps) {
           debounceMs: config.autosave.debounceMs,
           maxWaitMs: config.autosave.maxWaitMs,
         });
-        setPhase({ kind: 'ready', loaded, store, persistence, canPublish: session.canPublish });
+        setPhase({
+          kind: 'ready',
+          loaded,
+          store,
+          persistence,
+          canPublish: session.canPublish,
+          localeStore: createLocaleStore(locales),
+        });
       } catch {
         if (!cancelled) setPhase({ kind: 'error' });
       }
@@ -105,7 +123,14 @@ export function EditorApp(props: EditorAppProps) {
     return () => {
       cancelled = true;
     };
-  }, [adapter, refKey, registry, config.autosave.debounceMs, config.autosave.maxWaitMs]);
+  }, [
+    adapter,
+    refKey,
+    registry,
+    props.locales,
+    config.autosave.debounceMs,
+    config.autosave.maxWaitMs,
+  ]);
 
   return (
     <MessagesProvider locale={config.uiLocale}>
@@ -138,19 +163,21 @@ function Session(props: EditorAppProps & { readonly ready: Ready }) {
   const config = useMemo(() => resolveConfig(props.config), [props.config]);
   return (
     <EditorStoreProvider store={ready.store}>
-      <ManifestProvider manifest={manifest}>
-        <PersistenceProvider controller={ready.persistence}>
-          <MediaLibraryProvider media={adapter.media}>
-            <DragProvider>
-              <ClipboardProvider>
-                <Keys overrides={config.shortcuts}>
-                  <Shell {...props} />
-                </Keys>
-              </ClipboardProvider>
-            </DragProvider>
-          </MediaLibraryProvider>
-        </PersistenceProvider>
-      </ManifestProvider>
+      <LocaleProvider store={ready.localeStore}>
+        <ManifestProvider manifest={manifest}>
+          <PersistenceProvider controller={ready.persistence}>
+            <MediaLibraryProvider media={adapter.media}>
+              <DragProvider>
+                <ClipboardProvider>
+                  <Keys overrides={config.shortcuts}>
+                    <Shell {...props} />
+                  </Keys>
+                </ClipboardProvider>
+              </DragProvider>
+            </MediaLibraryProvider>
+          </PersistenceProvider>
+        </ManifestProvider>
+      </LocaleProvider>
     </EditorStoreProvider>
   );
 }
@@ -196,7 +223,12 @@ function Shell(props: EditorAppProps & { readonly ready: Ready }) {
   const t = useT();
   const { adapter, documentRef, canvasUrl, manifest, ready } = props;
   const config = useMemo(() => resolveConfig(props.config), [props.config]);
-  const locales = props.locales ?? SINGLE_LOCALE;
+  const locales = useLocaleState((state) => state.config);
+  const locale = useLocaleState((state) => state.locale);
+  const wireLocales = useMemo(
+    () => ({ ...locales, locales: [...locales.locales], intl: { ...locales.intl } }),
+    [locales],
+  );
   const [host, setHost] = useState<CanvasHost | null>(null);
   const [breakpoint, setBreakpoint] = useState(config.breakpoints[0]?.id ?? 'desktop');
   const [publishOpen, setPublishOpen] = useState(false);
@@ -248,6 +280,7 @@ function Shell(props: EditorAppProps & { readonly ready: Ready }) {
               onPublish={() => setPublishOpen(true)}
               canPublish={ready.canPublish}
             />
+            <LocaleSwitcher onChange={(next) => host?.setLocale(next)} />
             <SamplePicker
               adapter={adapter}
               docRef={documentRef}
@@ -269,8 +302,8 @@ function Shell(props: EditorAppProps & { readonly ready: Ready }) {
             <CanvasFrame
               canvasUrl={canvasUrl}
               manifestHash={manifest.hash}
-              locales={locales}
-              locale={locales.default}
+              locales={wireLocales}
+              locale={locale}
               breakpoints={config.breakpoints}
               breakpoint={breakpoint}
               onHost={setHost}
@@ -288,7 +321,7 @@ function Shell(props: EditorAppProps & { readonly ready: Ready }) {
         right={
           <InspectorDataProvider schema={data.schema} context={data.context}>
             <Inspector
-              locale={locales.default}
+              locale={locale}
               defaultLocale={locales.default}
               renderStyle={(node) => <StyleInspector node={node} />}
             />

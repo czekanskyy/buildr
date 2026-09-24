@@ -2,12 +2,13 @@ import type { Diagnostic } from '@buildr/core';
 import type { Command } from '@buildr/core/commands';
 import { useMemo, useState } from 'react';
 import { type MessageKey, useT } from '../../messages/index.tsx';
-import { useEditor, useEditorState } from '../../store/index.ts';
+import { useEditor, useEditorState, useLocaleState } from '../../store/index.ts';
 import { Button } from '../../ui/index.ts';
 import {
   collectIssues,
   countIssues,
   filterIssues,
+  groupMissingTranslations,
   type IssueItem,
   type SeverityFilter,
 } from './collect.ts';
@@ -61,12 +62,44 @@ export function IssuesPanel({ canvasDiagnostics }: IssuesPanelProps) {
   const [failed, setFailed] = useState<string | undefined>();
   const counts = countIssues(items);
   const shown = filterIssues(items, filter);
+  const { rest, groups } = groupMissingTranslations(shown);
+  const config = useLocaleState((state) => state.config);
 
   const fix = (item: IssueItem) => {
     if (item.fix === undefined) return;
     const result = store.dispatch(item.fix as Command, { label: item.message });
     setFailed(result.ok ? undefined : item.key);
   };
+
+  const row = (item: IssueItem) => (
+    <li key={item.key} className="bd-issue" data-severity={item.severity}>
+      <button
+        type="button"
+        className="bd-issue-target"
+        disabled={item.nodeId === undefined}
+        onClick={() => {
+          if (item.nodeId !== undefined) store.select(item.nodeId);
+        }}
+      >
+        <span className="bd-issue-severity">{t(`issues.filter.${item.severity}`)}</span>
+        <span className="bd-issue-message">{item.message}</span>
+        <span className="bd-issue-source">
+          {t(SOURCE_KEY[item.source])} · {item.code}
+        </span>
+      </button>
+      {item.help !== undefined ? <p className="bd-issue-help">{item.help}</p> : null}
+      {item.fix !== undefined ? (
+        <Button disabled={readOnly} onClick={() => fix(item)}>
+          {t('issues.fix')}
+        </Button>
+      ) : null}
+      {failed === item.key ? (
+        <p role="alert" className="bd-issue-error">
+          {t('issues.fix.failed')}
+        </p>
+      ) : null}
+    </li>
+  );
 
   return (
     <section className="bd-issues" aria-label={t('issues.title')}>
@@ -85,37 +118,16 @@ export function IssuesPanel({ canvasDiagnostics }: IssuesPanelProps) {
       </fieldset>
       {!checked ? <p className="bd-field-hint">{t('issues.pending')}</p> : null}
       {checked && shown.length === 0 ? <p className="bd-field-hint">{t('issues.empty')}</p> : null}
-      <ul className="bd-issues-list">
-        {shown.map((item) => (
-          <li key={item.key} className="bd-issue" data-severity={item.severity}>
-            <button
-              type="button"
-              className="bd-issue-target"
-              disabled={item.nodeId === undefined}
-              onClick={() => {
-                if (item.nodeId !== undefined) store.select(item.nodeId);
-              }}
-            >
-              <span className="bd-issue-severity">{t(`issues.filter.${item.severity}`)}</span>
-              <span className="bd-issue-message">{item.message}</span>
-              <span className="bd-issue-source">
-                {t(SOURCE_KEY[item.source])} · {item.code}
-              </span>
-            </button>
-            {item.help !== undefined ? <p className="bd-issue-help">{item.help}</p> : null}
-            {item.fix !== undefined ? (
-              <Button disabled={readOnly} onClick={() => fix(item)}>
-                {t('issues.fix')}
-              </Button>
-            ) : null}
-            {failed === item.key ? (
-              <p role="alert" className="bd-issue-error">
-                {t('issues.fix.failed')}
-              </p>
-            ) : null}
-          </li>
-        ))}
-      </ul>
+      {rest.length > 0 ? <ul className="bd-issues-list">{rest.map(row)}</ul> : null}
+      {groups.map((group) => (
+        <details key={group.locale} className="bd-issues-group" data-locale={group.locale} open>
+          <summary>
+            {t('issues.missingTranslations')}: {config.intl[group.locale] ?? group.locale} (
+            {group.items.length})
+          </summary>
+          <ul className="bd-issues-list">{group.items.map(row)}</ul>
+        </details>
+      ))}
     </section>
   );
 }
