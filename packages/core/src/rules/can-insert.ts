@@ -1,7 +1,13 @@
 import type { DocumentIndex } from '../document/document-index.ts';
 import type { BuilderFragment } from '../document/fragment.ts';
 import { isAncestor } from '../document/traverse.ts';
-import type { BuilderDocument, ComponentType, NodeId, SlotName } from '../document/types.ts';
+import type {
+  BuilderDocument,
+  ComponentType,
+  NodeId,
+  PageNode,
+  SlotName,
+} from '../document/types.ts';
 import {
   type ContentCategory,
   categoryOf,
@@ -9,6 +15,7 @@ import {
   type Matcher,
   matchesType,
 } from '../registry/matchers.ts';
+import type { ComponentMeta } from '../registry/meta.ts';
 import type { RegistryMeta } from '../registry/registry.ts';
 import { err, ok, type Result } from '../result/index.ts';
 import { type ContentModelNode, checkGlobalContentModel } from './content-model.ts';
@@ -108,86 +115,18 @@ export function evaluateInsertion(
       );
     }
 
-    if (meta.capabilities?.insertable === false) {
-      return err(
-        reason('not-insertable', `${meta.label} cannot be inserted.`, { type: root.type }),
-      );
-    }
-    if (meta.capabilities?.root) {
-      return err(
-        reason('root-only', `${meta.label} can only be the document root.`, { type: root.type }),
-      );
-    }
-
-    const slotVerdict = matchAllowDeny(
-      slotDef.allow,
-      slotDef.deny,
-      root.type,
-      meta.contentCategories,
-    );
-    if (slotVerdict === 'denied') {
-      return err(
-        reason(
-          'slot-denied',
-          `${parentMeta.label}'s "${target.slot}" slot does not accept ${meta.label}.`,
-          { parentType: parentNode.type, slot: target.slot, type: root.type },
-        ),
-      );
-    }
-    if (slotVerdict === 'not-allowed') {
-      return err(
-        reason(
-          'slot-not-allowed',
-          `${parentMeta.label}'s "${target.slot}" slot only accepts specific component types.`,
-          { parentType: parentNode.type, slot: target.slot, type: root.type },
-        ),
-      );
-    }
-
-    const parentVerdict = matchAllowDeny(
-      meta.parents?.allow,
-      meta.parents?.deny,
-      parentNode.type,
-      parentMeta.contentCategories,
-    );
-    if (parentVerdict === 'denied') {
-      return err(
-        reason('parent-denied', `${meta.label} cannot be placed inside ${parentMeta.label}.`, {
-          parentType: parentNode.type,
-          type: root.type,
-        }),
-      );
-    }
-    if (parentVerdict === 'not-allowed') {
-      return err(
-        reason('parent-not-allowed', `${meta.label} can only be placed inside specific parents.`, {
-          parentType: parentNode.type,
-          type: root.type,
-        }),
-      );
-    }
-
-    const requireAncestor = meta.parents?.requireAncestor;
-    if (requireAncestor && requireAncestor.length > 0) {
-      const satisfied = ancestorChain.some((ancestor) =>
-        requireAncestor.some((matcher) => matchesType(matcher, ancestor.type, ancestor.categories)),
-      );
-      if (!satisfied) {
-        return err(
-          reason(
-            'missing-required-ancestor',
-            `${meta.label} must be nested inside ${describeMatchers(requireAncestor)}.`,
-            { type: root.type },
-          ),
-        );
-      }
-    }
-
-    const globalIssue = checkGlobalContentModel(ancestorChain, {
+    const issue = checkPlacement({
+      registry,
+      parentNode,
+      parentMeta,
+      slot: target.slot,
+      slotDef,
       type: root.type,
-      categories: meta.contentCategories,
+      meta,
+      ancestorChain,
+      enforceInsertable: true,
     });
-    if (globalIssue) return err(globalIssue);
+    if (issue) return err(issue);
 
     if (fragment && root.id !== undefined) {
       const nestedIssue = checkFragmentSubtree(fragment, root.id, ancestorChain, registry);
@@ -326,4 +265,97 @@ function checkFragmentSubtree(
   }
 
   return null;
+}
+
+/** What `checkPlacement` needs to know about where a node sits (or would sit). */
+export interface PlacementInput {
+  readonly registry: RegistryMeta;
+  readonly parentNode: PageNode;
+  readonly parentMeta: ComponentMeta;
+  readonly slot: SlotName;
+  readonly slotDef: NonNullable<ComponentMeta['slots']>[string];
+  /** The type of the node being placed. */
+  readonly type: ComponentType;
+  readonly meta: ComponentMeta;
+  /** The parent first, then its ancestors up to the root. */
+  readonly ancestorChain: readonly ContentModelNode[];
+  /**
+   * Whether `capabilities.insertable: false` counts. It stops a user from *adding* the
+   * component; a node that already exists in a document (a template's) is not an error.
+   */
+  readonly enforceInsertable: boolean;
+}
+
+/**
+ * The per-node placement rules shared by `canInsert` and document validation: `insertable` /
+ * `root`, the slot's `allow`/`deny`, the node's own `parents.*`, `requireAncestor` and the global
+ * HTML content model. Returns the first violation, or `undefined` when the placement is fine.
+ * Counting rules (`slot.min`/`max`), cycles and locks are not placement rules and live with the
+ * callers.
+ */
+export function checkPlacement(input: PlacementInput): Reason | undefined {
+  const { parentNode, parentMeta, slot, slotDef, type, meta, ancestorChain } = input;
+
+  if (input.enforceInsertable && meta.capabilities?.insertable === false) {
+    return reason('not-insertable', `${meta.label} cannot be inserted.`, { type });
+  }
+  if (meta.capabilities?.root) {
+    return reason('root-only', `${meta.label} can only be the document root.`, { type });
+  }
+
+  const slotVerdict = matchAllowDeny(slotDef.allow, slotDef.deny, type, meta.contentCategories);
+  if (slotVerdict === 'denied') {
+    return reason(
+      'slot-denied',
+      `${parentMeta.label}'s "${slot}" slot does not accept ${meta.label}.`,
+      { parentType: parentNode.type, slot, type },
+    );
+  }
+  if (slotVerdict === 'not-allowed') {
+    return reason(
+      'slot-not-allowed',
+      `${parentMeta.label}'s "${slot}" slot only accepts specific component types.`,
+      { parentType: parentNode.type, slot, type },
+    );
+  }
+
+  const parentVerdict = matchAllowDeny(
+    meta.parents?.allow,
+    meta.parents?.deny,
+    parentNode.type,
+    parentMeta.contentCategories,
+  );
+  if (parentVerdict === 'denied') {
+    return reason('parent-denied', `${meta.label} cannot be placed inside ${parentMeta.label}.`, {
+      parentType: parentNode.type,
+      type,
+    });
+  }
+  if (parentVerdict === 'not-allowed') {
+    return reason(
+      'parent-not-allowed',
+      `${meta.label} can only be placed inside specific parents.`,
+      { parentType: parentNode.type, type },
+    );
+  }
+
+  const requireAncestor = meta.parents?.requireAncestor;
+  if (requireAncestor && requireAncestor.length > 0) {
+    const satisfied = ancestorChain.some((ancestor) =>
+      requireAncestor.some((matcher) => matchesType(matcher, ancestor.type, ancestor.categories)),
+    );
+    if (!satisfied) {
+      return reason(
+        'missing-required-ancestor',
+        `${meta.label} must be nested inside ${describeMatchers(requireAncestor)}.`,
+        { type },
+      );
+    }
+  }
+
+  const globalIssue = checkGlobalContentModel(ancestorChain, {
+    type,
+    categories: meta.contentCategories,
+  });
+  return globalIssue ?? undefined;
 }

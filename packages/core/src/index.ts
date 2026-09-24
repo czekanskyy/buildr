@@ -14,4 +14,5 @@ export * from './rules/index.ts';
 export * from './schema/index.ts';
 export * from './styles/index.ts';
 export * from './templates/index.ts';
+export * from './validation/index.ts';
 export * from './values/index.ts';
