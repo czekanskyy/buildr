@@ -17,6 +17,7 @@ function isEmpty(value: JsonValue): boolean {
 export const logicFunctions: readonly StdlibFunction[] = [
   {
     name: 'if',
+    returns: 'any',
     lazy: true,
     params: [{ type: 'any' }, { type: 'any' }, { type: 'any' }],
     doc: 'if(c, a, b) — a when c is truthy, otherwise b; only the chosen branch is evaluated',
@@ -27,6 +28,7 @@ export const logicFunctions: readonly StdlibFunction[] = [
   },
   {
     name: 'coalesce',
+    returns: 'any',
     lazy: true,
     params: [{ type: 'any' }],
     rest: { type: 'any' },
@@ -41,6 +43,7 @@ export const logicFunctions: readonly StdlibFunction[] = [
   },
   {
     name: 'isEmpty',
+    returns: 'boolean',
     params: [{ type: 'any' }],
     doc: 'isEmpty(x) — whether x is null, an empty text, an empty list or an empty object',
     run: ([x]) => isEmpty(x as JsonValue),

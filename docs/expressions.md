@@ -64,7 +64,9 @@ A hand-written lexer plus a Pratt parser (~400 LOC, zero dependencies), with pos
 
 ## Validation
 
-`typecheck(ast, DataSchema)` infers a result type against the schema, checks function names/arities against the stdlib's own type signatures, and compares the inferred type to the target `PropDef.accepts`.
+`typecheck(node, schema?, { accepts? })` (an expression or a template AST) returns `{ type, diagnostics }` without running anything. It infers the result type against the `DataSchema` (via `schemaAtPath`), checks function names, arity and argument types against the stdlib's own signatures (`params`, `returns`), checks operand types, and, when `accepts` (a `PropDef.accepts`) is given, that the result tag is one the prop can take. All problems are collected (not just the first) as span-tagged `error` diagnostics: `expr.unknown-path`, `expr.unknown-function`, `expr.arity`, `expr.type-mismatch`, `expr.result-type`.
+
+Without a schema every path is `unknown`, and `unknown`/`null` are compatible with everything, so a missing schema never produces a false error. Parameters typed `any` (e.g. `count`, `len`) are checked at runtime only. Scopes a Loop introduces at runtime (`item`, `index`) must be added to the schema the caller passes. Wiring into `validateDocument` is PB-041.
 
 ## Execution and sandboxing
 

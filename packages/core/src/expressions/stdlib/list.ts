@@ -55,6 +55,7 @@ function index(value: JsonValue | undefined, fallback: number, what: string): nu
 export const listFunctions: readonly StdlibFunction[] = [
   {
     name: 'count',
+    returns: 'number',
     params: [{ type: 'any' }],
     doc: 'count(list) — the number of elements; null is 0',
     run: ([list]) => {
@@ -65,18 +66,21 @@ export const listFunctions: readonly StdlibFunction[] = [
   },
   {
     name: 'first',
+    returns: 'any',
     params: [{ type: 'list' }],
     doc: 'first(list) — the first element, or null when empty',
     run: ([list]) => (list as readonly JsonValue[])[0] ?? null,
   },
   {
     name: 'last',
+    returns: 'any',
     params: [{ type: 'list' }],
     doc: 'last(list) — the last element, or null when empty',
     run: ([list]) => (list as readonly JsonValue[]).at(-1) ?? null,
   },
   {
     name: 'join',
+    returns: 'string',
     params: [{ type: 'list' }, { type: 'string' }],
     doc: 'join(list, sep) — the elements as text separated by sep; null elements are empty',
     run: ([list, sep], env) => {
@@ -91,6 +95,7 @@ export const listFunctions: readonly StdlibFunction[] = [
   },
   {
     name: 'includes',
+    returns: 'boolean',
     params: [{ type: 'list' }, { type: 'any' }],
     doc: 'includes(list, v) — whether the list contains v (strict equality)',
     run: ([list, value], env) =>
@@ -100,6 +105,7 @@ export const listFunctions: readonly StdlibFunction[] = [
   },
   {
     name: 'slice',
+    returns: 'list',
     params: [{ type: 'list' }, { type: 'number' }, { type: 'number', optional: true }],
     doc: 'slice(list, start, end?) — the elements from start up to (not including) end; negative counts from the end',
     run: ([list, start, end], env) => {

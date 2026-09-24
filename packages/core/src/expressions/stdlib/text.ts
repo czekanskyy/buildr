@@ -32,18 +32,21 @@ function isHighSurrogate(code: number): boolean {
 export const textFunctions: readonly StdlibFunction[] = [
   {
     name: 'upper',
+    returns: 'string',
     params: [{ type: 'string' }],
     doc: 'upper(s) — the text in upper case',
     run: ([s]) => (s as string).toUpperCase(),
   },
   {
     name: 'lower',
+    returns: 'string',
     params: [{ type: 'string' }],
     doc: 'lower(s) — the text in lower case',
     run: ([s]) => (s as string).toLowerCase(),
   },
   {
     name: 'capitalize',
+    returns: 'string',
     params: [{ type: 'string' }],
     doc: 'capitalize(s) — the first letter in upper case',
     run: ([s]) => {
@@ -56,12 +59,14 @@ export const textFunctions: readonly StdlibFunction[] = [
   },
   {
     name: 'trim',
+    returns: 'string',
     params: [{ type: 'string' }],
     doc: 'trim(s) — the text without leading and trailing whitespace',
     run: ([s]) => (s as string).trim(),
   },
   {
     name: 'truncate',
+    returns: 'string',
     params: [{ type: 'string' }, { type: 'number' }, { type: 'string', optional: true }],
     doc: 'truncate(s, n, suffix?) — at most n characters including the suffix (default "…")',
     run: ([s, n, suffix]) => {
@@ -78,6 +83,7 @@ export const textFunctions: readonly StdlibFunction[] = [
   },
   {
     name: 'concat',
+    returns: 'string',
     params: [],
     rest: { type: 'any' },
     doc: 'concat(...) — the arguments joined as text; null counts as empty',
@@ -94,6 +100,7 @@ export const textFunctions: readonly StdlibFunction[] = [
   },
   {
     name: 'replace',
+    returns: 'string',
     params: [{ type: 'string' }, { type: 'string' }, { type: 'string' }],
     doc: 'replace(s, find, repl) — every literal occurrence of find replaced (not a regex)',
     run: ([s, find, repl], env) => {
@@ -105,6 +112,7 @@ export const textFunctions: readonly StdlibFunction[] = [
   },
   {
     name: 'slugify',
+    returns: 'string',
     params: [{ type: 'string' }],
     doc: 'slugify(s) — lower-case ASCII words joined by dashes',
     run: ([s], env) => {
@@ -118,6 +126,7 @@ export const textFunctions: readonly StdlibFunction[] = [
   },
   {
     name: 'len',
+    returns: 'number',
     params: [{ type: 'any' }],
     doc: 'len(x) — the length of a text (UTF-16 units) or a list; null is 0',
     run: ([x]) => {
