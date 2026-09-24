@@ -17,6 +17,7 @@ export { EditorLayout } from './app/layout.tsx';
 export { ManifestProvider, useManifest } from './app/manifest.tsx';
 export * from './canvas-host/index.ts';
 export * from './clipboard/index.ts';
+export * from './dnd/index.ts';
 export type { MessageKey, Messages, Translate, UiLocale } from './messages/index.tsx';
 export { createTranslator, MessagesProvider, UI_LOCALES, useT } from './messages/index.tsx';
 export * from './panels/index.ts';

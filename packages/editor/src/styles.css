@@ -835,3 +835,63 @@
 .buildr-editor .bd-clipboard-detail {
   color: var(--bd-text-muted, inherit);
 }
+
+/* --- drag and drop (PB-086) --- */
+.bd-drag-shield {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  cursor: grabbing;
+}
+.bd-drag-shield[data-over="canvas"] {
+  cursor: copy;
+}
+.bd-drag-ghost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1001;
+  pointer-events: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--bd-accent, #2563eb);
+  color: var(--bd-accent-text, #fff);
+  font-size: 12px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 25%);
+  will-change: transform;
+}
+.bd-drag-ghost[data-allowed="false"] {
+  background: var(--bd-danger, #b91c1c);
+}
+.bd-drag-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.bd-dnd-destinations {
+  list-style: none;
+  margin: 8px 0;
+  padding: 0;
+  max-height: 50vh;
+  overflow: auto;
+}
+.bd-dnd-destinations .bd-button {
+  width: 100%;
+  justify-content: flex-start;
+}
+.buildr-editor .bd-layer[data-drop="inside"] {
+  outline: 2px solid var(--bd-accent, #2563eb);
+  outline-offset: -2px;
+}
+.buildr-editor .bd-layer[data-drop="before"] {
+  box-shadow: inset 0 2px 0 var(--bd-accent, #2563eb);
+}
+.buildr-editor .bd-layer[data-drop="after"] {
+  box-shadow: inset 0 -2px 0 var(--bd-accent, #2563eb);
+}
+.buildr-editor .bd-layer[data-drop="denied"] {
+  outline: 2px solid var(--bd-danger, #b91c1c);
+  outline-offset: -2px;
+}

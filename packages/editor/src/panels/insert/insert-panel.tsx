@@ -1,6 +1,7 @@
 import { type BuilderFragment, fromTree, instantiateTemplate } from '@buildr/core';
 import { useMemo, useState } from 'react';
 import { useManifest } from '../../app/manifest.tsx';
+import { useDragPress } from '../../dnd/index.ts';
 import { useT } from '../../messages/index.tsx';
 import { useEditor, useEditorState } from '../../store/index.ts';
 import { Input } from '../../ui/index.ts';
@@ -37,6 +38,8 @@ export function InsertPanel() {
     ];
   }, [manifest, query]);
   const empty = sections.every((section) => section.groups.length === 0);
+
+  const press = useDragPress();
 
   const fragmentOf = (item: PaletteItem): BuilderFragment | undefined => {
     if (item.kind === 'template') {
@@ -115,6 +118,16 @@ export function InsertPanel() {
                           <button
                             type="button"
                             className="bd-insert-item"
+                            onPointerDown={(event) => {
+                              if (readOnly) return;
+                              press?.(
+                                item.kind === 'template'
+                                  ? { kind: 'template', id: item.id }
+                                  : { kind: 'component', type: item.id },
+                                item.label,
+                                event,
+                              );
+                            }}
                             data-kind={item.kind}
                             data-id={item.id}
                             title={item.description}
