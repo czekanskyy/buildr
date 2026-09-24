@@ -7,6 +7,8 @@ export {
   nodeClassName,
   STYLE_STATES,
 } from './compile-node.ts';
+export type { EffectiveStyles, EffectiveValue, StyleSource } from './effective.ts';
+export { effectiveStyle, effectiveStyles, hasOverrides } from './effective.ts';
 export type { LengthUnit, ParseOptions, StyleGrammar, TokenScale } from './grammar.ts';
 export { LENGTH_UNITS, MAX_STYLE_VALUE_LENGTH, parseStyleValue, TOKEN_SCALES } from './grammar.ts';
 export type {
