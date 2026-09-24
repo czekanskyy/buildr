@@ -63,7 +63,7 @@ packages/editor/src/
 - An overlay (Shadow DOM, `position: fixed`, updated on `requestAnimationFrame` during scroll/resize): selection/hover outlines, a type label, a drag handle, an outline around every Loop instance. `ResizeObserver` only watches the selected and hovered elements.
 - Selecting a node inside a collapsed `<details>` opens its `<details>` ancestors generically, with no per-component special-casing.
 - Hit-testing for drag-and-drop (`elementsFromPoint`, following `data-bid` up to the root with rects and the layout axis) plus drawing the insertion indicator.
-- Data: an `HttpDataSource` (context, queries, media) with caching and a 300ms debounce.
+- Data: any `DataSource` (the `HttpDataSource` in the apps), fetched by `createDataPreparer` with a 300ms debounce and a cache keyed by what is asked for.
 - Forwarding keyboard shortcuts (outside text fields) and reporting errors/diagnostics.
 
 ### How the canvas runtime works (PB-067)
@@ -103,6 +103,14 @@ A double click on a component whose `editor.inlineProp` names a prop holding a *
 - **`buildHitPath(document, point, store)`** finds the nodes under a point with `elementsFromPoint`, follows `data-bid` up to the root and returns one `HitEntry` per node, deepest first: its box, its layout axis (`display`/`flex-direction` from the computed style: a flex row is `x`, a flex column and block flow are `y`, grid is `grid`), the boxes of its children in slot order (a Loop's first repetition only) and the boxes of its empty-slot placeholders. Coordinates are the canvas viewport's.
 - **`dnd:over`** (an item dragged in from the palette or the layers panel) runs `computeDropTarget` and draws the result in the overlay: a 2px line, a highlighted container for an empty slot, or, when nothing accepts the item, a red box on the node under the pointer carrying the refusal's message. It answers `dnd:target { target, reason? }` — once per change, although the editor sends `dnd:over` every frame. `dnd:leave` clears the indicator. Nothing happens in `interact` mode.
 - **Moving inside the canvas**: the selected node (never the root) has a handle in the overlay. Pressing it captures the pointer, shows the same indicator for `{ kind: 'nodes', ids }`, autoscrolls within 48px of the top or bottom edge, and on release sends `intent:move { ids, target }` when there is a target; Escape or a release over a refused spot sends nothing.
+
+### Data in the canvas (PB-071)
+
+The runtime takes any `DataSource` (`dataSource`), and `createDataPreparer` decides when `prepareRender` runs:
+
+- **Replaced document or new context** (`editor:init`, `doc:set`, `context:set`, `locale:set`): fetched at once, nothing cached is reused. `context:set`/`locale:set` also call the optional `loadScopes(contextRef, locale)`, whose result becomes `DataContext.scopes` (`page`, `route`, ...); `ctx.locale` switches with the locale.
+- **A patch**: `dataKey` — the static media refs and query specs of every node, the aliases of the Loops around them, the locale, the mode and the scopes — is compared with the last one. **Unchanged (an edit to text, styles, order): no request at all.** Changed: the request waits for 300 ms without a further change (`DEFAULT_DATA_DEBOUNCE_MS`), and a key seen before (the last 8) is answered from the cache immediately.
+- **While it loads** the canvas keeps rendering the last data and `store.getState().dataLoading` is `true`; only the answer to the latest request is shown. A failing source becomes diagnostics (`data.source-error`, `canvas.data-failed`, `canvas.context-failed`) and the document renders without that data.
 
 ## The postMessage protocol
 

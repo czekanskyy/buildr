@@ -7,9 +7,9 @@ import {
   type DataSource,
   type Diagnostic,
   type DragItem,
+  type JsonValue,
   type NodeId,
   type PreparedData,
-  prepareRender,
   type Theme,
 } from '@buildr/core';
 import { createChildTransport, MAX_DIAGNOSTICS, PROTOCOL_VERSION } from '@buildr/core/protocol';
@@ -27,6 +27,7 @@ import type { Platform } from '../define/types.ts';
 import { loadDocument } from '../render/pipeline.ts';
 import { BuildrStyles } from '../render/styles.tsx';
 import type { CanvasInstrumentation, ResumeState } from '../render/types.ts';
+import { createDataPreparer, type DataPreparer } from './data.ts';
 import { createDndController, type DndController } from './dnd/controller.ts';
 import { installInlineEdit } from './inline-edit.ts';
 import { installInteractions } from './interactions.ts';
@@ -66,6 +67,15 @@ export interface CanvasRuntimeProps {
   readonly errorTarget?: ErrorTargetLike | null;
   /** Whether the canvas captures clicks and hover and draws the selection overlay; on by default. */
   readonly interactive?: boolean;
+  /**
+   * The scopes (`page`, `route`, ...) the sample data of `contextRef` gives the document, in
+   * `locale`. Called when the editor sets the context or the locale; the last call wins. A
+   * failure is shown as a diagnostic and the document renders without the scopes.
+   */
+  readonly loadScopes?: (
+    contextRef: string | null,
+    locale: string,
+  ) => Promise<Readonly<Record<string, JsonValue>>>;
   /** Called with the store, once, so an overlay or a test can read the same state. */
   readonly onStore?: (store: CanvasStore) => void;
 }
@@ -76,7 +86,7 @@ export interface ErrorTargetLike {
   removeEventListener(type: 'error' | 'unhandledrejection', listener: (event: never) => void): void;
 }
 
-const NO_DATA: PreparedData = { media: {}, queries: {}, collectionsUsed: [], diagnostics: [] };
+const NO_SCOPES: Readonly<Record<string, JsonValue>> = {};
 
 function sessionFromUrl(): string {
   const search = (globalThis as { location?: { search?: string } }).location?.search ?? '';
@@ -303,46 +313,63 @@ export function CanvasRuntime(props: CanvasRuntimeProps) {
     };
   }, [store]);
 
+  const [scopes, setScopes] = useState<Readonly<Record<string, JsonValue>>>(NO_SCOPES);
+  const { loadScopes } = props;
+  const { contextRef, locale } = state;
+  useEffect(() => {
+    if (loadScopes === undefined) return;
+    let cancelled = false;
+    loadScopes(contextRef, locale)
+      .then((loaded) => {
+        if (cancelled) return;
+        store.setDiagnostics('scopes', []);
+        setScopes(loaded);
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        store.setDiagnostics('scopes', [
+          { code: 'canvas.context-failed', message: messageOf(error), severity: 'error' },
+        ]);
+        setScopes(NO_SCOPES);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [loadScopes, contextRef, locale, store]);
+
   const context = useMemo<DataContext>(
     () => ({
-      scopes: {},
+      scopes,
       locale: state.locale,
       locales: state.locales ?? { default: state.locale, fallback: false, intl: {} },
       timeZone: 'UTC',
       mode: 'canvas',
     }),
-    [state.locale, state.locales],
+    [scopes, state.locale, state.locales],
   );
 
-  // Media and queries, prepared again when the document is replaced or the context changes; a
-  // patch does not re-run it (the data of a single edit is PB-071's business).
+  // Media and queries (data.ts): fetched at once when the document is replaced or the context
+  // changes, and after a patch only when what it asks the data source for changed, debounced.
+  const [preparer, setPreparer] = useState<DataPreparer | null>(null);
   useEffect(() => {
-    const doc = store.getState().doc;
-    if (doc === undefined) return;
-    if (dataSource === undefined) {
-      setPrepared({ generation, data: NO_DATA });
-      return;
-    }
-    let cancelled = false;
-    prepareRender(doc, registry.meta, context, dataSource, cache !== undefined ? { cache } : {})
-      .then((data) => {
-        if (!cancelled) {
-          store.setDiagnostics('data', data.diagnostics);
-          setPrepared({ generation, data });
-        }
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) {
-          store.setDiagnostics('data', [
-            { code: 'canvas.data-failed', message: messageOf(error), severity: 'error' },
-          ]);
-          setPrepared({ generation, data: NO_DATA });
-        }
-      });
+    const preparer = createDataPreparer({
+      registry: registry.meta,
+      dataSource,
+      cache,
+      onData: (data, generation) => setPrepared({ generation, data }),
+      onLoading: (dataLoading) => store.update({ dataLoading }),
+      onDiagnostics: (items) => store.setDiagnostics('data', items),
+    });
+    setPreparer(preparer);
     return () => {
-      cancelled = true;
+      preparer.destroy();
+      setPreparer(null);
     };
-  }, [generation, context, dataSource, registry, cache, store]);
+  }, [registry, dataSource, cache, store]);
+  const replica = state.doc;
+  useEffect(() => {
+    if (replica !== undefined) preparer?.update(replica, context, generation);
+  }, [replica, context, generation, preparer]);
 
   // The editor is told the canvas is ready once, after the first commit that has data for it.
   useEffect(() => {

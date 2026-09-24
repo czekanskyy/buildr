@@ -1,6 +1,8 @@
 // @buildr/react/canvas: CanvasRuntime, the page the editor embeds in its iframe. The overlay,
 // inline edit and hit-testing (PB-068 - PB-071) build on the store exported here.
 export { NodeBoundary } from './boundary.tsx';
+export type { DataPreparer, DataPreparerOptions } from './data.ts';
+export { createDataPreparer, DEFAULT_DATA_DEBOUNCE_MS, dataKey } from './data.ts';
 export type { DndController, DndOptions } from './dnd/controller.ts';
 export { createDndController } from './dnd/controller.ts';
 export { buildHitPath, layoutAxisOf } from './dnd/hit-path.ts';
