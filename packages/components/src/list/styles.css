@@ -1,0 +1,12 @@
+@layer buildr.components {
+  .bc-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--b-space-2);
+    padding-inline-start: var(--b-space-6);
+    list-style: disc;
+  }
+  .bc-list[data-ordered] {
+    list-style: decimal;
+  }
+}

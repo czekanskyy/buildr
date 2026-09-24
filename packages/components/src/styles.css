@@ -15,3 +15,8 @@
 @import "./button/styles.css";
 @import "./link/styles.css";
 @import "./image/styles.css";
+@import "./icon/styles.css";
+@import "./list/styles.css";
+@import "./list-item/styles.css";
+@import "./divider/styles.css";
+@import "./badge/styles.css";

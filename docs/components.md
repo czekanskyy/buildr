@@ -84,6 +84,14 @@ A picture from the media library or bound to a CMS field. Props: `image` (bindab
 
 Rendering: through `platform.Image` (`next/image` in a Next.js site, a plain `<img>` otherwise), with `src`, intrinsic `width`/`height`, a `srcset` built from the sizes the media library generated (plus the original, narrowest first), and the asset's focal point as `object-position`. Every URL goes through `sanitizeUrl` again: an unsafe or missing URL renders nothing, except in the editor's canvas (`mode: 'canvas'`), where an empty-state placeholder (`data-empty`) marks the spot.
 
+### Icon (`buildr/icon`), List and ListItem, Divider, Badge
+
+- **Icon** (`buildr/icon`; the definition is exported as `IconComponent` because `Icon` is the svg component): `name` (one of `ICON_NAMES`), `label`, `size` (`sm`, `md`, `lg`, `xl`). Decorative (`aria-hidden`) unless it has a `label` (`role="img"`). Drawn on the server from path data, no JavaScript; an unknown name renders nothing.
+- **List** (`buildr/list`): `ordered` (`ol` or `ul`), `ariaLabel`. Its slot accepts only `#list-item` and `buildr/loop`; a new List comes with three items. The `list-structure` rule and the slot rules agree.
+- **ListItem** (`buildr/list-item`): `text` (bindable, inline-editable) and a slot for more content (a nested list). Only valid inside a List or a Loop; not insertable on its own.
+- **Divider** (`buildr/divider`): an `<hr>`; `decorative` makes it `role="presentation"`.
+- **Badge** (`buildr/badge`): `text` (bindable) and `variant` (`neutral`, `primary`, `success`, `warning`, `danger`); the colour is decoration, so put the meaning in the text.
+
 Fixtures: each component exports `<name>Fixtures` (`ComponentFixture`: an id, a title and a subtree that goes under the page), reviewed at `FIXTURE_WIDTHS` (1280, 768, 375). Tablet and mobile overrides live in the fixture's `styles.bp`.
 
 ## Form field derivation

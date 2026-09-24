@@ -1,0 +1,9 @@
+@layer buildr.components {
+  .bc-list-item {
+    display: list-item;
+    overflow-wrap: anywhere;
+  }
+  .bc-list-item > .bc-list {
+    margin-block-start: var(--b-space-2);
+  }
+}
