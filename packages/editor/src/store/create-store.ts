@@ -197,6 +197,7 @@ export function createEditorStore(options: EditorStoreOptions): EditorStore {
 
   const store: EditorStore = {
     ...api,
+    registry: options.registry,
     history,
 
     dispatch: (command, options_) => run([command], options_),
