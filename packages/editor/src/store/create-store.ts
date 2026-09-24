@@ -24,6 +24,13 @@ import {
   executeBatch,
 } from '@buildr/core/commands';
 import { createStore } from 'zustand/vanilla';
+import {
+  EMPTY_SELECTION,
+  normalizeSelection,
+  relativeNode,
+  type SelectionState,
+  selectIn,
+} from './selection.ts';
 import type {
   DispatchOptions,
   DocumentChange,
@@ -92,7 +99,7 @@ export function createEditorStore(options: EditorStoreOptions): EditorStore {
     readOnly: options.readOnly ?? false,
     ...historyState(),
     savedCursorId: history.cursorId,
-    selectedIds: [],
+    ...EMPTY_SELECTION,
     hoveredId: null,
     validation: undefined,
   }));
@@ -128,11 +135,20 @@ export function createEditorStore(options: EditorStoreOptions): EditorStore {
     patches: readonly DocumentPatch[],
     selection: readonly NodeId[],
   ) => {
-    const from = api.getState().docVersion;
+    const state = api.getState();
+    const from = state.docVersion;
     api.setState({
       doc,
       docVersion: from + 1,
-      selectedIds: existing(doc, selection),
+      ...normalizeSelection(doc, {
+        selectedIds: selection,
+        anchorId: state.anchorId,
+        selectedInstance: state.selectedInstance,
+      }),
+      hoveredId:
+        state.hoveredId !== null && Object.hasOwn(doc.nodes, state.hoveredId)
+          ? state.hoveredId
+          : null,
       ...historyState(),
     });
     scheduleValidation();
@@ -238,7 +254,11 @@ export function createEditorStore(options: EditorStoreOptions): EditorStore {
         readOnly: replaceOptions?.readOnly ?? state.readOnly,
         ...historyState(),
         savedCursorId: history.cursorId,
-        selectedIds: existing(doc, state.selectedIds),
+        ...normalizeSelection(doc, {
+          selectedIds: state.selectedIds,
+          anchorId: state.anchorId,
+          selectedInstance: state.selectedInstance,
+        }),
         hoveredId: null,
         validation: undefined,
       });
@@ -247,7 +267,30 @@ export function createEditorStore(options: EditorStoreOptions): EditorStore {
     },
 
     markSaved: () => api.setState({ savedCursorId: history.cursorId }),
-    setSelection: (ids) => api.setState((state) => ({ selectedIds: existing(state.doc, ids) })),
+    select: (id, selectOptions) =>
+      api.setState((state) =>
+        Object.hasOwn(state.doc.nodes, id)
+          ? selectIn(state, id, selectOptions?.mode, selectOptions?.instance)
+          : state,
+      ),
+    setSelection: (ids) =>
+      api.setState((state) => {
+        const next: SelectionState = {
+          selectedIds: ids,
+          anchorId: null,
+          selectedInstance: undefined,
+        };
+        return normalizeSelection(state.doc, next);
+      }),
+    clearSelection: () => api.setState(EMPTY_SELECTION),
+    moveSelection(move) {
+      const { doc, anchorId } = api.getState();
+      if (anchorId === null) return undefined;
+      const target = relativeNode(doc, anchorId, move);
+      if (target === undefined) return undefined;
+      api.setState(selectIn(EMPTY_SELECTION, target));
+      return target;
+    },
     setHovered: (id) => api.setState({ hoveredId: id }),
     setReadOnly: (readOnly) => api.setState({ readOnly }),
 

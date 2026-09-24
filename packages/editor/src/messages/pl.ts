@@ -6,6 +6,7 @@ export const pl: Messages = {
   'editor.canvas': 'Kanwa',
   'editor.inspector': 'Inspektor',
   'editor.issues': 'Problemy',
+  'editor.breadcrumbs': 'Ścieżka zaznaczenia',
   'editor.issues.show': 'Pokaż problemy',
   'editor.issues.hide': 'Ukryj problemy',
   'editor.resize.left': 'Zmień szerokość lewego panelu',

@@ -6,6 +6,7 @@ import {
   type PageNode,
   type SlotName,
 } from '@buildr/core';
+import { pathTo } from './selection.ts';
 import type { EditorState } from './types.ts';
 
 const indexes = new WeakMap<BuilderDocument, DocumentIndex>();
@@ -42,12 +43,18 @@ export function selectChildren(
     : NO_CHILDREN;
 }
 
-/** The first selected node, if any. */
+/** The anchor of the selection (the last node selected), if any. */
 export function selectSelectedNode(
-  state: Pick<EditorState, 'doc' | 'selectedIds'>,
+  state: Pick<EditorState, 'doc' | 'anchorId'>,
 ): PageNode | undefined {
-  const [first] = state.selectedIds;
-  return first === undefined ? undefined : selectNode(state, first);
+  return state.anchorId === null ? undefined : selectNode(state, state.anchorId);
+}
+
+/** The nodes from the root down to the anchor (empty with no selection). */
+export function selectSelectionPath(
+  state: Pick<EditorState, 'doc' | 'anchorId'>,
+): readonly NodeId[] {
+  return state.anchorId === null ? NO_CHILDREN : pathTo(state.doc, state.anchorId);
 }
 
 /** Whether the document differs from the saved one; undoing back to the saved state is clean again. */

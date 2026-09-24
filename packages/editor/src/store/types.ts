@@ -18,6 +18,7 @@ import type {
   HistoryOptions,
 } from '@buildr/core/commands';
 import type { StoreApi } from 'zustand/vanilla';
+import type { SelectionMove, SelectMode } from './selection.ts';
 
 /** Findings about the document as it is now, recomputed after it stops changing. */
 export interface ValidationSnapshot {
@@ -47,8 +48,13 @@ export interface EditorState {
   readonly undoLabel: string | undefined;
   readonly redoLabel: string | undefined;
 
-  // --- selection (PB-075 adds the rest) ---
+  // --- selection ---
+  /** In the order they were selected; only nodes of `doc`. */
   readonly selectedIds: readonly NodeId[];
+  /** The node the selection is centred on: the inspector shows it, keyboard moves start from it. */
+  readonly anchorId: NodeId | null;
+  /** Which repetition of a Loop the single selected node is, as the canvas reported it. */
+  readonly selectedInstance: string | undefined;
   readonly hoveredId: NodeId | null;
 
   // --- derived, debounced ---
@@ -110,7 +116,13 @@ export interface EditorStore extends StoreApi<EditorState> {
   replaceDocument(doc: BuilderDocument, options?: { readonly readOnly?: boolean }): void;
   /** Says that the document as it is now is the saved one. */
   markSaved(): void;
+  /** Selects a node: replaces the selection, toggles it (Ctrl/Cmd) or adds to it (Shift). */
+  select(id: NodeId, options?: { readonly mode?: SelectMode; readonly instance?: string }): void;
+  /** Replaces the selection; the last id becomes the anchor. */
   setSelection(ids: readonly NodeId[]): void;
+  clearSelection(): void;
+  /** Moves the selection one step from the anchor; returns the node now selected, or `undefined` when there was nowhere to go. */
+  moveSelection(move: SelectionMove): NodeId | undefined;
   setHovered(id: NodeId | null): void;
   setReadOnly(readOnly: boolean): void;
   /** Called after every change to the document. Returns the function that stops listening. */

@@ -9,6 +9,7 @@ export const en = {
   'editor.canvas': 'Canvas',
   'editor.inspector': 'Inspector',
   'editor.issues': 'Issues',
+  'editor.breadcrumbs': 'Selection path',
   'editor.issues.show': 'Show issues',
   'editor.issues.hide': 'Hide issues',
   'editor.resize.left': 'Resize the left panel',
