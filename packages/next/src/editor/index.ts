@@ -1,3 +1,8 @@
-// @buildr/next/editor: the editor route glue - the only subpath allowed to import
-// @buildr/editor (a peer dependency). Populated by docs/backlog/phase-11-nextjs.md.
-export {};
+// @buildr/next/editor: the server wrapper of the editor route (login redirect, server-computed
+// manifest, serializable props for the application's client file).
+export {
+  BuildrEditorPage,
+  type BuildrEditorPageProps,
+  type EditorClientProps,
+  editorMetadata,
+} from './page.tsx';
