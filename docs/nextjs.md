@@ -113,3 +113,13 @@ export default function Page() {
   return <BuildrCanvasPage authorize={isEditorSession}><CanvasClient manifestHash={hash} rendererVersion={version} /></BuildrCanvasPage>;
 }
 ```
+
+## Implemented API: the editor route (PB-106)
+
+`@buildr/next/editor` exports:
+
+- `BuildrEditorPage({ collection, id, authorize, loginUrl, returnTo, manifest, canvasUrl?, config?, render })` — the server wrapper of `app/(builder)/buildr/edit/[collection]/[id]/page.tsx`. It makes the route dynamic, then calls `authorize()`: `true` renders, `false` (not signed in) redirects to `loginUrl?redirect=<returnTo>`, `'forbidden'` (signed in without the right) is the site's `notFound()`. Both `loginUrl` and `returnTo` pass through `safeRedirectPath`, so the redirect stays on the site.
+- `render(props)` receives `{ manifest, canvasUrl, documentRef, config? }` — plain, serializable data — and returns the application's client file (`'use client'`), which builds the `DocumentAdapter` (`@buildr/payload/adapter`) and mounts `BuilderEditor`. Only that file imports `@buildr/editor`, so the editor's bundle loads on this route only.
+- `editorMetadata` — `robots: noindex, nofollow`.
+
+The manifest is computed on the server (`toManifest(registry.meta)`), so the palette never depends on a client-side import of component code. The `(builder)` route group has its own root layout with no site chrome.
