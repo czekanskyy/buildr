@@ -1,6 +1,7 @@
 import type { PayloadRequest } from 'payload';
 import type { SchemaOptions, SchemaSource } from '../../data/index.ts';
 import { type Action, allowed as isAllowed } from '../access.ts';
+import type { RateLimiter } from '../forms/rate-limit.ts';
 import type { ResolvedOptions } from '../options.ts';
 import { fail, notFound, unauthorized } from './respond.ts';
 
@@ -12,6 +13,8 @@ export interface DocumentTarget {
 /** Who may do what; decided per request. */
 export interface EndpointEnv {
   readonly options: ResolvedOptions;
+  /** Limits form submissions (present when forms are enabled). */
+  readonly rateLimiter?: RateLimiter | undefined;
 }
 
 export type Guarded<T> =

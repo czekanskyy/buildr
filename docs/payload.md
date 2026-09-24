@@ -109,7 +109,7 @@ Read/data endpoints accept a `locale` parameter (defaulting to the default local
 
 **Global `site-settings`**: `siteName`, `logo`, `locale`, `timeZone`, `defaultCurrency`, `defaultSeo`, `social`.
 
-**Plugin collections**: `buildr-templates`; `buildr-form-submissions` (`form: { collection, id, nodeId }`, `data` json, `locale`, `meta`: userAgent, IP hash, `createdAt`).
+**Plugin collections**: `buildr-templates`; `buildr-form-submissions` (`form: { collection, documentId, nodeId }`, `data` json, `locale`, `meta`: userAgent, IP hash, `createdAt`; added when `forms.enabled`).
 
 **Localization (example app: `pl` default, `en`)**: `localized: true` on `title`, `slug`, `excerpt`, `content`, `description`, `shortDescription`, `meta`, media `alt`/`caption`, `bio`, and global text fields. `layout` is **not** localized — see [i18n.md](i18n.md).
 
@@ -256,3 +256,28 @@ Unless `draft` is set, only published templates count; access applies as for `re
 `GET /buildr/documents/:collection/:id` adds `layoutSource` and `layoutRef` to the response. A document that inherits is opened with the template's layout as `document`, so saving writes it as an own layout ("create an own layout"). For `builtin` the canvas stays blank: the built-in layout is only a render fallback.
 
 Editing a template in the builder is not part of this task: for now the layout of a template is a validated JSON field.
+
+## Forms (PB-102)
+
+With `forms: { enabled: true }` (this needs `registry`: the plugin refuses to start without it) the plugin adds the `buildr-form-submissions` collection and the public endpoint `POST /api/buildr/forms/:collection/:id/:nodeId`. The form is the `buildr/form` component; `:collection`/`:id` is the `layoutRef` of the rendered layout, so it is a configured collection or `buildr-templates` (a form of an inherited layout lives in its template).
+
+```ts
+forms: {
+  enabled: true,
+  notifyAllowlist: ['@example.com', 'ops@partner.example'], // exact addresses or @domains
+  notifyTo: ['ops@example.com'],                            // every one must match the allowlist (checked at startup)
+  rateLimit: { limit: 5, windowMs: 60_000 },                 // per visitor and form; the in-memory limiter
+  rateLimiter,                                               // optional: your own RateLimiter { hit(key) }
+}
+```
+
+**The client never decides what the form accepts.** The endpoint loads the *published* document (`_status: 'published'`; a draft or a never-published document answers `404`), resolves its layout (own layout, else its template, see above), checks that `:nodeId` is a `buildr/form` node and derives the schema with `deriveFormSchema` from that layout only. A newer, unpublished draft therefore changes nothing. `validateSubmission` then checks the values: a name outside the schema is refused (`unknown`), and every value against its type (`string`, `email`, `tel`, `url`, `number`, `boolean`, `enum`), `required`, `maxLength` (5000 when the field sets none) and its options.
+
+Order of the checks: route and collection (`404`) → rate limit (`429`, `Retry-After`) → body (`415` for anything but JSON, urlencoded or multipart; `413` above 64 KB) → honeypot → published document and form (`404`) → validation (`422`) → store → notify.
+
+- **Answers.** A JSON request (`Content-Type: application/json` or `Accept: application/json`, which the form's enhancement sends) gets `{ ok: true }`, or `422 { errors: { field: message }, codes: { field: code } }` (`codes` for clients that localize). A plain HTML form gets `303` back to the `Referer` page (only when it is on the same origin, otherwise `/`) with `?buildr-form=sent` or `?buildr-form=invalid`.
+- **Honeypot.** The form renders an `_hp` input nobody sees. A submission with it filled is answered as a success and stored nowhere, so a bot learns nothing.
+- **Rate limiting.** Keyed by a hash of the visitor's address (`X-Forwarded-For`, then `X-Real-IP`; put the site behind a proxy that sets it) and the form. `createMemoryRateLimiter` keeps its windows in one process's memory (bounded), so it does not work across serverless instances: pass a `rateLimiter` backed by a shared store (Redis) there.
+- **Stored.** `form: { collection, documentId, nodeId }`, `data` (the validated values, typed), `locale`, `meta: { userAgent, ipHash }`. The IP is stored only as `sha256(secret:ip)`, cut to 32 hex characters. Only signed-in users read or delete submissions; nobody creates them but the endpoint.
+- **Email.** Each submission is mailed through Payload's `sendEmail` to `notifyTo`, filtered through `notifyAllowlist` once more when sending. A failing mail server is logged and never fails the submission.
+- **CSRF.** The endpoint is public by design (a plain HTML form must work) and only creates a submission; the honeypot and the rate limiter are what protect it.
