@@ -54,7 +54,8 @@ export default buildConfig({
     withRevalidation(Products),
   ],
   globals: [{ ...SiteSettings, hooks: { afterChange: [...hooks.global.afterChange] } }],
-  typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
+  // The generated types would narrow `collection: string` inside @buildr/payload's sources, which type-check with this app.
+  typescript: { autoGenerate: false },
   plugins: [
     seoPlugin({
       collections: ['pages', 'posts', 'products'],

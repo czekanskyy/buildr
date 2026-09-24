@@ -6,8 +6,9 @@ export interface SecurityHeadersOptions {
 }
 
 export interface HeaderRule {
-  readonly source: string;
-  readonly headers: readonly { readonly key: string; readonly value: string }[];
+  source: string;
+  // Mutable on purpose: this must be assignable to Next's own `Header` in `headers()` of next.config.
+  headers: { key: string; value: string }[];
 }
 
 const header = (key: string, value: string) => ({ key, value });
