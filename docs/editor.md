@@ -320,3 +320,10 @@ A prop whose definition has `accepts` can hold a static value, a data binding or
 - Switching back to Fixed writes a static value again (`node.unsetProp` when it equals the default).
 
 The schema and sample data come from `<InspectorDataProvider schema context>`; without them, paths are unchecked and there is no preview.
+
+## Issues and publishing (PB-088)
+
+- **Issues panel** (`panels/issues`): `collectIssues` merges the findings of `validateDocument`, the accessibility rules and the diagnostics the canvas reported into `IssueItem`s, worst first. A finding whose node is gone keeps its text but is not clickable. The panel filters by severity (`filterIssues`), selects the node when a finding is chosen, and shows a **Fix** button when the accessibility rule offered an unambiguous repair; it runs as a normal command, so it is one undo step.
+- **Publish gate** (`publishGate(items, policy)`): a blocking validation issue (a damaged structure) stops publishing under any policy. With `publishPolicy: 'block'` (the a11y config) any error stops it too; with `'warn'` (the default) the dialog only says there are issues.
+- **Publish dialog** (`toolbar/publish-dialog.tsx`, `<PublishDialog policy onPublished>`): re-runs the checks on open, shows the counts, states that publishing replaces the live page with the whole document, and calls `PersistenceController.publish()`. That method saves what is unsaved first, publishes the saved revision, and returns a `PublishOutcome` (`ok`, `conflict`, `invalid`, `unsaved`, `network`) instead of rejecting. The backend enforces the same policy again; the dialog is a convenience, not the guard.
+- Wiring the dialog into the toolbar's `onPublish` is done by the full editor shell (PB-092).

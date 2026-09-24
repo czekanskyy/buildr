@@ -18,6 +18,7 @@ export type {
   PersistenceError,
   PersistenceState,
   PersistenceStatus,
+  PublishOutcome,
   PublishResult,
   SaveRequest,
   SaveResult,

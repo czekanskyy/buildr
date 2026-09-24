@@ -1,7 +1,14 @@
 import { createStore, type StoreApi } from 'zustand/vanilla';
 import type { EditorStore } from '../store/index.ts';
 import { checkSaveResult, loadDocument } from './load.ts';
-import type { Clock, DocumentAdapter, DocumentRef, PersistenceState, SaveResult } from './types.ts';
+import type {
+  Clock,
+  DocumentAdapter,
+  DocumentRef,
+  PersistenceState,
+  PublishOutcome,
+  SaveResult,
+} from './types.ts';
 
 /** How long to wait before retrying a failed save; the last delay repeats. */
 export const RETRY_DELAYS_MS: readonly number[] = [2000, 5000, 15_000];
@@ -33,6 +40,11 @@ export interface PersistenceController {
   reload(): Promise<void>;
   /** After a conflict: saves the local document over the backend's. */
   overwrite(): Promise<void>;
+  /**
+   * Publishes the document: saves what is unsaved first, then asks the backend to publish that
+   * revision. Never rejects; what went wrong is in the outcome.
+   */
+  publish(): Promise<PublishOutcome>;
   /** Whether closing the tab would lose something. */
   hasUnsavedWork(): boolean;
 }
@@ -226,6 +238,42 @@ export function createPersistence(options: PersistenceOptions): PersistenceContr
       const { conflictRevision } = state.getState();
       if (conflictRevision === undefined) return Promise.resolve();
       return run(false, conflictRevision);
+    },
+    async publish() {
+      if (state.getState().status === 'conflict') {
+        return {
+          ok: false,
+          kind: 'conflict',
+          currentRevision: state.getState().conflictRevision ?? 0,
+        };
+      }
+      await this.saveNow();
+      const { status, revision } = state.getState();
+      if (status === 'conflict') {
+        return {
+          ok: false,
+          kind: 'conflict',
+          currentRevision: state.getState().conflictRevision ?? 0,
+        };
+      }
+      // Publishing a revision the backend does not have would publish something else than what the author sees.
+      if (status !== 'clean') return { ok: false, kind: 'unsaved' };
+      let result: SaveResult;
+      try {
+        result = checkSaveResult(await adapter.publish(ref, { baseRevision: revision }));
+      } catch (cause) {
+        return { ok: false, kind: 'network', message: errorMessage(cause) };
+      }
+      if (result.ok) {
+        set({ revision: result.revision, lastSavedAt: result.updatedAt });
+        return { ok: true, revision: result.revision, updatedAt: result.updatedAt };
+      }
+      if (result.kind === 'conflict') {
+        clearTimers();
+        set({ status: 'conflict', conflictRevision: result.currentRevision, error: undefined });
+        return { ok: false, kind: 'conflict', currentRevision: result.currentRevision };
+      }
+      return { ok: false, kind: 'invalid', diagnostics: result.diagnostics };
     },
     hasUnsavedWork() {
       const { status } = state.getState();
