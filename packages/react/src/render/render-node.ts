@@ -1,5 +1,4 @@
 import {
-  type BuilderDocument,
   type Diagnostic,
   isJsonValue,
   type JsonValue,
@@ -11,20 +10,10 @@ import {
   type SlotName,
 } from '@buildr/core';
 import { createElement, type ReactNode } from 'react';
-import type { BuilderComponentProps, ComponentDefinition, ComponentEnv } from '../define/types.ts';
+import type { BuilderComponentProps, ComponentDefinition, NodeRoot } from '../define/types.ts';
+import { loopSlots } from './loop.ts';
 import { buildRootAttributes } from './root-attrs.ts';
-import type { RenderTreeOptions } from './types.ts';
-
-/** Everything one render walk shares. Plain data and functions: no React context, no hooks. */
-export interface RenderRun {
-  readonly doc: BuilderDocument;
-  readonly options: RenderTreeOptions;
-  readonly env: ComponentEnv;
-  readonly devChecks: boolean;
-  /** The nodes between the root and the one being rendered, to stop a cyclic document. */
-  readonly path: Set<NodeId>;
-  report(diagnostics: readonly Diagnostic[]): void;
-}
+import type { RenderRun, RenderTreeOptions } from './types.ts';
 
 function nodeDiagnostic(
   code: string,
@@ -103,8 +92,11 @@ function withMediaAssets(
 function renderSlots(
   node: PageNode,
   def: ComponentDefinition,
+  props: Readonly<Record<string, JsonValue>>,
   run: RenderRun,
 ): Record<SlotName, ReactNode> {
+  const loop = loopSlots(node, def, props, run, renderNode);
+  if (loop !== undefined) return loop;
   const slots: Record<SlotName, ReactNode> = {};
   for (const slot of Object.keys(def.meta.slots ?? {})) {
     const ids =
@@ -157,12 +149,15 @@ export function renderNode(id: NodeId, run: RenderRun): ReactNode {
   run.path.add(id);
   let slots: Record<SlotName, ReactNode>;
   try {
-    slots = renderSlots(node, def, run);
+    slots = renderSlots(node, def, props, run);
   } finally {
     run.path.delete(id);
   }
 
-  const root = buildRootAttributes(node, options.instrument?.rootAttributes?.(node));
+  const root = buildRootAttributes(node, {
+    ...options.instrument?.rootAttributes?.(node),
+    ...instanceAttributes(node, run),
+  });
   const componentProps: BuilderComponentProps = {
     props: props as BuilderComponentProps['props'],
     root,
@@ -175,7 +170,28 @@ export function renderNode(id: NodeId, run: RenderRun): ReactNode {
 
   if (run.devChecks && def.meta.runtime === 'client') assertSerializable(node, componentProps);
 
-  return wrap(node, createElement(def.render, { key: node.id, ...componentProps }), run);
+  return wrap(node, createElement(def.render, { key: keyOf(node, run), ...componentProps }), run);
+}
+
+/** `${id}:${index}` inside a loop, so the instances of one node never share a key. */
+function keyOf(node: PageNode, run: RenderRun): string {
+  const index = run.instance[run.instance.length - 1];
+  return index === undefined ? node.id : `${node.id}:${index}`;
+}
+
+/**
+ * What a node inside a loop instance gets: its anchor made unique (`pricing-2`, `pricing-1-3` in
+ * nested loops) and, for the canvas, `data-bi` — the instance it is part of.
+ */
+function instanceAttributes(node: PageNode, run: RenderRun): Partial<NodeRoot> {
+  const index = run.instance[run.instance.length - 1];
+  if (index === undefined) return {};
+  return {
+    ...(node.anchor !== undefined && node.anchor !== ''
+      ? { id: `${node.anchor}-${run.instance.join('-')}` }
+      : {}),
+    ...(run.options.instrument !== undefined ? { 'data-bi': index } : {}),
+  };
 }
 
 function cacheOption(
@@ -187,7 +203,9 @@ function cacheOption(
 /** Puts the canvas's `NodeView` around a node, when there is one. */
 function wrap(node: PageNode, element: ReactNode, run: RenderRun): ReactNode {
   const View = run.options.instrument?.NodeView;
-  return View === undefined ? element : createElement(View, { key: node.id, node }, element);
+  return View === undefined
+    ? element
+    : createElement(View, { key: keyOf(node, run), node }, element);
 }
 
 /**
