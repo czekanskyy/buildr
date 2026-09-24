@@ -78,6 +78,15 @@ MVP scopes: `site` (global site settings), the current document under the name c
 5. Validate against the prop's own validator and sanitize (URLs, length caps).
 6. If the result is `undefined`/`null` or fails validation, fall back in order: `fallback` -> the prop's own `default` -> omit. Every fallback emits a `Diagnostic` (`binding.missing`, `binding.type-mismatch`, `expression.runtime`) tagged with `nodeId` and `prop`.
 
+`resolveProps(node, meta, ctx, { cache? })` (in `@buildr/core/values`) runs this pipeline for every prop the component declares and returns `{ props, diagnostics }`; the result is plain JSON. Props the component does not declare are dropped, a missing value uses the prop's `default`, and each diagnostic carries `details.nodeId` and `details.prop`. Specifics:
+
+- `l10n` is only consulted for `localizable` props and only when `ctx.locale` is not the default locale. With `ctx.locales.fallback` off and no translation, the prop falls back to its default and reports `l10n.missing-translation`.
+- Static links go through `sanitizeUrl`, and text longer than the prop's `maxLength` is cut (`prop.truncated`). A binding or expression on a prop that is not bindable (`select`, `icon`, `list`, `object`, or `bindable: false`) is ignored with `binding.not-bindable`.
+- The fallback chain is the value's own `fallback`, then the prop's `default`, then omission. A `null` result counts as missing.
+- Pass a `createCompileCache()` to reuse parsed expressions across calls.
+
+`resolveVisibility(node, ctx, { cache? })` decides `visibleIf`: no condition is visible; otherwise the resolved value's truthiness decides (`null`, `false`, `0`, `""` are falsy), so missing data hides the node. A condition that cannot be evaluated (malformed, a syntax error, a breached limit) also hides it and reports a diagnostic — it fails closed.
+
 The resolver **never throws**. In production, diagnostics are logged once per document render; in the canvas they are streamed to the editor (tree badges, inspector chips, the Issues panel).
 
 ## Type safety, fallbacks, errors, security, UI
