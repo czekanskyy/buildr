@@ -29,6 +29,7 @@ import { BuildrStyles } from '../render/styles.tsx';
 import type { CanvasInstrumentation, ResumeState } from '../render/types.ts';
 import { createDataPreparer, type DataPreparer } from './data.ts';
 import { createDndController, type DndController } from './dnd/controller.ts';
+import { installForwarding } from './forwarding.ts';
 import { installInlineEdit } from './inline-edit.ts';
 import { installInteractions } from './interactions.ts';
 import { type CanvasEnv, CanvasEnvContext, NodeView } from './node-view.tsx';
@@ -275,6 +276,7 @@ export function CanvasRuntime(props: CanvasRuntimeProps) {
       inlineProp: (type) => propsRef.current.registry.meta.get(type)?.editor?.inlineProp,
     });
     const stop = installInteractions({ document: doc, store, transport });
+    const stopForwarding = installForwarding({ document: doc, store, transport });
     const dnd = createDndController({
       document: doc,
       store,
@@ -286,6 +288,7 @@ export function CanvasRuntime(props: CanvasRuntimeProps) {
     return () => {
       stop();
       stopInline();
+      stopForwarding();
       overlay.destroy();
       dnd.destroy();
       dndRef.current = null;

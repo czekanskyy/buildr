@@ -112,6 +112,14 @@ The runtime takes any `DataSource` (`dataSource`), and `createDataPreparer` deci
 - **A patch**: `dataKey` — the static media refs and query specs of every node, the aliases of the Loops around them, the locale, the mode and the scopes — is compared with the last one. **Unchanged (an edit to text, styles, order): no request at all.** Changed: the request waits for 300 ms without a further change (`DEFAULT_DATA_DEBOUNCE_MS`), and a key seen before (the last 8) is answered from the cache immediately.
 - **While it loads** the canvas keeps rendering the last data and `store.getState().dataLoading` is `true`; only the answer to the latest request is shown. A failing source becomes diagnostics (`data.source-error`, `canvas.data-failed`, `canvas.context-failed`) and the document renders without that data.
 
+### Shortcut and context-menu forwarding (PB-072)
+
+While the focus is inside the iframe the editor would not see the keyboard, so `installForwarding` sends it what it handles:
+
+- **`key:down { key, code, mods }`** for Ctrl/Cmd + Z, Y, C, X, V, D, A or S, Delete, Backspace, Escape and Alt + Up/Down. A forwarded key gets `preventDefault`, so the browser does not also act on it (Ctrl+Z is not the browser's undo, Ctrl+S does not save the page); a held key is sent once. The list stays clear of the browser's own shortcuts (Ctrl+R/W/T/L/F/P, F5, F12 …), which are never captured.
+- **Never from a text field or from text being edited in place** (`input`, `textarea`, `select`, `contenteditable`, an inline-edit session): there the keys belong to the text. Nothing is forwarded in `interact` mode.
+- **`contextmenu { id, point }`** on a right click: the node under it (or `null`) and the pointer's position in the canvas viewport (the editor adds the iframe's offset and zoom); the browser's menu does not open, except in a text field or text being edited.
+
 ## The postMessage protocol
 
 An **envelope**, Zod-validated on both sides (malformed messages are dropped and logged in dev):
