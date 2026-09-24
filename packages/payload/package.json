@@ -66,13 +66,20 @@
     "zod": "^4.6.5"
   },
   "peerDependencies": {
+    "@buildr/editor": "workspace:*",
     "@buildr/next": "workspace:*",
+    "@payloadcms/ui": "^3.0.0",
     "next": "^15.0.0 || ^16.0.0",
-    "payload": "^3.0.0",
-    "@payloadcms/ui": "^3.0.0"
+    "payload": "^3.0.0"
   },
   "peerDependenciesMeta": {
+    "@buildr/editor": {
+      "optional": true
+    },
     "@buildr/next": {
+      "optional": true
+    },
+    "@payloadcms/ui": {
       "optional": true
     },
     "next": {
@@ -80,12 +87,10 @@
     },
     "payload": {
       "optional": true
-    },
-    "@payloadcms/ui": {
-      "optional": true
     }
   },
   "devDependencies": {
+    "@buildr/editor": "workspace:*",
     "@buildr/next": "workspace:*",
     "@buildr/test-utils": "workspace:*",
     "@buildr/tsconfig": "workspace:*",
