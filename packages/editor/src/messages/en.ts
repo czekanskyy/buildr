@@ -229,6 +229,8 @@ export const en = {
   'media.choose': 'Choose file',
   'media.replace': 'Replace',
   'media.remove': 'Remove',
+  'sample.label': 'Sample entry',
+  'sample.default': 'Default entry',
   'layers.title': 'Layers',
   'layers.empty': 'There are no layers.',
   'layers.rename': 'Layer name',
