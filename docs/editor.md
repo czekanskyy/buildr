@@ -341,3 +341,15 @@ A template is edited against a real entry. `<SamplePicker adapter docRef onChang
 ## Preview (PB-091)
 
 `usePreview({ adapter, docRef, target })` returns `preview` (for the toolbar's `onPreview`), `overlay` (render it in the shell) and `error`. `preparePreview` first calls `PersistenceController.saveNow()` and requires the status to be `clean` — otherwise the preview would show older work and an error is reported — and only then asks `adapter.previewUrl(ref, { draft: true })`. The address must be http(s) or relative (`isSafePreviewUrl`). The default target is a full-screen dialog with a sandboxed iframe (`allow-scripts allow-same-origin allow-forms allow-popups`, no referrer) and a "Back to editing" button; Escape also leaves. `target: 'tab'` opens a new tab with `noopener`.
+
+## The editor app and the playground (PB-092)
+
+`EditorApp` (`@buildr/editor`) is the whole editor: `<EditorApp adapter manifest registry canvasUrl documentRef locales? config? />`. It loads the document through the adapter (a "Loading" or "could not be opened" screen until it has), creates the store and the autosave, and composes the toolbar, the sample picker, the Insert and Layers tabs, the canvas, the inspector (with the data schema and sample context), the Issues panel, the publish dialog, preview, shortcuts, clipboard and drag and drop (the canvas's `dnd:target` answers go to the drag engine). `registry` is the host's `registry.meta`; `BuilderEditor` remains the bare shell.
+
+`apps/playground` proves the editor needs neither Payload nor Next.js:
+
+- `/` hosts `EditorApp` with a `MemoryAdapter` (`src/memory-adapter.ts`): the document and its revision live in `localStorage` (every access guarded by try/catch, with an in-memory fallback), saves detect conflicts by revision, an `en`/`pl` `LocaleConfig`, and sample entries (a post, a product) in both languages.
+- `/canvas` runs `CanvasRuntime` with the default registry, a memory data source and the samples as scopes.
+- `/gallery` is the fixture gallery.
+
+`pnpm dev` opens the editor. The Playwright smoke test (`apps/playground/e2e/editor.spec.ts`) inserts a Hero, edits text, undoes and reloads.

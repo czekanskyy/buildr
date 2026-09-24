@@ -236,6 +236,8 @@ export const en = {
   'preview.frame': 'The page as visitors see it',
   'preview.unsaved': 'The latest changes could not be saved, so the preview would be out of date.',
   'preview.unsafe': 'The preview address is not a web address.',
+  'app.loading': 'Loading the editor…',
+  'app.error': 'The document could not be opened.',
   'layers.title': 'Layers',
   'layers.empty': 'There are no layers.',
   'layers.rename': 'Layer name',
