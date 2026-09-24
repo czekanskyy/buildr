@@ -10,6 +10,10 @@ export type {
   MovePayload,
   RemoveCommand,
   RemovePayload,
+  SetPropCommand,
+  SetPropPayload,
+  UnsetPropCommand,
+  UnsetPropPayload,
 } from './handlers/index.ts';
 export {
   coreCommandHandlers,

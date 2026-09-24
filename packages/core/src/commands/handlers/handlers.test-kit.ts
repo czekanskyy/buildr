@@ -4,6 +4,7 @@ import type { BuilderDocument, ComponentType, NodeId, PageNode } from '../../doc
 import { createSeededIdGenerator } from '../../ids/seeded-id-generator.ts';
 import type { ComponentMeta } from '../../registry/meta.ts';
 import { createRegistryMeta } from '../../registry/registry.ts';
+import { p } from '../../schema/p.ts';
 import { createCommandRegistry } from '../registry.ts';
 import type { Command, CommandEnv, CommandHandler } from '../types.ts';
 import { coreCommandHandlers } from './index.ts';
@@ -26,6 +27,15 @@ export const registry = createRegistryMeta({
   components: [
     component('buildr/page', { capabilities: { root: true }, slots: { default: {} } }),
     component('buildr/section', { slots: { default: {} } }),
+    component('buildr/heading', {
+      contentCategories: ['flow', 'phrasing'],
+      props: {
+        title: p.text({ maxLength: 20 }),
+        level: p.number({ min: 1, max: 6, default: 1 }),
+        code: p.text({ localizable: false }),
+        plain: p.text({ bindable: false }),
+      },
+    }),
     component('buildr/list', { slots: { default: { min: 1 } } }),
     component('buildr/pair', { slots: { default: { max: 2 } } }),
     component('buildr/text', { contentCategories: ['flow', 'phrasing'] }),
