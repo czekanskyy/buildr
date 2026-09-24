@@ -11,14 +11,7 @@ import {
   prepareRender,
   type Theme,
 } from '@buildr/core';
-import {
-  type CanvasMessage,
-  createChildTransport,
-  type EditorMessage,
-  MAX_DIAGNOSTICS,
-  PROTOCOL_VERSION,
-  type Transport,
-} from '@buildr/core/protocol';
+import { createChildTransport, MAX_DIAGNOSTICS, PROTOCOL_VERSION } from '@buildr/core/protocol';
 import {
   type ReactNode,
   useCallback,
@@ -33,11 +26,13 @@ import type { Platform } from '../define/types.ts';
 import { loadDocument } from '../render/pipeline.ts';
 import { BuildrStyles } from '../render/styles.tsx';
 import type { CanvasInstrumentation, ResumeState } from '../render/types.ts';
+import { installInteractions } from './interactions.ts';
 import { type CanvasEnv, CanvasEnvContext, NodeView } from './node-view.tsx';
+import { createOverlay } from './overlay/overlay.ts';
 import { type CanvasStore, createCanvasStore } from './store.ts';
+import type { CanvasTransport } from './types.ts';
 
-/** The channel to the editor, as the runtime uses it. */
-export type CanvasTransport = Transport<CanvasMessage, EditorMessage>;
+export type { CanvasTransport };
 
 export interface CanvasRuntimeProps {
   readonly registry: ReactRegistry;
@@ -66,6 +61,8 @@ export interface CanvasRuntimeProps {
   readonly helloAttempts?: number;
   /** Where uncaught errors are listened for; the canvas's own window by default. */
   readonly errorTarget?: ErrorTargetLike | null;
+  /** Whether the canvas captures clicks and hover and draws the selection overlay; on by default. */
+  readonly interactive?: boolean;
   /** Called with the store, once, so an overlay or a test can read the same state. */
   readonly onStore?: (store: CanvasStore) => void;
 }
@@ -247,6 +244,23 @@ export function CanvasRuntime(props: CanvasRuntimeProps) {
       transportRef.current = null;
     };
   }, [store, bump]);
+
+  // Selection, hover and the overlay: they need a page, so a server render skips them.
+  const interactive = props.interactive ?? true;
+  useEffect(() => {
+    const doc = (globalThis as { document?: Document }).document;
+    if (!interactive || doc === undefined) return;
+    const stop = installInteractions({
+      document: doc,
+      store,
+      transport: () => transportRef.current,
+    });
+    const overlay = createOverlay({ document: doc, store });
+    return () => {
+      stop();
+      overlay.destroy();
+    };
+  }, [store, interactive]);
 
   // Diagnostics: coalesced, so a render that reports from many nodes sends one message.
   useEffect(() => {
