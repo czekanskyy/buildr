@@ -190,3 +190,14 @@ return <BuildrPage config={buildr} entry={entry} />;
 - `src/lib/site.ts` — `load` (one cached read per request through `getBuildrDocument`, a draft read only when draft mode is on and a user is signed in), `metadataFor` (`seoFromDocument` + `alternatesOf` + `buildrMetadata`, so every language gets hreflang and `x-default`), `publishedSlugs` for `generateStaticParams` (a build without a reachable database prerenders nothing; `dynamicParams` renders on first visit).
 - `src/proxy.ts` — Next 16 renamed `middleware.ts` to `proxy.ts`; it is `createLocaleMiddleware` for the bare `/`.
 - `src/buildr.server.ts` — `createBuildrConfig` with `createNextPlatform()`, a per-render Payload data source, and the built-in messages.
+
+## The example application's builder routes (PB-110)
+
+The flow *Payload → "Edit with Visual Builder" → a separate tab → edit → save → preview → publish* runs through three route groups of `apps/example-next-payload/src/app`:
+
+- `(builder)/buildr/edit/[collection]/[id]` — `BuildrEditorPage` (server: sign-in redirect to `/admin/login`, manifest) plus `editor-client.tsx` (`'use client'`: `createPayloadAdapter({ baseUrl: '/api' })` and `EditorApp`). It has its own root layout, so no site chrome and no site stylesheet.
+- `(canvas)/buildr/canvas` — `BuildrCanvasPage` plus `canvas-client.tsx` (`CanvasRuntime` with the registry, plain-anchor platform, the builder API as data source, and `loadScopes` from `/api/buildr/data/context`). It renders nothing on the server: the canvas talks to its parent frame and needs `window.location.origin`.
+- `(canvas)/buildr/preview` and `.../exit-preview` — `createPreviewRoute` (locale-aware, signed-in users only) and `createExitPreviewRoute`.
+- `next.config.ts` carries the security header rules. They are the output of `buildrSecurityHeaders()`, written out because Node loads `next.config.ts` itself and does not compile a workspace package's TypeScript; an application using the published package imports the function instead.
+
+Verified by hand against a local database: the editor opens, the canvas handshake completes, inserting a heading and publishing changes `/pl`. Automated end-to-end coverage is PB-112.

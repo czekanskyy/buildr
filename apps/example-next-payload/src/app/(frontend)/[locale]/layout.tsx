@@ -1,3 +1,4 @@
+import '@buildr/components/styles.css';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { LOCALES } from '../../../buildr.registry.ts';
