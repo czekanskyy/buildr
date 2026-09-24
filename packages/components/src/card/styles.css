@@ -1,0 +1,70 @@
+@layer buildr.components {
+  .bc-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+    border-radius: var(--b-radius-md);
+    background-color: var(--b-color-surface);
+    color: var(--b-color-text);
+  }
+  .bc-card[data-variant="outlined"] {
+    border: 1px solid var(--b-color-border);
+  }
+  .bc-card[data-variant="elevated"] {
+    box-shadow: var(--b-shadow-md);
+  }
+  .bc-card[data-variant="flat"] {
+    background-color: var(--b-color-surface-alt);
+  }
+
+  .bc-card__media:empty,
+  .bc-card__actions:empty {
+    display: none;
+  }
+  .bc-card__media > * {
+    width: 100%;
+  }
+
+  .bc-card__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--b-space-2);
+    padding: var(--b-space-4);
+  }
+
+  .bc-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--b-space-2);
+    padding: 0 var(--b-space-4) var(--b-space-4);
+    /* Above the stretched link, so a button in here stays clickable. */
+    position: relative;
+    z-index: 1;
+  }
+
+  /* The stretched link: its pseudo-element covers the whole card. */
+  .bc-card__link {
+    color: inherit;
+    text-decoration: none;
+  }
+  .bc-card__link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+  .bc-card__link:focus-visible {
+    outline: none;
+  }
+  .bc-card__link:focus-visible::after {
+    outline: 2px solid var(--b-color-focus);
+    outline-offset: -2px;
+    border-radius: inherit;
+  }
+
+  .bc-card[data-linked]:hover {
+    box-shadow: var(--b-shadow-lg);
+  }
+}

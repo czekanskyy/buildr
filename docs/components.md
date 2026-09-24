@@ -92,6 +92,14 @@ Rendering: through `platform.Image` (`next/image` in a Next.js site, a plain `<i
 - **Divider** (`buildr/divider`): an `<hr>`; `decorative` makes it `role="presentation"`.
 - **Badge** (`buildr/badge`): `text` (bindable) and `variant` (`neutral`, `primary`, `success`, `warning`, `danger`); the colour is decoration, so put the meaning in the text.
 
+## UI components
+
+### Card (`buildr/card`)
+
+A boxed piece of content. Slots: `media` (one media item), `body` (flow content), `actions` (interactive content, laid out horizontally). Props: `variant` (`outlined`, `elevated`, `flat`), `as` (`article` or `div`), and for a clickable card `href`, `linkLabel` and `newTab`.
+
+**Stretched link.** With a `href` the card contains one real anchor (`.bc-card__link`), empty apart from its name (`linkLabel`, plus a hidden new-tab notice), whose `::after` covers the card. The card's own content is never inside the link, so a Button or Link in `actions` (raised with `z-index: 1`) does not nest interactive elements; the `nested-interactive` rule stays quiet. An unsafe URL drops the link. Give a linked card a `linkLabel`; it is the link's accessible name.
+
 Fixtures: each component exports `<name>Fixtures` (`ComponentFixture`: an id, a title and a subtree that goes under the page), reviewed at `FIXTURE_WIDTHS` (1280, 768, 375). Tablet and mobile overrides live in the fixture's `styles.bp`.
 
 ## Form field derivation
