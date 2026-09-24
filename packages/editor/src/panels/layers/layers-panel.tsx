@@ -12,6 +12,14 @@ import {
   useState,
 } from 'react';
 import { componentMeta, useManifest } from '../../app/manifest.tsx';
+import {
+  MoveToDialog,
+  useDragAutoscroll,
+  useDragAvailable,
+  useDragPress,
+  useDragState,
+  useRegisterTree,
+} from '../../dnd/index.ts';
 import { type MessageKey, useT } from '../../messages/index.tsx';
 import { pathTo, useEditor, useEditorState } from '../../store/index.ts';
 import { ContextMenu, Input, type MenuItem } from '../../ui/index.ts';
@@ -72,8 +80,25 @@ export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
   const [height, setHeight] = useState(FALLBACK_HEIGHT);
   const scroller = useRef<HTMLDivElement>(null);
   const reveal = useRef<NodeId | null>(null);
+  const [moving, setMoving] = useState<readonly NodeId[] | null>(null);
+  const press = useDragPress();
+  const canDrag = useDragAvailable();
+  const drop = useDragState((state) => (state.over === 'tree' ? state.tree : null));
+  const dropTarget = useDragState((state) => (state.over === 'tree' ? state.target : null));
 
   const rows = useMemo(() => flattenTree(doc, expanded), [doc, expanded]);
+  useRegisterTree(() => {
+    const element = scroller.current;
+    if (element === null) return undefined;
+    const box = element.getBoundingClientRect();
+    return {
+      viewport: { left: box.left, top: box.top, width: box.width, height: box.height },
+      scrollTop: element.scrollTop,
+      rows,
+      rowHeight: ROW_HEIGHT,
+    };
+  });
+  useDragAutoscroll(scroller);
   const selected = useMemo(() => new Set(selectedIds), [selectedIds]);
   const rowIndex = useMemo(() => new Map(rows.map((row, i) => [row.id, i])), [rows]);
 
@@ -243,6 +268,21 @@ export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
     scroller.current?.focus();
   };
 
+  const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (press === undefined || readOnly || renaming !== null) return;
+    const id = rowOf(event);
+    if (id === undefined || id === doc.root) return;
+    if ((event.target as Element).closest('[data-toggle]') !== null) return;
+    const ids = selected.has(id) ? removable(selectedIds) : [id];
+    if (ids.length === 0) return;
+    const node = doc.nodes[id];
+    const label =
+      ids.length > 1
+        ? `${ids.length} ${t('dnd.ghost.nodes')}`
+        : (node?.name ?? componentMeta(manifest, node?.type ?? '')?.label ?? node?.type ?? id);
+    press({ kind: 'nodes', ids }, label, event);
+  };
+
   const onDoubleClick = (event: MouseEvent<HTMLDivElement>) => {
     const id = rowOf(event);
     if (id !== undefined && (event.target as Element).closest('[data-toggle]') === null) {
@@ -271,6 +311,16 @@ export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
     const ids = removable(selectedIds.includes(menuTarget) ? selectedIds : [menuTarget]);
     const isRoot = menuTarget === doc.root;
     const canWrap = componentMeta(manifest, wrapperType) !== undefined;
+    const move: MenuItem[] = canDrag
+      ? [
+          {
+            id: 'move',
+            label: t('dnd.moveTo'),
+            disabled: readOnly || ids.length === 0,
+            onSelect: () => setMoving(ids),
+          },
+        ]
+      : [];
     return [
       {
         id: 'rename',
@@ -297,6 +347,7 @@ export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
         disabled: readOnly || isRoot || target.slots === undefined,
         onSelect: () => run({ type: 'node.unwrap', payload: { id: menuTarget } }),
       },
+      ...move,
       {
         id: 'delete',
         label: t('layers.menu.delete'),
@@ -306,7 +357,7 @@ export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
       },
     ];
     // biome-ignore lint/correctness/useExhaustiveDependencies: startRename and removable read the same inputs
-  }, [menuTarget, doc, selectedIds, manifest, wrapperType, readOnly, t, run]);
+  }, [menuTarget, doc, selectedIds, manifest, wrapperType, readOnly, canDrag, t, run]);
 
   const activeRow = activeIndex >= 0 ? rows[activeIndex] : undefined;
   const rowDomId = (id: NodeId) => `${treeId}-${id}`;
@@ -330,6 +381,7 @@ export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
           onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
           onKeyDown={onKeyDown}
           onClick={onClick}
+          onPointerDown={onPointerDown}
           onDoubleClick={onDoubleClick}
           onPointerOver={onPointerOver}
           onPointerLeave={() => store.setHovered(null)}
@@ -345,6 +397,13 @@ export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
                 selected={selected.has(row.id)}
                 hovered={hoveredId === row.id}
                 hasIssue={issueNodes.has(row.id)}
+                drop={
+                  drop !== null && rows[drop.rowIndex]?.id === row.id
+                    ? dropTarget === null
+                      ? 'denied'
+                      : drop.position
+                    : undefined
+                }
                 renaming={renaming === row.id}
                 onRename={(text) => commitRename(row.id, text)}
                 onCancelRename={() => {
@@ -359,6 +418,15 @@ export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
       <p className="bd-layers-notice" role="status">
         {notice}
       </p>
+      {canDrag ? (
+        <MoveToDialog
+          open={moving !== null}
+          onOpenChange={(open) => {
+            if (!open) setMoving(null);
+          }}
+          ids={moving ?? []}
+        />
+      ) : null}
     </div>
   );
 }
@@ -370,6 +438,8 @@ interface LayerProps {
   readonly selected: boolean;
   readonly hovered: boolean;
   readonly hasIssue: boolean;
+  /** Where a drag in progress would drop relative to this row; `denied` where it may not. */
+  readonly drop: 'before' | 'inside' | 'after' | 'denied' | undefined;
   readonly renaming: boolean;
   readonly onRename: (text: string) => void;
   readonly onCancelRename: () => void;
@@ -382,6 +452,7 @@ function Layer({
   selected,
   hovered,
   hasIssue,
+  drop,
   renaming,
   onRename,
   onCancelRename,
@@ -415,6 +486,7 @@ function Layer({
       className="bd-layer"
       data-selected={selected}
       data-hovered={hovered}
+      data-drop={drop}
       style={{
         top,
         height: ROW_HEIGHT,
