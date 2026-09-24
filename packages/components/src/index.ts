@@ -7,6 +7,8 @@ export type { ComponentFixture } from './fixtures.ts';
 export { FIXTURE_WIDTHS } from './fixtures.ts';
 export { Grid } from './grid/definition.ts';
 export { gridFixtures } from './grid/fixtures.ts';
+export { HEADING_LEVELS, Heading } from './heading/definition.ts';
+export { headingFixtures } from './heading/fixtures.ts';
 export type { IconName, IconNode, IconProps, IconShape } from './icons/index.ts';
 export { hasIcon, ICON_NAMES, ICON_NODES, Icon } from './icons/index.ts';
 export { Page } from './page/definition.ts';
@@ -15,3 +17,5 @@ export { SECTION_CONTAINERS, SECTION_ELEMENTS, Section } from './section/definit
 export { sectionFixtures } from './section/fixtures.ts';
 export { STACK_ROLES, Stack } from './stack/definition.ts';
 export { stackFixtures } from './stack/fixtures.ts';
+export { TEXT_ELEMENTS, Text } from './text/definition.ts';
+export { textFixtures } from './text/fixtures.ts';

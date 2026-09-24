@@ -1,0 +1,6 @@
+@layer buildr.components {
+  .bc-text {
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+  }
+}
