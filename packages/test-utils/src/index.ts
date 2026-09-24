@@ -6,6 +6,12 @@ export type { DocOptions, NodeOptions, NodeTree } from './builders.ts';
 export { doc, node } from './builders.ts';
 export type { DataSourceFixture } from './contracts/data-source.ts';
 export { DATA_SOURCE_FIXTURE, runDataSourceContract } from './contracts/data-source.ts';
+export type { GalleryFixture } from './demo/gallery.ts';
+export {
+  createGalleryContext,
+  createGalleryDataSource,
+  galleryFixtures,
+} from './demo/gallery.ts';
 export type { InvalidDocumentFixture } from './fixtures/documents/index.ts';
 export { invalidDocumentFixtures, validDocumentFixtures } from './fixtures/documents/index.ts';
 export type { MigrationFixture } from './fixtures/migrations/index.ts';

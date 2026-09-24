@@ -1,6 +1,7 @@
 packages:
   - "packages/*"
   - "tooling/*"
+  - "apps/*"
 
 # dependency-cruiser doesn't declare `typescript` as its own dependency (it does an
 # optional dynamic import), so without this it resolves the workspace's typescript@7,

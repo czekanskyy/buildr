@@ -9,14 +9,15 @@
   },
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev",
+    "dev": "turbo run dev --filter=@buildr/playground",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
-    "check:boundaries": "depcruise --config .dependency-cruiser.cjs packages tooling/smoke",
+    "check:boundaries": "depcruise --config .dependency-cruiser.cjs packages apps tooling/smoke",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
-    "prepare": "lefthook install"
+    "prepare": "lefthook install",
+    "e2e": "turbo run e2e"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",

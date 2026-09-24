@@ -103,3 +103,12 @@ Any component with a `listSource` prop renders as a loop (the `buildr/loop` comp
 - **Links.** The URL is checked again with `sanitizeUrl` because the value may not have passed core's normalization. An unsafe or missing URL leaves the link text without the link (`url.unsafe-scheme` diagnostic). Safe links render through `platform.Link`, or a plain `<a>` when no platform is given.
 - **Limits.** Nesting deeper than `MAX_RICH_TEXT_DEPTH` and more than `MAX_RICH_TEXT_NODES` nodes are cut and reported.
 - **Extending.** `converters` is merged over the defaults per call (no global registry): e.g. `@buildr/payload` adds `upload`. A converter gets the node, `ctx.children(...)` to render its children, `ctx.report(...)`, and `ctx.platform`.
+
+## Playground and SSR harness
+
+`pnpm dev` starts `apps/playground` (Vite + React 19, no Next.js or Payload) and opens the gallery at `/gallery`.
+
+- `/gallery` lists the fixtures (`galleryFixtures` in `@buildr/test-utils`); `/gallery?fixture=<id>&w=<px>` renders one through `DocumentRenderer` with a `MemoryDataSource`, in a frame of the given width (200–4000 px; anything else is ignored). Diagnostics are shown under the frame.
+- The gallery uses the demo components from `@buildr/test-utils/demo/components` (page, section, heading, text, loop) until `@buildr/components` exists.
+- `renderFixtureToHtml(document, { theme?, dataSource? })` from `@buildr/test-utils/render` renders the same documents to static HTML through the production `renderDocument`, for snapshot tests.
+- `pnpm e2e` runs the Playwright smoke tests (`apps/playground/e2e`); browsers are installed once with `pnpm --filter @buildr/playground exec playwright install chromium`.
