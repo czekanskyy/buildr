@@ -39,7 +39,12 @@ The parser does not know the stdlib: any identifier followed by `(` parses as a 
 - `+` adds numbers, or concatenates when either operand is a string.
 - Division by zero yields `null` plus a diagnostic.
 - A path access on `null` yields `null` (implicit safe navigation).
-- `&&`/`||` always return a boolean (unlike JavaScript, they never return an operand).
+- `&&`/`||` always return a boolean (unlike JavaScript, they never return an operand); `??` returns the left operand unless it is `null`. Truthiness: `null`, `false`, `0` and `""` are falsy, everything else (including `[]`) is truthy.
+- `==`/`!=` compare lists and objects by content. `<`/`<=`/`>`/`>=` compare two numbers or two strings (by UTF-16 code unit); a `null` operand gives `false`.
+- `+` with a string operand concatenates (`null` is empty text, a list or object is a type mismatch). `-`, `*`, `/`, `%` need numbers.
+- **Missing data is not an error.** A `null` operand makes arithmetic `null`, and a `null` argument to a stdlib function whose parameter is not `any` makes the call `null`, both without a diagnostic. Data-caused problems — division by zero, a wrong operand or argument type, a non-finite result, an unreadable path, an invalid argument such as `round(n, 99)` — evaluate to `null` and emit a **warning** (`expr.division-by-zero`, `expr.type-mismatch`, `expr.not-finite`, `expr.path-invalid`, `expr.invalid-argument`).
+- **Errors** (the result is an `Err` diagnostic with `details.start`/`details.end`): `expr.unknown-function`, `expr.arity`, and `expr.limit` (steps, nesting, text length, list size).
+- `if` and `coalesce` evaluate only the arguments they need, so `if(x != 0, 10 / x, 0)` never divides by zero.
 
 ## Standard library (MVP)
 
@@ -64,6 +69,12 @@ A hand-written lexer plus a Pratt parser (~400 LOC, zero dependencies), with pos
 ## Execution and sandboxing
 
 Evaluation is a tree-walking interpreter with a step budget. Data access goes exclusively through `getPath` (no prototype access is possible). Stdlib functions are pure TypeScript functions receiving already-evaluated arguments — there are no host objects, no method calls on values (`s.toUpperCase()` is not valid syntax), no regex (eliminating ReDoS), and no loops or lambdas, so termination is guaranteed by construction.
+
+## API
+
+`evaluate(ast, ctx, { maxSteps?, diagnostics? })` returns `Result<JsonValue, Diagnostic>` and `evaluateTemplate` returns `Result<string, Diagnostic>`; neither throws. Warnings are pushed to `options.diagnostics`. `compileExpression`/`compileTemplate` parse once and return a handle with `evaluate`; `createCompileCache(capacity)` returns an LRU cache owned by the caller (there is no module-level cache). `stdlib` exposes each function's parameter types and one-line `doc` for the typechecker and the formula editor.
+
+Known gap: the grammar has no object literal, so the `opts` of `formatNumber` and the forms table of `plural` must come from data (`plural(n, labels.posts)`). An inline form needs an ADR-005 amendment.
 
 ## Limits
 
