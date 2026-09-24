@@ -1,5 +1,6 @@
 import type { Endpoint } from 'payload';
 import { samplesResponseSchema } from '../../contract.ts';
+import { chooseLocale } from '../locales.ts';
 import { allowed, collectionOf, type EndpointEnv } from './context.ts';
 import { fail, json } from './respond.ts';
 
@@ -15,6 +16,8 @@ export const samplesEndpoint = (env: EndpointEnv): Endpoint => ({
     if (!(await allowed(env, 'edit', req))) return fail(403, 'You may not edit with the builder.');
     const titleField =
       req.payload.collections[collection.value]?.config.admin?.useAsTitle ?? 'title';
+    const locale = chooseLocale(req, req.searchParams?.get('locale'));
+    if (!locale.ok) return locale.response;
     const search = req.searchParams?.get('search')?.trim() ?? '';
     const result = await req.payload.find({
       collection: collection.value,
@@ -22,6 +25,7 @@ export const samplesEndpoint = (env: EndpointEnv): Endpoint => ({
       limit: SAMPLE_LIMIT,
       depth: 0,
       draft: true,
+      ...locale.args,
       req,
       overrideAccess: false,
     });

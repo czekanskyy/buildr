@@ -6,6 +6,7 @@ import {
 } from '../../contract.ts';
 import { resolveLayout } from '../../data/index.ts';
 import { readLayout } from '../hooks/read-layout.ts';
+import { chooseLocale } from '../locales.ts';
 import {
   allowed,
   type DocumentTarget,
@@ -33,7 +34,9 @@ export const getDocumentEndpoint = (env: EndpointEnv): Endpoint => ({
     const query = documentQuerySchema.safeParse(Object.fromEntries(req.searchParams ?? []));
     if (!query.success) return fail(400, 'The query is not valid.');
 
-    const found = await latestOf(req, target.value, { locale: query.data.locale });
+    const locale = chooseLocale(req, query.data.locale);
+    if (!locale.ok) return locale.response;
+    const found = await latestOf(req, target.value, { localeArgs: locale.args });
     if (!found.ok) return found.response;
     const doc = found.value;
     const own = env.options.collections[target.value.collection];

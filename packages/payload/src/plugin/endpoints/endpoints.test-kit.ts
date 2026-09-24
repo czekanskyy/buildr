@@ -6,6 +6,7 @@ import { sqliteAdapter } from '@payloadcms/db-sqlite';
 import {
   buildConfig,
   type CollectionConfig,
+  type Config,
   type EmailAdapter,
   type Field,
   type GlobalConfig,
@@ -105,6 +106,8 @@ export async function boot(
     readonly collections?: CollectionConfig[];
     readonly globals?: GlobalConfig[];
     readonly email?: EmailAdapter;
+    /** Payload localization; the `title` of the pages is then localized. */
+    readonly localization?: Config['localization'];
   } = {},
 ): Promise<Harness> {
   const dir = mkdtempSync(join(tmpdir(), `buildr-payload-${key}-`));
@@ -115,7 +118,7 @@ export async function boot(
         slug: 'pages',
         admin: { useAsTitle: 'title' },
         fields: [
-          { name: 'title', type: 'text' },
+          { name: 'title', type: 'text', localized: extra.localization !== undefined },
           { name: 'slug', type: 'text' },
           ...(extra.pageFields ?? []),
         ],
@@ -125,6 +128,7 @@ export async function boot(
     ],
     ...(extra.globals === undefined ? {} : { globals: extra.globals }),
     ...(extra.email === undefined ? {} : { email: extra.email }),
+    ...(extra.localization === undefined ? {} : { localization: extra.localization }),
     db: sqliteAdapter({ client: { url: `file:${join(dir, 'db.sqlite')}` } }),
     plugins: [
       buildrPlugin({

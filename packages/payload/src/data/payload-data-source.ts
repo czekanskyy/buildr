@@ -69,7 +69,14 @@ export function createPayloadDataSource(options: PayloadDataSourceOptions): Data
   const scope = (ctx: DataSourceContext) => ({
     ...(options.req === undefined ? {} : { req: options.req }),
     overrideAccess: false as const,
-    ...(payload.config.localization && ctx.locale !== '' ? { locale: ctx.locale } : {}),
+    ...(payload.config.localization && ctx.locale !== ''
+      ? {
+          locale: ctx.locale,
+          ...(payload.config.localization.fallback === false
+            ? { fallbackLocale: false as const }
+            : {}),
+        }
+      : {}),
   });
 
   const idKind = (slug: string): IdType => {

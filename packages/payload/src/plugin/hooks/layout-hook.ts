@@ -1,4 +1,5 @@
 import { type FieldHook, ValidationError } from 'payload';
+import { configuredLocales } from '../locales.ts';
 import type { ResolvedOptions } from '../options.ts';
 import { BUILDR_WRITE, writeGuard } from '../write-guard.ts';
 import { describeDiagnostics, processLayout } from './process-layout.ts';
@@ -16,7 +17,10 @@ export const layoutHook =
     if (!accepted) return guarded;
     // An update that does not carry a layout (a publish, a title edit) leaves it as it is.
     if (args.operation === 'update' && guarded === undefined) return undefined;
-    const result = processLayout(guarded, options);
+    const result = processLayout(guarded, {
+      ...options,
+      locales: configuredLocales(args.req.payload.config),
+    });
     if (!result.ok) {
       throw new ValidationError({
         ...(args.collection == null ? {} : { collection: args.collection.slug }),

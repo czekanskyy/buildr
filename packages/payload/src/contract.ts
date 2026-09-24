@@ -155,6 +155,7 @@ export const mediaListQuerySchema = z.object({
   search: z.string().max(200).optional(),
   type: z.enum(['image', 'video', 'audio']).optional(),
   page: z.coerce.number().int().min(1).default(1),
+  locale: z.string().max(35).optional(),
 });
 export const mediaListResponseSchema = z.object({
   items: z.array(mediaAssetSchema),

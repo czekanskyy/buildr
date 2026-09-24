@@ -1,3 +1,4 @@
+import type { LocaleConfig } from '@buildr/core';
 import {
   type BuilderDocument,
   createEmptyDocument,
@@ -15,6 +16,8 @@ import type { BuildrRegistry } from '../options.ts';
 export interface ProcessLayoutOptions {
   readonly registry?: BuildrRegistry | undefined;
   readonly limits: { readonly maxNodes: number; readonly maxBytes: number };
+  /** The languages of the site: an `l10n` key outside them is reported (a warning, kept). */
+  readonly locales?: LocaleConfig | undefined;
 }
 
 export type ProcessedLayout =
@@ -70,7 +73,11 @@ export function processLayout(value: unknown, options: ProcessLayoutOptions): Pr
     doc = migrated.doc;
   }
   if (registry !== undefined) {
-    const result = validateDocument(doc, { registry: registry.meta, limits });
+    const result = validateDocument(doc, {
+      registry: registry.meta,
+      limits,
+      locales: options.locales,
+    });
     const errors = result.issues.filter((issue) => issue.severity === 'error');
     if (!result.ok || errors.length > 0) return { ok: false, diagnostics: errors };
     warnings.push(...result.issues);

@@ -281,3 +281,13 @@ Order of the checks: route and collection (`404`) → rate limit (`429`, `Retry-
 - **Stored.** `form: { collection, documentId, nodeId }`, `data` (the validated values, typed), `locale`, `meta: { userAgent, ipHash }`. The IP is stored only as `sha256(secret:ip)`, cut to 32 hex characters. Only signed-in users read or delete submissions; nobody creates them but the endpoint.
 - **Email.** Each submission is mailed through Payload's `sendEmail` to `notifyTo`, filtered through `notifyAllowlist` once more when sending. A failing mail server is logged and never fails the submission.
 - **CSRF.** The endpoint is public by design (a plain HTML form must work) and only creates a submission; the honeypot and the rate limiter are what protect it.
+
+## Localization (PB-116)
+
+`localeConfigOf(config)` (`plugin/locales.ts`) derives core's `LocaleConfig` from Payload's `localization`: `locales` (the codes), `default`, `fallback` (`localization.fallback !== false`) and `intl` (the labels, in the default language, for the editor's language switcher). Without localization it is a single locale (`en`, no fallback); `configuredLocales` is `undefined` then, and everything below behaves as it did before.
+
+- **Session.** `GET /buildr/session` carries `locales` only when localization is configured.
+- **The `locale` parameter.** `GET documents/:collection/:id`, `GET data/context`, `POST data/query` and `POST data/media` (body), `GET samples/:collection`, `GET media` and `POST forms/...` take `locale`. It is mapped to Local API's `locale`, and `fallbackLocale: false` when the configuration turns `fallback` off (otherwise Payload's own fallback to the default language applies). No value means the default language; a code that is not configured (or `all`) is `400`. Without localization the parameter is ignored.
+- **Context.** `route.locale` of the data context is the language asked for (the default one when none), so bindings and `formatDate`/`plural` see it.
+- **Forms.** A submission records the `locale` it came from (the `locale` query parameter of the form action).
+- **Layout.** `layout` is not `localized`: translations live in the document's `l10n` maps. Saving, publishing and the write hooks validate those keys against the site's locales: a key outside them is a warning (kept in the document). Without localization no key is checked.
