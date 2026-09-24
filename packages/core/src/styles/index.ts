@@ -32,3 +32,7 @@ export {
   stateStyleDeclSchema,
   styleDeclSchema,
 } from './schema.ts';
+export type { Breakpoint, Theme, ThemeInput, TokenValues } from './theme.ts';
+export { defaultTheme, defineTheme, MAX_TOKENS_PER_SCALE, validateTheme } from './theme.ts';
+export type { ResolvedTokenRef } from './tokens.ts';
+export { compileTokens, LAYER_ORDER_CSS, resolveTokenRef, tokenVariableName } from './tokens.ts';
