@@ -1,4 +1,5 @@
 import type { JsonValue } from '../json/json-value.ts';
+import type { NodeStyles } from './style-types.ts';
 
 /**
  * BCP-47-ish locale identifier, e.g. `"en"`, `"pl"`, `"en-US"` (see docs/i18n.md). Defined here
@@ -108,7 +109,7 @@ export interface PageNode {
   /** Order = render order. */
   readonly slots?: Readonly<Record<SlotName, readonly NodeId[]>>;
   /** Instance overrides only (see docs/styles.md). */
-  readonly styles?: unknown;
+  readonly styles?: NodeStyles;
   /** Layers-panel label. */
   readonly name?: string;
   /** HTML `id` attribute, unique in the document. */

@@ -1,0 +1,17 @@
+export type {
+  BackgroundStyles,
+  BorderStyles,
+  Box,
+  BreakpointId,
+  Corners,
+  EffectsStyles,
+  LayoutStyles,
+  NodeStyles,
+  SizeStyles,
+  SpacingStyles,
+  StyleDecl,
+  StyleState,
+  StyleValue,
+  TypographyStyles,
+  VisibilityStyles,
+} from '../document/style-types.ts';
