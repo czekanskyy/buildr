@@ -234,6 +234,13 @@ export const pl: Messages = {
   'preview.unsafe': 'Adres podglądu nie jest adresem internetowym.',
   'app.loading': 'Wczytywanie edytora…',
   'app.error': 'Nie udało się otworzyć dokumentu.',
+  'locale.label': 'Język treści',
+  'translation.banner':
+    'Teksty tłumaczy się osobno dla każdego języka. Struktura i styl są wspólne dla wszystkich języków.',
+  'translation.showingDefault': 'Wyświetlany jest tekst w języku domyślnym.',
+  'translation.translate': 'Przetłumacz',
+  'translation.remove': 'Usuń tłumaczenie',
+  'issues.missingTranslations': 'Brakujące tłumaczenia',
   'layers.title': 'Warstwy',
   'layers.empty': 'Brak warstw.',
   'layers.rename': 'Nazwa warstwy',

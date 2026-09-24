@@ -3,6 +3,7 @@ import type {
   DataContext,
   DataSchema,
   Diagnostic,
+  LocaleConfig,
   MediaAsset,
 } from '@buildr/core';
 
@@ -17,6 +18,8 @@ export interface EditorSession {
   readonly userId?: string | undefined;
   readonly canEdit: boolean;
   readonly canPublish: boolean;
+  /** The languages the content can be written in; one language when the host has no localization. */
+  readonly locales?: LocaleConfig | undefined;
 }
 
 /** A document as the backend has it (`GET` of docs/payload.md#endpoints). */

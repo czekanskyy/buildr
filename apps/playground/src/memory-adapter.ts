@@ -1,14 +1,14 @@
 import { templateSampleScopes } from '@buildr/components';
-import { type BuilderDocument, type DataContext, s } from '@buildr/core';
+import { type BuilderDocument, type DataContext, type LocaleConfig, s } from '@buildr/core';
 import type { DocumentAdapter, DocumentRef } from '@buildr/editor';
 import { doc } from '@buildr/test-utils';
 
-export const PLAYGROUND_LOCALES = {
+export const PLAYGROUND_LOCALES: LocaleConfig = {
   locales: ['en', 'pl'],
   default: 'en',
   fallback: true,
   intl: { en: 'English', pl: 'Polski' },
-} as const;
+};
 
 /** The samples a template can be previewed against; the canvas and the editor share them. */
 export const SAMPLES = [
@@ -106,7 +106,7 @@ export function createMemoryAdapter(options: MemoryAdapterOptions = {}): Documen
   };
 
   return {
-    getSession: async () => ({ canEdit: true, canPublish: true }),
+    getSession: async () => ({ canEdit: true, canPublish: true, locales: PLAYGROUND_LOCALES }),
     async load(ref) {
       const stored = read(ref) ?? seed(ref);
       return {

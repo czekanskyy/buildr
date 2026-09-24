@@ -2,6 +2,7 @@ import type {
   A11yIssue,
   BuilderDocument,
   IdGenerator,
+  LocaleConfig,
   NodeId,
   RegistryMeta,
   Result,
@@ -86,6 +87,8 @@ export interface EditorStoreOptions {
   /** Run `checkInvariants` after every command (a development aid); off by default. */
   readonly checkInvariants?: boolean;
   readonly readOnly?: boolean;
+  /** The languages of the content; the accessibility check reports missing translations against them. */
+  readonly locales?: LocaleConfig;
   readonly history?: HistoryOptions;
   /** Injected so tests control the validation delay. */
   readonly timers?: {

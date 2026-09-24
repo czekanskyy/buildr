@@ -1,4 +1,11 @@
 export { createEditorStore, DEFAULT_VALIDATION_DELAY_MS } from './create-store.ts';
+export type { LocaleState, LocaleStore } from './locale.ts';
+export {
+  createLocaleStore,
+  LocaleProvider,
+  useLocaleState,
+  useOptionalLocaleStore,
+} from './locale.ts';
 export {
   EditorStoreProvider,
   useEditor,

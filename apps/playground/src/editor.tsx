@@ -2,7 +2,7 @@ import { toManifest } from '@buildr/core';
 import { EditorApp } from '@buildr/editor';
 import '@buildr/editor/styles.css';
 import { useMemo } from 'react';
-import { createMemoryAdapter, PLAYGROUND_LOCALES } from './memory-adapter.ts';
+import { createMemoryAdapter } from './memory-adapter.ts';
 import { registry } from './registry.ts';
 
 const documentRef = { collection: 'pages', id: 'playground' };
@@ -19,7 +19,6 @@ export function EditorPage() {
         registry={registry.meta}
         canvasUrl="/canvas"
         documentRef={documentRef}
-        locales={PLAYGROUND_LOCALES as never}
       />
     </div>
   );

@@ -353,3 +353,11 @@ A template is edited against a real entry. `<SamplePicker adapter docRef onChang
 - `/gallery` is the fixture gallery.
 
 `pnpm dev` opens the editor. The Playwright smoke test (`apps/playground/e2e/editor.spec.ts`) inserts a Hero, edits text, undoes and reloads.
+
+## Content language (PB-115)
+
+- **State**: a locale store (`store/locale.ts`: `createLocaleStore`, `LocaleProvider`, `useLocaleState`) holds the `LocaleConfig` and the language being edited. `EditorApp` seeds it from `EditorSession.locales` (the `locales` prop overrides; a host without localization gets one language).
+- **Switcher**: `LocaleSwitcher` in the toolbar (hidden with one language) sets the store and the canvas (`CanvasHost.setLocale` → `locale:set`); inline edits already write to the canvas's current language.
+- **Inspector**: in a non-default language a localizable field without a translation is greyed and says the default-language text is shown, with a **Translate** action (`node.setProp` with `locale`, seeded from the default text); a translated field offers **Remove translation** (`node.unsetProp` with `locale`). Both are ordinary commands, so undo works. A banner (`TranslationBanner`) says texts are per language while structure and style are shared.
+- **Issues**: the store's accessibility check runs against the language configuration (`EditorStoreOptions.locales`), and the Issues panel lists `missing-translation` findings in one group per language.
+- The inspector's sample data context is still the default language; the canvas renders in the chosen one (`loadScopes(contextRef, locale)`).

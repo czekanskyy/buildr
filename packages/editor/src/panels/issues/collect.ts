@@ -24,6 +24,8 @@ export interface IssueItem {
   /** The document must not be saved or published while it exists. */
   readonly blocking: boolean;
   readonly fix?: A11yFix | undefined;
+  /** The language a finding was made in (`missing-translation`); absent for the ones that do not depend on it. */
+  readonly locale?: string | undefined;
 }
 
 const RANK: Record<IssueSeverity, number> = { error: 0, warning: 1, info: 2 };
@@ -76,6 +78,7 @@ export function collectIssues(input: CollectInput): IssueItem[] {
       nodeId: known(issue.nodeId),
       blocking: false,
       fix: issue.fix,
+      locale: issue.locale,
     });
   }
   for (const [index, issue] of (input.canvas ?? []).entries()) {
@@ -135,4 +138,31 @@ export function publishGate(
   if (items.some((item) => item.blocking)) return { blocked: true, reason: 'blocking', counts };
   if (policy === 'block' && counts.error > 0) return { blocked: true, reason: 'errors', counts };
   return { blocked: false, reason: undefined, counts };
+}
+
+/** The rule that flags a translatable text with no translation; the panel lists its findings per language. */
+export const MISSING_TRANSLATION = 'missing-translation';
+
+export interface MissingGroup {
+  readonly locale: string;
+  readonly items: readonly IssueItem[];
+}
+
+/** Splits the findings into the ordinary ones and the missing translations, those grouped by language in the order the languages first appear. */
+export function groupMissingTranslations(items: readonly IssueItem[]): {
+  readonly rest: readonly IssueItem[];
+  readonly groups: readonly MissingGroup[];
+} {
+  const rest: IssueItem[] = [];
+  const byLocale = new Map<string, IssueItem[]>();
+  for (const item of items) {
+    if (item.code !== MISSING_TRANSLATION || item.locale === undefined) {
+      rest.push(item);
+      continue;
+    }
+    const list = byLocale.get(item.locale) ?? [];
+    list.push(item);
+    byLocale.set(item.locale, list);
+  }
+  return { rest, groups: [...byLocale].map(([locale, list]) => ({ locale, items: list })) };
 }

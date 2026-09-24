@@ -113,7 +113,7 @@ export function createEditorStore(options: EditorStoreOptions): EditorStore {
     const snapshot: ValidationSnapshot = {
       docVersion,
       issues: validateDocument(doc, { registry: options.registry }).issues,
-      a11y: runA11y(doc, options.registry),
+      a11y: runA11y(doc, options.registry, { locales: options.locales }),
     };
     api.setState({ validation: snapshot });
     return snapshot;
