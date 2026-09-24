@@ -3,3 +3,4 @@
 // docs/backlog/phase-06-react-renderer.md.
 export * from './define/index.ts';
 export * from './render/index.ts';
+export * from './richtext/index.ts';
