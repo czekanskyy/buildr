@@ -42,6 +42,14 @@ A band of the page. Props: `as` (`section`, `div`, `header`, `footer`, `main`, `
 
 Centres its content in a column no wider than `width` (`sm`, `md`, `lg`, `xl`, from the `container` tokens). One `div`, `default` slot.
 
+### Stack (`buildr/stack`)
+
+A flex container with a `default` slot (`axis: 'auto'`, so drag-and-drop follows the computed direction). Direction, wrap, gap and alignment are the `layout.*` style properties and can change per breakpoint; the component CSS only defaults to a column with a `space-4` gap. Props: `role` (`none`, `group`, `list`; use `group` with an `ariaLabel`, and `list` only with ListItem children) and `ariaLabel`.
+
+### Grid (`buildr/grid`)
+
+A grid container. Columns come from the `layout.columns` style (a whole number 1–12, per breakpoint); a child's width from its own `layout.columnSpan` (1–12). Without them the grid fills the row with columns at least 16rem wide. A named grid (`ariaLabel`) is exposed as a `group`.
+
 Fixtures: each component exports `<name>Fixtures` (`ComponentFixture`: an id, a title and a subtree that goes under the page), reviewed at `FIXTURE_WIDTHS` (1280, 768, 375). Tablet and mobile overrides live in the fixture's `styles.bp`.
 
 ## Form field derivation
