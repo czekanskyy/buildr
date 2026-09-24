@@ -1,17 +1,8 @@
 import type { ComponentMeta, PageNode, PropDef } from '@buildr/core';
-import { type ReactNode, useId } from 'react';
+import { useId } from 'react';
 import { type MessageKey, useT } from '../../messages/index.tsx';
 import { Button } from '../../ui/index.ts';
-import {
-  BooleanControl,
-  type ControlProps,
-  IconControl,
-  LinkControl,
-  NumberControl,
-  SelectControl,
-  TextareaControl,
-  TextControl,
-} from './controls/index.ts';
+import { propLabel, renderControl } from './controls/index.ts';
 import { type PropReading, readProp, translationLocale } from './value.ts';
 
 /** Groups that live on the Advanced tab; everything else is content. */
@@ -22,12 +13,7 @@ export const isAdvancedProp = (def: PropDef) =>
 
 const titleCase = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
-/** The label of a prop: its own, else its name split into words. */
-export function propLabel(name: string, def: PropDef): string {
-  if (def.label !== undefined) return def.label;
-  const words = name.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/[-_]+/g, ' ');
-  return titleCase(words.toLowerCase());
-}
+export { propLabel };
 
 export interface PropsPanelProps {
   readonly node: PageNode;
@@ -58,27 +44,6 @@ function hintFor(def: PropDef, t: (key: MessageKey) => string): string {
   return parts.join(' · ');
 }
 
-function controlFor(def: PropDef, common: ControlProps): ReactNode {
-  switch (def.kind) {
-    case 'text':
-      return <TextControl {...common} def={def} />;
-    case 'textarea':
-      return <TextareaControl {...common} def={def} />;
-    case 'number':
-      return <NumberControl {...common} def={def} />;
-    case 'boolean':
-      return <BooleanControl {...common} def={def} />;
-    case 'select':
-      return <SelectControl {...common} def={def} />;
-    case 'link':
-      return <LinkControl {...common} def={def} />;
-    case 'icon':
-      return <IconControl {...common} def={def} />;
-    default:
-      return null;
-  }
-}
-
 function Field(props: {
   readonly name: string;
   readonly def: PropDef;
@@ -96,7 +61,7 @@ function Field(props: {
   const hint = hintFor(def, t);
   const editable = reading.mode === 'static';
   const control = editable
-    ? controlFor(def, {
+    ? renderControl(def, {
         id,
         def,
         label,
