@@ -135,9 +135,24 @@ Each renders one wrapper: a `label` tied to the control, an optional `hint` (wir
 
 Field ids are derived from the node id, so they are stable between server and client rendering.
 
+## The default registry
+
+`createDefaultRegistry()` returns a `ReactRegistry` with every component (`defaultComponents`, 26) and every template (`defaultTemplates`, 14) of this package; `defaultTheme` is the theme they are designed against (the core default, re-exported), so an application needs one import. Extend it with `registry.extend({ components, templates })`: each call builds a new registry and nothing is shared or global.
+
+```ts
+import { createDefaultRegistry, defaultTheme } from '@buildr/components';
+import '@buildr/components/styles.css';
+
+const registry = createDefaultRegistry().extend({ components: [MyHero] });
+```
+
+The registry's manifest (`toManifest(registry.meta)`, what the editor loads) is kept under 60 KB; a test enforces it. Template thumbnails are therefore compact wireframes (one path per tone, a few hundred bytes), and templates keep their responsive overrides to what they need.
+
+**The gallery.** `galleryEntries` lists every component in each of its states and every template and variant (`group: 'component' | 'template'`, `of`: the type or template id). Render an entry under a page with `createGalleryDataSource()` and `gallerySampleScopes`; review it at the widths of `FIXTURE_WIDTHS`. The test suite runs every entry through `validateDocument`, `runA11y` (no errors) and, server-rendered into jsdom, `vitest-axe` (colour contrast and page-level rules are switched off there: jsdom has no layout, and an entry is a fragment).
+
 ## Marketing templates
 
-`marketingTemplates` (in `@buildr/components`) are ordinary `TemplateDefinition`s built only from the components above, with tablet and mobile overrides on the nodes that need them (see [templates.md](templates.md)). Each is a detached, fully editable copy once inserted. Each has an SVG wireframe `thumbnail` (a data URI drawn from plain shapes) and a gallery fixture in `marketingTemplateFixtures` (one per template and variant).
+`marketingTemplates` (in `@buildr/components`) are ordinary `TemplateDefinition`s built only from the components above, with tablet and mobile overrides on the nodes that need them (see [templates.md](templates.md)). Each is a detached, fully editable copy once inserted. Each has an SVG wireframe `thumbnail` (a compact data URI drawn from plain shapes) and a gallery fixture in `marketingTemplateFixtures` (one per template and variant).
 
 | Template | Id | Made of | Notes |
 |---|---|---|---|

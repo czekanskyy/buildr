@@ -35,7 +35,7 @@ export const PostCard: TemplateDefinition = defineTemplate({
         },
       ],
       body: [
-        heading(bind('item.title'), 3),
+        heading(bind('item.title'), 2),
         text(bind('item.publishedAt', { format: { type: 'date', style: 'medium' } }), {
           base: { typography: { color: '$color.text-muted', fontSize: '$fontSize.sm' } },
         }),
