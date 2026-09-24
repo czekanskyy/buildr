@@ -337,3 +337,7 @@ The schema and sample data come from `<InspectorDataProvider schema context>`; w
 ## Sample data (PB-090)
 
 A template is edited against a real entry. `<SamplePicker adapter docRef onChange storage?>` (toolbar) lists `adapter.listSamples(ref)` and, when the author chooses one, calls `onChange(id)`; the shell passes `host.setContextRef`, which sends `context:set { contextRef }` so the canvas re-resolves every binding against that entry. "Default entry" sends `null`. The choice is remembered per document in `localStorage` (`buildr:sample:<collection>:<id>`), every access wrapped in try/catch; a remembered entry that is no longer listed is ignored. The picker renders nothing for adapters without `listSamples` (pages). `adapter.getContext(ref, { sampleId })` gives the inspector's preview the same entry.
+
+## Preview (PB-091)
+
+`usePreview({ adapter, docRef, target })` returns `preview` (for the toolbar's `onPreview`), `overlay` (render it in the shell) and `error`. `preparePreview` first calls `PersistenceController.saveNow()` and requires the status to be `clean` — otherwise the preview would show older work and an error is reported — and only then asks `adapter.previewUrl(ref, { draft: true })`. The address must be http(s) or relative (`isSafePreviewUrl`). The default target is a full-screen dialog with a sandboxed iframe (`allow-scripts allow-same-origin allow-forms allow-popups`, no referrer) and a "Back to editing" button; Escape also leaves. `target: 'tab'` opens a new tab with `noopener`.

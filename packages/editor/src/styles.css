@@ -1063,3 +1063,25 @@
 .bd-media-preview img {
   object-fit: cover;
 }
+
+/* Preview (PB-091) */
+.bd-preview {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  background: var(--bd-bg, #fff);
+}
+.bd-preview-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--bd-border, rgba(128, 128, 128, 0.3));
+}
+.bd-preview-frame {
+  flex: 1;
+  width: 100%;
+  border: 0;
+}
