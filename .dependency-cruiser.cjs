@@ -313,7 +313,9 @@ module.exports = {
     // Scoped to our own workspace packages' build output - an unscoped `dist/` would also
     // exclude npm packages that happen to ship from a `dist/` folder (e.g. `payload`),
     // silently dropping the dependency edge to them instead of just not following it.
-    exclude: { path: '^(packages|tooling)/[^/]+/dist/|^tooling/boundary-fixtures/' },
+    exclude: {
+      path: '^(packages|tooling)/[^/]+/dist/|^tooling/boundary-fixtures/|^apps/[^/]+/.next/|/importMap.js$',
+    },
     doNotFollow: { path: '(^|/)node_modules/' },
   },
 };
