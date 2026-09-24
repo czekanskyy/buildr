@@ -286,6 +286,9 @@ importers:
         specifier: ^4.6.5
         version: 4.6.5
     devDependencies:
+      '@buildr/editor':
+        specifier: workspace:*
+        version: link:../editor
       '@buildr/next':
         specifier: workspace:*
         version: link:../next

@@ -214,3 +214,15 @@ Both need `edit`, the `media.collection` option and the caller's own access on t
 - `GET /buildr/media?search&type&page`: `{ items: MediaAsset[], page, totalPages }`, newest first, 24 per page. `search` matches `alt` and `filename`; `type` is `image`, `video` or `audio` (by `mimeType` prefix). A bad `type` or `page` is `400`.
 - `POST /buildr/media` (multipart `file` + `alt`): creates the upload through the Local API and answers the `MediaAsset` (`201`). A missing or empty file is `400`, a blank `alt` `422`, a file over 10 MB `413`. The CSRF guard for multipart requires a valid `Origin` when one is sent (`403`), since a cross-site form can send multipart without a preflight.
 - **Hosting limit**: the file is buffered in memory, and serverless hosts cap request bodies (often 4.5 MB); the builder does not raise that cap, so large uploads may be refused by the host before they reach the endpoint.
+
+## The HTTP adapter (PB-100)
+
+`@buildr/payload/adapter` is the browser-side client of the builder API; it never imports `payload`, `@payloadcms/*` or `next` (dependency-cruiser and a test enforce it) and needs only `fetch`, `FormData` and `File`, so it works in the browser without polyfills.
+
+- **`createPayloadAdapter({ baseUrl, fetch?, credentials?, locale?, timeZone?, previewRoute?, adminRoute? })`** returns the editor's `DocumentAdapter`. `baseUrl` is Payload's API root (`/api`). Cookies travel with same-origin requests; use `credentials: 'include'` for a cross-origin CMS.
+- **`createPayloadCanvasDataSource({ baseUrl, ... })`** returns a `DataSource` for the canvas: `query` -> `POST /buildr/data/query`, `getMedia` -> `POST /buildr/data/media` (one batch, de-duplicated).
+- **Validation**: every response is checked against the schemas of `contract.ts`; a document is parsed with core's `parseDocument`. A body that breaks the contract rejects.
+- **Results and rejections**: a save or publish answered `409` is `{ ok: false, kind: 'conflict', currentRevision }`, `422` is `{ ok: false, kind: 'invalid', diagnostics }`. Everything else that is not `200` (no network, `401`, `403`, `404`, `5xx`) rejects with an `AdapterError { status?, message }`, which the editor retries or shows.
+- **Session and locales**: the session is fetched once and cached (until it fails); `GET /buildr/session` now also sends `locales` when Payload localization is configured. `getContext` uses `options.locale()` (else the default language) and `options.timeZone` (else the browser's) to complete the `DataContext`.
+- **Media**: `media.search` maps `mimeTypes` (when all share one type) to `type`, the cursor is the page number; `media.upload(file, alt)` posts multipart and rejects with the server's reason on `422` (no `alt`).
+- `@buildr/editor` is an optional peer used for types only.
