@@ -7,6 +7,7 @@ import {
 import { TEMPLATES_COLLECTION } from '../../data/resolve-layout.ts';
 import { allowed } from '../access.ts';
 import { describeDiagnostics, processLayout } from '../hooks/process-layout.ts';
+import { configuredLocales } from '../locales.ts';
 import type { ResolvedOptions } from '../options.ts';
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -60,7 +61,10 @@ const templateLayoutHook =
   (options: Pick<ResolvedOptions, 'registry' | 'limits'>): FieldHook =>
   ({ value, req }) => {
     if (value === undefined || value === null) return value;
-    const result = processLayout(value, options);
+    const result = processLayout(value, {
+      ...options,
+      locales: configuredLocales(req.payload.config),
+    });
     if (!result.ok) {
       throw new ValidationError({
         collection: TEMPLATES_COLLECTION,

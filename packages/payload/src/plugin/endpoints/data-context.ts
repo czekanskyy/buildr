@@ -1,6 +1,7 @@
 import type { Endpoint } from 'payload';
 import { dataContextQuerySchema, dataContextResponseSchema } from '../../contract.ts';
 import { buildContext } from '../../data/index.ts';
+import { chooseLocale } from '../locales.ts';
 import { allowed, type EndpointEnv, latestOf, SITE_GLOBAL, schemaEnv } from './context.ts';
 import { fail, json, notFound, unauthorized } from './respond.ts';
 
@@ -18,7 +19,9 @@ export const dataContextEndpoint = (env: EndpointEnv): Endpoint => ({
       Object.fromEntries(req.searchParams?.entries() ?? []),
     );
     if (!parsed.success) return fail(400, 'The query does not match the contract.');
-    const { collection, id, locale } = parsed.data;
+    const { collection, id } = parsed.data;
+    const locale = chooseLocale(req, parsed.data.locale);
+    if (!locale.ok) return locale.response;
     const own = env.options.collections[collection];
     if (own === undefined) return notFound(`The collection "${collection}"`);
 
@@ -28,7 +31,7 @@ export const dataContextEndpoint = (env: EndpointEnv): Endpoint => ({
       {
         depth: Math.max(1, own.depth),
         draft: parsed.data.draft !== '0',
-        ...(locale === undefined ? {} : { locale }),
+        localeArgs: locale.args,
       },
     );
     if (!found.ok) return found.response;
@@ -42,7 +45,7 @@ export const dataContextEndpoint = (env: EndpointEnv): Endpoint => ({
           depth: 1,
           req,
           overrideAccess: false,
-          ...(locale === undefined ? {} : { locale }),
+          ...locale.args,
         })) as unknown as Record<string, unknown>;
       } catch {
         site = undefined; // the user may not read it: the scope is then null, not an error
@@ -57,7 +60,7 @@ export const dataContextEndpoint = (env: EndpointEnv): Endpoint => ({
           collection,
           doc: found.value,
           site,
-          route: { path, locale: locale ?? req.locale ?? '' },
+          route: { path, locale: locale.locale ?? req.locale ?? '' },
         }),
       }),
     );

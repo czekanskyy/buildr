@@ -6,6 +6,7 @@ import { FORM_SUBMISSIONS_COLLECTION } from '../collections/form-submissions.ts'
 import { isAllowedRecipient } from '../forms/notify.ts';
 import { type SubmissionError, validateSubmission } from '../forms/validate.ts';
 import { readLayout } from '../hooks/read-layout.ts';
+import { chooseLocale } from '../locales.ts';
 import type { EndpointEnv } from './context.ts';
 import { fail, json } from './respond.ts';
 
@@ -111,6 +112,8 @@ export const formsEndpoint = (env: EndpointEnv): Endpoint => ({
       return fail(404, 'The form was not found.');
     }
 
+    const locale = chooseLocale(req, req.searchParams?.get('locale'));
+    if (!locale.ok) return locale.response;
     const ipHash = ipHashOf(req);
     const limited = await env.rateLimiter?.hit(`${ipHash}:${collection}:${id}:${nodeId}`);
     if (limited !== undefined && !limited.allowed) {
@@ -189,7 +192,7 @@ export const formsEndpoint = (env: EndpointEnv): Endpoint => ({
       data: {
         form: { collection, documentId: id, nodeId },
         data: result.data,
-        locale: typeof req.locale === 'string' ? req.locale : null,
+        locale: locale.locale ?? null,
         meta: { userAgent: (req.headers.get('user-agent') ?? '').slice(0, 300), ipHash },
       },
       overrideAccess: true,

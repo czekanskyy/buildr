@@ -2,6 +2,7 @@ import { type Diagnostic, runA11y } from '@buildr/core';
 import type { Endpoint } from 'payload';
 import { publishRequestSchema, publishResponseSchema } from '../../contract.ts';
 import { processLayout } from '../hooks/process-layout.ts';
+import { configuredLocales } from '../locales.ts';
 import { BUILDR_WRITE } from '../write-guard.ts';
 import { allowed, bodyOf, type EndpointEnv, latestOf, revisionOf, targetOf } from './context.ts';
 import { mutationGuard } from './guards.ts';
@@ -33,7 +34,10 @@ export const publishEndpoint = (env: EndpointEnv): Endpoint => ({
     const current = revisionOf(found.value);
     if (parsed.data.baseRevision !== current) return conflict(current);
 
-    const layout = processLayout(found.value['layout'], env.options);
+    const layout = processLayout(found.value['layout'], {
+      ...env.options,
+      locales: configuredLocales(req.payload.config),
+    });
     if (!layout.ok) return invalid(layout.diagnostics);
 
     const registry = env.options.registry;

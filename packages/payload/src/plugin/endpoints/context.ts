@@ -2,6 +2,7 @@ import type { PayloadRequest } from 'payload';
 import type { SchemaOptions, SchemaSource } from '../../data/index.ts';
 import { type Action, allowed as isAllowed } from '../access.ts';
 import type { RateLimiter } from '../forms/rate-limit.ts';
+import type { LocaleArgs } from '../locales.ts';
 import type { ResolvedOptions } from '../options.ts';
 import { fail, notFound, unauthorized } from './respond.ts';
 
@@ -85,7 +86,7 @@ export async function latestOf(
   req: PayloadRequest,
   target: DocumentTarget,
   options: {
-    readonly locale?: string | undefined;
+    readonly localeArgs?: LocaleArgs | undefined;
     readonly depth?: number;
     readonly draft?: boolean;
   } = {},
@@ -98,7 +99,7 @@ export async function latestOf(
       depth: options.depth ?? 0,
       req,
       overrideAccess: false,
-      ...(options.locale === undefined ? {} : { locale: options.locale }),
+      ...options.localeArgs,
     });
     return { ok: true, value: doc as unknown as Record<string, unknown> };
   } catch {

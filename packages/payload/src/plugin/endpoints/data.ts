@@ -6,6 +6,7 @@ import {
   dataQueryResponseSchema,
 } from '../../contract.ts';
 import { createPayloadDataSource, DataQueryError } from '../../data/index.ts';
+import { chooseLocale } from '../locales.ts';
 import { allowed, bodyOf, type EndpointEnv } from './context.ts';
 import { mutationGuard } from './guards.ts';
 import { fail, json, unauthorized } from './respond.ts';
@@ -48,9 +49,11 @@ export const dataQueryEndpoint = (env: EndpointEnv): Endpoint => ({
     if (!body.ok) return body.response;
     const parsed = dataQueryRequestSchema.safeParse(body.value);
     if (!parsed.success) return fail(400, 'The request does not match the contract.');
+    const locale = chooseLocale(req, parsed.data.locale);
+    if (!locale.ok) return locale.response;
     try {
       const result = await sourceOf(env, req).query(parsed.data.spec, {
-        locale: parsed.data.locale ?? '',
+        locale: locale.locale ?? '',
         mode: 'canvas',
       });
       return json(dataQueryResponseSchema.parse(result));
@@ -72,9 +75,11 @@ export const dataMediaEndpoint = (env: EndpointEnv): Endpoint => ({
     if (!body.ok) return body.response;
     const parsed = dataMediaRequestSchema.safeParse(body.value);
     if (!parsed.success) return fail(400, 'The request does not match the contract.');
+    const locale = chooseLocale(req, parsed.data.locale);
+    if (!locale.ok) return locale.response;
     try {
       const found = await sourceOf(env, req).getMedia(parsed.data.ids, {
-        locale: parsed.data.locale ?? '',
+        locale: locale.locale ?? '',
         mode: 'canvas',
       });
       return json(dataMediaResponseSchema.parse(found));

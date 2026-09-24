@@ -1,6 +1,7 @@
 import type { Endpoint, PayloadRequest } from 'payload';
 import { mediaListQuerySchema, mediaListResponseSchema } from '../../contract.ts';
 import { normalizeMedia } from '../../data/index.ts';
+import { chooseLocale } from '../locales.ts';
 import { allowed, type EndpointEnv } from './context.ts';
 import { mutationGuard } from './guards.ts';
 import { fail, json, unauthorized } from './respond.ts';
@@ -38,9 +39,12 @@ export const mediaListEndpoint = (env: EndpointEnv): Endpoint => ({
       search: req.searchParams?.get('search') ?? undefined,
       type: req.searchParams?.get('type') ?? undefined,
       page: req.searchParams?.get('page') ?? undefined,
+      locale: req.searchParams?.get('locale') ?? undefined,
     });
     if (!parsed.success) return fail(400, 'The query does not match the contract.');
     const { search, type, page } = parsed.data;
+    const locale = chooseLocale(req, parsed.data.locale);
+    if (!locale.ok) return locale.response;
     const conditions = [
       ...(search === undefined || search === ''
         ? []
@@ -54,6 +58,7 @@ export const mediaListEndpoint = (env: EndpointEnv): Endpoint => ({
       page,
       limit: PAGE_SIZE,
       depth: 0,
+      ...locale.args,
       req,
       overrideAccess: false,
     });

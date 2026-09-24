@@ -1,29 +1,9 @@
-import type { Endpoint, PayloadRequest } from 'payload';
+import type { Endpoint } from 'payload';
 import { type SessionResponse, sessionResponseSchema } from '../../contract.ts';
 import { permissionsOf } from '../access.ts';
+import { configuredLocales } from '../locales.ts';
 import type { EndpointEnv } from './context.ts';
 import { json, unauthorized } from './respond.ts';
-
-/** The languages of the site (Payload localization), for the editor's language switcher. */
-function localesOf(req: PayloadRequest): SessionResponse['locales'] {
-  const localization = req.payload.config.localization;
-  if (localization === false) return undefined;
-  const intl: Record<string, string> = {};
-  for (const locale of localization.locales) {
-    const label = locale.label;
-    intl[locale.code] =
-      typeof label === 'string'
-        ? label
-        : ((label as Record<string, string> | undefined)?.[localization.defaultLocale] ??
-          locale.code);
-  }
-  return {
-    locales: localization.localeCodes,
-    default: localization.defaultLocale,
-    fallback: localization.fallback !== false,
-    intl,
-  };
-}
 
 /** `GET /api/buildr/session`: who is asking, what they may do, and the limits their documents live under. */
 export const sessionEndpoint = (env: EndpointEnv): Endpoint => ({
@@ -37,8 +17,15 @@ export const sessionEndpoint = (env: EndpointEnv): Endpoint => ({
       permissions: await permissionsOf(env.options, req),
       limits: { ...env.options.limits },
     };
-    const locales = localesOf(req);
-    if (locales !== undefined) body.locales = locales;
+    const locales = configuredLocales(req.payload.config);
+    if (locales !== undefined) {
+      body.locales = {
+        locales: [...locales.locales],
+        default: locales.default,
+        fallback: locales.fallback,
+        intl: { ...locales.intl },
+      };
+    }
     return json(sessionResponseSchema.parse(body));
   },
 });
