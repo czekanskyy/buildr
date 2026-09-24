@@ -1,4 +1,5 @@
 import type { CommandHandler } from '../types.ts';
+import { setAttrHandler } from './attrs.ts';
 import { duplicateHandler } from './duplicate.ts';
 import { insertHandler } from './insert.ts';
 import { moveHandler } from './move.ts';
@@ -8,6 +9,8 @@ import { resetStylesHandler, setStyleHandler, unsetStyleHandler } from './styles
 import { unwrapHandler } from './unwrap.ts';
 import { wrapHandler } from './wrap.ts';
 
+export type { SetAttrCommand, SetAttrPayload } from './attrs.ts';
+export { MAX_NAME_LENGTH, setAttrHandler } from './attrs.ts';
 export type { DuplicateCommand, DuplicatePayload } from './duplicate.ts';
 export { duplicateHandler } from './duplicate.ts';
 export type { InsertCommand, InsertPayload } from './insert.ts';
@@ -51,4 +54,5 @@ export const coreCommandHandlers: readonly CommandHandler[] = [
   duplicateHandler as CommandHandler,
   wrapHandler as CommandHandler,
   unwrapHandler as CommandHandler,
+  setAttrHandler as CommandHandler,
 ];

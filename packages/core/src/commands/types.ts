@@ -16,12 +16,19 @@ export interface Command<T extends string = string, P = unknown> {
 /** A JSON-patch-shaped change (Immer's format); `patches` redo a command, `inverse` undoes it. */
 export type DocumentPatch = Patch;
 
+/** A request to weaken a lock (remove `lock` flags, or change a `region` inside a locked subtree). */
+export interface UnlockRequest {
+  readonly nodeId: NodeId;
+  readonly aspects: readonly ('structure' | 'content' | 'style')[];
+}
+
 /** What a handler sees: the registry, the injected id generator and the index of the *current* document. */
 export interface HandlerEnv {
   /** The document before this command — `apply` reads it instead of walking the draft. */
   readonly doc: BuilderDocument;
   readonly registry: RegistryMeta;
   readonly generateId: IdGenerator;
+  readonly canUnlock: ((request: UnlockRequest) => boolean) | undefined;
   /** Built on first access (memoized per document), so a handler that does not read it pays nothing. */
   readonly index: DocumentIndex;
 }
@@ -59,6 +66,11 @@ export interface CommandEnv {
   readonly registry: RegistryMeta;
   readonly commands: CommandRegistry;
   readonly generateId: IdGenerator;
+  /**
+   * Whether the current user may weaken locks (docs/templates.md: the `unlockTemplates`
+   * permission). Absent means no: unlocking is refused unless the host says otherwise.
+   */
+  readonly canUnlock?: ((request: UnlockRequest) => boolean) | undefined;
   /**
    * Run `checkInvariants` on the result of every command and reject (`command.invariant-violated`)
    * when it reports an error — catches a buggy handler before it corrupts the document. On by

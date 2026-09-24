@@ -106,3 +106,17 @@ Each is **one command, hence one history entry**.
 - `node.duplicate { ids }` — copies each top-level node with its subtree (a node listed together with an ancestor is redundant), with fresh ids from `generateId`, right after its original, and selects the copies. Every copy must pass `canInsert` at its position; several copies into one slot are also checked together against `slot.max`; the document limits apply. The copy drops `anchor` (anchors are unique in a document) and keeps everything else.
 - `node.wrap { ids, wrapper: { type, props? } }` — `ids` must be siblings that sit next to each other (`command.wrap-not-siblings`, `command.wrap-not-contiguous`); they may be listed in any order and keep their document order. The wrapper needs a `default` slot, its `props` are validated like `node.setProp`, and the placement is judged as one step: `canInsert` for the wrapper at the siblings' position *without* them (so wrapping inside a full slot works), `canInsert` for each sibling into the wrapper, the wrapper's `default` `max`, and `draggable`. The wrapper is selected.
 - `node.unwrap { id }` — replaces the node by the children of its `default` slot. Children in any other slot would be lost, so that is rejected (`command.unwrap-has-other-slots`); the node must be `removable` and not structurally locked; each child must be insertable at the node's position and the parent slot's `max` / `min` are counted after the swap. The children are selected (the parent when there are none).
+
+## `node.setAttr` details
+
+`node.setAttr { id, key, value }` sets a node attribute, or removes it with `value: null` (an empty `name` and an empty `lock` also remove). Every failure carries a code.
+
+| `key` | Value | Rules |
+|---|---|---|
+| `name` | text | at most 80 characters; the root may be renamed |
+| `anchor` | text | `[a-z][a-z0-9-]{0,63}`, unique in the document (`command.duplicate-anchor`); content lock applies |
+| `region` | text | `[A-Za-z][A-Za-z0-9_-]{0,63}` |
+| `lock` | `{ structure?, content?, style? }` (each `true`) | see below |
+| `visibleIf` | a binding or an expression (never a fixed value) | path / expression syntax checked; content lock applies |
+
+The root accepts only `name`. **Locks are a permission matter**: switching a lock flag off, or changing a `region` inside a structurally locked subtree, calls `CommandEnv.canUnlock({ nodeId, aspects })` (the host maps this to the `unlockTemplates` permission) and is refused (`command.unlock-not-permitted`) when it is absent or returns `false` — the default fails closed. Adding a lock is always allowed. Coalescing key: `attr:<id>:<key>`.
