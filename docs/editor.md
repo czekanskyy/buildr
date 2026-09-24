@@ -96,6 +96,14 @@ A double click on a component whose `editor.inlineProp` names a prop holding a *
 - The node's view is **frozen** for the session (`store.beginEdit`): typing re-renders nothing, so the caret never moves, and a patch that arrives mid-edit reaches the replica but is not shown until the session ends (then the latest state is).
 - A click inside the text being edited places the caret and is not reported as a selection. Nothing is editable in `interact` mode, for a bound or localized value, or for a component with no `inlineProp`.
 
+### Drag and drop in the canvas (PB-070)
+
+`createDndController` (`@buildr/react/canvas`) is the canvas half of docs/drag-and-drop.md:
+
+- **`buildHitPath(document, point, store)`** finds the nodes under a point with `elementsFromPoint`, follows `data-bid` up to the root and returns one `HitEntry` per node, deepest first: its box, its layout axis (`display`/`flex-direction` from the computed style: a flex row is `x`, a flex column and block flow are `y`, grid is `grid`), the boxes of its children in slot order (a Loop's first repetition only) and the boxes of its empty-slot placeholders. Coordinates are the canvas viewport's.
+- **`dnd:over`** (an item dragged in from the palette or the layers panel) runs `computeDropTarget` and draws the result in the overlay: a 2px line, a highlighted container for an empty slot, or, when nothing accepts the item, a red box on the node under the pointer carrying the refusal's message. It answers `dnd:target { target, reason? }` — once per change, although the editor sends `dnd:over` every frame. `dnd:leave` clears the indicator. Nothing happens in `interact` mode.
+- **Moving inside the canvas**: the selected node (never the root) has a handle in the overlay. Pressing it captures the pointer, shows the same indicator for `{ kind: 'nodes', ids }`, autoscrolls within 48px of the top or bottom edge, and on release sends `intent:move { ids, target }` when there is a target; Escape or a release over a refused spot sends nothing.
+
 ## The postMessage protocol
 
 An **envelope**, Zod-validated on both sides (malformed messages are dropped and logged in dev):
