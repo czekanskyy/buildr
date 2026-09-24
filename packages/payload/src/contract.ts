@@ -1,3 +1,4 @@
+import { dataSchemaSchema } from '@buildr/core';
 import { z } from 'zod';
 
 /**
@@ -101,3 +102,22 @@ export type ErrorResponse = z.infer<typeof errorResponseSchema>;
 
 /** The base path of the builder API under Payload's `routes.api`. */
 export const BUILDR_API_PATH = '/buildr';
+
+/** `GET /buildr/data-schema/:collection` answers with core's `DataSchema`. */
+export const dataSchemaResponseSchema = dataSchemaSchema;
+
+export const dataContextQuerySchema = z.object({
+  collection: z.string().min(1),
+  id: z.string().min(1),
+  draft: z.enum(['0', '1']).optional(),
+  locale: z.string().optional(),
+});
+
+/** The scopes a canvas binds against: `{ site, [context]: doc, route }`. */
+export const dataContextResponseSchema = z.object({ scopes: z.record(z.string(), z.unknown()) });
+export type DataContextResponse = z.infer<typeof dataContextResponseSchema>;
+
+export const samplesResponseSchema = z.object({
+  items: z.array(z.object({ id: z.string(), title: z.string() })),
+});
+export type SamplesResponse = z.infer<typeof samplesResponseSchema>;

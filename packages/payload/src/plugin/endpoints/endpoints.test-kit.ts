@@ -3,7 +3,15 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { type BuilderDocument, type ComponentMeta, createRegistryMeta, p, s } from '@buildr/core';
 import { sqliteAdapter } from '@payloadcms/db-sqlite';
-import { buildConfig, getPayload, handleEndpoints, type Payload } from 'payload';
+import {
+  buildConfig,
+  type CollectionConfig,
+  type Field,
+  type GlobalConfig,
+  getPayload,
+  handleEndpoints,
+  type Payload,
+} from 'payload';
 import { buildrPlugin } from '../index.ts';
 import type { BuildrPluginOptions } from '../options.ts';
 
@@ -91,6 +99,11 @@ export interface Harness {
 export async function boot(
   key: string,
   options: Partial<BuildrPluginOptions> = {},
+  extra: {
+    readonly pageFields?: Field[];
+    readonly collections?: CollectionConfig[];
+    readonly globals?: GlobalConfig[];
+  } = {},
 ): Promise<Harness> {
   const dir = mkdtempSync(join(tmpdir(), `buildr-payload-${key}-`));
   const config = buildConfig({
@@ -102,10 +115,13 @@ export async function boot(
         fields: [
           { name: 'title', type: 'text' },
           { name: 'slug', type: 'text' },
+          ...(extra.pageFields ?? []),
         ],
         versions: { drafts: { autosave: true }, maxPerDoc: 50 },
       },
+      ...(extra.collections ?? []),
     ],
+    ...(extra.globals === undefined ? {} : { globals: extra.globals }),
     db: sqliteAdapter({ client: { url: `file:${join(dir, 'db.sqlite')}` } }),
     plugins: [
       buildrPlugin({

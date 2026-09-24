@@ -1,0 +1,580 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`normalizeDoc > turns a populated document into plain, allow-listed data 1`] = `
+{
+  "author": {
+    "avatar": null,
+    "id": "2",
+    "name": "Ada",
+    "posts": [
+      {
+        "author": null,
+        "content": null,
+        "cover": null,
+        "excerpt": null,
+        "extra": null,
+        "facts": null,
+        "featured": null,
+        "flags": null,
+        "gallery": null,
+        "id": "7",
+        "kind": null,
+        "lead": null,
+        "publishedAt": null,
+        "readingTime": null,
+        "seo": null,
+        "subtitle": null,
+        "tags": null,
+        "title": "cycle",
+      },
+    ],
+  },
+  "content": null,
+  "cover": {
+    "alt": "A cover",
+    "focalPoint": {
+      "x": 40,
+      "y": 60,
+    },
+    "height": 600,
+    "id": "3",
+    "mimeType": "image/jpeg",
+    "sizes": {
+      "card": {
+        "height": 500,
+        "url": "/media/cover-800.jpg",
+        "width": 800,
+      },
+    },
+    "url": "/media/cover.jpg",
+    "width": 800,
+  },
+  "createdAt": "2026-01-02T03:04:05.000Z",
+  "excerpt": null,
+  "extra": {
+    "note": "Note",
+  },
+  "facts": [
+    {
+      "label": "a",
+      "value": 1,
+    },
+  ],
+  "featured": null,
+  "flags": [
+    "a",
+  ],
+  "gallery": [
+    null,
+    {
+      "id": "6",
+      "mimeType": "image/png",
+      "url": "/media/g.jpg",
+    },
+  ],
+  "id": "7",
+  "kind": "news",
+  "lead": "Lead",
+  "publishedAt": "2026-03-04T05:06:07.000Z",
+  "readingTime": null,
+  "seo": {
+    "title": "SEO",
+  },
+  "subtitle": null,
+  "tags": [
+    {
+      "id": "1",
+      "title": "one",
+    },
+    {
+      "id": "9",
+    },
+  ],
+  "title": "Hello",
+  "updatedAt": "2026-02-03T00:00:00.000Z",
+}
+`;
+
+exports[`schemaFromCollection > maps the field types of a post 1`] = `
+{
+  "entities": {
+    "authors": {
+      "type": {
+        "fields": {
+          "avatar": {
+            "nullable": true,
+            "type": {
+              "t": "media",
+            },
+          },
+          "createdAt": {
+            "type": {
+              "t": "date",
+            },
+          },
+          "id": {
+            "type": {
+              "t": "string",
+            },
+          },
+          "name": {
+            "nullable": true,
+            "type": {
+              "t": "string",
+            },
+          },
+          "posts": {
+            "nullable": true,
+            "type": {
+              "of": {
+                "entity": "post",
+                "t": "ref",
+              },
+              "t": "list",
+            },
+          },
+          "updatedAt": {
+            "type": {
+              "t": "date",
+            },
+          },
+        },
+        "t": "object",
+      },
+    },
+    "post": {
+      "type": {
+        "fields": {
+          "author": {
+            "nullable": true,
+            "type": {
+              "entity": "authors",
+              "t": "ref",
+            },
+          },
+          "content": {
+            "nullable": true,
+            "type": {
+              "t": "richText",
+            },
+          },
+          "cover": {
+            "nullable": true,
+            "type": {
+              "t": "media",
+            },
+          },
+          "createdAt": {
+            "type": {
+              "t": "date",
+            },
+          },
+          "excerpt": {
+            "nullable": true,
+            "type": {
+              "t": "string",
+            },
+          },
+          "extra": {
+            "nullable": true,
+            "type": {
+              "fields": {
+                "note": {
+                  "nullable": true,
+                  "type": {
+                    "t": "string",
+                  },
+                },
+              },
+              "t": "object",
+            },
+          },
+          "facts": {
+            "nullable": true,
+            "type": {
+              "of": {
+                "fields": {
+                  "label": {
+                    "nullable": true,
+                    "type": {
+                      "t": "string",
+                    },
+                  },
+                  "value": {
+                    "nullable": true,
+                    "type": {
+                      "t": "number",
+                    },
+                  },
+                },
+                "t": "object",
+              },
+              "t": "list",
+            },
+          },
+          "featured": {
+            "nullable": true,
+            "type": {
+              "t": "boolean",
+            },
+          },
+          "flags": {
+            "nullable": true,
+            "type": {
+              "of": {
+                "t": "enum",
+                "values": [
+                  "a",
+                  "b",
+                ],
+              },
+              "t": "list",
+            },
+          },
+          "gallery": {
+            "nullable": true,
+            "type": {
+              "of": {
+                "t": "media",
+              },
+              "t": "list",
+            },
+          },
+          "id": {
+            "type": {
+              "t": "string",
+            },
+          },
+          "kind": {
+            "nullable": true,
+            "type": {
+              "t": "enum",
+              "values": [
+                "news",
+                "guide",
+              ],
+            },
+          },
+          "lead": {
+            "nullable": true,
+            "type": {
+              "t": "string",
+            },
+          },
+          "publishedAt": {
+            "nullable": true,
+            "type": {
+              "t": "date",
+            },
+          },
+          "readingTime": {
+            "nullable": true,
+            "type": {
+              "t": "number",
+            },
+          },
+          "seo": {
+            "nullable": true,
+            "type": {
+              "fields": {
+                "title": {
+                  "nullable": true,
+                  "type": {
+                    "t": "string",
+                  },
+                },
+              },
+              "t": "object",
+            },
+          },
+          "subtitle": {
+            "nullable": true,
+            "type": {
+              "t": "string",
+            },
+          },
+          "tags": {
+            "nullable": true,
+            "type": {
+              "of": {
+                "entity": "tags",
+                "t": "ref",
+              },
+              "t": "list",
+            },
+          },
+          "title": {
+            "label": "Title",
+            "nullable": true,
+            "type": {
+              "t": "string",
+            },
+          },
+          "updatedAt": {
+            "type": {
+              "t": "date",
+            },
+          },
+        },
+        "t": "object",
+      },
+    },
+    "tags": {
+      "type": {
+        "fields": {
+          "createdAt": {
+            "type": {
+              "t": "date",
+            },
+          },
+          "id": {
+            "type": {
+              "t": "string",
+            },
+          },
+          "title": {
+            "nullable": true,
+            "type": {
+              "t": "string",
+            },
+          },
+          "updatedAt": {
+            "type": {
+              "t": "date",
+            },
+          },
+        },
+        "t": "object",
+      },
+    },
+  },
+  "scopes": {
+    "post": {
+      "type": {
+        "fields": {
+          "author": {
+            "nullable": true,
+            "type": {
+              "entity": "authors",
+              "t": "ref",
+            },
+          },
+          "content": {
+            "nullable": true,
+            "type": {
+              "t": "richText",
+            },
+          },
+          "cover": {
+            "nullable": true,
+            "type": {
+              "t": "media",
+            },
+          },
+          "createdAt": {
+            "type": {
+              "t": "date",
+            },
+          },
+          "excerpt": {
+            "nullable": true,
+            "type": {
+              "t": "string",
+            },
+          },
+          "extra": {
+            "nullable": true,
+            "type": {
+              "fields": {
+                "note": {
+                  "nullable": true,
+                  "type": {
+                    "t": "string",
+                  },
+                },
+              },
+              "t": "object",
+            },
+          },
+          "facts": {
+            "nullable": true,
+            "type": {
+              "of": {
+                "fields": {
+                  "label": {
+                    "nullable": true,
+                    "type": {
+                      "t": "string",
+                    },
+                  },
+                  "value": {
+                    "nullable": true,
+                    "type": {
+                      "t": "number",
+                    },
+                  },
+                },
+                "t": "object",
+              },
+              "t": "list",
+            },
+          },
+          "featured": {
+            "nullable": true,
+            "type": {
+              "t": "boolean",
+            },
+          },
+          "flags": {
+            "nullable": true,
+            "type": {
+              "of": {
+                "t": "enum",
+                "values": [
+                  "a",
+                  "b",
+                ],
+              },
+              "t": "list",
+            },
+          },
+          "gallery": {
+            "nullable": true,
+            "type": {
+              "of": {
+                "t": "media",
+              },
+              "t": "list",
+            },
+          },
+          "id": {
+            "type": {
+              "t": "string",
+            },
+          },
+          "kind": {
+            "nullable": true,
+            "type": {
+              "t": "enum",
+              "values": [
+                "news",
+                "guide",
+              ],
+            },
+          },
+          "lead": {
+            "nullable": true,
+            "type": {
+              "t": "string",
+            },
+          },
+          "publishedAt": {
+            "nullable": true,
+            "type": {
+              "t": "date",
+            },
+          },
+          "readingTime": {
+            "nullable": true,
+            "type": {
+              "t": "number",
+            },
+          },
+          "seo": {
+            "nullable": true,
+            "type": {
+              "fields": {
+                "title": {
+                  "nullable": true,
+                  "type": {
+                    "t": "string",
+                  },
+                },
+              },
+              "t": "object",
+            },
+          },
+          "subtitle": {
+            "nullable": true,
+            "type": {
+              "t": "string",
+            },
+          },
+          "tags": {
+            "nullable": true,
+            "type": {
+              "of": {
+                "entity": "tags",
+                "t": "ref",
+              },
+              "t": "list",
+            },
+          },
+          "title": {
+            "label": "Title",
+            "nullable": true,
+            "type": {
+              "t": "string",
+            },
+          },
+          "updatedAt": {
+            "type": {
+              "t": "date",
+            },
+          },
+        },
+        "t": "object",
+      },
+    },
+    "route": {
+      "type": {
+        "fields": {
+          "locale": {
+            "type": {
+              "t": "string",
+            },
+          },
+          "params": {
+            "type": {
+              "fields": {
+                "page": {
+                  "nullable": true,
+                  "type": {
+                    "t": "number",
+                  },
+                },
+              },
+              "t": "object",
+            },
+          },
+          "path": {
+            "type": {
+              "t": "string",
+            },
+          },
+        },
+        "t": "object",
+      },
+    },
+    "site": {
+      "type": {
+        "fields": {
+          "logo": {
+            "nullable": true,
+            "type": {
+              "t": "media",
+            },
+          },
+          "siteName": {
+            "nullable": true,
+            "type": {
+              "t": "string",
+            },
+          },
+        },
+        "t": "object",
+      },
+    },
+  },
+}
+`;
