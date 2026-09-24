@@ -1,7 +1,10 @@
 export { BooleanControl } from './boolean.tsx';
+export { ListControl, moveItem, ObjectControl, renderControl } from './compound.tsx';
 export { IconControl } from './icon.tsx';
+export { propLabel } from './label.ts';
 export { LinkControl } from './link.tsx';
 export { NumberControl, parseNumber } from './number.tsx';
+export { RichTextControl } from './rich-text.tsx';
 export { SelectControl } from './select.tsx';
 export { TextControl } from './text.tsx';
 export { TextareaControl } from './textarea.tsx';

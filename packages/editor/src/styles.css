@@ -647,3 +647,71 @@
 .buildr-editor .bd-inspector-notice:empty {
   display: none;
 }
+
+/* Inspector: rich text, list and object controls (PB-080) */
+.buildr-editor .bd-rich {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.buildr-editor .bd-rich-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+.buildr-editor .bd-rich-button[aria-pressed="true"] {
+  background: var(--bd-accent-soft, rgba(0, 0, 0, 0.1));
+  font-weight: 700;
+}
+.buildr-editor .bd-rich-link {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+.buildr-editor .bd-rich-editor {
+  min-height: 72px;
+  padding: 6px 8px;
+  overflow-wrap: anywhere;
+  outline-offset: 1px;
+}
+.buildr-editor .bd-list,
+.buildr-editor .bd-object {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.buildr-editor .bd-list-items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.buildr-editor .bd-list-item {
+  padding: 6px;
+  border: 1px solid var(--bd-border);
+  border-radius: var(--bd-radius);
+}
+.buildr-editor .bd-list-item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-size: 11px;
+}
+.buildr-editor .bd-list-empty {
+  margin: 0;
+  font-size: 11px;
+  opacity: 0.75;
+}
+.buildr-editor .bd-object-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
