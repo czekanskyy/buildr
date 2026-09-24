@@ -4,6 +4,7 @@ import { dataMediaEndpoint, dataQueryEndpoint } from './data.ts';
 import { dataContextEndpoint } from './data-context.ts';
 import { dataSchemaEndpoint } from './data-schema.ts';
 import { getDocumentEndpoint } from './document.ts';
+import { formsEndpoint } from './forms.ts';
 import { manifestEndpoint } from './manifest.ts';
 import { mediaListEndpoint, mediaUploadEndpoint } from './media.ts';
 import { publishEndpoint } from './publish.ts';
@@ -25,6 +26,7 @@ export const buildrEndpoints = (env: EndpointEnv): Endpoint[] => [
   dataMediaEndpoint(env),
   mediaListEndpoint(env),
   mediaUploadEndpoint(env),
+  ...(env.options.forms.enabled ? [formsEndpoint(env)] : []),
 ];
 
 export type { EndpointEnv } from './context.ts';

@@ -6,6 +6,7 @@ import { sqliteAdapter } from '@payloadcms/db-sqlite';
 import {
   buildConfig,
   type CollectionConfig,
+  type EmailAdapter,
   type Field,
   type GlobalConfig,
   getPayload,
@@ -103,6 +104,7 @@ export async function boot(
     readonly pageFields?: Field[];
     readonly collections?: CollectionConfig[];
     readonly globals?: GlobalConfig[];
+    readonly email?: EmailAdapter;
   } = {},
 ): Promise<Harness> {
   const dir = mkdtempSync(join(tmpdir(), `buildr-payload-${key}-`));
@@ -122,6 +124,7 @@ export async function boot(
       ...(extra.collections ?? []),
     ],
     ...(extra.globals === undefined ? {} : { globals: extra.globals }),
+    ...(extra.email === undefined ? {} : { email: extra.email }),
     db: sqliteAdapter({ client: { url: `file:${join(dir, 'db.sqlite')}` } }),
     plugins: [
       buildrPlugin({

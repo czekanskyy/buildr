@@ -1,6 +1,7 @@
 import type { ComponentMigrations, RegistryMeta } from '@buildr/core';
 import type { PayloadRequest } from 'payload';
 import { z } from 'zod';
+import type { RateLimiter } from './forms/rate-limit.ts';
 
 /** A function the host supplies; Zod only checks that it is one, the plugin never runs it at startup. */
 const fn = <T>() => z.custom<T>((value) => typeof value === 'function', 'must be a function');
@@ -58,10 +59,36 @@ export const optionsSchema = z.object({
   media: z.object({ collection: z.string().min(1) }).optional(),
   forms: z
     .object({
+      /** Adds `buildr-form-submissions` and the public submission endpoint (needs `registry`). */
       enabled: z.boolean().default(false),
+      /** Who a notification may go to: exact addresses or domains (`@example.com`). */
       notifyAllowlist: z.array(z.string()).default([]),
+      /** Notified about every submission; each must match `notifyAllowlist`. */
+      notifyTo: z.array(z.string()).default([]),
+      /** Attempts per visitor and form per window; used by the bundled in-memory limiter. */
+      rateLimit: z
+        .object({
+          limit: z.number().int().positive().default(5),
+          windowMs: z.number().int().positive().default(60_000),
+        })
+        .default({ limit: 5, windowMs: 60_000 }),
+      /** Replaces the in-memory limiter (which does not span serverless instances). */
+      rateLimiter: z
+        .custom<RateLimiter>(
+          (value) =>
+            typeof value === 'object' &&
+            value !== null &&
+            typeof (value as RateLimiter).hit === 'function',
+          'must be a rate limiter',
+        )
+        .optional(),
     })
-    .default({ enabled: false, notifyAllowlist: [] }),
+    .default({
+      enabled: false,
+      notifyAllowlist: [],
+      notifyTo: [],
+      rateLimit: { limit: 5, windowMs: 60_000 },
+    }),
   access: z
     .object({
       edit: fn<AccessFn>().optional(),

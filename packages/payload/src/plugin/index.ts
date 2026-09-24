@@ -1,12 +1,19 @@
 import type { CollectionConfig, Config, Plugin } from 'payload';
+import { formSubmissionsCollection } from './collections/form-submissions.ts';
 import { templatesCollection } from './collections/templates.ts';
 import { buildrEndpoints } from './endpoints/index.ts';
 import { buildrFields, RESERVED_FIELDS, TEMPLATES_COLLECTION } from './fields.ts';
+import { isAllowedRecipient } from './forms/notify.ts';
+import { createMemoryRateLimiter } from './forms/rate-limit.ts';
 import { layoutHook } from './hooks/layout-hook.ts';
 import { type BuildrPluginOptions, resolveOptions } from './options.ts';
 import { writeGuard } from './write-guard.ts';
 
+export { FORM_SUBMISSIONS_COLLECTION } from './collections/form-submissions.ts';
+export { FORM_TYPE, HONEYPOT_FIELD } from './endpoints/forms.ts';
 export { LAYOUT_FIELD_COMPONENT, TEMPLATES_COLLECTION } from './fields.ts';
+export type { MemoryRateLimiterOptions, RateLimiter, RateLimitResult } from './forms/rate-limit.ts';
+export { createMemoryRateLimiter } from './forms/rate-limit.ts';
 export type { ProcessedLayout, ProcessLayoutOptions } from './hooks/process-layout.ts';
 export { describeDiagnostics, documentLimits, processLayout } from './hooks/process-layout.ts';
 export type {
@@ -30,6 +37,21 @@ const hasDrafts = (collection: CollectionConfig): boolean => {
  */
 export function buildrPlugin(input: BuildrPluginOptions): Plugin {
   const options = resolveOptions(input);
+  const forms = options.forms;
+  if (forms.enabled && options.registry === undefined) {
+    throw new Error(
+      'buildrPlugin: forms need the "registry" option (the form schema is derived from it)',
+    );
+  }
+  const stray = forms.notifyTo.find(
+    (address) => !isAllowedRecipient(address, forms.notifyAllowlist),
+  );
+  if (stray !== undefined) {
+    throw new Error(`buildrPlugin: forms.notifyTo "${stray}" is not in forms.notifyAllowlist`);
+  }
+  const rateLimiter = forms.enabled
+    ? (forms.rateLimiter ?? createMemoryRateLimiter(forms.rateLimit))
+    : undefined;
   return (config: Config): Config => {
     const collections = config.collections ?? [];
     for (const slug of Object.keys(options.collections)) {
@@ -61,7 +83,7 @@ export function buildrPlugin(input: BuildrPluginOptions): Plugin {
     }
     return {
       ...config,
-      endpoints: [...(config.endpoints ?? []), ...buildrEndpoints({ options })],
+      endpoints: [...(config.endpoints ?? []), ...buildrEndpoints({ options, rateLimiter })],
       collections: [
         ...collections.map((collection) => {
           const own = options.collections[collection.slug];
@@ -80,6 +102,7 @@ export function buildrPlugin(input: BuildrPluginOptions): Plugin {
           };
         }),
         ...(targets.length === 0 ? [] : [templatesCollection({ resolved: options, targets })]),
+        ...(forms.enabled ? [formSubmissionsCollection()] : []),
       ],
     };
   };
