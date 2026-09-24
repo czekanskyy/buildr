@@ -20,11 +20,16 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@buildr/core": "workspace:*"
+    "@buildr/core": "workspace:*",
+    "@buildr/react": "workspace:*",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@buildr/tsconfig": "workspace:*",
     "typescript": "7.0.2",
-    "vitest": "5.0.1"
+    "vitest": "5.0.1",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0"
   }
 }

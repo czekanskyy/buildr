@@ -18,6 +18,9 @@
     },
     "lint": {
       "outputs": []
+    },
+    "e2e": {
+      "cache": false
     }
   }
 }
