@@ -59,6 +59,10 @@ export const defaultTheme = defineTheme({
 });
 ```
 
+`defineTheme(input)` validates and freezes a theme and throws with every problem listed (the theme is trusted code); `validateTheme(input)` returns a `Result` with path-tagged diagnostics for input you do not control. Rules: at most 8 breakpoints with ids like `tablet`, listed widest first with strictly decreasing whole-number `maxWidth` (240 to 4096); every token scale is optional; token names are lower-case letters and digits joined by single dashes (at most 32 characters, 64 tokens per scale); each token value goes through its scale's grammar and is stored normalized. A token value cannot refer to another token. Values: `color` (`#hex`, `rgb()`, `hsl()`, `oklch()`), `space`/`fontSize` (px, rem, em), `radius`/`container` (px, rem, em, %), `fontWeight` (100 to 900), `lineHeight` (a number or a length), `shadow` (up to 4 `[inset] <x> <y> [<blur> [<spread>]] <color>` layers or `none`), `fontFamily` (up to 8 unquoted family names or generic families), `transition` (`[property] <duration up to 5s> [timing] [delay]`, up to 4 layers).
+
+`compileTokens(theme)` emits the string below deterministically (scales in a fixed order, tokens sorted by name), `resolveTokenRef(theme, '$space.4')` looks a reference up (`theme.unknown-token` when the theme does not define it — the style grammar only checks that a token is well formed and from an allowed scale), and `LAYER_ORDER_CSS` is the one-time layer declaration. A token compiles to the custom property `--b-<scale>-<name>` with the scale in kebab-case (`--b-font-family-body`).
+
 Tokens are emitted as `@layer buildr.tokens { :root { --b-color-primary: ...; --b-space-4: ...; } }`. In MVP the theme comes from code (trusted); from v0.2, token overrides stored in a Payload global go through the exact same grammar validation (untrusted).
 
 ## CSS strategy

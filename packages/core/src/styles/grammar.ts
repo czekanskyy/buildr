@@ -51,7 +51,13 @@ export type StyleGrammar =
   /** `columnSpan`: an integer 1..12. */
   | { readonly kind: 'gridSpan' }
   /** `true` compiles to `none` (used by `visibility.hidden`), `false` to the empty string. */
-  | { readonly kind: 'boolean' };
+  | { readonly kind: 'boolean' }
+  /** A `box-shadow` value: up to 4 layers of `[inset] <x> <y> [<blur> [<spread>]] <color>` (theme tokens only). */
+  | { readonly kind: 'shadow' }
+  /** A `font-family` stack of plain family names and generic families (theme tokens only). */
+  | { readonly kind: 'fontFamily' }
+  /** A `transition` list: `[property] <duration> [timing] [delay]` (theme tokens only). */
+  | { readonly kind: 'transition' };
 
 export interface ParseOptions {
   /** Whether the property is naturally inherited, which is the only case `inherit` is accepted. */
@@ -289,6 +295,138 @@ function parseGradient(input: string): string | undefined {
   return `linear-gradient(${direction}, ${stops.join(', ')})`;
 }
 
+// --- theme-only grammars (shadow, font stack, transition) -------------------------------------
+
+/** Splits on spaces outside parentheses. */
+function splitSpaces(text: string): string[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let current = '';
+  for (const ch of text) {
+    if (ch === '(') depth += 1;
+    else if (ch === ')') depth -= 1;
+    if (ch === ' ' && depth === 0) {
+      if (current !== '') parts.push(current);
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  if (current !== '') parts.push(current);
+  return parts;
+}
+
+const SHADOW_LENGTH: Extract<StyleGrammar, { kind: 'composite' }> = {
+  kind: 'composite',
+  length: { units: ['px', 'rem', 'em'], negative: true },
+};
+
+function parseShadowLayer(layer: string): string | undefined {
+  const words = splitSpaces(layer);
+  const out: string[] = [];
+  if (words[0] === 'inset') out.push(words.shift() as string);
+  const color = words.pop();
+  if (color === undefined || words.length < 2 || words.length > 4) return undefined;
+  for (const [i, word] of words.entries()) {
+    const length = parseComposite(SHADOW_LENGTH, word);
+    // A blur radius cannot be negative.
+    if (length === undefined || (i === 2 && length.startsWith('-'))) return undefined;
+    out.push(length);
+  }
+  const parsedColor = parseColor(color);
+  if (parsedColor === undefined) return undefined;
+  out.push(parsedColor);
+  return out.join(' ');
+}
+
+function parseShadow(input: string): string | undefined {
+  if (input === 'none') return 'none';
+  const layers = splitTopLevel(input);
+  if (layers === undefined || layers.length > 4) return undefined;
+  const parsed = layers.map(parseShadowLayer);
+  return parsed.every((layer) => layer !== undefined) ? parsed.join(', ') : undefined;
+}
+
+const GENERIC_FAMILIES = new Set([
+  'serif',
+  'sans-serif',
+  'monospace',
+  'cursive',
+  'fantasy',
+  'system-ui',
+  'ui-serif',
+  'ui-sans-serif',
+  'ui-monospace',
+  'ui-rounded',
+  'emoji',
+  'math',
+  'fangsong',
+]);
+const GLOBAL_KEYWORDS = new Set([
+  'inherit',
+  'initial',
+  'unset',
+  'revert',
+  'revert-layer',
+  'default',
+]);
+const FAMILY_NAME = /^[A-Za-z][A-Za-z0-9-]{0,39}(?: [A-Za-z0-9-]{1,40}){0,4}$/;
+
+function parseFontFamily(input: string): string | undefined {
+  const families = input.split(',').map((family) => family.trim());
+  if (families.length > 8) return undefined;
+  for (const family of families) {
+    if (GENERIC_FAMILIES.has(family)) continue;
+    if (!FAMILY_NAME.test(family) || GLOBAL_KEYWORDS.has(family.toLowerCase())) return undefined;
+  }
+  return families.join(', ');
+}
+
+const TRANSITION_PROPERTIES = new Set([
+  'all',
+  'color',
+  'background-color',
+  'border-color',
+  'box-shadow',
+  'opacity',
+  'transform',
+]);
+const TIMING = new Set(['ease', 'ease-in', 'ease-out', 'ease-in-out', 'linear']);
+const TIME = /^(\d+(?:\.\d{1,3})?)(ms|s)$/;
+
+function milliseconds(word: string): number | undefined {
+  const match = TIME.exec(word);
+  if (match === null) return undefined;
+  const value = Number(match[1]) * (match[2] === 's' ? 1000 : 1);
+  return value <= 5000 ? value : undefined;
+}
+
+function parseTransitionLayer(layer: string): string | undefined {
+  const words = splitSpaces(layer);
+  const out: string[] = [];
+  const property = words[0];
+  if (property !== undefined && TRANSITION_PROPERTIES.has(property))
+    out.push(words.shift() as string);
+  const duration = words.shift();
+  if (duration === undefined || milliseconds(duration) === undefined) return undefined;
+  out.push(duration);
+  if (words[0] !== undefined && TIMING.has(words[0])) out.push(words.shift() as string);
+  const delay = words.shift();
+  if (delay !== undefined) {
+    if (milliseconds(delay) === undefined) return undefined;
+    out.push(delay);
+  }
+  return words.length === 0 ? out.join(' ') : undefined;
+}
+
+function parseTransition(input: string): string | undefined {
+  if (input === 'none') return 'none';
+  const layers = splitTopLevel(input);
+  if (layers === undefined || layers.length > 4) return undefined;
+  const parsed = layers.map(parseTransitionLayer);
+  return parsed.every((layer) => layer !== undefined) ? parsed.join(', ') : undefined;
+}
+
 // --- the rest ---------------------------------------------------------------------------------
 
 const RATIO = /^(\d+(?:\.\d{1,4})?)\s*\/\s*(\d+(?:\.\d{1,4})?)$/;
@@ -371,6 +509,18 @@ export function parseStyleValue(
       return count === undefined
         ? fail('expected a whole number of columns from 1 to 12', input)
         : ok(`span ${count}`);
+    }
+    case 'shadow':
+    case 'fontFamily':
+    case 'transition': {
+      const parse =
+        grammar.kind === 'shadow'
+          ? parseShadow
+          : grammar.kind === 'fontFamily'
+            ? parseFontFamily
+            : parseTransition;
+      const css = typeof input === 'string' ? parse(input) : undefined;
+      return css === undefined ? fail(`expected a valid ${grammar.kind} value`, input) : ok(css);
     }
     case 'boolean':
       return typeof input === 'boolean'
