@@ -1,0 +1,8 @@
+@layer buildr.components {
+  .bc-divider {
+    height: 0;
+    margin-block: var(--b-space-4);
+    border: 0;
+    border-top: 1px solid var(--b-color-border);
+  }
+}

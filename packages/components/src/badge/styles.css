@@ -1,0 +1,29 @@
+@layer buildr.components {
+  .bc-badge {
+    display: inline-block;
+    padding: var(--b-space-1) var(--b-space-2);
+    border-radius: var(--b-radius-full);
+    background-color: var(--b-color-surface-alt);
+    color: var(--b-color-text);
+    font-size: var(--b-font-size-sm);
+    font-weight: var(--b-font-weight-medium);
+    line-height: var(--b-line-height-tight);
+    white-space: nowrap;
+  }
+  .bc-badge[data-variant="primary"] {
+    background-color: var(--b-color-primary);
+    color: var(--b-color-on-primary);
+  }
+  .bc-badge[data-variant="success"] {
+    background-color: var(--b-color-success);
+    color: var(--b-color-on-primary);
+  }
+  .bc-badge[data-variant="warning"] {
+    background-color: #fef3c7;
+    color: #78350f;
+  }
+  .bc-badge[data-variant="danger"] {
+    background-color: var(--b-color-danger);
+    color: var(--b-color-on-primary);
+  }
+}
