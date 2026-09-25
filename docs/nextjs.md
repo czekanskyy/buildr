@@ -179,7 +179,7 @@ return <BuildrPage config={buildr} entry={entry} />;
 - `src/buildr.options.ts` — the plugin's collections, `queryable` allowlist and access rules, shared with the frontend so they cannot drift.
 - `src/buildr.registry.ts` — the component registry, theme and locales, importable from the Payload CLI.
 - `src/app/(payload)` — the admin and REST routes; `admin/importMap.js` is generated (`pnpm generate:importmap`) and must be regenerated when an admin component is added.
-- `src/app/(site)` — the public site (a placeholder until the routes of PB-109).
+- `src/app/(frontend)` — the public site (see below); `(builder)` and `(canvas)` — the editor and canvas routes.
 
 ## The example application's public routes (PB-109)
 

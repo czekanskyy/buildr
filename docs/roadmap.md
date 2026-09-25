@@ -20,6 +20,16 @@
 - Getting-started works on a clean machine in under 15 minutes.
 - 0.1.0 is published to npm with provenance.
 
+### Status of the exit criteria (PB-114)
+
+| Criterion | Status |
+|---|---|
+| Six scenarios plus localization, end to end, both locales, in-editor translation | Met: `apps/example-next-payload/e2e` (CI job `E2E`) |
+| Performance budgets on a 1000-node fixture | Not yet measured: no benchmark or trace exists; tracked as follow-up work for the release |
+| Seed content without accessibility errors | Met: `documents.test.ts` (static validator) and axe in the e2e suite |
+| Getting-started in under 15 minutes | Met by the steps in [getting-started.md](getting-started.md) (seed, dev server: about 5 minutes); a fresh-machine run by an outside person is still to be done |
+| 0.1.0 published to npm with provenance | Prepared: the changeset `release-0-1-0` and the release workflow; publishing needs the maintainer (npm scope, `NPM_TOKEN`, merging the Version PR) |
+
 See [core-concepts.md](core-concepts.md), [components.md](components.md) and [templates.md](templates.md) for what these scenarios are built from, and section B of the project's original planning document for the exhaustive MVP checklist.
 
 ## Roadmap
