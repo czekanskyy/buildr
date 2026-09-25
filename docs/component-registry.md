@@ -96,6 +96,12 @@ Manifest: `toManifest(registry)` (given a `RegistryMeta`) returns `{ hash, compo
 
 Component look-and-feel (the design system) lives in the component's own CSS, built on design tokens and driven by variant props. A node's `styles` field carries only instance overrides — see [styles.md](styles.md).
 
+### Editor icons (`meta.icon`)
+
+`icon` is the kebab-case name of a [lucide](https://lucide.dev) icon (canonical names, for example `text-align-start`, not aliases). The editor draws it in palette tiles (20px) and the layers tree (16px) with `ComponentIcon`, which resolves the name against a **curated static map** in `packages/editor/src/ui/icon.tsx` (about 75 names: every built-in icon listed in [components.md](components.md#editor-icons-metaicon) plus a common vocabulary for layout, text, media, forms and data). Nothing is loaded dynamically, so the editor bundle contains only the mapped icons. A missing name, or one outside the map, shows the neutral `box` icon: the component works and looks consistent, it is just not recognisable by icon. `componentIconNames` (exported from `@buildr/editor`) lists the supported names.
+
+To request an icon, open an issue or a pull request that adds it to `COMPONENT_ICONS` in `icon.tsx` (one static import by name from `lucide-react` plus one map entry). A unit test checks every name against lucide-react's own export list, so a typo fails. Host-registered icons are not supported for now.
+
 ## Composite components (templates)
 
 ```ts

@@ -44,7 +44,7 @@ Each built-in component has a distinct [lucide](https://lucide.dev) icon (kebab-
 | Text | `type` | Pagination | `ellipsis` |
 | RichText | `pilcrow` | Form | `clipboard-list` |
 | Link | `link` | Input | `text-cursor-input` |
-| Button | `mouse-pointer-click` | Textarea | `align-left` |
+| Button | `mouse-pointer-click` | Textarea | `text-align-start` |
 | Image | `image` | Checkbox | `square-check` |
 | Icon | `sparkles` | Select | `square-chevron-down` |
 

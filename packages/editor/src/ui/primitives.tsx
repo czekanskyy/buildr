@@ -7,6 +7,7 @@ import * as TogglePrimitive from '@radix-ui/react-toggle';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, Ref } from 'react';
 import { useT } from '../messages/index.tsx';
+import { Icon, type IconName } from './icon.tsx';
 
 const cx = (...parts: (string | undefined | false)[]) => parts.filter(Boolean).join(' ');
 
@@ -26,7 +27,7 @@ export function Button({ variant = 'default', className, type = 'button', ...res
 export interface IconButtonProps extends Omit<ButtonProps, 'children' | 'aria-label'> {
   /** What the button does: it has no text, so this is its name for everyone who cannot see the icon. */
   readonly label: string;
-  readonly icon: ReactNode;
+  readonly icon: IconName;
   /** Shown after the name in the tooltip only (a keyboard shortcut), not part of the accessible name. */
   readonly hint?: string | undefined;
 }
@@ -36,7 +37,7 @@ export function IconButton({ label, icon, hint, className, ...rest }: IconButton
   return (
     <Tooltip content={hint === undefined ? label : `${label} (${hint})`}>
       <Button {...rest} aria-label={label} className={cx('bd-icon-button', className)}>
-        <span aria-hidden="true">{icon}</span>
+        <Icon name={icon} />
       </Button>
     </Tooltip>
   );
@@ -77,7 +78,9 @@ export function Select({ value, onValueChange, options, label, disabled }: Selec
     >
       <SelectPrimitive.Trigger className="bd-select-trigger" aria-label={label}>
         <SelectPrimitive.Value />
-        <SelectPrimitive.Icon aria-hidden="true">▾</SelectPrimitive.Icon>
+        <SelectPrimitive.Icon asChild>
+          <Icon name="chevron-down" />
+        </SelectPrimitive.Icon>
       </SelectPrimitive.Trigger>
       <SelectPrimitive.Portal>
         <SelectPrimitive.Content className="bd-select-content" position="popper" sideOffset={4}>

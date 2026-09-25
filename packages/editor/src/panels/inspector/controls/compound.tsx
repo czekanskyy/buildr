@@ -1,7 +1,7 @@
 import type { ListPropDef, ObjectPropDef, PropDef } from '@buildr/core';
 import type { ReactNode } from 'react';
 import { useT } from '../../../messages/index.tsx';
-import { Button } from '../../../ui/index.ts';
+import { Button, Icon } from '../../../ui/index.ts';
 import { BooleanControl } from './boolean.tsx';
 import { IconControl } from './icon.tsx';
 import { propLabel } from './label.ts';
@@ -100,7 +100,7 @@ export function ListControl({
                     aria-label={`${t('list.moveUp')}: ${itemLabel}`}
                     onClick={() => onChange(moveItem(items, index, index - 1))}
                   >
-                    ↑
+                    <Icon name="arrow-up" />
                   </Button>
                   <Button
                     variant="ghost"
@@ -108,7 +108,7 @@ export function ListControl({
                     aria-label={`${t('list.moveDown')}: ${itemLabel}`}
                     onClick={() => onChange(moveItem(items, index, index + 1))}
                   >
-                    ↓
+                    <Icon name="arrow-down" />
                   </Button>
                   <Button
                     variant="ghost"
@@ -116,7 +116,7 @@ export function ListControl({
                     aria-label={`${t('list.remove')}: ${itemLabel}`}
                     onClick={() => onChange(items.filter((_, at) => at !== index))}
                   >
-                    ×
+                    <Icon name="x" />
                   </Button>
                 </span>
               </div>

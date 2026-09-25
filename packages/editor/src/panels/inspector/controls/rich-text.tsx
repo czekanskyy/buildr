@@ -26,9 +26,9 @@ import {
   FORMAT_TEXT_COMMAND,
   type LexicalEditor,
 } from 'lexical';
-import { useEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { type MessageKey, useT } from '../../../messages/index.tsx';
-import { Button, Input } from '../../../ui/index.ts';
+import { Button, Icon, Input } from '../../../ui/index.ts';
 import {
   $loadRichText,
   type HEADING_TAGS,
@@ -197,7 +197,7 @@ export function RichTextControl({
     setLinkError(false);
   };
 
-  const button = (key: MessageKey, pressed: boolean, action: () => void, text: string) => (
+  const button = (key: MessageKey, pressed: boolean, action: () => void, text: ReactNode) => (
     <Button
       variant="ghost"
       className="bd-rich-button"
@@ -235,9 +235,24 @@ export function RichTextControl({
           () => run((e) => e.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic')),
           'I',
         )}
-        {button('richText.link', toolbar.link, () => setLinking((open) => !open), '🔗')}
-        {button('richText.bulletList', toolbar.block === 'bullet', () => list('bullet'), '•')}
-        {button('richText.numberedList', toolbar.block === 'number', () => list('number'), '1.')}
+        {button(
+          'richText.link',
+          toolbar.link,
+          () => setLinking((open) => !open),
+          <Icon name="link" />,
+        )}
+        {button(
+          'richText.bulletList',
+          toolbar.block === 'bullet',
+          () => list('bullet'),
+          <Icon name="list" />,
+        )}
+        {button(
+          'richText.numberedList',
+          toolbar.block === 'number',
+          () => list('number'),
+          <Icon name="list-ordered" />,
+        )}
       </div>
       {linking ? (
         <form

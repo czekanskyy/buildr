@@ -44,7 +44,7 @@ describe('UI primitives', () => {
         <Button variant="primary" onClick={onClick}>
           Save
         </Button>
-        <IconButton label="Undo" icon="↶" onClick={onClick} />
+        <IconButton label="Undo" icon="undo-2" onClick={onClick} />
       </>,
     );
     const [save, undo] = container.querySelectorAll('button');
