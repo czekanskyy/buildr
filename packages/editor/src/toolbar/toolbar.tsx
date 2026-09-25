@@ -1,27 +1,31 @@
+import { type ReactNode, useRef } from 'react';
 import type { BreakpointConfig } from '../app/config.ts';
-import { type MessageKey, useT } from '../messages/index.tsx';
-import { SaveStatus, usePersistenceState } from '../persistence/index.ts';
-import { useShortcutHint } from '../shortcuts/index.ts';
-import { useEditor, useEditorState } from '../store/index.ts';
-import { Button, Icon, IconButton } from '../ui/index.ts';
+import { usePersistenceState } from '../persistence/index.ts';
 import { PanelToggle } from './panel-toggles.tsx';
-
-const BREAKPOINT_LABELS: Readonly<Record<string, MessageKey>> = {
-  desktop: 'toolbar.breakpoint.desktop',
-  tablet: 'toolbar.breakpoint.tablet',
-  mobile: 'toolbar.breakpoint.mobile',
-};
+import { ToolbarCentre } from './toolbar-centre.tsx';
+import { ToolbarLeft } from './toolbar-left.tsx';
+import { ToolbarRight } from './toolbar-right.tsx';
+import { useOverflowLevel } from './use-overflow-level.ts';
+import type { Zoom } from './zoom-menu.tsx';
 
 export interface ToolbarProps {
-  /** The document's title, shown between the link back and the breakpoint switcher. */
+  /** The document's title, shown after the link back. */
   readonly title: string;
+  /** Draft or published, as a pill next to the title. */
+  readonly status?: 'draft' | 'published' | undefined;
   readonly breakpoints: readonly BreakpointConfig[];
   readonly breakpoint: string;
   readonly onBreakpointChange: (id: string) => void;
+  /** The canvas zoom (`host.setZoom`); `fit` when left out. */
+  readonly zoom?: Zoom | undefined;
+  /** Changes the canvas zoom; the zoom menu is left out without it. */
+  readonly onZoomChange?: ((zoom: Zoom) => void) | undefined;
   /** The page in the CMS's admin (`adapter.cmsUrl`); the link is left out without it. */
   readonly cmsUrl?: string | undefined;
   /** The version history in the CMS; the link is left out without it. */
   readonly historyUrl?: string | undefined;
+  /** The locale and sample pickers, rendered on the right between the save status and Preview. */
+  readonly pickers?: ReactNode;
   /** Flushes the save and opens the preview (PB-091). */
   readonly onPreview?: (() => void) | undefined;
   /** Opens the publish dialog (PB-088). */
@@ -31,87 +35,53 @@ export interface ToolbarProps {
 }
 
 /**
- * The editor's primary actions (docs/editor.md#toolbar-pb-083): back to the CMS, the title, the
- * breakpoint switcher, undo and redo, the save status, preview and publish. It reads the store and
- * the persistence controller from context; the shortcuts show in the tooltips.
+ * What changes as the row runs out of room, in order (a step is taken only when the content
+ * overflows): 1 the version history moves into the more menu, 2 the save text becomes icon only,
+ * 3 the link back to the CMS moves into the more menu, 4 the title may shrink.
+ */
+const COLLAPSE = { versions: 1, saveText: 2, cms: 3, title: 4 } as const;
+
+/**
+ * The editor's primary actions (docs/editor.md#toolbar-pb-083) in three zones: the link back, title
+ * and status on the left; screen size and zoom in the centre; undo/redo, save status, pickers,
+ * Preview, Publish and the more menu on the right. It reads the store and the persistence
+ * controller from context; the shortcuts show in the tooltips.
  */
 export function Toolbar(props: ToolbarProps) {
-  const t = useT();
-  const store = useEditor();
-  const canUndo = useEditorState((state) => state.canUndo);
-  const canRedo = useEditorState((state) => state.canRedo);
-  const readOnly = useEditorState((state) => state.readOnly);
+  const row = useRef<HTMLDivElement>(null);
+  const level = useOverflowLevel(row, COLLAPSE.title);
   const status = usePersistenceState((state) => state.status);
-  const undoHint = useShortcutHint('edit.undo');
-  const redoHint = useShortcutHint('edit.redo');
-  const { breakpoints, breakpoint } = props;
+  const cmsMoved = level >= COLLAPSE.cms;
 
   return (
-    <>
+    <div className="bd-toolbar-row" ref={row} data-level={level}>
       <PanelToggle side="left" />
-      {props.cmsUrl !== undefined && (
-        <a className="bd-button bd-toolbar-link" href={props.cmsUrl}>
-          <Icon name="arrow-left" /> {t('toolbar.back')}
-        </a>
-      )}
-      <h1 className="bd-toolbar-title">{props.title}</h1>
-      <fieldset className="bd-breakpoints" aria-label={t('toolbar.breakpoints')}>
-        {breakpoints.map((item) => {
-          const key = BREAKPOINT_LABELS[item.id];
-          return (
-            <Button
-              key={item.id}
-              variant={item.id === breakpoint ? 'primary' : 'ghost'}
-              aria-pressed={item.id === breakpoint}
-              title={`${item.width}px`}
-              onClick={() => props.onBreakpointChange(item.id)}
-            >
-              {key === undefined ? item.id : t(key)}
-            </Button>
-          );
-        })}
-      </fieldset>
-      <fieldset className="bd-toolbar-group" aria-label={t('toolbar.history')}>
-        <IconButton
-          label={t('shortcut.undo')}
-          hint={undoHint}
-          icon="undo-2"
-          variant="ghost"
-          disabled={!canUndo || readOnly}
-          onClick={() => store.undo()}
-        />
-        <IconButton
-          label={t('shortcut.redo')}
-          hint={redoHint}
-          icon="redo-2"
-          variant="ghost"
-          disabled={!canRedo || readOnly}
-          onClick={() => store.redo()}
-        />
-      </fieldset>
+      <ToolbarLeft
+        title={props.title}
+        status={props.status}
+        cmsUrl={cmsMoved ? undefined : props.cmsUrl}
+      />
       <span className="bd-toolbar-spacer" />
-      <SaveStatus />
-      {props.historyUrl !== undefined && (
-        <a className="bd-button bd-toolbar-link" data-variant="ghost" href={props.historyUrl}>
-          {t('toolbar.versions')}
-        </a>
-      )}
-      <Button onClick={props.onPreview} disabled={props.onPreview === undefined}>
-        {t('toolbar.preview')}
-      </Button>
-      <Button
-        variant="primary"
-        onClick={props.onPublish}
-        disabled={
-          props.onPublish === undefined ||
-          props.canPublish === false ||
-          readOnly ||
-          status === 'conflict'
-        }
-      >
-        {t('toolbar.publish')}
-      </Button>
+      <ToolbarCentre
+        breakpoints={props.breakpoints}
+        breakpoint={props.breakpoint}
+        onBreakpointChange={props.onBreakpointChange}
+        zoom={props.zoom}
+        onZoomChange={props.onZoomChange}
+      />
+      <span className="bd-toolbar-spacer" />
+      <ToolbarRight
+        pickers={props.pickers}
+        status={status}
+        onPreview={props.onPreview}
+        onPublish={props.onPublish}
+        canPublish={props.canPublish}
+        compactSave={level >= COLLAPSE.saveText}
+        historyUrl={props.historyUrl}
+        historyInMenu={level >= COLLAPSE.versions}
+        moreCmsUrl={cmsMoved ? props.cmsUrl : undefined}
+      />
       <PanelToggle side="right" />
-    </>
+    </div>
   );
 }

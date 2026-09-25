@@ -4,5 +4,8 @@ export type { PublishDialogProps } from './publish-dialog.tsx';
 export { PublishDialog } from './publish-dialog.tsx';
 export type { SamplePickerProps } from './sample-picker.tsx';
 export { DEFAULT_SAMPLE, SamplePicker } from './sample-picker.tsx';
+export type { ThemePreference, ThemeState } from './theme.tsx';
+export { THEME_STORAGE_KEY, ThemeProvider, useTheme, useThemePreference } from './theme.tsx';
 export type { ToolbarProps } from './toolbar.tsx';
 export { Toolbar } from './toolbar.tsx';
+export type { Zoom } from './zoom-menu.tsx';

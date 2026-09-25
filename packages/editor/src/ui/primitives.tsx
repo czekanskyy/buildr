@@ -8,6 +8,7 @@ import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, Ref } from 'react';
 import { useT } from '../messages/index.tsx';
 import { Icon, type IconName } from './icon.tsx';
+import { usePortalContainer } from './portal.tsx';
 
 const cx = (...parts: (string | undefined | false)[]) => parts.filter(Boolean).join(' ');
 
@@ -70,6 +71,7 @@ export interface SelectProps {
 }
 
 export function Select({ value, onValueChange, options, label, disabled }: SelectProps) {
+  const portal = usePortalContainer();
   return (
     <SelectPrimitive.Root
       value={value}
@@ -82,7 +84,7 @@ export function Select({ value, onValueChange, options, label, disabled }: Selec
           <Icon name="chevron-down" />
         </SelectPrimitive.Icon>
       </SelectPrimitive.Trigger>
-      <SelectPrimitive.Portal>
+      <SelectPrimitive.Portal container={portal}>
         <SelectPrimitive.Content className="bd-select-content" position="popper" sideOffset={4}>
           <SelectPrimitive.Viewport>
             {options.map((option) => (
@@ -149,17 +151,36 @@ export interface PopoverProps {
   readonly children: ReactNode;
   readonly open?: boolean;
   readonly onOpenChange?: (open: boolean) => void;
+  /** Extra class on the floating panel (a menu-like popover drops the default padding). */
+  readonly contentClassName?: string;
+  readonly align?: 'start' | 'center' | 'end';
+  /** The accessible name of the panel. */
+  readonly label?: string;
 }
 
-export function Popover({ trigger, children, open, onOpenChange }: PopoverProps) {
+export function Popover({
+  trigger,
+  children,
+  open,
+  onOpenChange,
+  contentClassName,
+  align,
+  label,
+}: PopoverProps) {
+  const portal = usePortalContainer();
   return (
     <PopoverPrimitive.Root
       {...(open !== undefined ? { open } : {})}
       {...(onOpenChange !== undefined ? { onOpenChange } : {})}
     >
       <PopoverPrimitive.Trigger asChild>{trigger}</PopoverPrimitive.Trigger>
-      <PopoverPrimitive.Portal>
-        <PopoverPrimitive.Content className="bd-popover" sideOffset={6}>
+      <PopoverPrimitive.Portal container={portal}>
+        <PopoverPrimitive.Content
+          className={cx('bd-popover', contentClassName)}
+          sideOffset={6}
+          {...(align !== undefined ? { align } : {})}
+          {...(label !== undefined ? { 'aria-label': label } : {})}
+        >
           {children}
         </PopoverPrimitive.Content>
       </PopoverPrimitive.Portal>
@@ -193,9 +214,10 @@ export function Dialog({
   hideClose,
 }: DialogProps) {
   const t = useT();
+  const portal = usePortalContainer();
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
-      <DialogPrimitive.Portal>
+      <DialogPrimitive.Portal container={portal}>
         <DialogPrimitive.Overlay className="bd-dialog-overlay" />
         <DialogPrimitive.Content
           className="bd-dialog"
@@ -235,11 +257,12 @@ export interface TooltipProps {
 }
 
 export function Tooltip({ content, children }: TooltipProps) {
+  const portal = usePortalContainer();
   return (
     <TooltipPrimitive.Provider delayDuration={400}>
       <TooltipPrimitive.Root>
         <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
-        <TooltipPrimitive.Portal>
+        <TooltipPrimitive.Portal container={portal}>
           <TooltipPrimitive.Content className="bd-tooltip" sideOffset={6}>
             {content}
           </TooltipPrimitive.Content>
@@ -292,10 +315,11 @@ export interface ContextMenuProps {
 }
 
 export function ContextMenu({ children, items, label }: ContextMenuProps) {
+  const portal = usePortalContainer();
   return (
     <ContextMenuPrimitive.Root>
       <ContextMenuPrimitive.Trigger asChild>{children}</ContextMenuPrimitive.Trigger>
-      <ContextMenuPrimitive.Portal>
+      <ContextMenuPrimitive.Portal container={portal}>
         <ContextMenuPrimitive.Content className="bd-menu bd-portal" aria-label={label}>
           {items.map((item) => (
             <ContextMenuPrimitive.Item

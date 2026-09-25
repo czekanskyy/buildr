@@ -13,6 +13,7 @@ import {
   Input,
   NumberUnitInput,
   Popover,
+  PortalContainerProvider,
   SegmentedControl,
   Select,
   stepNumberText,
@@ -181,6 +182,22 @@ describe('UI primitives', () => {
     expect(document.body.textContent).not.toContain('inside');
     await act(async () => container.querySelector('button')?.click());
     expect(document.body.textContent).toContain('inside');
+  });
+
+  it('floating layers render inside the portal container, so they inherit its theme', async () => {
+    const themed = document.createElement('div');
+    themed.setAttribute('data-theme', 'dark');
+    document.body.append(themed);
+    await show(
+      <PortalContainerProvider container={themed}>
+        <Popover trigger={<Button>Open</Button>}>
+          <p>inside</p>
+        </Popover>
+      </PortalContainerProvider>,
+    );
+    await act(async () => container.querySelector('button')?.click());
+    expect(themed.textContent).toContain('inside');
+    expect(themed.closest('[data-theme=dark]')).toBe(themed);
   });
 
   it('Select shows the chosen option and names its control', async () => {
