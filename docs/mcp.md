@@ -675,3 +675,18 @@ createBuildrMcpServer({
   options: { tools: createDiscoveryTools(cache), resources: createResources(cache) },
 });
 ```
+
+### Testing agents: the scripted suite and the agent evals
+
+Two layers, kept apart on purpose (PB-145).
+
+**Scripted MCP client suite (blocking, in CI).** `apps/example-next-payload/e2e/mcp/scenarios.spec.ts` is an MCP client without a model: it makes the tool calls an agent would make, over Streamable HTTP as a seeded agent user (role `author`, API key), and builds MVP scenarios 1 (landing page from templates), 2 (company page: card grid, list, badge, divider, contact), 4 (blog listing), 6 (contact form) and 7 (a Polish page translated into English through `update_node` with `locale`). For each it asserts zero validation and accessibility errors from `validate`, then opens the saved draft in the visual editor with Playwright (no errors in the Issues panel, every node of the agent's document is a row of the Layers tree) and on the draft preview route (`/buildr/preview`). A draft is not public: a visitor gets `404`. The English address of a page (a localized slug) is a person's step, so scenario 7 sets it through Payload's REST API like the editor tests do.
+
+```sh
+BUILDR_MCP=1 pnpm --filter @buildr/example-next-payload e2e         # everything, agents on (what CI runs)
+BUILDR_MCP=1 pnpm --filter @buildr/example-next-payload e2e e2e/mcp # only the agent suite
+```
+
+`e2e/serve.mjs` seeds the agent user (`SEED_AGENT_EMAIL`, `SEED_AGENT_API_KEY`, only with `BUILDR_MCP=1`) and lifts the write rate limit (`BUILDR_MCP_RATE_LIMIT`). Without `BUILDR_MCP=1` the suite is skipped and the default e2e run is unchanged.
+
+**Agent evals (manual / nightly, never blocking).** `packages/mcp/evals` lets a real model build briefs through the stdio server and scores the saved page by rules (validates, a11y clean, uses templates, no empty slots, both languages). It runs only with `ANTHROPIC_API_KEY`; scores are tracked over time, not asserted. See [its README](../packages/mcp/evals/README.md).
