@@ -10,7 +10,7 @@ export const Checkbox = defineComponent({
   description: 'A tick box.',
   keywords: ['tick', 'consent', 'agree', 'boolean', 'form'],
   category: 'forms',
-  icon: 'circle-check',
+  icon: 'square-check',
   contentCategories: ['flow', 'phrasing', 'form-control'],
   parents: { requireAncestor: ['buildr/form'] },
   props: checkboxProps,

@@ -10,7 +10,7 @@ export const Divider = defineComponent({
   description: 'A horizontal rule.',
   keywords: ['hr', 'rule', 'separator', 'line'],
   category: 'content',
-  icon: 'minus',
+  icon: 'separator-horizontal',
   contentCategories: ['flow'],
   props: dividerProps,
   styles: { groups: ['size', 'spacing', 'border', 'effects', 'visibility'] },

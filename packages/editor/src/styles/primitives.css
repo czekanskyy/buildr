@@ -1,0 +1,342 @@
+/*
+ * UI primitives: buttons, inputs, selects, popovers, tooltips, tabs, toggles, dialogs, menus,
+ * transient notices and the drag ghost. States follow docs/design/identity.md section 6.
+ */
+
+.bd-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bd-space-1);
+  min-height: var(--bd-control-md);
+  padding: 0 var(--bd-space-4);
+  border: var(--bd-border-width) solid var(--bd-border-strong);
+  border-radius: var(--bd-radius-md);
+  background: var(--bd-surface);
+  color: var(--bd-text);
+  font: inherit;
+  cursor: pointer;
+  transition: background-color var(--bd-duration-fast) var(--bd-ease);
+}
+
+.bd-button:hover:not(:disabled) {
+  background: var(--bd-surface-hover);
+}
+
+.bd-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.bd-button[data-variant="primary"] {
+  background: var(--bd-primary);
+  border-color: var(--bd-primary);
+  color: var(--bd-primary-text);
+  font-weight: var(--bd-weight-semibold);
+}
+
+.bd-button[data-variant="primary"]:hover:not(:disabled) {
+  background: var(--bd-primary-hover);
+  border-color: var(--bd-primary-hover);
+}
+
+.bd-button[data-variant="ghost"] {
+  border-color: transparent;
+  background: transparent;
+}
+
+.bd-button[data-variant="ghost"]:hover:not(:disabled) {
+  background: var(--bd-surface-hover);
+}
+
+.bd-button[data-variant="danger"] {
+  color: var(--bd-danger);
+}
+
+.bd-icon {
+  display: block;
+  flex: none;
+}
+
+.bd-icon-button {
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  width: var(--bd-control-md);
+}
+
+.bd-input,
+.bd-select-trigger {
+  min-height: var(--bd-control-md);
+  width: 100%;
+  padding: 0 var(--bd-space-3);
+  border: var(--bd-border-width) solid var(--bd-border-strong);
+  border-radius: var(--bd-radius-md);
+  background: var(--bd-surface);
+  color: var(--bd-text);
+  font: inherit;
+}
+
+.bd-input::placeholder {
+  color: var(--bd-text-subtle);
+}
+
+.bd-input:disabled {
+  background: var(--bd-surface-2);
+  color: var(--bd-text-subtle);
+}
+
+.bd-select-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bd-space-3);
+  cursor: pointer;
+}
+
+.bd-popover,
+.bd-select-content,
+.bd-tooltip {
+  z-index: 1000;
+  border-radius: var(--bd-radius-md);
+  background: var(--bd-surface);
+  color: var(--bd-text);
+  box-shadow: var(--bd-elevation-2);
+}
+
+.bd-popover {
+  padding: var(--bd-space-4);
+  border-radius: var(--bd-radius-lg);
+}
+
+.bd-tooltip {
+  padding: var(--bd-space-1) var(--bd-space-3);
+  font-size: var(--bd-text-sm);
+  line-height: var(--bd-leading-sm);
+}
+
+.bd-select-item {
+  padding: var(--bd-space-1) var(--bd-space-4);
+  cursor: pointer;
+  outline: none;
+}
+
+.bd-select-item[data-highlighted] {
+  background: var(--bd-surface-hover);
+}
+
+.bd-tabs-list {
+  display: flex;
+  gap: var(--bd-space-1);
+  border-bottom: var(--bd-border-width) solid var(--bd-border);
+  padding: 0 var(--bd-space-3);
+}
+
+.bd-tab {
+  padding: var(--bd-space-3) var(--bd-space-4);
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--bd-text-muted);
+  font: inherit;
+  font-size: var(--bd-text-sm);
+  line-height: var(--bd-leading-sm);
+  font-weight: var(--bd-weight-medium);
+  cursor: pointer;
+}
+
+.bd-tab[data-state="active"] {
+  color: var(--bd-text);
+  border-bottom-color: var(--bd-accent);
+}
+
+.bd-toggle {
+  min-height: var(--bd-control-md);
+  min-width: var(--bd-control-md);
+  padding: 0 var(--bd-space-3);
+  border: var(--bd-border-width) solid var(--bd-border-strong);
+  border-radius: var(--bd-radius-md);
+  background: var(--bd-surface);
+  color: var(--bd-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.bd-toggle:hover {
+  background: var(--bd-surface-hover);
+}
+
+.bd-toggle[data-state="on"] {
+  background: var(--bd-primary);
+  border-color: var(--bd-primary);
+  color: var(--bd-primary-text);
+}
+
+.bd-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: var(--bd-overlay);
+}
+
+.bd-dialog {
+  position: fixed;
+  z-index: 1000;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(480px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  padding: var(--bd-space-5);
+  border-radius: var(--bd-radius-lg);
+  background: var(--bd-surface);
+  color: var(--bd-text);
+  box-shadow: var(--bd-elevation-3);
+}
+
+.bd-dialog-title {
+  margin: 0 0 var(--bd-space-3);
+  font-size: var(--bd-text-lg);
+  line-height: var(--bd-leading-lg);
+  font-weight: var(--bd-weight-semibold);
+  letter-spacing: var(--bd-tracking-tight);
+}
+
+.bd-dialog-description {
+  margin: 0 0 var(--bd-space-4);
+  color: var(--bd-text-muted);
+}
+
+.bd-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  /* stylelint-disable-next-line declaration-property-value-disallowed-list -- 1px clip hack */
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.bd-menu {
+  z-index: 1000;
+  min-width: 160px;
+  padding: var(--bd-space-1);
+  border-radius: var(--bd-radius-md);
+  background: var(--bd-surface);
+  color: var(--bd-text);
+  box-shadow: var(--bd-elevation-2);
+}
+.bd-menu-item {
+  padding: var(--bd-space-1) var(--bd-space-4);
+  border-radius: var(--bd-radius-sm);
+  cursor: pointer;
+  outline: none;
+}
+.bd-menu-item[data-highlighted] {
+  background: var(--bd-surface-hover);
+}
+.bd-menu-item[data-disabled] {
+  opacity: 0.4;
+  cursor: default;
+}
+.bd-menu-item[data-danger]:not([data-highlighted]) {
+  color: var(--bd-danger);
+}
+
+/* Keyboard shortcuts help (PB-084) */
+.buildr-editor .bd-shortcut-row,
+.bd-shortcut-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--bd-space-5);
+  padding: var(--bd-space-0) 0;
+}
+.bd-shortcut-help dt,
+.bd-shortcut-help dd {
+  margin: 0;
+}
+.bd-shortcut-help kbd {
+  font-family: inherit;
+  padding: 0 var(--bd-space-1);
+  border: var(--bd-border-width) solid var(--bd-border-strong);
+  border-radius: var(--bd-radius-sm);
+}
+
+.buildr-editor .bd-conflict-actions,
+.bd-conflict-actions {
+  display: flex;
+  gap: var(--bd-space-3);
+  justify-content: flex-end;
+}
+
+/* Clipboard notice (PB-085); notices are unified in PB-129 */
+.buildr-editor .bd-clipboard-notice {
+  position: fixed;
+  bottom: var(--bd-space-4);
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 480px;
+}
+
+.buildr-editor .bd-clipboard-notice:not(:empty) {
+  padding: var(--bd-space-3) var(--bd-space-4);
+  background: var(--bd-surface);
+  border-radius: var(--bd-radius-md);
+  box-shadow: var(--bd-elevation-2);
+}
+
+.buildr-editor .bd-clipboard-detail {
+  color: var(--bd-text-muted);
+}
+
+/* Drag and drop (PB-086) */
+.bd-drag-shield {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  cursor: grabbing;
+}
+.bd-drag-shield[data-over="canvas"] {
+  cursor: copy;
+}
+.bd-drag-ghost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1001;
+  pointer-events: none;
+  padding: var(--bd-space-1) var(--bd-space-4);
+  border-radius: var(--bd-radius-md);
+  background: var(--bd-accent);
+  color: var(--bd-accent-text);
+  font-size: var(--bd-text-sm);
+  line-height: var(--bd-leading-sm);
+  box-shadow: var(--bd-elevation-2);
+  will-change: transform;
+}
+.bd-drag-ghost[data-allowed="false"] {
+  background: var(--bd-danger);
+  color: var(--bd-danger-text);
+}
+.bd-drag-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.bd-dnd-destinations {
+  list-style: none;
+  margin: var(--bd-space-3) 0;
+  padding: 0;
+  max-height: 50vh;
+  overflow: auto;
+}
+.bd-dnd-destinations .bd-button {
+  width: 100%;
+  justify-content: flex-start;
+}

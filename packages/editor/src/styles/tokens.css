@@ -1,0 +1,213 @@
+/*
+ * Design tokens (PB-119, values from docs/design/identity.md). This is the ONLY file where
+ * literal colours, spacing and font sizes may appear (stylelint enforces it).
+ *
+ * Theme: dark follows `prefers-color-scheme` unless the host sets `data-theme="light"`;
+ * `data-theme="dark"` forces dark; `data-theme="system"` (or no attribute) follows the system.
+ * Radix renders menus, popovers, dialogs and tooltips into a portal on <body>, outside
+ * `.buildr-editor`, so those layers receive the tokens through their own selectors.
+ */
+
+.buildr-editor,
+.bd-portal,
+.bd-popover,
+.bd-select-content,
+.bd-tooltip,
+.bd-dialog,
+.bd-dialog-overlay,
+.bd-menu {
+  /* Colour roles: light */
+  color-scheme: light;
+  --bd-bg: #e9ebf0;
+  --bd-surface: #ffffff;
+  --bd-surface-2: #f4f5f8;
+  --bd-surface-hover: #eceef2;
+  --bd-surface-selected: #e2e8fc;
+  --bd-border: #dfe1e7;
+  --bd-border-strong: #7d8391;
+  --bd-text: #1c1d22;
+  --bd-text-muted: #4b5060;
+  --bd-text-subtle: #5c6373;
+  --bd-accent: #3f5ae0;
+  --bd-accent-hover: #3049bd;
+  --bd-accent-soft: #e2e8fc;
+  --bd-accent-text: #ffffff;
+  --bd-focus: #3f5ae0;
+  --bd-danger: #c0282d;
+  --bd-danger-soft: #fdecec;
+  --bd-danger-text: #ffffff;
+  --bd-warning: #8a5300;
+  --bd-warning-soft: #fff3d9;
+  --bd-success: #1b7a3d;
+  --bd-success-soft: #e4f5ea;
+  --bd-info: #0b6b80;
+  --bd-info-soft: #e0f3f7;
+  --bd-toolbar: #1c1d22;
+  --bd-toolbar-hover: #33363f;
+  --bd-toolbar-border: #33363f;
+  --bd-toolbar-text: #f0f1f4;
+  --bd-toolbar-muted: #b4b9c6;
+  --bd-toolbar-focus: #a3b3f4;
+  --bd-shadow: rgb(18 19 23 / 14%);
+  --bd-overlay: rgb(18 19 23 / 50%);
+  --bd-primary: #3f5ae0;
+  --bd-primary-text: #ffffff;
+  --bd-primary-hover: #3049bd;
+  --bd-canvas-page: #ffffff;
+
+  /* Type */
+  --bd-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --bd-font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  --bd-text-xs: 11px;
+  --bd-leading-xs: 16px;
+  --bd-text-sm: 12px;
+  --bd-leading-sm: 16px;
+  --bd-text-md: 13px;
+  --bd-leading-md: 20px;
+  --bd-text-lg: 15px;
+  --bd-leading-lg: 24px;
+  --bd-weight-regular: 400;
+  --bd-weight-medium: 500;
+  --bd-weight-semibold: 600;
+  --bd-tracking-tight: -0.005em;
+
+  /* Spacing: 2 4 6 8 12 16 20 24 32 */
+  --bd-space-0: 2px;
+  --bd-space-1: 4px;
+  --bd-space-2: 6px;
+  --bd-space-3: 8px;
+  --bd-space-4: 12px;
+  --bd-space-5: 16px;
+  --bd-space-6: 20px;
+  --bd-space-7: 24px;
+  --bd-space-8: 32px;
+
+  /* Shape and sizes */
+  --bd-radius-sm: 4px;
+  --bd-radius-md: 6px;
+  --bd-radius-lg: 8px;
+  --bd-radius-pill: 999px;
+  --bd-radius: var(--bd-radius-md);
+  --bd-control-sm: 24px;
+  --bd-control-md: 28px;
+  --bd-control-lg: 32px;
+  --bd-panel-header: 40px;
+  --bd-statusbar-height: 28px;
+  --bd-toolbar-height: 44px;
+  --bd-issues-height: 160px;
+  --bd-border-width: 1px;
+  --bd-splitter-size: 6px;
+  --bd-left: 280px;
+  --bd-right: 320px;
+
+  /* Elevation: floating layers only */
+  --bd-elevation-1: 0 1px 2px var(--bd-shadow);
+  --bd-elevation-2: 0 4px 12px var(--bd-shadow), 0 0 0 1px var(--bd-border);
+  --bd-elevation-3: 0 12px 32px var(--bd-shadow), 0 0 0 1px var(--bd-border);
+
+  /* Motion */
+  --bd-duration-fast: 100ms;
+  --bd-duration-base: 160ms;
+  --bd-ease: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  .buildr-editor:not([data-theme="light"]),
+  .bd-portal,
+  .bd-popover,
+  .bd-select-content,
+  .bd-tooltip,
+  .bd-dialog,
+  .bd-dialog-overlay,
+  .bd-menu {
+    color-scheme: dark;
+    --bd-bg: #121317;
+    --bd-surface: #1c1d22;
+    --bd-surface-2: #23252b;
+    --bd-surface-hover: #2b2d35;
+    --bd-surface-selected: #243268;
+    --bd-border: #33363f;
+    --bd-border-strong: #7d8391;
+    --bd-text: #ecedf1;
+    --bd-text-muted: #b0b5c2;
+    --bd-text-subtle: #9fa5b4;
+    --bd-accent: #8ea2f5;
+    --bd-accent-hover: #a3b3f4;
+    --bd-accent-soft: #25325f;
+    --bd-accent-text: #0f1636;
+    --bd-focus: #a3b3f4;
+    --bd-danger: #ff8a8a;
+    --bd-danger-soft: #3d2226;
+    --bd-danger-text: #2a0b0e;
+    --bd-warning: #f2b552;
+    --bd-warning-soft: #3a2e15;
+    --bd-success: #5fce85;
+    --bd-success-soft: #173325;
+    --bd-info: #5fc9dc;
+    --bd-info-soft: #143038;
+    --bd-toolbar: #0c0d10;
+    --bd-toolbar-hover: #26282f;
+    --bd-toolbar-border: #26282f;
+    --bd-toolbar-text: #ecedf1;
+    --bd-toolbar-muted: #a9aebb;
+    --bd-toolbar-focus: #a3b3f4;
+    --bd-shadow: rgb(0 0 0 / 55%);
+    --bd-overlay: rgb(0 0 0 / 60%);
+    --bd-primary: #3f5ae0;
+    --bd-primary-text: #ffffff;
+    --bd-primary-hover: #3049bd;
+  }
+}
+
+.buildr-editor[data-theme="dark"] {
+  color-scheme: dark;
+  --bd-bg: #121317;
+  --bd-surface: #1c1d22;
+  --bd-surface-2: #23252b;
+  --bd-surface-hover: #2b2d35;
+  --bd-surface-selected: #243268;
+  --bd-border: #33363f;
+  --bd-border-strong: #7d8391;
+  --bd-text: #ecedf1;
+  --bd-text-muted: #b0b5c2;
+  --bd-text-subtle: #9fa5b4;
+  --bd-accent: #8ea2f5;
+  --bd-accent-hover: #a3b3f4;
+  --bd-accent-soft: #25325f;
+  --bd-accent-text: #0f1636;
+  --bd-focus: #a3b3f4;
+  --bd-danger: #ff8a8a;
+  --bd-danger-soft: #3d2226;
+  --bd-danger-text: #2a0b0e;
+  --bd-warning: #f2b552;
+  --bd-warning-soft: #3a2e15;
+  --bd-success: #5fce85;
+  --bd-success-soft: #173325;
+  --bd-info: #5fc9dc;
+  --bd-info-soft: #143038;
+  --bd-toolbar: #0c0d10;
+  --bd-toolbar-hover: #26282f;
+  --bd-toolbar-border: #26282f;
+  --bd-toolbar-text: #ecedf1;
+  --bd-toolbar-muted: #a9aebb;
+  --bd-toolbar-focus: #a3b3f4;
+  --bd-shadow: rgb(0 0 0 / 55%);
+  --bd-overlay: rgb(0 0 0 / 60%);
+  --bd-primary: #3f5ae0;
+  --bd-primary-text: #ffffff;
+  --bd-primary-hover: #3049bd;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .buildr-editor,
+  .bd-portal,
+  .bd-popover,
+  .bd-select-content,
+  .bd-tooltip,
+  .bd-dialog,
+  .bd-dialog-overlay,
+  .bd-menu {
+    --bd-duration-fast: 0ms;
+    --bd-duration-base: 0ms;
+  }
+}

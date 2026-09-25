@@ -3,7 +3,7 @@ import { type MessageKey, useT } from '../messages/index.tsx';
 import { SaveStatus, usePersistenceState } from '../persistence/index.ts';
 import { useShortcutHint } from '../shortcuts/index.ts';
 import { useEditor, useEditorState } from '../store/index.ts';
-import { Button, IconButton } from '../ui/index.ts';
+import { Button, Icon, IconButton } from '../ui/index.ts';
 
 const BREAKPOINT_LABELS: Readonly<Record<string, MessageKey>> = {
   desktop: 'toolbar.breakpoint.desktop',
@@ -49,7 +49,7 @@ export function Toolbar(props: ToolbarProps) {
     <>
       {props.cmsUrl !== undefined && (
         <a className="bd-button bd-toolbar-link" href={props.cmsUrl}>
-          <span aria-hidden="true">←</span> {t('toolbar.back')}
+          <Icon name="arrow-left" /> {t('toolbar.back')}
         </a>
       )}
       <h1 className="bd-toolbar-title">{props.title}</h1>
@@ -73,7 +73,7 @@ export function Toolbar(props: ToolbarProps) {
         <IconButton
           label={t('shortcut.undo')}
           hint={undoHint}
-          icon="↶"
+          icon="undo-2"
           variant="ghost"
           disabled={!canUndo || readOnly}
           onClick={() => store.undo()}
@@ -81,7 +81,7 @@ export function Toolbar(props: ToolbarProps) {
         <IconButton
           label={t('shortcut.redo')}
           hint={redoHint}
-          icon="↷"
+          icon="redo-2"
           variant="ghost"
           disabled={!canRedo || readOnly}
           onClick={() => store.redo()}

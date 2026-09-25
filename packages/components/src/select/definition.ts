@@ -10,7 +10,7 @@ export const Select = defineComponent({
   description: 'A drop-down list.',
   keywords: ['dropdown', 'choice', 'options', 'form'],
   category: 'forms',
-  icon: 'chevron-down',
+  icon: 'square-chevron-down',
   contentCategories: ['flow', 'phrasing', 'form-control'],
   parents: { requireAncestor: ['buildr/form'] },
   props: selectProps,

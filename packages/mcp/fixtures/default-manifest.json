@@ -1,5 +1,5 @@
 {
-  "hash": "34tv8n7flmewq",
+  "hash": "12vxfyi94j7zq",
   "components": {
     "buildr/page": {
       "type": "buildr/page",
@@ -43,7 +43,7 @@
       "description": "A band of the page: a landmark or a plain wrapper, with an optional background image.",
       "keywords": ["band", "region", "hero", "wrapper"],
       "category": "layout",
-      "icon": "layout-grid",
+      "icon": "rectangle-horizontal",
       "contentCategories": ["flow", "landmark"],
       "props": {
         "as": {
@@ -106,7 +106,7 @@
       "description": "Keeps its content to a readable width, centred.",
       "keywords": ["width", "column", "centre", "max-width"],
       "category": "layout",
-      "icon": "maximize",
+      "icon": "square-dashed",
       "contentCategories": ["flow"],
       "props": {
         "width": {
@@ -144,7 +144,7 @@
       "description": "Lays its children out in a row or a column.",
       "keywords": ["flex", "row", "column", "group", "flexbox"],
       "category": "layout",
-      "icon": "list",
+      "icon": "rows-3",
       "contentCategories": ["flow"],
       "props": {
         "role": {
@@ -226,7 +226,7 @@
       "description": "A title. Its level is the outline; its look is a style.",
       "keywords": ["title", "h1", "h2", "headline"],
       "category": "content",
-      "icon": "hash",
+      "icon": "heading",
       "contentCategories": ["flow", "heading"],
       "props": {
         "text": {
@@ -266,7 +266,7 @@
       "description": "A paragraph or a short piece of text.",
       "keywords": ["paragraph", "copy", "body", "span"],
       "category": "content",
-      "icon": "file-text",
+      "icon": "type",
       "contentCategories": ["flow", "phrasing"],
       "props": {
         "text": {
@@ -305,7 +305,7 @@
       "description": "Formatted content: headings, paragraphs, lists, quotes and links.",
       "keywords": ["content", "article", "body", "wysiwyg", "post"],
       "category": "content",
-      "icon": "file-text",
+      "icon": "pilcrow",
       "contentCategories": ["flow"],
       "props": {
         "content": {
@@ -335,7 +335,7 @@
       "description": "A button, or a link that looks like one.",
       "keywords": ["cta", "call to action", "submit", "link"],
       "category": "content",
-      "icon": "send",
+      "icon": "mouse-pointer-click",
       "contentCategories": ["flow", "phrasing", "interactive"],
       "props": {
         "label": {
@@ -670,7 +670,7 @@
       "label": "List item",
       "description": "One entry of a list.",
       "category": "content",
-      "icon": "minus",
+      "icon": "dot",
       "contentCategories": ["list-item"],
       "parents": {
         "allow": ["buildr/list", "buildr/loop"]
@@ -714,7 +714,7 @@
       "description": "A horizontal rule.",
       "keywords": ["hr", "rule", "separator", "line"],
       "category": "content",
-      "icon": "minus",
+      "icon": "separator-horizontal",
       "contentCategories": ["flow"],
       "props": {
         "decorative": {
@@ -779,7 +779,7 @@
       "description": "A boxed piece of content with media, text and actions.",
       "keywords": ["box", "tile", "teaser", "panel"],
       "category": "ui",
-      "icon": "layout-grid",
+      "icon": "panel-top",
       "contentCategories": ["flow"],
       "props": {
         "href": {
@@ -988,7 +988,7 @@
       "description": "Repeats a template for every entry of a list or a collection.",
       "keywords": ["repeat", "list", "collection", "query", "cms", "each"],
       "category": "cms",
-      "icon": "refresh-cw",
+      "icon": "repeat",
       "contentCategories": ["flow"],
       "props": {
         "source": {
@@ -1102,7 +1102,7 @@
       "description": "A form whose submissions are collected by the site.",
       "keywords": ["contact", "newsletter", "submit", "fields"],
       "category": "forms",
-      "icon": "send",
+      "icon": "clipboard-list",
       "contentCategories": ["flow"],
       "props": {
         "successMessage": {
@@ -1154,7 +1154,7 @@
       "description": "A single-line text field.",
       "keywords": ["text field", "email", "phone", "form"],
       "category": "forms",
-      "icon": "pencil",
+      "icon": "text-cursor-input",
       "contentCategories": ["flow", "phrasing", "form-control"],
       "parents": {
         "requireAncestor": ["buildr/form"]
@@ -1247,7 +1247,7 @@
       "description": "A multi-line text field.",
       "keywords": ["message", "comment", "long text", "form"],
       "category": "forms",
-      "icon": "file-text",
+      "icon": "text-align-start",
       "contentCategories": ["flow", "phrasing", "form-control"],
       "parents": {
         "requireAncestor": ["buildr/form"]
@@ -1341,7 +1341,7 @@
       "description": "A drop-down list.",
       "keywords": ["dropdown", "choice", "options", "form"],
       "category": "forms",
-      "icon": "chevron-down",
+      "icon": "square-chevron-down",
       "contentCategories": ["flow", "phrasing", "form-control"],
       "parents": {
         "requireAncestor": ["buildr/form"]
@@ -1450,7 +1450,7 @@
       "description": "A tick box.",
       "keywords": ["tick", "consent", "agree", "boolean", "form"],
       "category": "forms",
-      "icon": "circle-check",
+      "icon": "square-check",
       "contentCategories": ["flow", "phrasing", "form-control"],
       "parents": {
         "requireAncestor": ["buildr/form"]

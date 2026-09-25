@@ -4,7 +4,7 @@ import { useManifest } from '../../app/manifest.tsx';
 import { useDragPress } from '../../dnd/index.ts';
 import { useT } from '../../messages/index.tsx';
 import { useEditor, useEditorState } from '../../store/index.ts';
-import { Input } from '../../ui/index.ts';
+import { ComponentIcon, Input } from '../../ui/index.ts';
 import {
   filterItems,
   groupByCategory,
@@ -146,7 +146,7 @@ export function InsertPanel() {
                                 aria-hidden="true"
                                 data-icon={item.icon}
                               >
-                                {item.label.charAt(0)}
+                                <ComponentIcon meta={{ icon: item.icon }} size="md" />
                               </span>
                             )}
                             <span className="bd-insert-label">{item.label}</span>

@@ -12,7 +12,7 @@ export const Container = defineComponent({
   description: 'Keeps its content to a readable width, centred.',
   keywords: ['width', 'column', 'centre', 'max-width'],
   category: 'layout',
-  icon: 'maximize',
+  icon: 'square-dashed',
   contentCategories: ['flow'],
   props: containerProps,
   slots: { default: { label: 'Content', axis: 'vertical' } },

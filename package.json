@@ -14,7 +14,8 @@
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
     "check:boundaries": "depcruise --config .dependency-cruiser.cjs packages apps tooling/smoke",
-    "lint": "biome check .",
+    "lint": "biome check . && pnpm lint:css",
+    "lint:css": "stylelint \"packages/editor/src/**/*.css\"",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
     "prepare": "lefthook install",
@@ -26,6 +27,7 @@
     "@changesets/cli": "^2.29.7",
     "dependency-cruiser": "^18.4.0",
     "lefthook": "2.1.14",
+    "stylelint": "^17.15.0",
     "turbo": "2.11.2",
     "typescript": "7.0.2",
     "vitest": "5.0.1"

@@ -1,3 +1,5 @@
+export type { ComponentIconProps, IconName, IconProps } from './icon.tsx';
+export { ComponentIcon, componentIconNames, Icon } from './icon.tsx';
 export type {
   ButtonProps,
   ContextMenuProps,

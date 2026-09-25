@@ -15,7 +15,7 @@ export const Loop = defineComponent({
   description: 'Repeats a template for every entry of a list or a collection.',
   keywords: ['repeat', 'list', 'collection', 'query', 'cms', 'each'],
   category: 'cms',
-  icon: 'refresh-cw',
+  icon: 'repeat',
   contentCategories: ['flow'],
   props: loopProps,
   slots: {

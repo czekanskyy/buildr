@@ -1,0 +1,308 @@
+/*
+ * Shell: toolbar, the three-column body, panels, splitters, the issues region, the canvas
+ * host and the composed application frame. Panel anatomy and splitters are refined in PB-122.
+ */
+
+.bd-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-space-3);
+  flex: none;
+  height: var(--bd-toolbar-height);
+  padding: 0 var(--bd-space-4);
+  background: var(--bd-toolbar);
+  border-bottom: var(--bd-border-width) solid var(--bd-toolbar-border);
+  color: var(--bd-toolbar-text);
+}
+
+/* Controls on the dark toolbar use the toolbar tokens in both themes. */
+.buildr-editor .bd-toolbar .bd-button,
+.buildr-editor .bd-toolbar .bd-toggle,
+.buildr-editor .bd-toolbar .bd-select-trigger {
+  border-color: var(--bd-toolbar-border);
+  background: transparent;
+  color: var(--bd-toolbar-text);
+}
+
+.buildr-editor .bd-toolbar .bd-button[data-variant="ghost"] {
+  border-color: transparent;
+}
+
+.buildr-editor .bd-toolbar .bd-button:hover:not(:disabled),
+.buildr-editor .bd-toolbar .bd-toggle:hover,
+.buildr-editor .bd-toolbar .bd-select-trigger:hover {
+  background: var(--bd-toolbar-hover);
+}
+
+.buildr-editor .bd-toolbar .bd-button[data-variant="primary"],
+.buildr-editor .bd-toolbar .bd-toggle[data-state="on"] {
+  border-color: var(--bd-primary);
+  background: var(--bd-primary);
+  color: var(--bd-primary-text);
+}
+
+.buildr-editor .bd-toolbar .bd-button[data-variant="primary"]:hover:not(:disabled) {
+  border-color: var(--bd-primary-hover);
+  background: var(--bd-primary-hover);
+}
+
+.buildr-editor .bd-toolbar .bd-save-status {
+  color: var(--bd-toolbar-muted);
+}
+
+.buildr-editor .bd-toolbar .bd-save-status[data-status="error"],
+.buildr-editor .bd-toolbar .bd-save-status[data-status="conflict"] {
+  color: var(--bd-toolbar-text);
+}
+
+.bd-body {
+  display: grid;
+  flex: 1;
+  min-height: 0;
+  grid-template-columns: var(--bd-left) var(--bd-splitter-size) minmax(0, 1fr) var(
+      --bd-splitter-size
+    ) var(--bd-right);
+}
+
+.bd-panel {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  background: var(--bd-surface);
+}
+
+.bd-canvas {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  background: var(--bd-bg);
+}
+
+.bd-splitter {
+  cursor: col-resize;
+  background: var(--bd-border);
+  touch-action: none;
+}
+
+.bd-splitter:hover,
+.bd-splitter[data-dragging="true"] {
+  background: var(--bd-accent);
+}
+
+.bd-issues {
+  flex: none;
+  border-top: var(--bd-border-width) solid var(--bd-border);
+  background: var(--bd-surface);
+}
+
+.bd-issues[data-open="true"] {
+  height: var(--bd-issues-height);
+  overflow: auto;
+}
+
+.bd-issues-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-space-3);
+  padding: var(--bd-space-1) var(--bd-space-4);
+}
+
+.bd-heading {
+  margin: 0;
+  padding: var(--bd-space-3) var(--bd-space-4);
+  font-size: var(--bd-text-sm);
+  line-height: var(--bd-leading-sm);
+  font-weight: var(--bd-weight-semibold);
+  color: var(--bd-text-muted);
+}
+
+.buildr-editor .bd-breadcrumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bd-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.buildr-editor .bd-breadcrumbs li + li::before {
+  content: "›";
+  margin-right: var(--bd-space-1);
+  color: var(--bd-text-subtle);
+}
+.buildr-editor .bd-breadcrumb {
+  border: 0;
+  background: none;
+  padding: var(--bd-space-0) var(--bd-space-1);
+  border-radius: var(--bd-radius-sm);
+  color: var(--bd-text-muted);
+  font: inherit;
+  cursor: pointer;
+}
+.buildr-editor .bd-breadcrumb:hover {
+  background: var(--bd-surface-hover);
+}
+.buildr-editor .bd-breadcrumb[aria-current="location"] {
+  color: var(--bd-text);
+  font-weight: var(--bd-weight-semibold);
+}
+
+.buildr-editor .bd-canvas-host {
+  position: relative;
+  height: 100%;
+  overflow: auto;
+}
+.buildr-editor .bd-canvas-stage {
+  margin: 0 auto;
+  height: 100%;
+}
+.buildr-editor .bd-canvas-frame {
+  display: block;
+  height: 100%;
+  border: 0;
+  background: var(--bd-canvas-page);
+  transform-origin: top left;
+}
+.buildr-editor .bd-canvas-frame[data-status="connecting"] {
+  visibility: hidden;
+}
+.buildr-editor .bd-canvas-status,
+.buildr-editor .bd-canvas-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bd-space-4);
+  margin: 0;
+  padding: var(--bd-space-5);
+  text-align: center;
+  color: var(--bd-text-muted);
+}
+.buildr-editor .bd-canvas-error {
+  background: var(--bd-surface-2);
+  color: var(--bd-text);
+}
+.buildr-editor .bd-canvas-detail {
+  font-size: var(--bd-text-sm);
+  line-height: var(--bd-leading-sm);
+  color: var(--bd-text-muted);
+}
+
+/* Toolbar (PB-083) */
+.buildr-editor .bd-toolbar-title {
+  min-width: 4ch;
+  margin: 0;
+  font-size: var(--bd-text-lg);
+  line-height: var(--bd-leading-lg);
+  font-weight: var(--bd-weight-semibold);
+  letter-spacing: var(--bd-tracking-tight);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.buildr-editor .bd-toolbar-spacer {
+  flex: 1;
+}
+
+.buildr-editor .bd-breakpoints,
+.buildr-editor .bd-toolbar-group {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  display: inline-flex;
+  gap: var(--bd-space-0);
+}
+
+.buildr-editor .bd-toolbar-link {
+  text-decoration: none;
+}
+
+/* Toolbar sizing: controls keep their natural width, only the title and the spacer give way. */
+.buildr-editor .bd-toolbar > :not(.bd-toolbar-title):not(.bd-toolbar-spacer) {
+  flex: none;
+  white-space: nowrap;
+}
+
+.buildr-editor .bd-toolbar .bd-select-trigger {
+  width: auto;
+  min-width: 88px;
+}
+
+.buildr-editor .bd-save-status,
+.bd-save-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bd-space-3);
+  font-size: var(--bd-text-sm);
+  line-height: var(--bd-leading-sm);
+}
+
+.bd-save-status[data-status="error"],
+.bd-save-status[data-status="conflict"] {
+  color: var(--bd-danger);
+}
+
+/* Preview (PB-091) */
+.bd-preview {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  background: var(--bd-bg);
+}
+.bd-preview-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--bd-space-3) var(--bd-space-4);
+  border-bottom: var(--bd-border-width) solid var(--bd-border);
+}
+.bd-preview-frame {
+  flex: 1;
+  width: 100%;
+  border: 0;
+}
+
+/* The composed editor (EditorApp) */
+.buildr-editor .bd-app-canvas {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.buildr-editor .bd-app-canvas > .bd-canvas-host {
+  flex: 1;
+  min-height: 0;
+}
+.buildr-editor .bd-app-status {
+  margin: 0;
+  padding: var(--bd-space-7);
+  color: var(--bd-text-muted);
+}
+.buildr-editor .bd-app-notice {
+  position: fixed;
+  bottom: var(--bd-space-5);
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: var(--bd-space-3) var(--bd-space-4);
+  border-radius: var(--bd-radius-md);
+  background: var(--bd-surface);
+  color: var(--bd-text);
+  box-shadow: var(--bd-elevation-2);
+}
+
+/* Content language (PB-115) */
+.buildr-editor .bd-translation-banner {
+  margin: 0;
+  padding: var(--bd-space-3) var(--bd-space-4);
+  font-size: var(--bd-text-sm);
+  line-height: var(--bd-leading-sm);
+  border-bottom: var(--bd-border-width) solid var(--bd-border);
+  background: var(--bd-surface-2);
+  color: var(--bd-text-muted);
+}

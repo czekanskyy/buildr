@@ -37,7 +37,7 @@ const meta = (type: string, overrides: Partial<ComponentMeta> = {}): ComponentMe
 const registry = createRegistryMeta({
   components: [
     meta('buildr/page', { capabilities: { root: true }, slots: { default: {} } }),
-    meta('buildr/box', { label: 'Box', slots: { default: {} } }),
+    meta('buildr/box', { label: 'Box', icon: 'layout-grid', slots: { default: {} } }),
     meta('buildr/text', { label: 'Text', props: { text: p.text({ default: '' }) } }),
   ],
 });
@@ -161,6 +161,22 @@ describe('LayersPanel', () => {
     expect(hero?.getAttribute('aria-setsize')).toBe('2');
     expect(hero?.getAttribute('aria-expanded')).toBe('false');
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it('draws an svg icon per row: the named one, or the neutral box, never a letter', async () => {
+    await mount();
+    const icons = items().map((item) => item.querySelector('.bd-layer-icon svg'));
+    expect(icons.every((svg) => svg !== null)).toBe(true);
+    expect(icons.map((svg) => svg?.getAttribute('data-icon'))).toEqual([
+      'box',
+      'layout-grid',
+      'layout-grid',
+    ]);
+    expect(icons[0]?.getAttribute('data-fallback')).toBe('true');
+    expect(icons[2]?.hasAttribute('data-fallback')).toBe(false);
+    expect(items().every((item) => item.querySelector('.bd-layer-icon')?.textContent === '')).toBe(
+      true,
+    );
   });
 
   it('shows badges with accessible names', async () => {
