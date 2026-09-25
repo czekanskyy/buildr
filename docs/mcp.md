@@ -84,7 +84,7 @@ const server = createBuildrMcpServer({ backend, options: { allowPublish: false }
 await server.connect(transport); // stdio, Streamable HTTP, or an in-memory pair in tests
 ```
 
-`createBuildrMcpServer` returns an MCP SDK `Server` with server info (`buildr`, the package version), the `tools` capability and the instructions string (`DEFAULT_INSTRUCTIONS`, replaceable via `options.instructions`). It serves the tools passed as `options.tools` (an `McpTool`: name, description, JSON Schema input, annotations, `handler(args, { backend, options })`); the built-in tools are added by PB-136 - PB-138. A throwing handler yields a generic error result, never its message. The host owns the transport.
+`createBuildrMcpServer` returns an MCP SDK `Server` with server info (`buildr`, the package version), the `tools` capability and the instructions string (`DEFAULT_INSTRUCTIONS`, replaceable via `options.instructions`). It serves the tools passed as `options.tools` (an `McpTool`: name, description, JSON Schema input, annotations, `handler(args, { backend, options })`); the built-in tools are added by PB-136 - PB-138. `options.resources` (an `McpResources`: `templates`, `list`, `read`; SDK-free) enables the `resources` capability. A throwing handler yields a generic error result, never its message. The host owns the transport.
 
 ## Edit sessions
 
@@ -163,6 +163,20 @@ Tree input accepts a plain JSON prop value as shorthand for a static `Value` (`{
 ### Test fixture
 
 `@buildr/mcp` must not depend on `@buildr/components` (ADR-024), yet the snapshot tests cover every built-in component. The default manifest is committed as `packages/mcp/fixtures/default-manifest.json` and read by the test kit; `packages/components/src/mcp-manifest-fixture.test.ts` fails when it is stale. Regenerate with `UPDATE_MCP_FIXTURE=1 pnpm test --filter @buildr/components`.
+
+## Discovery tools and resources
+
+`createDiscoveryTools(cache?)` returns the read-only tools an agent uses to learn what it can build (all `readOnlyHint: true`): `list_components` (grouped by category, one line each), `describe_component`, `list_templates`, `describe_template` (outline of the instantiated fragment, optional `variant`), `get_style_reference` (where styles live, the value grammar per property, theme tokens, breakpoints; optional `group`), `get_data_schema` and `list_media` (alt texts are labelled as data). Components and templates come from the backend manifest, so custom ones are discoverable without any extra backend method.
+
+`createResources(cache?)` serves the same text as MCP resources: `buildr://components/{type}`, `buildr://templates/{id}` (every component and template is also listed) and `buildr://style-reference`. Pass one `createDiscoveryCache()` to both: rendered answers are cached per manifest hash and rebuilt when the manifest changes.
+
+```ts
+const cache = createDiscoveryCache();
+createBuildrMcpServer({
+  backend,
+  options: { tools: createDiscoveryTools(cache), resources: createResources(cache) },
+});
+```
 
 ## Tool reference
 
