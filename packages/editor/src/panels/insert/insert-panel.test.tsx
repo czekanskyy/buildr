@@ -264,3 +264,73 @@ describe('InsertPanel', () => {
     }
   });
 });
+
+describe('InsertPanel (PB-125)', () => {
+  const press = (target: EventTarget, key: string) =>
+    act(async () => {
+      target.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+    });
+  const named = (name: string) =>
+    [...container.querySelectorAll('button')].find(
+      (b) => b.getAttribute('aria-label') === name,
+    ) as HTMLElement;
+
+  it('collapses a category and reports it with aria-expanded and a count', async () => {
+    await mount();
+    const toggle = [...container.querySelectorAll('.bd-insert-category-toggle')].find((b) =>
+      b.textContent?.includes('Layout'),
+    ) as HTMLElement;
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(toggle.querySelector('.bd-insert-count')?.textContent).toBe('1');
+    await act(async () => toggle.click());
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    const list = container.querySelector(`#${toggle.getAttribute('aria-controls')}`) as HTMLElement;
+    expect(list.hidden).toBe(true);
+    await act(async () => toggle.click());
+    expect(list.hidden).toBe(false);
+  });
+
+  it('remembers the list view', async () => {
+    localStorage.removeItem('buildr.editor.insert.view');
+    await mount();
+    expect(container.querySelector('.bd-insert')?.getAttribute('data-view')).toBe('grid');
+    await act(async () => named('List view').click());
+    expect(container.querySelector('.bd-insert')?.getAttribute('data-view')).toBe('list');
+    expect(named('List view').getAttribute('aria-pressed')).toBe('true');
+    expect(localStorage.getItem('buildr.editor.insert.view')).toBe('list');
+    act(() => root.unmount());
+    root = createRoot(container);
+    await mount();
+    expect(container.querySelector('.bd-insert')?.getAttribute('data-view')).toBe('list');
+    localStorage.removeItem('buildr.editor.insert.view');
+  });
+
+  it('focuses the search on "/" only when no text field has focus', async () => {
+    await mount();
+    const search = container.querySelector('input') as HTMLInputElement;
+    await press(document.body, '/');
+    expect(document.activeElement).toBe(search);
+    // While typing in the search the key is just a character.
+    const typed = new KeyboardEvent('keydown', { key: '/', bubbles: true, cancelable: true });
+    search.dispatchEvent(typed);
+    expect(typed.defaultPrevented).toBe(false);
+    const other = document.createElement('input');
+    document.body.append(other);
+    other.focus();
+    await press(other, '/');
+    expect(document.activeElement).toBe(other);
+  });
+
+  it('clears the search with the clear button', async () => {
+    await mount();
+    const input = container.querySelector('input') as HTMLInputElement;
+    await act(async () => {
+      const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+      set?.call(input, 'zzzz');
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await act(async () => named('Clear search').click());
+    expect(input.value).toBe('');
+    expect(container.querySelector('.bd-insert-empty')).toBeNull();
+  });
+});
