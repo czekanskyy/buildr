@@ -40,7 +40,7 @@ const TYPE_HELP =
 const PROPS_HELP =
   'Props by name. A plain JSON value is a static value ({"text": "Hello"}); use {"kind":"binding","path":"post.title"} to bind data or {"kind":"expression","expr":"..."} for a formula; {"kind":"static","value":"Hallo"} with "l10n":{"pl":"Cześć"} carries translations. Unset props use the component default.';
 const STYLES_HELP =
-  'Style overrides for this node: {"base": {"spacing": {"padding": {"top": "$space.4"}}}, "bp": {"md": {...}}, "state": {"hover": {...}}}. See get_style_reference for groups and properties.';
+  'Style overrides for this node: {"base": {"spacing": {"padding": {"top": "$space.4"}}}, "bp": {"mobile": {...}}, "state": {"hover": {...}}}. See get_style_reference for groups and properties.';
 const CHILDREN_HELP =
   'Shorthand for slots.default: the ordered children of the default slot. Use either "children" or "slots".';
 const SLOTS_HELP =

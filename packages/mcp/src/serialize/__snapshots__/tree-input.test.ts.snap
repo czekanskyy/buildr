@@ -46,7 +46,7 @@ exports[`the tree JSON Schema > is described, ready for a tool definition 1`] = 
         },
         "styles": {
           "additionalProperties": {},
-          "description": "Style overrides for this node: {"base": {"spacing": {"padding": {"top": "$space.4"}}}, "bp": {"md": {...}}, "state": {"hover": {...}}}. See get_style_reference for groups and properties.",
+          "description": "Style overrides for this node: {"base": {"spacing": {"padding": {"top": "$space.4"}}}, "bp": {"mobile": {...}}, "state": {"hover": {...}}}. See get_style_reference for groups and properties.",
           "propertyNames": {
             "type": "string",
           },
@@ -131,7 +131,7 @@ exports[`the tree JSON Schema > is described, ready for a tool definition 1`] = 
     },
     "styles": {
       "additionalProperties": {},
-      "description": "Style overrides for this node: {"base": {"spacing": {"padding": {"top": "$space.4"}}}, "bp": {"md": {...}}, "state": {"hover": {...}}}. See get_style_reference for groups and properties.",
+      "description": "Style overrides for this node: {"base": {"spacing": {"padding": {"top": "$space.4"}}}, "bp": {"mobile": {...}}, "state": {"hover": {...}}}. See get_style_reference for groups and properties.",
       "propertyNames": {
         "type": "string",
       },

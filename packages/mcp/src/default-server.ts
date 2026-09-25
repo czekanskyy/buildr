@@ -1,4 +1,5 @@
 import type { McpBackend } from './backend.ts';
+import { createPrompts } from './prompts/index.ts';
 import { createDiscoveryCache, createResources } from './resources/index.ts';
 import {
   type BuildrMcpServer,
@@ -14,7 +15,7 @@ import { createBuildrTools } from './tools/index.ts';
 
 export interface CreateFullBuildrMcpServerInput {
   readonly backend: McpBackend;
-  /** `tools` and `resources` are filled in when absent; everything else is passed through. */
+  /** `tools`, `resources` and `prompts` are filled in when absent; everything else is passed through. */
   readonly options?: BuildrMcpServerOptions;
   /** TTL, per-user cap, clock, ... of the session store. */
   readonly sessions?: Omit<SessionStoreOptions, 'backend'>;
@@ -28,8 +29,8 @@ export interface FullBuildrMcpServer {
 
 /**
  * The wiring hosts use (stdio CLI, the site's HTTP route): a session store, the complete tool list
- * (`createBuildrTools`) and the `buildr://` resources on top of `createBuildrMcpServer`. Explicit
- * `options.tools` / `options.resources` win, so a host can still serve a custom set.
+ * (`createBuildrTools`) the `buildr://` resources and the prompts on top of `createBuildrMcpServer`. Explicit
+ * `options.tools` / `options.resources` / `options.prompts` win, so a host can still serve a custom set.
  */
 export async function createBuildrMcpServerWithTools(
   input: CreateFullBuildrMcpServerInput,
@@ -47,6 +48,10 @@ export async function createBuildrMcpServerWithTools(
       ...(options.allowPublish === undefined ? {} : { allowPublish: options.allowPublish }),
     }));
   const resources = options.resources ?? createResources(discoveryCache);
-  const server = createBuildrMcpServer({ backend, options: { ...options, tools, resources } });
+  const prompts = options.prompts ?? createPrompts();
+  const server = createBuildrMcpServer({
+    backend,
+    options: { ...options, tools, resources, prompts },
+  });
   return { server, store };
 }

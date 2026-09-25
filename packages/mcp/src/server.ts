@@ -5,6 +5,8 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import {
   CallToolRequestSchema,
   ErrorCode,
+  GetPromptRequestSchema,
+  ListPromptsRequestSchema,
   ListResourcesRequestSchema,
   ListResourceTemplatesRequestSchema,
   ListToolsRequestSchema,
@@ -44,6 +46,8 @@ export interface BuildrMcpServerOptions {
   readonly tools?: readonly McpTool[];
   /** Resources to serve (PB-136); enables the `resources` capability. */
   readonly resources?: McpResources;
+  /** Prompts to serve (PB-144); enables the `prompts` capability. */
+  readonly prompts?: readonly McpPrompt[];
 }
 
 export interface CreateBuildrMcpServerInput {
@@ -115,6 +119,45 @@ export interface McpResources {
   read(uri: string, context: McpToolContext): Promise<McpResourceContents | null>;
 }
 
+export interface McpPromptArgument {
+  readonly name: string;
+  readonly description?: string;
+  readonly required?: boolean;
+}
+
+/** One message of a prompt: text, or an embedded resource (e.g. the agent guide). */
+export interface McpPromptMessage {
+  readonly role: 'user' | 'assistant';
+  readonly content:
+    | { readonly type: 'text'; readonly text: string }
+    | {
+        readonly type: 'resource';
+        readonly resource: {
+          readonly uri: string;
+          readonly mimeType?: string;
+          readonly text: string;
+        };
+      };
+}
+
+export interface McpPromptResult {
+  readonly description?: string;
+  readonly messages: readonly McpPromptMessage[];
+}
+
+/**
+ * The SDK-free prompt seam: a named, parameterised starting message the user picks in their client
+ * (a slash command in most). Arguments are strings, as in MCP; the server checks that the required
+ * ones are present before `get` runs.
+ */
+export interface McpPrompt {
+  readonly name: string;
+  readonly title?: string;
+  readonly description?: string;
+  readonly arguments?: readonly McpPromptArgument[];
+  get(args: Readonly<Record<string, string>>, context: McpToolContext): Promise<McpPromptResult>;
+}
+
 /**
  * Creates the MCP server for one backend. It carries server info, capabilities and the
  * instructions string, and serves the tools passed in `options.tools` (none by default). The host
@@ -129,6 +172,12 @@ export function createBuildrMcpServer(input: CreateBuildrMcpServerInput): Buildr
       throw new Error(`createBuildrMcpServer: duplicate tool "${tool.name}"`);
     tools.set(tool.name, tool);
   }
+  const prompts = new Map<string, McpPrompt>();
+  for (const prompt of options.prompts ?? []) {
+    if (prompts.has(prompt.name))
+      throw new Error(`createBuildrMcpServer: duplicate prompt "${prompt.name}"`);
+    prompts.set(prompt.name, prompt);
+  }
   const context: McpToolContext = { backend: input.backend, options };
 
   const server = new Server(
@@ -137,6 +186,7 @@ export function createBuildrMcpServer(input: CreateBuildrMcpServerInput): Buildr
       capabilities: {
         tools: { listChanged: false },
         ...(options.resources ? { resources: { listChanged: false } } : {}),
+        ...(options.prompts ? { prompts: { listChanged: false } } : {}),
       },
       instructions: options.instructions ?? DEFAULT_INSTRUCTIONS,
     },
@@ -194,6 +244,48 @@ export function createBuildrMcpServer(input: CreateBuildrMcpServerInput): Buildr
         );
       }
       return { contents: [{ ...contents }] };
+    });
+  }
+
+  if (options.prompts) {
+    server.setRequestHandler(ListPromptsRequestSchema, async () => ({
+      prompts: [...prompts.values()].map((prompt) => ({
+        name: prompt.name,
+        ...(prompt.title ? { title: prompt.title } : {}),
+        ...(prompt.description ? { description: prompt.description } : {}),
+        ...(prompt.arguments ? { arguments: prompt.arguments.map((arg) => ({ ...arg })) } : {}),
+      })),
+    }));
+    server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+      const prompt = prompts.get(request.params.name);
+      if (!prompt) {
+        throw new SdkMcpError(
+          ErrorCode.InvalidParams,
+          `Unknown prompt: ${request.params.name.slice(0, 200)}`,
+        );
+      }
+      const args = request.params.arguments ?? {};
+      const missing = (prompt.arguments ?? []).filter(
+        (arg) => arg.required && (args[arg.name] ?? '').trim() === '',
+      );
+      if (missing.length > 0) {
+        throw new SdkMcpError(
+          ErrorCode.InvalidParams,
+          `Missing required argument(s): ${missing.map((arg) => arg.name).join(', ')}`,
+        );
+      }
+      try {
+        const result = await prompt.get(args, context);
+        return {
+          ...(result.description ? { description: result.description } : {}),
+          messages: result.messages.map((message) => ({
+            role: message.role,
+            content: { ...message.content },
+          })),
+        };
+      } catch {
+        throw new SdkMcpError(ErrorCode.InternalError, 'The prompt could not be built.');
+      }
     });
   }
 

@@ -12,10 +12,12 @@ export {
   createBuildrMcpServerWithTools,
   type FullBuildrMcpServer,
 } from './default-server.ts';
+export { createPrompts } from './prompts/index.ts';
 export {
   createDiscoveryCache,
   createResources,
   type DiscoveryCache,
+  GUIDE_URI,
 } from './resources/index.ts';
 export * from './serialize/index.ts';
 export {
@@ -25,6 +27,10 @@ export {
   createBuildrMcpServer,
   DEFAULT_INSTRUCTIONS,
   DEFAULT_SERVER_NAME,
+  type McpPrompt,
+  type McpPromptArgument,
+  type McpPromptMessage,
+  type McpPromptResult,
   type McpResourceContents,
   type McpResourceDefinition,
   type McpResources,
@@ -50,4 +56,5 @@ export {
   type QualityIssue,
   type QualityReport,
 } from './tools/quality.ts';
+export { renderToolReference } from './tools/reference.ts';
 export { MCP_SERVER_VERSION } from './version.ts';
