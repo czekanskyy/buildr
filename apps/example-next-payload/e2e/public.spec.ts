@@ -123,6 +123,19 @@ test('blog pagination shows the second page', async ({ page }) => {
   await expect(page.getByRole('article')).toHaveCount(2);
 });
 
+test('a blog card links to its post in the same language', async ({ page }) => {
+  await page.goto('/en/blog');
+  const first = page.getByRole('article').first().getByRole('link');
+  await expect(first).toHaveAttribute('href', /^\/en\/blog\/post-\d+$/);
+  await first.click();
+  await expect(page).toHaveURL(/\/en\/blog\/post-\d+$/);
+  await page.goto('/pl/blog');
+  await expect(page.getByRole('article').first().getByRole('link')).toHaveAttribute(
+    'href',
+    /^\/pl\/blog\/wpis-\d+$/,
+  );
+});
+
 test('a static page ships no builder code', async ({ page }) => {
   const scripts: string[] = [];
   page.on('response', (response) => {
