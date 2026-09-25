@@ -67,6 +67,8 @@ jobs:
         run: pnpm --filter @buildr/example-next-payload e2e
         env:
           CI: 'true'
+          # Agents on: the scripted MCP client suite (e2e/mcp) runs with the rest.
+          BUILDR_MCP: '1'
       - name: Upload the report
         if: failure()
         uses: actions/upload-artifact@v4
