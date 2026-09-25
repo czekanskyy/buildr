@@ -1,9 +1,11 @@
 import type { CollectionConfig } from 'payload';
 import { isAdmin, isSignedIn } from '../access.ts';
+import { MCP_ENABLED } from '../buildr.options.ts';
 
 export const Users: CollectionConfig = {
   slug: 'users',
-  auth: true,
+  // API keys let an agent user connect to the MCP endpoint; only when BUILDR_MCP=1.
+  auth: MCP_ENABLED ? { useAPIKey: true } : true,
   admin: { useAsTitle: 'email' },
   access: { read: isSignedIn, create: isAdmin, update: isSignedIn, delete: isAdmin },
   fields: [

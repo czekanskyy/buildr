@@ -2,7 +2,12 @@ import type { CollectionConfig, Config, Plugin } from 'payload';
 import { formSubmissionsCollection } from './collections/form-submissions.ts';
 import { templatesCollection } from './collections/templates.ts';
 import { buildrEndpoints } from './endpoints/index.ts';
-import { buildrFields, RESERVED_FIELDS, TEMPLATES_COLLECTION } from './fields.ts';
+import {
+  buildrFields,
+  RESERVED_FIELDS,
+  RESERVED_MCP_FIELDS,
+  TEMPLATES_COLLECTION,
+} from './fields.ts';
 import { isAllowedRecipient } from './forms/notify.ts';
 import { createMemoryRateLimiter } from './forms/rate-limit.ts';
 import { layoutHook } from './hooks/layout-hook.ts';
@@ -52,8 +57,30 @@ export function buildrPlugin(input: BuildrPluginOptions): Plugin {
   const rateLimiter = forms.enabled
     ? (forms.rateLimiter ?? createMemoryRateLimiter(forms.rateLimit))
     : undefined;
+  const writeLimiter = options.mcp.enabled
+    ? (options.mcp.rateLimiter ?? createMemoryRateLimiter(options.mcp.rateLimit))
+    : undefined;
   return (config: Config): Config => {
     const collections = config.collections ?? [];
+    const authSlugs = collections.filter((c) => Boolean(c.auth)).map((c) => c.slug);
+    if (options.mcp.enabled) {
+      const keyed = collections.some(
+        (c) => typeof c.auth === 'object' && Boolean(c.auth.useAPIKey),
+      );
+      if (!keyed) {
+        throw new Error(
+          'buildrPlugin: mcp.enabled needs an auth collection with `auth: { useAPIKey: true }` (a dedicated, low-privilege agent user; see docs/mcp.md)',
+        );
+      }
+      const unknown = (options.mcp.collections ?? []).find(
+        (slug) => options.collections[slug] === undefined,
+      );
+      if (unknown !== undefined) {
+        throw new Error(
+          `buildrPlugin: mcp.collections "${unknown}" is not a configured builder collection`,
+        );
+      }
+    }
     for (const slug of Object.keys(options.collections)) {
       const collection = collections.find((candidate) => candidate.slug === slug);
       if (collection === undefined) {
@@ -65,7 +92,10 @@ export function buildrPlugin(input: BuildrPluginOptions): Plugin {
         );
       }
       const taken = (collection.fields as { name?: string }[]).find(
-        (field) => field.name !== undefined && RESERVED_FIELDS.includes(field.name),
+        (field) =>
+          field.name !== undefined &&
+          (RESERVED_FIELDS.includes(field.name) ||
+            (options.mcp.enabled && RESERVED_MCP_FIELDS.includes(field.name))),
       );
       if (taken !== undefined) {
         throw new Error(
@@ -83,7 +113,10 @@ export function buildrPlugin(input: BuildrPluginOptions): Plugin {
     }
     return {
       ...config,
-      endpoints: [...(config.endpoints ?? []), ...buildrEndpoints({ options, rateLimiter })],
+      endpoints: [
+        ...(config.endpoints ?? []),
+        ...buildrEndpoints({ options, rateLimiter, writeLimiter }),
+      ],
       collections: [
         ...collections.map((collection) => {
           const own = options.collections[collection.slug];
@@ -97,6 +130,7 @@ export function buildrPlugin(input: BuildrPluginOptions): Plugin {
                 editorRoute: options.routes.editor,
                 guard: writeGuard,
                 layoutHook: layoutHook(options),
+                updatedBy: options.mcp.enabled ? authSlugs : undefined,
               }),
             ],
           };

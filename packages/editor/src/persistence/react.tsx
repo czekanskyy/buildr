@@ -40,9 +40,20 @@ export function PersistenceProvider(props: {
     window.addEventListener('beforeunload', warn);
     return () => window.removeEventListener('beforeunload', warn);
   }, [controller]);
+  useEffect(() => {
+    // Coming back to the tab or window is when somebody else's save is most likely to matter.
+    const check = () => void controller.checkExternal();
+    window.addEventListener('focus', check);
+    document.addEventListener('visibilitychange', check);
+    return () => {
+      window.removeEventListener('focus', check);
+      document.removeEventListener('visibilitychange', check);
+    };
+  }, [controller]);
   return (
     <PersistenceContext.Provider value={controller}>
       {children}
+      <ExternalChangeBanner />
       <ConflictDialog />
     </PersistenceContext.Provider>
   );
@@ -55,6 +66,27 @@ export function useSaveAction(): () => boolean {
     void controller.saveNow();
     return true;
   };
+}
+
+/** A non-blocking notice that somebody else saved while this document is unchanged: one click reloads. */
+function ExternalChangeBanner() {
+  const t = useT();
+  const controller = usePersistence();
+  const external = usePersistenceState((state) => state.external);
+  return (
+    <div className="bd-external-banner" role="status">
+      {external !== undefined && (
+        <>
+          <span>
+            {external.updatedBy === undefined
+              ? t('external.banner')
+              : t('external.banner.by').replace('{name}', external.updatedBy)}
+          </span>
+          <Button onClick={() => void controller.reload()}>{t('external.reload')}</Button>
+        </>
+      )}
+    </div>
+  );
 }
 
 function ConflictDialog() {

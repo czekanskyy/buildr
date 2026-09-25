@@ -25,7 +25,15 @@
       "types": "./src/next/index.ts",
       "default": "./src/next/index.ts"
     },
-    "./package.json": "./package.json"
+    "./mcp": {
+      "types": "./src/mcp/index.ts",
+      "default": "./src/mcp/index.ts"
+    },
+    "./package.json": "./package.json",
+    "./mcp/route": {
+      "types": "./src/mcp/route.ts",
+      "default": "./src/mcp/route.ts"
+    }
   },
   "publishConfig": {
     "access": "public",
@@ -50,7 +58,15 @@
         "types": "./dist/next/index.d.ts",
         "default": "./dist/next/index.js"
       },
-      "./package.json": "./package.json"
+      "./mcp": {
+        "types": "./dist/mcp/index.d.ts",
+        "default": "./dist/mcp/index.js"
+      },
+      "./package.json": "./package.json",
+      "./mcp/route": {
+        "types": "./dist/mcp/route.d.ts",
+        "default": "./dist/mcp/route.js"
+      }
     }
   },
   "files": [
@@ -67,7 +83,9 @@
   },
   "peerDependencies": {
     "@buildr/editor": "workspace:*",
+    "@buildr/mcp": "workspace:*",
     "@buildr/next": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.30.1",
     "@payloadcms/ui": "^3.0.0",
     "next": "^15.0.0 || ^16.0.0",
     "payload": "^3.0.0"
@@ -76,7 +94,13 @@
     "@buildr/editor": {
       "optional": true
     },
+    "@buildr/mcp": {
+      "optional": true
+    },
     "@buildr/next": {
+      "optional": true
+    },
+    "@modelcontextprotocol/sdk": {
       "optional": true
     },
     "@payloadcms/ui": {
@@ -91,9 +115,11 @@
   },
   "devDependencies": {
     "@buildr/editor": "workspace:*",
+    "@buildr/mcp": "workspace:*",
     "@buildr/next": "workspace:*",
     "@buildr/test-utils": "workspace:*",
     "@buildr/tsconfig": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.30.1",
     "@payloadcms/db-sqlite": "3.90.1",
     "@payloadcms/ui": "3.90.1",
     "@types/node": "^22.0.0",

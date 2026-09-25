@@ -207,6 +207,39 @@ module.exports = {
       to: { path: buildrPackages(['editor']) },
     },
 
+    {
+      name: 'mcp-no-frameworks',
+      severity: 'error',
+      comment: '@buildr/mcp is CMS- and framework-agnostic (ADR-024).',
+      from: { path: '^packages/mcp/src/' },
+      to: { path: `(${['react', 'react-dom', 'next', 'payload'].map(npmPackage).join('|')})` },
+    },
+    {
+      name: 'mcp-only-core',
+      severity: 'error',
+      comment:
+        '@buildr/mcp may only depend on @buildr/core among the @buildr/* packages (ADR-024).',
+      from: { path: '^packages/mcp/src/' },
+      to: { path: buildrPackages(['react', 'components', 'editor', 'next', 'payload']) },
+    },
+    {
+      name: 'payload-mcp-backend-isolated',
+      severity: 'error',
+      comment:
+        'payload/mcp (the HTTP backend for @buildr/mcp) must not import payload, @payloadcms/* or next; only mcp/route.ts (the site route handler) may (ADR-024).',
+      from: {
+        path: '^packages/payload/src/mcp/',
+        pathNot: '^packages/payload/src/mcp/route\\.ts$',
+      },
+      to: { path: `(${['payload', '@payloadcms/.*', 'next'].map(npmPackage).join('|')})` },
+    },
+    {
+      name: 'payload-mcp-no-render-packages',
+      severity: 'error',
+      from: { path: '^packages/payload/src/mcp/' },
+      to: { path: buildrPackages(['react', 'components', 'editor']) },
+    },
+
     // --- Layers inside @buildr/core (docs/ai/architecture-rules.md, module ownership table) ---
 
     {

@@ -1,0 +1,3403 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`describeComponent over every built-in component > buildr/accordion: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "div",
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": true,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "ui",
+  "description": "Expandable sections, such as a list of questions and answers.",
+  "example": {
+    "slots": {
+      "default": [
+        {
+          "props": {
+            "summary": {
+              "kind": "static",
+              "value": "Question 1",
+            },
+          },
+          "type": "buildr/accordion-item",
+        },
+        {
+          "props": {
+            "summary": {
+              "kind": "static",
+              "value": "Question 2",
+            },
+          },
+          "type": "buildr/accordion-item",
+        },
+        {
+          "props": {
+            "summary": {
+              "kind": "static",
+              "value": "Question 3",
+            },
+          },
+          "type": "buildr/accordion-item",
+        },
+      ],
+    },
+    "type": "buildr/accordion",
+  },
+  "keywords": [
+    "faq",
+    "collapse",
+    "details",
+    "expand",
+    "toggle",
+  ],
+  "label": "Accordion",
+  "notes": [],
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+  ],
+  "props": [
+    {
+      "bindable": true,
+      "bindsTo": [
+        "boolean",
+      ],
+      "default": true,
+      "kind": "boolean",
+      "label": "Allow several open at once",
+      "localizable": false,
+      "name": "allowMultiple",
+      "required": false,
+    },
+  ],
+  "slots": [
+    {
+      "allowedChildren": [
+        "buildr/accordion-item",
+        "buildr/loop",
+      ],
+      "label": "Items",
+      "name": "default",
+    },
+  ],
+  "styleGroups": [
+    "layout",
+    "size",
+    "spacing",
+    "background",
+    "border",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/accordion",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/accordion: text description 1`] = `
+"buildr/accordion - Accordion (ui, v1)
+Expandable sections, such as a list of questions and answers.
+Props:
+- allowMultiple (boolean) default true [bindable]
+Slots:
+- default: buildr/accordion-item, buildr/loop
+Style groups: layout, size, spacing, background, border, effects, visibility
+Renders: div
+Insert into: buildr/page[default]
+Example: {"type":"buildr/accordion","slots":{"default":[{"type":"buildr/accordion-item","props":{"summary":{"kind":"static","value":"Question 1"}}},{"type":"buildr/accordion-item","props":{"summary":{"kind":"static","value":"Question 2"}}},{"type":"buildr/accordion-item","props":{"summary":{"kind":"static","value":"Question 3"}}}]}}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/accordion-item: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "details",
+    "requiresName": true,
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": false,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "ui",
+  "description": "One section of an accordion.",
+  "example": {
+    "slots": {
+      "default": [
+        {
+          "props": {
+            "summary": "Question",
+          },
+          "type": "buildr/accordion-item",
+        },
+      ],
+    },
+    "type": "buildr/accordion",
+  },
+  "label": "Accordion item",
+  "notes": [
+    "It cannot be inserted on its own; include it as a child inside a tree of buildr/accordion, buildr/loop.",
+    "It can only be placed directly inside buildr/accordion, buildr/loop.",
+    "It needs an accessible name (text, label or aria-label).",
+  ],
+  "parentRules": {
+    "allowedParents": [
+      "buildr/accordion",
+      "buildr/loop",
+    ],
+  },
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+  ],
+  "primaryProp": "summary",
+  "props": [
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "Question",
+      "kind": "text",
+      "label": "Summary",
+      "localizable": true,
+      "name": "summary",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "boolean",
+      ],
+      "default": false,
+      "kind": "boolean",
+      "label": "Open at first",
+      "localizable": false,
+      "name": "defaultOpen",
+      "required": false,
+    },
+  ],
+  "slots": [
+    {
+      "allowedChildren": [
+        "buildr/section",
+        "buildr/container",
+        "buildr/stack",
+        "buildr/grid",
+        "buildr/heading",
+        "buildr/text",
+        "buildr/rich-text",
+        "buildr/button",
+        "buildr/link",
+        "buildr/image",
+        "buildr/icon",
+        "buildr/list",
+        "buildr/divider",
+        "buildr/badge",
+        "buildr/card",
+        "buildr/accordion",
+        "buildr/loop",
+        "buildr/pagination",
+        "buildr/form",
+        "buildr/input",
+        "buildr/textarea",
+        "buildr/select",
+        "buildr/checkbox",
+      ],
+      "label": "Content",
+      "name": "default",
+    },
+  ],
+  "styleGroups": [
+    "spacing",
+    "background",
+    "border",
+    "typography",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/accordion-item",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/accordion-item: text description 1`] = `
+"buildr/accordion-item - Accordion item (ui, v1)
+One section of an accordion.
+Props:
+- summary (text) default "Question" [bindable, localizable]
+- defaultOpen (boolean) default false [bindable]
+Slots:
+- default: buildr/section, buildr/container, buildr/stack, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+Note: It cannot be inserted on its own; include it as a child inside a tree of buildr/accordion, buildr/loop.
+Note: It can only be placed directly inside buildr/accordion, buildr/loop.
+Note: It needs an accessible name (text, label or aria-label).
+Style groups: spacing, background, border, typography, effects, visibility
+Renders: details
+Insert into: buildr/page[default]
+Example: {"type":"buildr/accordion","slots":{"default":[{"type":"buildr/accordion-item","props":{"summary":"Question"}}]}}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/badge: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "span",
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": true,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "content",
+  "description": "A short status or category label.",
+  "example": {
+    "props": {
+      "text": "Badge",
+    },
+    "type": "buildr/badge",
+  },
+  "keywords": [
+    "tag",
+    "label",
+    "status",
+    "pill",
+    "chip",
+  ],
+  "label": "Badge",
+  "notes": [],
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+  ],
+  "primaryProp": "text",
+  "props": [
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "Badge",
+      "kind": "text",
+      "label": "Text",
+      "localizable": true,
+      "name": "text",
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": "neutral",
+      "kind": "select",
+      "label": "Variant",
+      "localizable": false,
+      "name": "variant",
+      "options": [
+        "neutral",
+        "primary",
+        "success",
+        "warning",
+        "danger",
+      ],
+      "required": false,
+    },
+  ],
+  "styleGroups": [
+    "typography",
+    "spacing",
+    "background",
+    "border",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/badge",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/badge: text description 1`] = `
+"buildr/badge - Badge (content, v1)
+A short status or category label.
+Props:
+- text (text) default "Badge" [bindable, localizable]
+- variant (select) default "neutral" one of "neutral" | "primary" | "success" | "warning" | "danger"
+Slots: none (a leaf component, it takes no children)
+Style groups: typography, spacing, background, border, effects, visibility
+Renders: span
+Insert into: buildr/page[default]
+Example: {"type":"buildr/badge","props":{"text":"Badge"}}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/button: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "button",
+    "requiresName": true,
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": true,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "content",
+  "description": "A button, or a link that looks like one.",
+  "example": {
+    "props": {
+      "label": "Button",
+    },
+    "type": "buildr/button",
+  },
+  "keywords": [
+    "cta",
+    "call to action",
+    "submit",
+    "link",
+  ],
+  "label": "Button",
+  "notes": [
+    "It needs an accessible name (text, label or aria-label).",
+  ],
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+  ],
+  "primaryProp": "label",
+  "props": [
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "Button",
+      "kind": "text",
+      "label": "Label",
+      "localizable": true,
+      "name": "label",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "url",
+        "link",
+        "string",
+      ],
+      "default": "",
+      "kind": "link",
+      "label": "Link",
+      "localizable": true,
+      "name": "href",
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": "button",
+      "kind": "select",
+      "label": "Type",
+      "localizable": false,
+      "name": "type",
+      "options": [
+        "button",
+        "submit",
+      ],
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": "primary",
+      "kind": "select",
+      "label": "Variant",
+      "localizable": false,
+      "name": "variant",
+      "options": [
+        "primary",
+        "secondary",
+        "outline",
+        "ghost",
+      ],
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": "md",
+      "kind": "select",
+      "label": "Size",
+      "localizable": false,
+      "name": "size",
+      "options": [
+        "sm",
+        "md",
+        "lg",
+      ],
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": "",
+      "kind": "icon",
+      "label": "Icon",
+      "localizable": false,
+      "name": "icon",
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": "start",
+      "kind": "select",
+      "label": "Icon position",
+      "localizable": false,
+      "name": "iconPosition",
+      "options": [
+        "start",
+        "end",
+      ],
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Accessible name",
+      "localizable": true,
+      "name": "ariaLabel",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "boolean",
+      ],
+      "default": false,
+      "kind": "boolean",
+      "label": "Open in a new tab",
+      "localizable": false,
+      "name": "newTab",
+      "required": false,
+    },
+  ],
+  "styleGroups": [
+    "typography",
+    "spacing",
+    "background",
+    "border",
+    "size",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/button",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/button: text description 1`] = `
+"buildr/button - Button (content, v1)
+A button, or a link that looks like one.
+Props:
+- label (text) default "Button" [bindable, localizable]
+- href (link) default "" [bindable, localizable]
+- type (select) default "button" one of "button" | "submit"
+- variant (select) default "primary" one of "primary" | "secondary" | "outline" | "ghost"
+- size (select) default "md" one of "sm" | "md" | "lg"
+- icon (icon) default ""
+- iconPosition (select) default "start" one of "start" | "end"
+- ariaLabel (text) default "" [bindable, localizable]
+- newTab (boolean) default false [bindable]
+Slots: none (a leaf component, it takes no children)
+Note: It needs an accessible name (text, label or aria-label).
+Style groups: typography, spacing, background, border, size, effects, visibility
+Renders: button
+Insert into: buildr/page[default]
+Example: {"type":"buildr/button","props":{"label":"Button"}}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/card: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "article",
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": true,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "ui",
+  "description": "A boxed piece of content with media, text and actions.",
+  "example": {
+    "type": "buildr/card",
+  },
+  "keywords": [
+    "box",
+    "tile",
+    "teaser",
+    "panel",
+  ],
+  "label": "Card",
+  "notes": [],
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+  ],
+  "props": [
+    {
+      "bindable": true,
+      "bindsTo": [
+        "url",
+        "link",
+        "string",
+      ],
+      "default": "",
+      "kind": "link",
+      "label": "Link",
+      "localizable": true,
+      "name": "href",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Link name",
+      "localizable": true,
+      "name": "linkLabel",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "boolean",
+      ],
+      "default": false,
+      "kind": "boolean",
+      "label": "Open in a new tab",
+      "localizable": false,
+      "name": "newTab",
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": "outlined",
+      "kind": "select",
+      "label": "Variant",
+      "localizable": false,
+      "name": "variant",
+      "options": [
+        "outlined",
+        "elevated",
+        "flat",
+      ],
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": "article",
+      "kind": "select",
+      "label": "Element",
+      "localizable": false,
+      "name": "as",
+      "options": [
+        "article",
+        "div",
+      ],
+      "required": false,
+    },
+  ],
+  "slots": [
+    {
+      "allowedChildren": [
+        "buildr/image",
+        "buildr/icon",
+      ],
+      "label": "Media",
+      "max": 1,
+      "name": "media",
+    },
+    {
+      "allowedChildren": [
+        "buildr/section",
+        "buildr/container",
+        "buildr/stack",
+        "buildr/grid",
+        "buildr/heading",
+        "buildr/text",
+        "buildr/rich-text",
+        "buildr/button",
+        "buildr/link",
+        "buildr/image",
+        "buildr/icon",
+        "buildr/list",
+        "buildr/divider",
+        "buildr/badge",
+        "buildr/card",
+        "buildr/accordion",
+        "buildr/loop",
+        "buildr/pagination",
+        "buildr/form",
+        "buildr/input",
+        "buildr/textarea",
+        "buildr/select",
+        "buildr/checkbox",
+      ],
+      "label": "Body",
+      "name": "body",
+    },
+    {
+      "allowedChildren": [
+        "buildr/button",
+        "buildr/link",
+      ],
+      "label": "Actions",
+      "name": "actions",
+    },
+  ],
+  "styleGroups": [
+    "layout",
+    "size",
+    "spacing",
+    "background",
+    "border",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/card",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/card: text description 1`] = `
+"buildr/card - Card (ui, v1)
+A boxed piece of content with media, text and actions.
+Props:
+- href (link) default "" [bindable, localizable]
+- linkLabel (text) default "" [bindable, localizable]
+- newTab (boolean) default false [bindable]
+- variant (select) default "outlined" one of "outlined" | "elevated" | "flat"
+- as (select) default "article" one of "article" | "div"
+Slots:
+- media (max 1): buildr/image, buildr/icon
+- body: buildr/section, buildr/container, buildr/stack, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+- actions: buildr/button, buildr/link
+Style groups: layout, size, spacing, background, border, effects, visibility
+Renders: article
+Insert into: buildr/page[default]
+Example: {"type":"buildr/card"}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/checkbox: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "input",
+    "requiresName": true,
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": true,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "forms",
+  "description": "A tick box.",
+  "example": {
+    "props": {
+      "label": "Label",
+    },
+    "type": "buildr/checkbox",
+  },
+  "keywords": [
+    "tick",
+    "consent",
+    "agree",
+    "boolean",
+    "form",
+  ],
+  "label": "Checkbox",
+  "notes": [
+    "It must be nested inside buildr/form.",
+    "It needs an accessible name (text, label or aria-label).",
+    "It is a form field: it must be inside a form and needs a unique name.",
+  ],
+  "parentRules": {
+    "requiresAncestor": [
+      "buildr/form",
+    ],
+  },
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+    {
+      "slot": "default",
+      "type": "buildr/form",
+    },
+  ],
+  "primaryProp": "label",
+  "props": [
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "Label",
+      "kind": "text",
+      "label": "Label",
+      "localizable": true,
+      "name": "label",
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": "",
+      "kind": "text",
+      "label": "Name",
+      "localizable": false,
+      "name": "name",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "boolean",
+      ],
+      "default": false,
+      "kind": "boolean",
+      "label": "Required",
+      "localizable": false,
+      "name": "required",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Hint",
+      "localizable": true,
+      "name": "hint",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "boolean",
+      ],
+      "default": false,
+      "kind": "boolean",
+      "label": "Ticked at first",
+      "localizable": false,
+      "name": "defaultChecked",
+      "required": false,
+    },
+  ],
+  "styleGroups": [
+    "spacing",
+    "typography",
+    "background",
+    "border",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/checkbox",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/checkbox: text description 1`] = `
+"buildr/checkbox - Checkbox (forms, v1)
+A tick box.
+Props:
+- label (text) default "Label" [bindable, localizable]
+- name (text) default ""
+- required (boolean) default false [bindable]
+- hint (text) default "" [bindable, localizable]
+- defaultChecked (boolean) default false [bindable]
+Slots: none (a leaf component, it takes no children)
+Note: It must be nested inside buildr/form.
+Note: It needs an accessible name (text, label or aria-label).
+Note: It is a form field: it must be inside a form and needs a unique name.
+Style groups: spacing, typography, background, border, effects, visibility
+Renders: input
+Insert into: buildr/page[default] > buildr/form[default]
+Example: {"type":"buildr/checkbox","props":{"label":"Label"}}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/container: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "div",
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": true,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "layout",
+  "description": "Keeps its content to a readable width, centred.",
+  "example": {
+    "type": "buildr/container",
+  },
+  "keywords": [
+    "width",
+    "column",
+    "centre",
+    "max-width",
+  ],
+  "label": "Container",
+  "notes": [],
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+  ],
+  "props": [
+    {
+      "bindable": false,
+      "default": "lg",
+      "kind": "select",
+      "label": "Max width",
+      "localizable": false,
+      "name": "width",
+      "options": [
+        "sm",
+        "md",
+        "lg",
+        "xl",
+      ],
+      "required": false,
+    },
+  ],
+  "slots": [
+    {
+      "allowedChildren": [
+        "buildr/section",
+        "buildr/container",
+        "buildr/stack",
+        "buildr/grid",
+        "buildr/heading",
+        "buildr/text",
+        "buildr/rich-text",
+        "buildr/button",
+        "buildr/link",
+        "buildr/image",
+        "buildr/icon",
+        "buildr/list",
+        "buildr/divider",
+        "buildr/badge",
+        "buildr/card",
+        "buildr/accordion",
+        "buildr/loop",
+        "buildr/pagination",
+        "buildr/form",
+        "buildr/input",
+        "buildr/textarea",
+        "buildr/select",
+        "buildr/checkbox",
+      ],
+      "label": "Content",
+      "name": "default",
+    },
+  ],
+  "styleGroups": [
+    "layout",
+    "spacing",
+    "background",
+    "border",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/container",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/container: text description 1`] = `
+"buildr/container - Container (layout, v1)
+Keeps its content to a readable width, centred.
+Props:
+- width (select) default "lg" one of "sm" | "md" | "lg" | "xl"
+Slots:
+- default: buildr/section, buildr/container, buildr/stack, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+Style groups: layout, spacing, background, border, effects, visibility
+Renders: div
+Insert into: buildr/page[default]
+Example: {"type":"buildr/container"}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/divider: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "hr",
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": true,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "content",
+  "description": "A horizontal rule.",
+  "example": {
+    "type": "buildr/divider",
+  },
+  "keywords": [
+    "hr",
+    "rule",
+    "separator",
+    "line",
+  ],
+  "label": "Divider",
+  "notes": [],
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+  ],
+  "props": [
+    {
+      "bindable": true,
+      "bindsTo": [
+        "boolean",
+      ],
+      "default": false,
+      "kind": "boolean",
+      "label": "Decorative",
+      "localizable": false,
+      "name": "decorative",
+      "required": false,
+    },
+  ],
+  "styleGroups": [
+    "size",
+    "spacing",
+    "border",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/divider",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/divider: text description 1`] = `
+"buildr/divider - Divider (content, v1)
+A horizontal rule.
+Props:
+- decorative (boolean) default false [bindable]
+Slots: none (a leaf component, it takes no children)
+Style groups: size, spacing, border, effects, visibility
+Renders: hr
+Insert into: buildr/page[default]
+Example: {"type":"buildr/divider"}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/form: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "form",
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": true,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "forms",
+  "description": "A form whose submissions are collected by the site.",
+  "example": {
+    "type": "buildr/form",
+  },
+  "keywords": [
+    "contact",
+    "newsletter",
+    "submit",
+    "fields",
+  ],
+  "label": "Form",
+  "notes": [],
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+  ],
+  "props": [
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Success message",
+      "localizable": true,
+      "name": "successMessage",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Error message",
+      "localizable": true,
+      "name": "errorMessage",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Accessible name",
+      "localizable": true,
+      "name": "ariaLabel",
+      "required": false,
+    },
+  ],
+  "slots": [
+    {
+      "allowedChildren": [
+        "buildr/section",
+        "buildr/container",
+        "buildr/stack",
+        "buildr/grid",
+        "buildr/heading",
+        "buildr/text",
+        "buildr/rich-text",
+        "buildr/button",
+        "buildr/link",
+        "buildr/image",
+        "buildr/icon",
+        "buildr/list",
+        "buildr/divider",
+        "buildr/badge",
+        "buildr/card",
+        "buildr/accordion",
+        "buildr/loop",
+        "buildr/pagination",
+        "buildr/form",
+        "buildr/input",
+        "buildr/textarea",
+        "buildr/select",
+        "buildr/checkbox",
+      ],
+      "label": "Fields",
+      "name": "default",
+    },
+  ],
+  "styleGroups": [
+    "layout",
+    "size",
+    "spacing",
+    "background",
+    "border",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/form",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/form: text description 1`] = `
+"buildr/form - Form (forms, v1)
+A form whose submissions are collected by the site.
+Props:
+- successMessage (text) default "" [bindable, localizable]
+- errorMessage (text) default "" [bindable, localizable]
+- ariaLabel (text) default "" [bindable, localizable]
+Slots:
+- default: buildr/section, buildr/container, buildr/stack, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+Style groups: layout, size, spacing, background, border, effects, visibility
+Renders: form
+Insert into: buildr/page[default]
+Example: {"type":"buildr/form"}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/grid: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "div",
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": true,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "layout",
+  "description": "Lays its children out in columns.",
+  "example": {
+    "type": "buildr/grid",
+  },
+  "keywords": [
+    "columns",
+    "layout",
+    "css grid",
+    "responsive",
+  ],
+  "label": "Grid",
+  "notes": [],
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+  ],
+  "props": [
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Accessible name",
+      "localizable": true,
+      "name": "ariaLabel",
+      "required": false,
+    },
+  ],
+  "slots": [
+    {
+      "allowedChildren": [
+        "buildr/section",
+        "buildr/container",
+        "buildr/stack",
+        "buildr/grid",
+        "buildr/heading",
+        "buildr/text",
+        "buildr/rich-text",
+        "buildr/button",
+        "buildr/link",
+        "buildr/image",
+        "buildr/icon",
+        "buildr/list",
+        "buildr/divider",
+        "buildr/badge",
+        "buildr/card",
+        "buildr/accordion",
+        "buildr/loop",
+        "buildr/pagination",
+        "buildr/form",
+        "buildr/input",
+        "buildr/textarea",
+        "buildr/select",
+        "buildr/checkbox",
+      ],
+      "label": "Cells",
+      "name": "default",
+    },
+  ],
+  "styleGroups": [
+    "layout",
+    "size",
+    "spacing",
+    "background",
+    "border",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/grid",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/grid: text description 1`] = `
+"buildr/grid - Grid (layout, v1)
+Lays its children out in columns.
+Props:
+- ariaLabel (text) default "" [bindable, localizable]
+Slots:
+- default: buildr/section, buildr/container, buildr/stack, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+Style groups: layout, size, spacing, background, border, effects, visibility
+Renders: div
+Insert into: buildr/page[default]
+Example: {"type":"buildr/grid"}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/heading: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "h1-h6",
+    "requiresName": true,
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": true,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "content",
+  "description": "A title. Its level is the outline; its look is a style.",
+  "example": {
+    "props": {
+      "text": "Heading",
+    },
+    "type": "buildr/heading",
+  },
+  "keywords": [
+    "title",
+    "h1",
+    "h2",
+    "headline",
+  ],
+  "label": "Heading",
+  "notes": [
+    "It needs an accessible name (text, label or aria-label).",
+  ],
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+  ],
+  "primaryProp": "text",
+  "props": [
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "Heading",
+      "kind": "text",
+      "label": "Text",
+      "localizable": true,
+      "name": "text",
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": 2,
+      "kind": "select",
+      "label": "Level",
+      "localizable": false,
+      "name": "level",
+      "options": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+      ],
+      "required": false,
+    },
+  ],
+  "styleGroups": [
+    "typography",
+    "spacing",
+    "background",
+    "border",
+    "size",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/heading",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/heading: text description 1`] = `
+"buildr/heading - Heading (content, v1)
+A title. Its level is the outline; its look is a style.
+Props:
+- text (text) default "Heading" [bindable, localizable]
+- level (select) default 2 one of 1 | 2 | 3 | 4 | 5 | 6
+Slots: none (a leaf component, it takes no children)
+Note: It needs an accessible name (text, label or aria-label).
+Style groups: typography, spacing, background, border, size, effects, visibility
+Renders: h1-h6
+Insert into: buildr/page[default]
+Example: {"type":"buildr/heading","props":{"text":"Heading"}}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/icon: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "svg",
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": true,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "media",
+  "description": "A small pictogram.",
+  "example": {
+    "type": "buildr/icon",
+  },
+  "keywords": [
+    "symbol",
+    "pictogram",
+    "svg",
+  ],
+  "label": "Icon",
+  "notes": [],
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+  ],
+  "props": [
+    {
+      "bindable": false,
+      "default": "star",
+      "kind": "icon",
+      "label": "Icon",
+      "localizable": false,
+      "name": "name",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Accessible name",
+      "localizable": true,
+      "name": "label",
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": "md",
+      "kind": "select",
+      "label": "Size",
+      "localizable": false,
+      "name": "size",
+      "options": [
+        "sm",
+        "md",
+        "lg",
+        "xl",
+      ],
+      "required": false,
+    },
+  ],
+  "styleGroups": [
+    "size",
+    "spacing",
+    "typography",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/icon",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/icon: text description 1`] = `
+"buildr/icon - Icon (media, v1)
+A small pictogram.
+Props:
+- name (icon) default "star"
+- label (text) default "" [bindable, localizable]
+- size (select) default "md" one of "sm" | "md" | "lg" | "xl"
+Slots: none (a leaf component, it takes no children)
+Style groups: size, spacing, typography, effects, visibility
+Renders: svg
+Insert into: buildr/page[default]
+Example: {"type":"buildr/icon"}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/image: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "img",
+    "requiresName": true,
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": true,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "media",
+  "description": "A picture, with alternative text.",
+  "example": {
+    "type": "buildr/image",
+  },
+  "keywords": [
+    "picture",
+    "photo",
+    "media",
+    "img",
+  ],
+  "label": "Image",
+  "notes": [
+    "It needs an accessible name (text, label or aria-label).",
+  ],
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+  ],
+  "props": [
+    {
+      "accept": [
+        "image",
+      ],
+      "bindable": true,
+      "bindsTo": [
+        "media",
+      ],
+      "default": null,
+      "kind": "media",
+      "label": "Image",
+      "localizable": false,
+      "name": "image",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Alternative text",
+      "localizable": true,
+      "name": "alt",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "boolean",
+      ],
+      "default": false,
+      "kind": "boolean",
+      "label": "Decorative",
+      "localizable": false,
+      "name": "decorative",
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": "full",
+      "kind": "select",
+      "label": "Display width",
+      "localizable": false,
+      "name": "sizes",
+      "options": [
+        "full",
+        "half",
+        "third",
+        "quarter",
+      ],
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": "cover",
+      "kind": "select",
+      "label": "Fit",
+      "localizable": false,
+      "name": "fit",
+      "options": [
+        "cover",
+        "contain",
+        "fill",
+        "none",
+        "scale-down",
+      ],
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "boolean",
+      ],
+      "default": false,
+      "kind": "boolean",
+      "label": "Load first",
+      "localizable": false,
+      "name": "priority",
+      "required": false,
+    },
+  ],
+  "styleGroups": [
+    "size",
+    "spacing",
+    "border",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/image",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/image: text description 1`] = `
+"buildr/image - Image (media, v1)
+A picture, with alternative text.
+Props:
+- image (media) default null accepts image [bindable]
+- alt (text) default "" [bindable, localizable]
+- decorative (boolean) default false [bindable]
+- sizes (select) default "full" one of "full" | "half" | "third" | "quarter"
+- fit (select) default "cover" one of "cover" | "contain" | "fill" | "none" | "scale-down"
+- priority (boolean) default false [bindable]
+Slots: none (a leaf component, it takes no children)
+Note: It needs an accessible name (text, label or aria-label).
+Style groups: size, spacing, border, effects, visibility
+Renders: img
+Insert into: buildr/page[default]
+Example: {"type":"buildr/image"}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/input: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "input",
+    "requiresName": true,
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": true,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "forms",
+  "description": "A single-line text field.",
+  "example": {
+    "props": {
+      "label": "Label",
+    },
+    "type": "buildr/input",
+  },
+  "keywords": [
+    "text field",
+    "email",
+    "phone",
+    "form",
+  ],
+  "label": "Input",
+  "notes": [
+    "It must be nested inside buildr/form.",
+    "It needs an accessible name (text, label or aria-label).",
+    "It is a form field: it must be inside a form and needs a unique name.",
+  ],
+  "parentRules": {
+    "requiresAncestor": [
+      "buildr/form",
+    ],
+  },
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+    {
+      "slot": "default",
+      "type": "buildr/form",
+    },
+  ],
+  "primaryProp": "label",
+  "props": [
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "Label",
+      "kind": "text",
+      "label": "Label",
+      "localizable": true,
+      "name": "label",
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": "",
+      "kind": "text",
+      "label": "Name",
+      "localizable": false,
+      "name": "name",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "boolean",
+      ],
+      "default": false,
+      "kind": "boolean",
+      "label": "Required",
+      "localizable": false,
+      "name": "required",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Hint",
+      "localizable": true,
+      "name": "hint",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "boolean",
+      ],
+      "default": false,
+      "kind": "boolean",
+      "label": "Hide the label",
+      "localizable": false,
+      "name": "hideLabel",
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": "text",
+      "kind": "select",
+      "label": "Type",
+      "localizable": false,
+      "name": "type",
+      "options": [
+        "text",
+        "email",
+        "tel",
+        "url",
+        "number",
+      ],
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "number",
+      ],
+      "default": 0,
+      "kind": "number",
+      "label": "Maximum length (0: no limit)",
+      "localizable": false,
+      "max": 10000,
+      "min": 0,
+      "name": "maxLength",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Placeholder",
+      "localizable": true,
+      "name": "placeholder",
+      "required": false,
+    },
+  ],
+  "styleGroups": [
+    "size",
+    "spacing",
+    "typography",
+    "background",
+    "border",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/input",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/input: text description 1`] = `
+"buildr/input - Input (forms, v1)
+A single-line text field.
+Props:
+- label (text) default "Label" [bindable, localizable]
+- name (text) default ""
+- required (boolean) default false [bindable]
+- hint (text) default "" [bindable, localizable]
+- hideLabel (boolean) default false [bindable]
+- type (select) default "text" one of "text" | "email" | "tel" | "url" | "number"
+- maxLength (number) default 0 min 0; max 10000 [bindable]
+- placeholder (text) default "" [bindable, localizable]
+Slots: none (a leaf component, it takes no children)
+Note: It must be nested inside buildr/form.
+Note: It needs an accessible name (text, label or aria-label).
+Note: It is a form field: it must be inside a form and needs a unique name.
+Style groups: size, spacing, typography, background, border, effects, visibility
+Renders: input
+Insert into: buildr/page[default] > buildr/form[default]
+Example: {"type":"buildr/input","props":{"label":"Label"}}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/link: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "a",
+    "requiresName": true,
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": true,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "content",
+  "description": "A text link.",
+  "example": {
+    "props": {
+      "label": "Link",
+    },
+    "type": "buildr/link",
+  },
+  "keywords": [
+    "anchor",
+    "href",
+    "url",
+    "navigation",
+  ],
+  "label": "Link",
+  "notes": [
+    "It needs an accessible name (text, label or aria-label).",
+  ],
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+  ],
+  "primaryProp": "label",
+  "props": [
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "Link",
+      "kind": "text",
+      "label": "Text",
+      "localizable": true,
+      "name": "label",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "url",
+        "link",
+        "string",
+      ],
+      "default": "#",
+      "kind": "link",
+      "label": "Link",
+      "localizable": true,
+      "name": "href",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Accessible name",
+      "localizable": true,
+      "name": "ariaLabel",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "boolean",
+      ],
+      "default": false,
+      "kind": "boolean",
+      "label": "Open in a new tab",
+      "localizable": false,
+      "name": "newTab",
+      "required": false,
+    },
+  ],
+  "styleGroups": [
+    "typography",
+    "spacing",
+    "background",
+    "border",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/link",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/link: text description 1`] = `
+"buildr/link - Link (content, v1)
+A text link.
+Props:
+- label (text) default "Link" [bindable, localizable]
+- href (link) default "#" [bindable, localizable]
+- ariaLabel (text) default "" [bindable, localizable]
+- newTab (boolean) default false [bindable]
+Slots: none (a leaf component, it takes no children)
+Note: It needs an accessible name (text, label or aria-label).
+Style groups: typography, spacing, background, border, effects, visibility
+Renders: a
+Insert into: buildr/page[default]
+Example: {"type":"buildr/link","props":{"label":"Link"}}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/list: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "ul",
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": true,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "content",
+  "description": "A bulleted or numbered list.",
+  "example": {
+    "slots": {
+      "default": [
+        {
+          "props": {
+            "text": {
+              "kind": "static",
+              "value": "Item 1",
+            },
+          },
+          "type": "buildr/list-item",
+        },
+        {
+          "props": {
+            "text": {
+              "kind": "static",
+              "value": "Item 2",
+            },
+          },
+          "type": "buildr/list-item",
+        },
+        {
+          "props": {
+            "text": {
+              "kind": "static",
+              "value": "Item 3",
+            },
+          },
+          "type": "buildr/list-item",
+        },
+      ],
+    },
+    "type": "buildr/list",
+  },
+  "keywords": [
+    "bullets",
+    "ul",
+    "ol",
+    "items",
+  ],
+  "label": "List",
+  "notes": [],
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+  ],
+  "props": [
+    {
+      "bindable": true,
+      "bindsTo": [
+        "boolean",
+      ],
+      "default": false,
+      "kind": "boolean",
+      "label": "Numbered",
+      "localizable": false,
+      "name": "ordered",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Accessible name",
+      "localizable": true,
+      "name": "ariaLabel",
+      "required": false,
+    },
+  ],
+  "slots": [
+    {
+      "allowedChildren": [
+        "buildr/list-item",
+        "buildr/loop",
+      ],
+      "label": "Items",
+      "name": "default",
+    },
+  ],
+  "styleGroups": [
+    "typography",
+    "spacing",
+    "background",
+    "border",
+    "size",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/list",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/list: text description 1`] = `
+"buildr/list - List (content, v1)
+A bulleted or numbered list.
+Props:
+- ordered (boolean) default false [bindable]
+- ariaLabel (text) default "" [bindable, localizable]
+Slots:
+- default: buildr/list-item, buildr/loop
+Style groups: typography, spacing, background, border, size, effects, visibility
+Renders: ul
+Insert into: buildr/page[default]
+Example: {"type":"buildr/list","slots":{"default":[{"type":"buildr/list-item","props":{"text":{"kind":"static","value":"Item 1"}}},{"type":"buildr/list-item","props":{"text":{"kind":"static","value":"Item 2"}}},{"type":"buildr/list-item","props":{"text":{"kind":"static","value":"Item 3"}}}]}}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/list-item: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "li",
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": false,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "content",
+  "description": "One entry of a list.",
+  "example": {
+    "slots": {
+      "default": [
+        {
+          "props": {
+            "text": "Item",
+          },
+          "type": "buildr/list-item",
+        },
+      ],
+    },
+    "type": "buildr/list",
+  },
+  "label": "List item",
+  "notes": [
+    "It cannot be inserted on its own; include it as a child inside a tree of buildr/list, buildr/loop.",
+    "It can only be placed directly inside buildr/list, buildr/loop.",
+  ],
+  "parentRules": {
+    "allowedParents": [
+      "buildr/list",
+      "buildr/loop",
+    ],
+  },
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+  ],
+  "primaryProp": "text",
+  "props": [
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "Item",
+      "kind": "text",
+      "label": "Text",
+      "localizable": true,
+      "name": "text",
+      "required": false,
+    },
+  ],
+  "slots": [
+    {
+      "allowedChildren": [
+        "buildr/section",
+        "buildr/container",
+        "buildr/stack",
+        "buildr/grid",
+        "buildr/heading",
+        "buildr/text",
+        "buildr/rich-text",
+        "buildr/button",
+        "buildr/link",
+        "buildr/image",
+        "buildr/icon",
+        "buildr/list",
+        "buildr/divider",
+        "buildr/badge",
+        "buildr/card",
+        "buildr/accordion",
+        "buildr/loop",
+        "buildr/pagination",
+        "buildr/form",
+        "buildr/input",
+        "buildr/textarea",
+        "buildr/select",
+        "buildr/checkbox",
+      ],
+      "label": "More content",
+      "name": "default",
+    },
+  ],
+  "styleGroups": [
+    "typography",
+    "spacing",
+    "background",
+    "border",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/list-item",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/list-item: text description 1`] = `
+"buildr/list-item - List item (content, v1)
+One entry of a list.
+Props:
+- text (text) default "Item" [bindable, localizable]
+Slots:
+- default: buildr/section, buildr/container, buildr/stack, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+Note: It cannot be inserted on its own; include it as a child inside a tree of buildr/list, buildr/loop.
+Note: It can only be placed directly inside buildr/list, buildr/loop.
+Style groups: typography, spacing, background, border, effects, visibility
+Renders: li
+Insert into: buildr/page[default]
+Example: {"type":"buildr/list","slots":{"default":[{"type":"buildr/list-item","props":{"text":"Item"}}]}}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/loop: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "div",
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": true,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "cms",
+  "description": "Repeats a template for every entry of a list or a collection.",
+  "example": {
+    "type": "buildr/loop",
+  },
+  "keywords": [
+    "repeat",
+    "list",
+    "collection",
+    "query",
+    "cms",
+    "each",
+  ],
+  "label": "Loop",
+  "notes": [],
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+  ],
+  "props": [
+    {
+      "bindable": true,
+      "bindsTo": [
+        "list",
+      ],
+      "default": null,
+      "kind": "listSource",
+      "label": "Source",
+      "localizable": false,
+      "name": "source",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Item name",
+      "localizable": true,
+      "name": "as",
+      "required": false,
+    },
+  ],
+  "slots": [
+    {
+      "allowedChildren": "any",
+      "label": "Item template",
+      "name": "item",
+    },
+    {
+      "allowedChildren": "any",
+      "label": "When empty",
+      "name": "empty",
+    },
+    {
+      "allowedChildren": "any",
+      "label": "After the items",
+      "name": "after",
+    },
+  ],
+  "styleGroups": [
+    "layout",
+    "size",
+    "spacing",
+    "background",
+    "border",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/loop",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/loop: text description 1`] = `
+"buildr/loop - Loop (cms, v1)
+Repeats a template for every entry of a list or a collection.
+Props:
+- source (listSource) default null [bindable]
+- as (text) default "" [bindable, localizable]
+Slots:
+- item: any component
+- empty: any component
+- after: any component
+Style groups: layout, size, spacing, background, border, effects, visibility
+Renders: div
+Insert into: buildr/page[default]
+Example: {"type":"buildr/loop"}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/page: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "div",
+  },
+  "capabilities": {
+    "draggable": false,
+    "duplicable": false,
+    "insertable": false,
+    "removable": false,
+    "rootOnly": true,
+  },
+  "category": "layout",
+  "description": "The root of a document. Everything else lives inside it.",
+  "example": {
+    "type": "buildr/page",
+  },
+  "label": "Page",
+  "notes": [
+    "This is the document root; it exists once and cannot be inserted.",
+    "It cannot be removed.",
+    "It cannot be moved.",
+  ],
+  "placement": null,
+  "props": [],
+  "slots": [
+    {
+      "allowedChildren": [
+        "buildr/section",
+        "buildr/container",
+        "buildr/stack",
+        "buildr/grid",
+        "buildr/heading",
+        "buildr/text",
+        "buildr/rich-text",
+        "buildr/button",
+        "buildr/link",
+        "buildr/image",
+        "buildr/icon",
+        "buildr/list",
+        "buildr/divider",
+        "buildr/badge",
+        "buildr/card",
+        "buildr/accordion",
+        "buildr/loop",
+        "buildr/pagination",
+        "buildr/form",
+        "buildr/input",
+        "buildr/textarea",
+        "buildr/select",
+        "buildr/checkbox",
+      ],
+      "label": "Content",
+      "name": "default",
+    },
+  ],
+  "styleGroups": [
+    "spacing",
+    "typography",
+    "background",
+  ],
+  "type": "buildr/page",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/page: text description 1`] = `
+"buildr/page - Page (layout, v1)
+The root of a document. Everything else lives inside it.
+Props: none
+Slots:
+- default: buildr/section, buildr/container, buildr/stack, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+Note: This is the document root; it exists once and cannot be inserted.
+Note: It cannot be removed.
+Note: It cannot be moved.
+Style groups: spacing, typography, background
+Renders: div
+Example: {"type":"buildr/page"}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/pagination: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "nav",
+    "landmark": true,
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": true,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "cms",
+  "description": "Links to the pages of a listing.",
+  "example": {
+    "type": "buildr/pagination",
+  },
+  "keywords": [
+    "pages",
+    "next",
+    "previous",
+    "paging",
+  ],
+  "label": "Pagination",
+  "notes": [],
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+  ],
+  "props": [
+    {
+      "bindable": true,
+      "bindsTo": [
+        "number",
+      ],
+      "default": 1,
+      "kind": "number",
+      "label": "Current page",
+      "localizable": false,
+      "min": 1,
+      "name": "page",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "number",
+      ],
+      "default": 1,
+      "kind": "number",
+      "label": "Number of pages",
+      "localizable": false,
+      "min": 0,
+      "name": "totalPages",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "url",
+        "link",
+        "string",
+      ],
+      "default": "?page={page}",
+      "kind": "link",
+      "label": "Link pattern",
+      "localizable": true,
+      "name": "hrefPattern",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Accessible name",
+      "localizable": true,
+      "name": "ariaLabel",
+      "required": false,
+    },
+  ],
+  "styleGroups": [
+    "layout",
+    "spacing",
+    "typography",
+    "background",
+    "border",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/pagination",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/pagination: text description 1`] = `
+"buildr/pagination - Pagination (cms, v1)
+Links to the pages of a listing.
+Props:
+- page (number) default 1 min 1 [bindable]
+- totalPages (number) default 1 min 0 [bindable]
+- hrefPattern (link) default "?page={page}" [bindable, localizable]
+- ariaLabel (text) default "" [bindable, localizable]
+Slots: none (a leaf component, it takes no children)
+Style groups: layout, spacing, typography, background, border, effects, visibility
+Renders: nav
+Insert into: buildr/page[default]
+Example: {"type":"buildr/pagination"}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/rich-text: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "div",
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": true,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "content",
+  "description": "Formatted content: headings, paragraphs, lists, quotes and links.",
+  "example": {
+    "type": "buildr/rich-text",
+  },
+  "keywords": [
+    "content",
+    "article",
+    "body",
+    "wysiwyg",
+    "post",
+  ],
+  "label": "Rich text",
+  "notes": [],
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+  ],
+  "props": [
+    {
+      "bindable": true,
+      "bindsTo": [
+        "richText",
+        "string",
+      ],
+      "default": null,
+      "kind": "richText",
+      "label": "Content",
+      "localizable": true,
+      "name": "content",
+      "required": false,
+    },
+  ],
+  "styleGroups": [
+    "typography",
+    "spacing",
+    "background",
+    "border",
+    "size",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/rich-text",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/rich-text: text description 1`] = `
+"buildr/rich-text - Rich text (content, v1)
+Formatted content: headings, paragraphs, lists, quotes and links.
+Props:
+- content (richText) default null [bindable, localizable]
+Slots: none (a leaf component, it takes no children)
+Style groups: typography, spacing, background, border, size, effects, visibility
+Renders: div
+Insert into: buildr/page[default]
+Example: {"type":"buildr/rich-text"}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/section: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "section",
+    "landmark": true,
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": true,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "layout",
+  "description": "A band of the page: a landmark or a plain wrapper, with an optional background image.",
+  "example": {
+    "type": "buildr/section",
+  },
+  "keywords": [
+    "band",
+    "region",
+    "hero",
+    "wrapper",
+  ],
+  "label": "Section",
+  "notes": [],
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+  ],
+  "props": [
+    {
+      "bindable": false,
+      "default": "section",
+      "kind": "select",
+      "label": "Element",
+      "localizable": false,
+      "name": "as",
+      "options": [
+        "section",
+        "div",
+        "header",
+        "footer",
+        "main",
+        "aside",
+        "nav",
+        "article",
+      ],
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": "lg",
+      "kind": "select",
+      "label": "Content width",
+      "localizable": false,
+      "name": "container",
+      "options": [
+        "full",
+        "sm",
+        "md",
+        "lg",
+        "xl",
+      ],
+      "required": false,
+    },
+    {
+      "accept": [
+        "image",
+      ],
+      "bindable": true,
+      "bindsTo": [
+        "media",
+      ],
+      "default": null,
+      "kind": "media",
+      "label": "Background image",
+      "localizable": false,
+      "name": "backgroundImage",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Accessible name",
+      "localizable": true,
+      "name": "ariaLabel",
+      "required": false,
+    },
+  ],
+  "slots": [
+    {
+      "allowedChildren": [
+        "buildr/section",
+        "buildr/container",
+        "buildr/stack",
+        "buildr/grid",
+        "buildr/heading",
+        "buildr/text",
+        "buildr/rich-text",
+        "buildr/button",
+        "buildr/link",
+        "buildr/image",
+        "buildr/icon",
+        "buildr/list",
+        "buildr/divider",
+        "buildr/badge",
+        "buildr/card",
+        "buildr/accordion",
+        "buildr/loop",
+        "buildr/pagination",
+        "buildr/form",
+        "buildr/input",
+        "buildr/textarea",
+        "buildr/select",
+        "buildr/checkbox",
+      ],
+      "label": "Content",
+      "name": "default",
+    },
+  ],
+  "styleGroups": [
+    "layout",
+    "size",
+    "spacing",
+    "background",
+    "border",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/section",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/section: text description 1`] = `
+"buildr/section - Section (layout, v1)
+A band of the page: a landmark or a plain wrapper, with an optional background image.
+Props:
+- as (select) default "section" one of "section" | "div" | "header" | "footer" | "main" | "aside" | "nav" | "article"
+- container (select) default "lg" one of "full" | "sm" | "md" | "lg" | "xl"
+- backgroundImage (media) default null accepts image [bindable]
+- ariaLabel (text) default "" [bindable, localizable]
+Slots:
+- default: buildr/section, buildr/container, buildr/stack, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+Style groups: layout, size, spacing, background, border, effects, visibility
+Renders: section
+Insert into: buildr/page[default]
+Example: {"type":"buildr/section"}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/select: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "select",
+    "requiresName": true,
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": true,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "forms",
+  "description": "A drop-down list.",
+  "example": {
+    "props": {
+      "label": "Label",
+    },
+    "type": "buildr/select",
+  },
+  "keywords": [
+    "dropdown",
+    "choice",
+    "options",
+    "form",
+  ],
+  "label": "Select",
+  "notes": [
+    "It must be nested inside buildr/form.",
+    "It needs an accessible name (text, label or aria-label).",
+    "It is a form field: it must be inside a form and needs a unique name.",
+  ],
+  "parentRules": {
+    "requiresAncestor": [
+      "buildr/form",
+    ],
+  },
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+    {
+      "slot": "default",
+      "type": "buildr/form",
+    },
+  ],
+  "primaryProp": "label",
+  "props": [
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "Label",
+      "kind": "text",
+      "label": "Label",
+      "localizable": true,
+      "name": "label",
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": "",
+      "kind": "text",
+      "label": "Name",
+      "localizable": false,
+      "name": "name",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "boolean",
+      ],
+      "default": false,
+      "kind": "boolean",
+      "label": "Required",
+      "localizable": false,
+      "name": "required",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Hint",
+      "localizable": true,
+      "name": "hint",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "boolean",
+      ],
+      "default": false,
+      "kind": "boolean",
+      "label": "Hide the label",
+      "localizable": false,
+      "name": "hideLabel",
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": [],
+      "kind": "list",
+      "label": "Options",
+      "localizable": false,
+      "max": 500,
+      "name": "options",
+      "of": {
+        "bindable": false,
+        "default": {
+          "label": "Option",
+          "value": "",
+        },
+        "fields": {
+          "label": {
+            "bindable": true,
+            "bindsTo": [
+              "string",
+              "number",
+              "date",
+              "enum",
+              "url",
+            ],
+            "default": "Option",
+            "kind": "text",
+            "label": "Label",
+            "localizable": true,
+            "name": "label",
+            "required": false,
+          },
+          "value": {
+            "bindable": true,
+            "bindsTo": [
+              "string",
+              "number",
+              "date",
+              "enum",
+              "url",
+            ],
+            "default": "",
+            "kind": "text",
+            "label": "Value",
+            "localizable": false,
+            "name": "value",
+            "required": false,
+          },
+        },
+        "kind": "object",
+        "localizable": false,
+        "name": "item",
+        "required": false,
+      },
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Placeholder",
+      "localizable": true,
+      "name": "placeholder",
+      "required": false,
+    },
+  ],
+  "styleGroups": [
+    "size",
+    "spacing",
+    "typography",
+    "background",
+    "border",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/select",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/select: text description 1`] = `
+"buildr/select - Select (forms, v1)
+A drop-down list.
+Props:
+- label (text) default "Label" [bindable, localizable]
+- name (text) default ""
+- required (boolean) default false [bindable]
+- hint (text) default "" [bindable, localizable]
+- hideLabel (boolean) default false [bindable]
+- options (list) default [] max 500; items: object
+- placeholder (text) default "" [bindable, localizable]
+Slots: none (a leaf component, it takes no children)
+Note: It must be nested inside buildr/form.
+Note: It needs an accessible name (text, label or aria-label).
+Note: It is a form field: it must be inside a form and needs a unique name.
+Style groups: size, spacing, typography, background, border, effects, visibility
+Renders: select
+Insert into: buildr/page[default] > buildr/form[default]
+Example: {"type":"buildr/select","props":{"label":"Label"}}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/stack: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "div",
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": true,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "layout",
+  "description": "Lays its children out in a row or a column.",
+  "example": {
+    "type": "buildr/stack",
+  },
+  "keywords": [
+    "flex",
+    "row",
+    "column",
+    "group",
+    "flexbox",
+  ],
+  "label": "Stack",
+  "notes": [],
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+  ],
+  "props": [
+    {
+      "bindable": false,
+      "default": "none",
+      "kind": "select",
+      "label": "Role",
+      "localizable": false,
+      "name": "role",
+      "options": [
+        "none",
+        "group",
+        "list",
+      ],
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Accessible name",
+      "localizable": true,
+      "name": "ariaLabel",
+      "required": false,
+    },
+  ],
+  "slots": [
+    {
+      "allowedChildren": [
+        "buildr/section",
+        "buildr/container",
+        "buildr/stack",
+        "buildr/grid",
+        "buildr/heading",
+        "buildr/text",
+        "buildr/rich-text",
+        "buildr/button",
+        "buildr/link",
+        "buildr/image",
+        "buildr/icon",
+        "buildr/list",
+        "buildr/divider",
+        "buildr/badge",
+        "buildr/card",
+        "buildr/accordion",
+        "buildr/loop",
+        "buildr/pagination",
+        "buildr/form",
+        "buildr/input",
+        "buildr/textarea",
+        "buildr/select",
+        "buildr/checkbox",
+      ],
+      "label": "Content",
+      "name": "default",
+    },
+  ],
+  "styleGroups": [
+    "layout",
+    "size",
+    "spacing",
+    "background",
+    "border",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/stack",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/stack: text description 1`] = `
+"buildr/stack - Stack (layout, v1)
+Lays its children out in a row or a column.
+Props:
+- role (select) default "none" one of "none" | "group" | "list"
+- ariaLabel (text) default "" [bindable, localizable]
+Slots:
+- default: buildr/section, buildr/container, buildr/stack, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+Style groups: layout, size, spacing, background, border, effects, visibility
+Renders: div
+Insert into: buildr/page[default]
+Example: {"type":"buildr/stack"}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/text: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "p",
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": true,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "content",
+  "description": "A paragraph or a short piece of text.",
+  "example": {
+    "props": {
+      "text": "Write something",
+    },
+    "type": "buildr/text",
+  },
+  "keywords": [
+    "paragraph",
+    "copy",
+    "body",
+    "span",
+  ],
+  "label": "Text",
+  "notes": [],
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+  ],
+  "primaryProp": "text",
+  "props": [
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+      ],
+      "default": "",
+      "kind": "textarea",
+      "label": "Text",
+      "localizable": true,
+      "name": "text",
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": "p",
+      "kind": "select",
+      "label": "Element",
+      "localizable": false,
+      "name": "as",
+      "options": [
+        "p",
+        "span",
+        "small",
+        "div",
+      ],
+      "required": false,
+    },
+  ],
+  "styleGroups": [
+    "typography",
+    "spacing",
+    "background",
+    "border",
+    "size",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/text",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/text: text description 1`] = `
+"buildr/text - Text (content, v1)
+A paragraph or a short piece of text.
+Props:
+- text (textarea) default "" [bindable, localizable]
+- as (select) default "p" one of "p" | "span" | "small" | "div"
+Slots: none (a leaf component, it takes no children)
+Style groups: typography, spacing, background, border, size, effects, visibility
+Renders: p
+Insert into: buildr/page[default]
+Example: {"type":"buildr/text","props":{"text":"Write something"}}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/textarea: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "textarea",
+    "requiresName": true,
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": true,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "forms",
+  "description": "A multi-line text field.",
+  "example": {
+    "props": {
+      "label": "Label",
+    },
+    "type": "buildr/textarea",
+  },
+  "keywords": [
+    "message",
+    "comment",
+    "long text",
+    "form",
+  ],
+  "label": "Textarea",
+  "notes": [
+    "It must be nested inside buildr/form.",
+    "It needs an accessible name (text, label or aria-label).",
+    "It is a form field: it must be inside a form and needs a unique name.",
+  ],
+  "parentRules": {
+    "requiresAncestor": [
+      "buildr/form",
+    ],
+  },
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+    {
+      "slot": "default",
+      "type": "buildr/form",
+    },
+  ],
+  "primaryProp": "label",
+  "props": [
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "Label",
+      "kind": "text",
+      "label": "Label",
+      "localizable": true,
+      "name": "label",
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": "",
+      "kind": "text",
+      "label": "Name",
+      "localizable": false,
+      "name": "name",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "boolean",
+      ],
+      "default": false,
+      "kind": "boolean",
+      "label": "Required",
+      "localizable": false,
+      "name": "required",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Hint",
+      "localizable": true,
+      "name": "hint",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "boolean",
+      ],
+      "default": false,
+      "kind": "boolean",
+      "label": "Hide the label",
+      "localizable": false,
+      "name": "hideLabel",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "number",
+      ],
+      "default": 4,
+      "kind": "number",
+      "label": "Rows",
+      "localizable": false,
+      "max": 30,
+      "min": 2,
+      "name": "rows",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "number",
+      ],
+      "default": 0,
+      "kind": "number",
+      "label": "Maximum length (0: no limit)",
+      "localizable": false,
+      "max": 100000,
+      "min": 0,
+      "name": "maxLength",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Placeholder",
+      "localizable": true,
+      "name": "placeholder",
+      "required": false,
+    },
+  ],
+  "styleGroups": [
+    "size",
+    "spacing",
+    "typography",
+    "background",
+    "border",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/textarea",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/textarea: text description 1`] = `
+"buildr/textarea - Textarea (forms, v1)
+A multi-line text field.
+Props:
+- label (text) default "Label" [bindable, localizable]
+- name (text) default ""
+- required (boolean) default false [bindable]
+- hint (text) default "" [bindable, localizable]
+- hideLabel (boolean) default false [bindable]
+- rows (number) default 4 min 2; max 30 [bindable]
+- maxLength (number) default 0 min 0; max 100000 [bindable]
+- placeholder (text) default "" [bindable, localizable]
+Slots: none (a leaf component, it takes no children)
+Note: It must be nested inside buildr/form.
+Note: It needs an accessible name (text, label or aria-label).
+Note: It is a form field: it must be inside a form and needs a unique name.
+Style groups: size, spacing, typography, background, border, effects, visibility
+Renders: textarea
+Insert into: buildr/page[default] > buildr/form[default]
+Example: {"type":"buildr/textarea","props":{"label":"Label"}}"
+`;

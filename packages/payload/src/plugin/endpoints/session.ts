@@ -16,6 +16,7 @@ export const sessionEndpoint = (env: EndpointEnv): Endpoint => ({
       user: { id: user.id, ...(user.email === undefined ? {} : { email: user.email }) },
       permissions: await permissionsOf(env.options, req),
       limits: { ...env.options.limits },
+      publishPolicy: env.options.a11y.publish,
     };
     const locales = configuredLocales(req.payload.config);
     if (locales !== undefined) {

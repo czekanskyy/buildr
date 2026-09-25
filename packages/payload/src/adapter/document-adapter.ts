@@ -13,6 +13,7 @@ import type {
   EditorSession,
   LoadedDocument,
   PublishResult,
+  RevisionInfo,
   SaveResult,
 } from '@buildr/editor';
 import {
@@ -23,6 +24,7 @@ import {
   invalidResponseSchema,
   mediaListResponseSchema,
   publishResponseSchema,
+  revisionResponseSchema,
   type SessionResponse,
   samplesResponseSchema,
   saveResponseSchema,
@@ -138,6 +140,16 @@ export function createPayloadAdapter(options: PayloadAdapterOptions): DocumentAd
         document: parsed.value,
         contextRef: body.contextRef,
         ...(body.readOnly === true ? { readOnly: true } : {}),
+      };
+    },
+
+    async getRevision(ref): Promise<RevisionInfo> {
+      const reply = await http.send('GET', `${documentPath(ref)}/revision`);
+      const body = expectBody(reply, revisionResponseSchema);
+      return {
+        revision: body.revision,
+        updatedAt: body.updatedAt,
+        ...(body.updatedBy === undefined ? {} : { updatedBy: body.updatedBy }),
       };
     },
 

@@ -261,4 +261,7 @@ export const pl: Messages = {
   'editor.resize.left': 'Zmień szerokość lewego panelu',
   'editor.resize.right': 'Zmień szerokość prawego panelu',
   'ui.close': 'Zamknij',
+  'external.banner': 'Zapisano nowszą wersję tej strony.',
+  'external.banner.by': 'Użytkownik {name} zapisał nowszą wersję tej strony.',
+  'external.reload': 'Wczytaj najnowszą wersję',
 };
