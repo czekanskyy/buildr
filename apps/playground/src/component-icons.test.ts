@@ -1,3 +1,4 @@
+import { componentIconNames } from '@buildr/editor';
 import { describe, expect, it } from 'vitest';
 import { registry } from './registry.ts';
 
@@ -22,6 +23,9 @@ describe('built-in component icons (PB-121)', () => {
     expect(duplicates).toEqual([]);
   });
 
-  // TODO(lead, after PB-120): also assert that every `meta.icon` is a key of the editor's
-  // `ComponentIcon` map. It is deliberately not asserted here because that map does not exist yet.
+  it('has every icon in the editor ComponentIcon map, so none falls back to the neutral box', () => {
+    const known = new Set(componentIconNames);
+    const missing = metas.filter((meta) => !known.has(meta.icon ?? '')).map((meta) => meta.type);
+    expect(missing).toEqual([]);
+  });
 });

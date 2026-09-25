@@ -22,7 +22,15 @@ import {
 } from '../../dnd/index.ts';
 import { type MessageKey, useT } from '../../messages/index.tsx';
 import { pathTo, useEditor, useEditorState } from '../../store/index.ts';
-import { ContextMenu, Input, type MenuItem } from '../../ui/index.ts';
+import {
+  ComponentIcon,
+  ContextMenu,
+  Icon,
+  type IconName,
+  Input,
+  type MenuItem,
+  Tooltip,
+} from '../../ui/index.ts';
 import { flattenTree, type LayerRow } from './flatten.ts';
 
 /** Every row is this tall, which is what lets the list render only the rows in view. */
@@ -462,14 +470,14 @@ function Layer({
   const { node } = row;
   const meta = componentMeta(manifest, node.type);
   const label = node.name ?? meta?.label ?? node.type;
-  const badges: { key: MessageKey; glyph: string }[] = [];
-  if (node.lock !== undefined) badges.push({ key: 'layers.badge.lock', glyph: '🔒' });
-  if (node.visibleIf !== undefined) badges.push({ key: 'layers.badge.visibleIf', glyph: '◐' });
+  const badges: { key: MessageKey; icon: IconName }[] = [];
+  if (node.lock !== undefined) badges.push({ key: 'layers.badge.lock', icon: 'lock' });
+  if (node.visibleIf !== undefined) badges.push({ key: 'layers.badge.visibleIf', icon: 'eye' });
   const bp = node.styles?.bp;
   if (bp !== undefined && Object.keys(bp).length > 0) {
-    badges.push({ key: 'layers.badge.breakpoints', glyph: '▭' });
+    badges.push({ key: 'layers.badge.breakpoints', icon: 'monitor-smartphone' });
   }
-  if (hasIssue) badges.push({ key: 'layers.badge.issues', glyph: '⚠' });
+  if (hasIssue) badges.push({ key: 'layers.badge.issues', icon: 'triangle-alert' });
 
   return (
     // biome-ignore lint/a11y/useFocusableInteractive: focus stays on the tree (aria-activedescendant)
@@ -494,10 +502,10 @@ function Layer({
       }}
     >
       <span className="bd-layer-toggle" data-toggle aria-hidden="true">
-        {row.hasChildren ? (row.expanded ? '▾' : '▸') : ''}
+        {row.hasChildren ? <Icon name={row.expanded ? 'chevron-down' : 'chevron-right'} /> : null}
       </span>
       <span className="bd-layer-icon" data-icon={meta?.icon} aria-hidden="true">
-        {(meta?.label ?? node.type).charAt(0).toUpperCase()}
+        <ComponentIcon meta={meta} />
       </span>
       {renaming ? (
         <RenameField
@@ -511,9 +519,11 @@ function Layer({
       )}
       {row.slot !== 'default' ? <span className="bd-layer-slot">{row.slot}</span> : null}
       {badges.map((badge) => (
-        <span key={badge.key} className="bd-layer-badge" role="img" aria-label={t(badge.key)}>
-          {badge.glyph}
-        </span>
+        <Tooltip key={badge.key} content={t(badge.key)}>
+          <span className="bd-layer-badge" role="img" aria-label={t(badge.key)}>
+            <Icon name={badge.icon} />
+          </span>
+        </Tooltip>
       ))}
     </div>
   );

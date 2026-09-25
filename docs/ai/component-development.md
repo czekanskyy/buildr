@@ -37,7 +37,7 @@ A generator exists (or will, once task PB-050 lands): `pnpm gen:component <name>
 - Tests: SSR snapshot, root spread, prop validation, bindings for every `bindable` prop, axe on SSR output, keyboard tests for interactive components.
 - Fixtures exist in the gallery at all three breakpoints, with an approved visual baseline.
 - `docs/components.md` is updated.
-- `meta.icon` is a lucide kebab-case name and is unique within the built-in catalogue (table in `docs/components.md`).
+- `meta.icon` is a lucide kebab-case name (canonical, not an alias), is unique within the built-in catalogue (table in `docs/components.md`) and is present in the editor's `ComponentIcon` map (`docs/component-registry.md`); the playground test checks both.
 - A prop schema change bumps `version`, ships a migration, and a migration fixture.
 - The component's manifest projection is fully serializable (no functions leak into `toManifest()` output).
 

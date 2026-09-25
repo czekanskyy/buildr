@@ -1,6 +1,6 @@
 # Editor design guidelines
 
-Status: **reference (PB-119).** Token values are shipped in `packages/editor/src/styles/tokens.css`; PB-120 adds the icon rules. The source of the approved values is [design/identity.md](design/identity.md); mockups are in [design/mockups/](design/mockups/).
+Status: **reference (PB-119).** Token values are shipped in `packages/editor/src/styles/tokens.css`; the icon rules (PB-120) are in [Icons](#icons). The source of the approved values is [design/identity.md](design/identity.md); mockups are in [design/mockups/](design/mockups/).
 
 Every editor task in [phase 13](backlog/phase-13-editor-visual-polish.md) references this document. Where it disagrees with a mockup, the token tables in `identity.md` win.
 
@@ -117,7 +117,22 @@ Spacing sits on a 4px grid with 2px and 6px as fine steps (`--bd-space-0`, `-2`)
 
 ## Icons
 
-*Stub, filled by PB-120:* the `Icon` and `ComponentIcon` components, the curated map, sizes (16px in rows, 20px in tiles), colours per state, and the fallback icon. Until then see [identity.md section 7](design/identity.md#7-icons).
+Lucide, through `lucide-react`, imported **statically by name** (tree-shaken; no `DynamicIcon`, no whole-set import). Never a unicode arrow, triangle or emoji as an icon: a test scans `packages/editor/src` for them.
+
+| Piece | Use |
+|---|---|
+| `<Icon name size label? />` (`ui/icon.tsx`) | the editor's own chrome; `name` is a key of a small curated map (`IconName`), so a typo fails typecheck |
+| `<ComponentIcon meta size />` | a component's `meta.icon` (palette tile, layer row), resolved against a second curated map of about 75 names; a missing or unknown name gives the neutral `box` icon, **never a letter** |
+| `<IconButton icon label />` | an icon-only button; `icon` is an `IconName`, `label` is required (accessible name and tooltip) |
+| `<Select>` | shows a `chevron-down` icon itself |
+
+Rules:
+
+- **Sizes**: `sm` = 16px (rows, buttons, badges; the default), `md` = 20px (palette tiles). Stroke 1.5px at every size (`absoluteStrokeWidth`). Icons use `currentColor`, so the container sets the colour.
+- **Colour per state**: `text-muted` at rest, `accent` for the selected layer row and palette tiles, `toolbar-muted` / `toolbar-text` in the toolbar.
+- **Accessibility**: decorative icons are `aria-hidden` (the default). An icon that carries meaning on its own (a layer badge) is wrapped with a tooltip and a `role="img"` name from the messages catalog. Never make an icon the only name of a control.
+- **Adding an icon**: one static import and one map entry in `ui/icon.tsx`; the unit test checks the name against lucide-react's export list. Use lucide's canonical kebab-case names.
+- Sizes and colours in full: [identity.md section 7](design/identity.md#7-icons).
 
 ## Density rules
 

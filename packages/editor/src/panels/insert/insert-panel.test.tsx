@@ -41,9 +41,15 @@ const registry = createRegistryMeta({
       capabilities: { root: true },
       slots: { default: { max: 2 } },
     }),
-    meta('buildr/box', { label: 'Box', category: 'layout', slots: { default: {} } }),
+    meta('buildr/box', {
+      label: 'Box',
+      category: 'layout',
+      icon: 'layout-grid',
+      slots: { default: {} },
+    }),
     meta('buildr/text', {
       label: 'Text',
+      icon: 'no-such-lucide-icon',
       keywords: ['paragraph', 'copy'],
       props: { text: p.text({ default: '' }) },
     }),
@@ -127,6 +133,18 @@ const click = (label: string) => act(async () => button(label).click());
 const notice = () => container.querySelector('[role=status]')?.textContent;
 const children = (store: Awaited<ReturnType<typeof mount>>, id: string) =>
   store.getState().doc.nodes[id]?.slots?.['default'] ?? [];
+
+describe('tile icons', () => {
+  it('draws an svg for a known icon and the neutral box for an unknown one, never a letter', async () => {
+    await mount();
+    const icon = (label: string) => button(label).querySelector('.bd-insert-icon');
+    expect(icon('Box')?.querySelector('svg')?.getAttribute('data-icon')).toBe('layout-grid');
+    const fallback = icon('Text')?.querySelector('svg');
+    expect(fallback?.getAttribute('data-icon')).toBe('box');
+    expect(fallback?.getAttribute('data-fallback')).toBe('true');
+    expect(icon('Text')?.textContent).toBe('');
+  });
+});
 
 describe('catalog', () => {
   it('lists only what can be inserted, sorted, with templates apart', () => {
