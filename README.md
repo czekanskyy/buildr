@@ -42,6 +42,18 @@ Then open a page in the admin and click **Edit with Visual Builder**. The full w
 | `@buildr/editor` | The visual editor application (client-only) |
 | `@buildr/next` | Next.js App Router integration: `BuildrPage`, draft mode, canvas/editor routes, metadata, caching |
 | `@buildr/payload` | Payload plugin, data source, HTTP adapter for the editor, admin UI |
+| `@buildr/mcp` | MCP server: lets AI agents build and edit pages through the same commands as the editor (stdio CLI and HTTP, drafts only, publishing opt-in) |
+
+## Build pages with an AI agent
+
+An agent (Claude Code, Claude Desktop, any MCP client) can discover the components, insert, style, translate and validate pages and save them as **drafts**; publishing is off unless you enable it. It uses commands, never raw HTML or JSON, so the result opens in the editor like any other page.
+
+```bash
+BUILDR_MCP=1 pnpm dev:example    # then create an agent user with an API key in /admin
+claude mcp add buildr --env BUILDR_API_KEY=<key> -- npx buildr-mcp --url http://localhost:3000
+```
+
+Setup, prompts, tool reference and security notes: [docs/mcp.md](docs/mcp.md).
 
 ## Documentation
 
@@ -50,6 +62,7 @@ Then open a page in the admin and click **Edit with Visual Builder**. The full w
 - [Roadmap and MVP scope](docs/roadmap.md)
 - [Architecture Decision Records](docs/adr/README.md)
 - [Implementation backlog](docs/backlog/README.md)
+- [Building pages with AI agents (MCP server)](docs/mcp.md)
 - [Guide for AI coding agents](AGENTS.md)
 
 ## Contributing

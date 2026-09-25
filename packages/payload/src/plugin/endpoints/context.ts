@@ -1,9 +1,10 @@
 import type { PayloadRequest } from 'payload';
 import type { SchemaOptions, SchemaSource } from '../../data/index.ts';
-import { type Action, allowed as isAllowed } from '../access.ts';
+import { type Action, allowed as isAllowed, isApiKeyRequest } from '../access.ts';
 import type { RateLimiter } from '../forms/rate-limit.ts';
 import type { LocaleArgs } from '../locales.ts';
 import type { ResolvedOptions } from '../options.ts';
+import { BUILDR_WRITE } from '../write-guard.ts';
 import { fail, notFound, unauthorized } from './respond.ts';
 
 export interface DocumentTarget {
@@ -16,11 +17,53 @@ export interface EndpointEnv {
   readonly options: ResolvedOptions;
   /** Limits form submissions (present when forms are enabled). */
   readonly rateLimiter?: RateLimiter | undefined;
+  /** Limits the writes of API-key requests (present when `mcp.enabled`). */
+  readonly writeLimiter?: RateLimiter | undefined;
 }
 
 export type Guarded<T> =
   | { readonly ok: true; readonly value: T }
   | { readonly ok: false; readonly response: Response };
+
+/** Whether an API-key user may use the builder collection (`mcp.collections`; default: all of them). */
+export const mcpMayUse = (env: EndpointEnv, collection: string): boolean =>
+  env.options.collections[collection] !== undefined &&
+  (env.options.mcp.collections === undefined || env.options.mcp.collections.includes(collection));
+
+/**
+ * The write rate limit of API-key requests (browser sessions are not limited): the response to send
+ * instead (`429`), or `undefined`.
+ */
+export async function writeLimit(
+  env: EndpointEnv,
+  req: PayloadRequest,
+): Promise<Response | undefined> {
+  if (!isApiKeyRequest(req) || env.writeLimiter === undefined) return undefined;
+  const user = req.user as { id?: string | number; collection?: string };
+  const result = await env.writeLimiter.hit(`${user.collection ?? ''}:${String(user.id)}`);
+  if (result.allowed) return undefined;
+  const response = fail(429, 'Too many writes. Try again later.');
+  response.headers.set('retry-after', String(result.retryAfterSeconds));
+  return response;
+}
+
+/** The context of every builder write: the guard flag, and whether an API key made the request. */
+export const writeContext = (req: PayloadRequest): Record<string, unknown> => ({
+  [BUILDR_WRITE]: true,
+  ...(isApiKeyRequest(req) ? { buildrApiKey: true } : {}),
+});
+
+/**
+ * The user a write is attributed to (`buildrUpdatedBy`, added with `mcp.enabled`); it lands in the
+ * document and in every version, so history shows the agent's user.
+ */
+export function updatedBy(env: EndpointEnv, req: PayloadRequest): Record<string, unknown> {
+  const user = req.user as { id?: string | number; collection?: string } | null | undefined;
+  if (!env.options.mcp.enabled || user?.id === undefined || user.collection === undefined) {
+    return {};
+  }
+  return { buildrUpdatedBy: { relationTo: user.collection, value: user.id } };
+}
 
 /** An authenticated user and a configured collection (the `:collection` param). */
 export function collectionOf(env: EndpointEnv, req: PayloadRequest): Guarded<string> {
@@ -31,6 +74,9 @@ export function collectionOf(env: EndpointEnv, req: PayloadRequest): Guarded<str
   }
   if (env.options.collections[collection] === undefined) {
     return { ok: false, response: notFound(`The collection "${collection}"`) };
+  }
+  if (isApiKeyRequest(req) && !mcpMayUse(env, collection)) {
+    return { ok: false, response: fail(403, `Agents may not use the collection "${collection}".`) };
   }
   return { ok: true, value: collection };
 }
@@ -89,6 +135,8 @@ export async function latestOf(
     readonly localeArgs?: LocaleArgs | undefined;
     readonly depth?: number;
     readonly draft?: boolean;
+    /** Only these fields are read (Payload's `select`). */
+    readonly select?: Record<string, true>;
   } = {},
 ): Promise<Guarded<Record<string, unknown>>> {
   try {
@@ -97,6 +145,7 @@ export async function latestOf(
       id: target.id,
       draft: options.draft ?? true,
       depth: options.depth ?? 0,
+      ...(options.select === undefined ? {} : { select: options.select }),
       req,
       overrideAccess: false,
       ...options.localeArgs,

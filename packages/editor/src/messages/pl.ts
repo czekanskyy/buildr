@@ -264,4 +264,7 @@ export const pl: Messages = {
   'insert.view.grid': 'Widok siatki',
   'insert.view.list': 'Widok listy',
   'ui.close': 'Zamknij',
+  'external.banner': 'Zapisano nowszą wersję tej strony.',
+  'external.banner.by': 'Użytkownik {name} zapisał nowszą wersję tej strony.',
+  'external.reload': 'Wczytaj najnowszą wersję',
 };

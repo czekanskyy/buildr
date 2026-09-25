@@ -1,0 +1,83 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`outlineToJson > has the same content as the text, as data 1`] = `
+{
+  "nodeCount": 7,
+  "root": {
+    "id": "root",
+    "slots": {
+      "default": [
+        {
+          "id": "n000000002",
+          "name": "Hero",
+          "slots": {
+            "default": [
+              {
+                "id": "n000000003",
+                "text": "Welcome",
+                "translations": [
+                  "pl",
+                ],
+                "type": "buildr/heading",
+              },
+              {
+                "id": "n000000004",
+                "text": "post.summary",
+                "textKind": "binding",
+                "type": "buildr/text",
+              },
+              {
+                "id": "n000000005",
+                "locked": [
+                  "structure",
+                ],
+                "slots": {
+                  "actions": [],
+                  "body": [],
+                  "default": [
+                    {
+                      "id": "n000000006",
+                      "text": "Inside card",
+                      "type": "buildr/heading",
+                    },
+                  ],
+                  "media": [],
+                },
+                "type": "buildr/card",
+              },
+            ],
+          },
+          "type": "buildr/section",
+        },
+        {
+          "hidden": true,
+          "id": "n000000007",
+          "type": "buildr/divider",
+        },
+      ],
+    },
+    "type": "buildr/page",
+  },
+  "truncated": false,
+}
+`;
+
+exports[`renderOutline > limits depth and reports what it left out 1`] = `
+"root buildr/page
+  n000000002 buildr/section "Hero" (+4 more)
+  n000000007 buildr/divider [hidden]"
+`;
+
+exports[`renderOutline > shows ids, types, names, the primary prop and markers 1`] = `
+"root buildr/page
+  n000000002 buildr/section "Hero"
+    n000000003 buildr/heading "Welcome" [l10n:pl]
+    n000000004 buildr/text text=@post.summary
+    n000000005 buildr/card [locked:structure]
+      media: (empty)
+      body: (empty)
+      actions: (empty)
+      default:
+        n000000006 buildr/heading "Inside card"
+  n000000007 buildr/divider [hidden]"
+`;

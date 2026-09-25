@@ -1,0 +1,175 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`the tree JSON Schema > is described, ready for a tool definition 1`] = `
+{
+  "$defs": {
+    "TreeNode": {
+      "additionalProperties": false,
+      "properties": {
+        "anchor": {
+          "description": "HTML id, unique in the document (for in-page links).",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$",
+          "type": "string",
+        },
+        "children": {
+          "description": "Shorthand for slots.default: the ordered children of the default slot. Use either "children" or "slots".",
+          "items": {
+            "$ref": "#/$defs/TreeNode",
+          },
+          "type": "array",
+        },
+        "name": {
+          "description": "Label shown in the editor layers panel.",
+          "maxLength": 120,
+          "type": "string",
+        },
+        "props": {
+          "additionalProperties": {},
+          "description": "Props by name. A plain JSON value is a static value ({"text": "Hello"}); use {"kind":"binding","path":"post.title"} to bind data or {"kind":"expression","expr":"..."} for a formula; {"kind":"static","value":"Hallo"} with "l10n":{"pl":"Cześć"} carries translations. Unset props use the component default.",
+          "propertyNames": {
+            "type": "string",
+          },
+          "type": "object",
+        },
+        "slots": {
+          "additionalProperties": {
+            "items": {
+              "$ref": "#/$defs/TreeNode",
+            },
+            "type": "array",
+          },
+          "description": "Children per named slot, for components with several slots. Each slot lists its ordered children.",
+          "propertyNames": {
+            "type": "string",
+          },
+          "type": "object",
+        },
+        "styles": {
+          "additionalProperties": {},
+          "description": "Style overrides for this node: {"base": {"spacing": {"padding": {"top": "$space.4"}}}, "bp": {"mobile": {...}}, "state": {"hover": {...}}}. See get_style_reference for groups and properties.",
+          "propertyNames": {
+            "type": "string",
+          },
+          "type": "object",
+        },
+        "type": {
+          "description": "Component type as "<namespace>/<name>", for example "buildr/heading". Use list_components for the valid types.",
+          "enum": [
+            "buildr/section",
+            "buildr/container",
+            "buildr/stack",
+            "buildr/grid",
+            "buildr/heading",
+            "buildr/text",
+            "buildr/rich-text",
+            "buildr/button",
+            "buildr/link",
+            "buildr/image",
+            "buildr/icon",
+            "buildr/list",
+            "buildr/divider",
+            "buildr/badge",
+            "buildr/card",
+            "buildr/accordion",
+            "buildr/loop",
+            "buildr/pagination",
+            "buildr/form",
+            "buildr/input",
+            "buildr/textarea",
+            "buildr/select",
+            "buildr/checkbox",
+          ],
+          "type": "string",
+        },
+      },
+      "required": [
+        "type",
+      ],
+      "type": "object",
+    },
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "anchor": {
+      "description": "HTML id, unique in the document (for in-page links).",
+      "pattern": "^[a-z][a-z0-9-]{0,63}$",
+      "type": "string",
+    },
+    "children": {
+      "description": "Shorthand for slots.default: the ordered children of the default slot. Use either "children" or "slots".",
+      "items": {
+        "$ref": "#/$defs/TreeNode",
+      },
+      "type": "array",
+    },
+    "name": {
+      "description": "Label shown in the editor layers panel.",
+      "maxLength": 120,
+      "type": "string",
+    },
+    "props": {
+      "additionalProperties": {},
+      "description": "Props by name. A plain JSON value is a static value ({"text": "Hello"}); use {"kind":"binding","path":"post.title"} to bind data or {"kind":"expression","expr":"..."} for a formula; {"kind":"static","value":"Hallo"} with "l10n":{"pl":"Cześć"} carries translations. Unset props use the component default.",
+      "propertyNames": {
+        "type": "string",
+      },
+      "type": "object",
+    },
+    "slots": {
+      "additionalProperties": {
+        "items": {
+          "$ref": "#/$defs/TreeNode",
+        },
+        "type": "array",
+      },
+      "description": "Children per named slot, for components with several slots. Each slot lists its ordered children.",
+      "propertyNames": {
+        "type": "string",
+      },
+      "type": "object",
+    },
+    "styles": {
+      "additionalProperties": {},
+      "description": "Style overrides for this node: {"base": {"spacing": {"padding": {"top": "$space.4"}}}, "bp": {"mobile": {...}}, "state": {"hover": {...}}}. See get_style_reference for groups and properties.",
+      "propertyNames": {
+        "type": "string",
+      },
+      "type": "object",
+    },
+    "type": {
+      "description": "Component type as "<namespace>/<name>", for example "buildr/heading". Use list_components for the valid types.",
+      "enum": [
+        "buildr/section",
+        "buildr/container",
+        "buildr/stack",
+        "buildr/grid",
+        "buildr/heading",
+        "buildr/text",
+        "buildr/rich-text",
+        "buildr/button",
+        "buildr/link",
+        "buildr/image",
+        "buildr/icon",
+        "buildr/list",
+        "buildr/divider",
+        "buildr/badge",
+        "buildr/card",
+        "buildr/accordion",
+        "buildr/loop",
+        "buildr/pagination",
+        "buildr/form",
+        "buildr/input",
+        "buildr/textarea",
+        "buildr/select",
+        "buildr/checkbox",
+      ],
+      "type": "string",
+    },
+  },
+  "required": [
+    "type",
+  ],
+  "type": "object",
+}
+`;

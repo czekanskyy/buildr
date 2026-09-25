@@ -13,6 +13,9 @@ import type {
 /** How long to wait before retrying a failed save; the last delay repeats. */
 export const RETRY_DELAYS_MS: readonly number[] = [2000, 5000, 15_000];
 
+/** How often an idle, visible editor asks the backend whether somebody else saved. */
+export const EXTERNAL_CHECK_INTERVAL_MS = 30_000;
+
 export const systemClock: Clock = {
   now: () => Date.now(),
   setTimeout: (handler, ms) => setTimeout(handler, ms),
@@ -28,6 +31,10 @@ export interface PersistenceOptions {
   readonly debounceMs?: number;
   readonly maxWaitMs?: number;
   readonly clock?: Clock;
+  /** How often to look for saves made elsewhere (default 30 s; 0 turns it off). */
+  readonly externalCheckMs?: number;
+  /** Whether the tab is shown; nothing is polled while it is not (default: `document.visibilityState`). */
+  readonly isVisible?: () => boolean;
 }
 
 export interface PersistenceController {
@@ -45,6 +52,12 @@ export interface PersistenceController {
    * revision. Never rejects; what went wrong is in the outcome.
    */
   publish(): Promise<PublishOutcome>;
+  /**
+   * Asks the backend for the current revision (`adapter.getRevision`) and, when somebody else saved,
+   * sets `state.external` (unchanged document) or moves to `conflict` (unsaved changes). Runs by
+   * itself every 30 s while the tab is visible; call it on window focus. Never rejects.
+   */
+  checkExternal(): Promise<void>;
   /** Whether closing the tab would lose something. */
   hasUnsavedWork(): boolean;
 }
@@ -69,6 +82,7 @@ export function createPersistence(options: PersistenceOptions): PersistenceContr
     lastSavedAt: undefined,
     error: undefined,
     conflictRevision: undefined,
+    external: undefined,
   }));
   const set = (patch: Partial<PersistenceState>) => state.setState(patch);
 
@@ -79,6 +93,12 @@ export function createPersistence(options: PersistenceOptions): PersistenceContr
   let inFlight: Promise<void> | undefined;
   let saveAgain = false;
   let stopped = true;
+  let externalTimer: unknown;
+  let checking = false;
+  const externalMs = options.externalCheckMs ?? EXTERNAL_CHECK_INTERVAL_MS;
+  const isVisible =
+    options.isVisible ??
+    (() => typeof document === 'undefined' || document.visibilityState !== 'hidden');
 
   const isDirty = () => {
     const { cursorId, savedCursorId } = store.getState();
@@ -118,6 +138,7 @@ export function createPersistence(options: PersistenceOptions): PersistenceContr
         lastSavedAt: result.updatedAt,
         error: undefined,
         conflictRevision: undefined,
+        external: undefined,
       });
       if (isDirty()) {
         // Changed while saving: the next save takes it.
@@ -130,7 +151,12 @@ export function createPersistence(options: PersistenceOptions): PersistenceContr
     }
     if (result.kind === 'conflict') {
       clearTimers();
-      set({ status: 'conflict', conflictRevision: result.currentRevision, error: undefined });
+      set({
+        status: 'conflict',
+        conflictRevision: result.currentRevision,
+        error: undefined,
+        external: undefined,
+      });
       return;
     }
     clearTimers();
@@ -189,6 +215,18 @@ export function createPersistence(options: PersistenceOptions): PersistenceContr
       return;
     }
     if (status === 'saving') return; // The save that follows it picks the change up.
+    const { external } = state.getState();
+    if (external !== undefined) {
+      // Somebody else saved and now there are local edits too: ask now, not at the refused save.
+      clearTimers();
+      set({
+        status: 'conflict',
+        conflictRevision: external.revision,
+        error: undefined,
+        external: undefined,
+      });
+      return;
+    }
     if (status === 'error') {
       // A new change gives a rejected document another chance, and a failing network a sooner retry.
       clearTimers();
@@ -199,10 +237,55 @@ export function createPersistence(options: PersistenceOptions): PersistenceContr
     schedule();
   }
 
+  async function checkExternal(): Promise<void> {
+    if (stopped || checking || adapter.getRevision === undefined || !isVisible()) return;
+    const { status, revision } = state.getState();
+    if (status === 'saving' || status === 'conflict' || inFlight !== undefined) return;
+    checking = true;
+    try {
+      const info = await adapter.getRevision(ref);
+      const now = state.getState();
+      // The answer is stale when a save, a reload or a conflict happened while it was on its way.
+      if (stopped || now.revision !== revision) return;
+      if (now.status === 'saving' || now.status === 'conflict' || inFlight !== undefined) return;
+      if (info.revision <= now.revision) {
+        if (now.external !== undefined) set({ external: undefined });
+        return;
+      }
+      if (isDirty()) {
+        clearTimers();
+        set({
+          status: 'conflict',
+          conflictRevision: info.revision,
+          error: undefined,
+          external: undefined,
+        });
+      } else {
+        set({ external: { revision: info.revision, updatedBy: info.updatedBy } });
+      }
+    } catch {
+      // Not knowing is not a reason to bother the author; the save still detects a conflict.
+    } finally {
+      checking = false;
+    }
+  }
+
+  function scheduleExternalCheck() {
+    if (externalMs <= 0 || adapter.getRevision === undefined) return;
+    externalTimer = clock.setTimeout(() => {
+      externalTimer = undefined;
+      void checkExternal().finally(() => {
+        if (!stopped) scheduleExternalCheck();
+      });
+    }, externalMs);
+  }
+
   return {
     state,
+    checkExternal,
     start() {
       stopped = false;
+      scheduleExternalCheck();
       // Every step of the history moves the cursor, so this sees edits, undo, redo and replacements.
       const stopSubscription = store.subscribe((next, previous) => {
         if (next.cursorId !== previous.cursorId || next.savedCursorId !== previous.savedCursorId) {
@@ -213,6 +296,8 @@ export function createPersistence(options: PersistenceOptions): PersistenceContr
         stopped = true;
         stopSubscription();
         clearTimers();
+        if (externalTimer !== undefined) clock.clearTimeout(externalTimer);
+        externalTimer = undefined;
       };
     },
     saveNow: () => {
@@ -232,6 +317,7 @@ export function createPersistence(options: PersistenceOptions): PersistenceContr
         lastSavedAt: loaded.updatedAt,
         error: undefined,
         conflictRevision: undefined,
+        external: undefined,
       });
     },
     overwrite() {
@@ -270,7 +356,12 @@ export function createPersistence(options: PersistenceOptions): PersistenceContr
       }
       if (result.kind === 'conflict') {
         clearTimers();
-        set({ status: 'conflict', conflictRevision: result.currentRevision, error: undefined });
+        set({
+          status: 'conflict',
+          conflictRevision: result.currentRevision,
+          error: undefined,
+          external: undefined,
+        });
         return { ok: false, kind: 'conflict', currentRevision: result.currentRevision };
       }
       return { ok: false, kind: 'invalid', diagnostics: result.diagnostics };
