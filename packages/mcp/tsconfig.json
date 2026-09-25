@@ -5,9 +5,14 @@
     "composite": true,
     "rootDir": "src",
     "outDir": "dist",
-    "tsBuildInfoFile": "./dist/.tsbuildinfo"
+    "tsBuildInfoFile": "./dist/.tsbuildinfo",
+    "types": ["node"]
   },
   "include": ["src"],
   "exclude": ["src/**/*.test.ts", "src/**/*.test-kit.ts"],
-  "references": [{ "path": "../core" }]
+  "references": [
+    {
+      "path": "../core"
+    }
+  ]
 }

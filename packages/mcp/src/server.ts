@@ -199,3 +199,15 @@ export function createBuildrMcpServer(input: CreateBuildrMcpServerInput): Buildr
 
   return server;
 }
+
+/**
+ * Connects `server` to stdin/stdout (the stdio transport) and returns a `close` that shuts the
+ * transport down. Like everything SDK-specific, this lives here so the rest of the package (and the
+ * CLI) never import the SDK.
+ */
+export async function serveStdio(server: BuildrMcpServer): Promise<{ close(): Promise<void> }> {
+  const { StdioServerTransport } = await import('@modelcontextprotocol/sdk/server/stdio.js');
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+  return { close: () => server.close() };
+}

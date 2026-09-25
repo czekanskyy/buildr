@@ -134,7 +134,48 @@ Errors are the `SessionErrorCode`s in `packages/mcp/src/session/errors.ts`; a ba
 
 ## Installing and connecting
 
-To be written in PB-141 (stdio CLI) and PB-142 (HTTP endpoint).
+### stdio CLI (`buildr-mcp`)
+
+`@buildr/mcp` ships the `buildr-mcp` binary (`@buildr/mcp/cli`). It serves the full tool suite over stdio and talks to a site through the HTTP backend from `@buildr/payload/mcp`, which is an **optional peer dependency** resolved with a dynamic import when `--url` is used (so `@buildr/mcp` stays CMS-agnostic). Install both next to each other: `npm i -D @buildr/mcp @buildr/payload`.
+
+```
+buildr-mcp --url <site> [--allow-publish] [--auth-collection users] [--collections pages,posts]
+buildr-mcp --playground <dir> [--allow-publish]
+```
+
+| Option | Meaning |
+|---|---|
+| `--url <site>` | the site's origin, e.g. `http://localhost:3000`; the builder API is `<site>/api` |
+| `BUILDR_API_KEY` | the agent user's Payload API key. **Environment only**: there is deliberately no flag, so the key stays out of shell history and process lists. It never appears in logs or errors |
+| `--auth-collection` | the auth collection the key belongs to (default `users`) |
+| `--collections` | builder collections to list when a call names none |
+| `--allow-publish` | enables the `publish` tool (`allowPublish`); it still needs a key that may publish and an explicit `confirm` |
+| `--playground <dir>` | no CMS: documents are JSON files in `<dir>` (`<collection>/<id>.json`, or `<id>.json` for the `pages` collection) on top of the memory backend with the built-in component catalogue (`fixtures/default-manifest.json`, shipped in the package). Each file is a bare document or `{ title, slug, status, revision, document }`; created and saved documents are written back. Invalid files are skipped with a log line |
+
+Logs go to stderr only (stdout carries the protocol). The process exits cleanly on `SIGINT`/`SIGTERM` or when the client closes stdin.
+
+**Claude Code**
+
+```sh
+claude mcp add buildr --env BUILDR_API_KEY=<key> -- npx buildr-mcp --url http://localhost:3000
+claude mcp add buildr-playground -- npx buildr-mcp --playground ./buildr-playground
+```
+
+**Claude Desktop** (`claude_desktop_config.json`)
+
+```json
+{
+  "mcpServers": {
+    "buildr": {
+      "command": "npx",
+      "args": ["buildr-mcp", "--url", "http://localhost:3000"],
+      "env": { "BUILDR_API_KEY": "<key>" }
+    }
+  }
+}
+```
+
+The HTTP endpoint is described in PB-142.
 
 ## Authentication
 

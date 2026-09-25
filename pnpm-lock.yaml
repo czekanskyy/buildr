@@ -112,7 +112,7 @@ importers:
         version: 7.0.2
       vitest:
         specifier: 5.0.1
-        version: 5.0.1(@types/node@22.20.4)(happy-dom@20.14.5)(jsdom@30.1.1)(vite@8.3.0(@types/node@22.20.4)(esbuild@0.25.12)(sass@1.77.4)(tsx@4.22.4))
+        version: 5.0.1(@types/node@22.20.4)(happy-dom@20.14.5)(jsdom@30.1.1)(vite@8.3.0(@types/node@22.20.4)(esbuild@0.28.2)(sass@1.77.4)(tsx@4.22.4))
 
   apps/playground:
     dependencies:
@@ -324,6 +324,9 @@ importers:
       '@buildr/core':
         specifier: workspace:*
         version: link:../core
+      '@buildr/payload':
+        specifier: workspace:*
+        version: link:../payload
       '@modelcontextprotocol/sdk':
         specifier: ^1.30.1
         version: 1.30.1(zod@4.6.5)
@@ -334,12 +337,18 @@ importers:
       '@buildr/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
+      '@types/node':
+        specifier: ^22.20.4
+        version: 22.20.4
+      tsx:
+        specifier: 4.22.4
+        version: 4.22.4
       typescript:
         specifier: 7.0.2
         version: 7.0.2
       vitest:
         specifier: 5.0.1
-        version: 5.0.1(@types/node@26.6.2)(happy-dom@20.14.5)(jsdom@30.1.1)(vite@8.3.0(@types/node@26.6.2)(esbuild@0.28.2)(sass@1.77.4)(tsx@4.22.4))
+        version: 5.0.1(@types/node@22.20.4)(happy-dom@20.14.5)(jsdom@30.1.1)(vite@8.3.0(@types/node@22.20.4)(esbuild@0.28.2)(sass@1.77.4)(tsx@4.22.4))
 
   packages/next:
     dependencies:
@@ -437,7 +446,7 @@ importers:
         version: 7.0.2
       vitest:
         specifier: 5.0.1
-        version: 5.0.1(@types/node@22.20.4)(happy-dom@20.14.5)(jsdom@30.1.1)(vite@8.3.0(@types/node@22.20.4)(esbuild@0.28.2)(sass@1.77.4)(tsx@4.22.4))
+        version: 5.0.1(@types/node@22.20.4)(happy-dom@20.14.5)(jsdom@30.1.1)(vite@8.3.0(@types/node@22.20.4)(esbuild@0.25.12)(sass@1.77.4)(tsx@4.22.4))
 
   packages/react:
     dependencies:
