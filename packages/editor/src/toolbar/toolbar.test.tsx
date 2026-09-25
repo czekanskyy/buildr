@@ -19,6 +19,7 @@ import {
 } from '../persistence/index.ts';
 import { ShortcutProvider } from '../shortcuts/index.ts';
 import { createEditorStore, EditorStoreProvider } from '../store/index.ts';
+import { ToastProvider } from '../ui/index.ts';
 import { Toolbar, type ToolbarProps } from './toolbar.tsx';
 
 expect.extend(matchers);
@@ -102,11 +103,13 @@ describe('Toolbar', () => {
         <MessagesProvider locale="en">
           <EditorStoreProvider store={store}>
             <ShortcutProvider platform="other">
-              <PersistenceProvider controller={controller}>
-                <div role="toolbar" aria-label="Toolbar">
-                  <Toolbar {...props} />
-                </div>
-              </PersistenceProvider>
+              <ToastProvider>
+                <PersistenceProvider controller={controller}>
+                  <div role="toolbar" aria-label="Toolbar">
+                    <Toolbar {...props} />
+                  </div>
+                </PersistenceProvider>
+              </ToastProvider>
             </ShortcutProvider>
           </EditorStoreProvider>
         </MessagesProvider>,

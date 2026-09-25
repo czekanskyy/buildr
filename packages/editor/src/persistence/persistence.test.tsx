@@ -10,6 +10,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MessagesProvider } from '../messages/index.tsx';
 import { createEditorStore, type EditorStore, EditorStoreProvider } from '../store/index.ts';
+import { ToastProvider } from '../ui/index.ts';
 import {
   createPersistence,
   EXTERNAL_CHECK_INTERVAL_MS,
@@ -477,11 +478,13 @@ describe('PersistenceProvider', () => {
     await act(async () =>
       root.render(
         <MessagesProvider locale="en">
-          <EditorStoreProvider store={store}>
-            <PersistenceProvider controller={controller}>
-              <Probe />
-            </PersistenceProvider>
-          </EditorStoreProvider>
+          <ToastProvider>
+            <EditorStoreProvider store={store}>
+              <PersistenceProvider controller={controller}>
+                <Probe />
+              </PersistenceProvider>
+            </EditorStoreProvider>
+          </ToastProvider>
         </MessagesProvider>,
       ),
     );
@@ -523,11 +526,10 @@ describe('PersistenceProvider', () => {
     expect(dirty.defaultPrevented).toBe(true);
   });
 
-  it('shows a status banner naming who saved, and reloads from it', async () => {
+  it('announces who saved in the toast region, and reloads from it', async () => {
     const fake = fakeAdapter();
     const { controller } = await mount(fake);
-    const banner = () => container.ownerDocument.querySelector('.bd-external-banner');
-    expect(banner()?.getAttribute('role')).toBe('status');
+    const banner = () => container.ownerDocument.querySelector('.bd-toast-region [role=status]');
     expect(banner()?.textContent).toBe('');
     fake.remote = { revision: 2, updatedBy: 'Claude agent' };
     fake.loaded = { ...(fake.loaded as object), revision: 2 };

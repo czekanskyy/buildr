@@ -174,10 +174,24 @@ export interface DialogProps {
   readonly onOpenChange: (open: boolean) => void;
   readonly title: string;
   readonly description?: string;
-  readonly children: ReactNode;
+  /** The body: it scrolls when it is taller than the dialog; the header and footer stay put. */
+  readonly children?: ReactNode;
+  /** Actions, right-aligned under the body. */
+  readonly footer?: ReactNode;
+  /** Omits the close button, for a dialog that can only be left by choosing (a conflict). */
+  readonly hideClose?: boolean;
 }
 
-export function Dialog({ open, onOpenChange, title, description, children }: DialogProps) {
+/** A modal: header (title, description, close icon button), scrollable body, right-aligned footer. */
+export function Dialog({
+  open,
+  onOpenChange,
+  title,
+  description,
+  children,
+  footer,
+  hideClose,
+}: DialogProps) {
   const t = useT();
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
@@ -187,16 +201,23 @@ export function Dialog({ open, onOpenChange, title, description, children }: Dia
           className="bd-dialog"
           {...(description === undefined ? { 'aria-describedby': undefined } : {})}
         >
-          <DialogPrimitive.Title className="bd-dialog-title">{title}</DialogPrimitive.Title>
-          {description !== undefined && (
-            <DialogPrimitive.Description className="bd-dialog-description">
-              {description}
-            </DialogPrimitive.Description>
-          )}
-          {children}
-          <DialogPrimitive.Close asChild>
-            <Button variant="ghost">{t('ui.close')}</Button>
-          </DialogPrimitive.Close>
+          <header className="bd-dialog-header">
+            <div className="bd-dialog-heading">
+              <DialogPrimitive.Title className="bd-dialog-title">{title}</DialogPrimitive.Title>
+              {description !== undefined && (
+                <DialogPrimitive.Description className="bd-dialog-description">
+                  {description}
+                </DialogPrimitive.Description>
+              )}
+            </div>
+            {hideClose === true ? null : (
+              <DialogPrimitive.Close asChild>
+                <IconButton label={t('ui.close')} icon="x" variant="ghost" />
+              </DialogPrimitive.Close>
+            )}
+          </header>
+          {children !== undefined && <div className="bd-dialog-body">{children}</div>}
+          {footer !== undefined && <footer className="bd-dialog-footer">{footer}</footer>}
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
