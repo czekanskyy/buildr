@@ -1,5 +1,5 @@
 // Public entry point of @buildr/mcp (ADR-024, docs/mcp.md): the McpBackend seam, the memory backend
-// and the server factory. Tools, sessions and serialization arrive in PB-134 - PB-138.
+// and the server factory. Sessions, serialization and the tools follow in PB-134 - PB-138.
 
 export * from './backend.ts';
 export {
@@ -7,6 +7,11 @@ export {
   type MemoryBackendOptions,
   type MemoryDocumentInput,
 } from './backends/memory.ts';
+export {
+  type CreateFullBuildrMcpServerInput,
+  createBuildrMcpServerWithTools,
+  type FullBuildrMcpServer,
+} from './default-server.ts';
 export {
   createDiscoveryCache,
   createResources,
@@ -33,4 +38,16 @@ export * from './session/index.ts';
 export { createDiscoveryTools } from './tools/discovery.ts';
 export { createDocumentTools, type ToolFactoryOptions } from './tools/documents.ts';
 export { createEditingTools } from './tools/editing.ts';
+export { type BuildrToolsOptions, createBuildrTools } from './tools/index.ts';
+export {
+  createPersistenceTools,
+  type PersistenceToolOptions,
+} from './tools/persistence.ts';
+export {
+  collectQuality,
+  createQualityTools,
+  publishGate,
+  type QualityIssue,
+  type QualityReport,
+} from './tools/quality.ts';
 export { MCP_SERVER_VERSION } from './version.ts';

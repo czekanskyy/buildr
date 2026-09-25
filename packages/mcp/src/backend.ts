@@ -76,6 +76,12 @@ export const sessionSchema = z.object({
     canUnlockTemplates: z.boolean(),
   }),
   limits: z.object({ maxNodes: z.int().positive(), maxBytes: z.int().positive() }),
+  /**
+   * What the site does with a document that has errors when it is published: `block` refuses it,
+   * `warn` (the default when absent) publishes anyway. The `publish` tool enforces `block` itself,
+   * on top of the backend.
+   */
+  publishPolicy: z.enum(['warn', 'block']).optional(),
   /** The languages of the site; absent for a single-language site. */
   locales: z
     .object({

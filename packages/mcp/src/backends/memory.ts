@@ -103,6 +103,7 @@ export function createMemoryBackend(options: MemoryBackendOptions): McpBackend {
       maxNodes: DEFAULT_DOCUMENT_LIMITS.maxNodes,
       maxBytes: DEFAULT_DOCUMENT_LIMITS.maxDocumentBytes,
     },
+    ...(options.session?.publishPolicy ? { publishPolicy: options.session.publishPolicy } : {}),
     ...(options.session?.locales ? { locales: options.session.locales } : {}),
   };
   const theme = options.theme ?? defaultTheme;
