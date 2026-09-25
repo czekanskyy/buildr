@@ -16,7 +16,7 @@ export const Text = defineComponent({
   description: 'A paragraph or a short piece of text.',
   keywords: ['paragraph', 'copy', 'body', 'span'],
   category: 'content',
-  icon: 'file-text',
+  icon: 'type',
   contentCategories: ['flow', 'phrasing'],
   props: textProps,
   styles: {

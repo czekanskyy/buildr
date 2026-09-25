@@ -16,7 +16,7 @@ export const Card = defineComponent({
   description: 'A boxed piece of content with media, text and actions.',
   keywords: ['box', 'tile', 'teaser', 'panel'],
   category: 'ui',
-  icon: 'layout-grid',
+  icon: 'panel-top',
   contentCategories: ['flow'],
   props: cardProps,
   slots: {

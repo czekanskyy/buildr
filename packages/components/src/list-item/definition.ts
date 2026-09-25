@@ -9,7 +9,7 @@ export const ListItem = defineComponent({
   label: 'List item',
   description: 'One entry of a list.',
   category: 'content',
-  icon: 'minus',
+  icon: 'dot',
   contentCategories: ['list-item'],
   parents: { allow: ['buildr/list', 'buildr/loop'] },
   props: listItemProps,

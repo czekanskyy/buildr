@@ -15,7 +15,7 @@ export const Stack = defineComponent({
   description: 'Lays its children out in a row or a column.',
   keywords: ['flex', 'row', 'column', 'group', 'flexbox'],
   category: 'layout',
-  icon: 'list',
+  icon: 'rows-3',
   contentCategories: ['flow'],
   props: stackProps,
   slots: { default: { label: 'Content', axis: 'auto' } },

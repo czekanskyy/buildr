@@ -28,6 +28,26 @@ Each entry below is expanded with full detail once its implementation task lands
 - **Forms**: Form, Input, Textarea, Select, Checkbox
 - **Templates**: Hero, CTA, Feature, FeatureGrid, Testimonial, Pricing, FAQ, Contact, PostHeader, PostCard, BlogListing, AuthorBox, PostContent, ProductHero, ProductDetails
 
+### Editor icons (`meta.icon`)
+
+Each built-in component has a distinct [lucide](https://lucide.dev) icon (kebab-case name) so it is recognisable in the palette and the layers tree. Uniqueness is enforced by a playground test (PB-121).
+
+| Component | Icon | Component | Icon |
+|---|---|---|---|
+| Page | `file` | Badge | `tag` |
+| Section | `rectangle-horizontal` | Divider | `separator-horizontal` |
+| Container | `square-dashed` | List | `list` |
+| Stack | `rows-3` | ListItem | `dot` |
+| Grid | `layout-grid` | Accordion | `chevrons-up-down` |
+| Card | `panel-top` | AccordionItem | `chevron-down` |
+| Heading | `heading` | Loop | `repeat` |
+| Text | `type` | Pagination | `ellipsis` |
+| RichText | `pilcrow` | Form | `clipboard-list` |
+| Link | `link` | Input | `text-cursor-input` |
+| Button | `mouse-pointer-click` | Textarea | `align-left` |
+| Image | `image` | Checkbox | `square-check` |
+| Icon | `sparkles` | Select | `square-chevron-down` |
+
 ## Layout components
 
 ### Page (`buildr/page`)

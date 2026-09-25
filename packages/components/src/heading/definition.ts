@@ -15,7 +15,7 @@ export const Heading = defineComponent({
   description: 'A title. Its level is the outline; its look is a style.',
   keywords: ['title', 'h1', 'h2', 'headline'],
   category: 'content',
-  icon: 'hash',
+  icon: 'heading',
   contentCategories: ['flow', 'heading'],
   props: headingProps,
   styles: {
