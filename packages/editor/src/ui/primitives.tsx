@@ -212,7 +212,10 @@ export function Dialog({
             </div>
             {hideClose === true ? null : (
               <DialogPrimitive.Close asChild>
-                <IconButton label={t('ui.close')} icon="x" variant="ghost" />
+                {/* No tooltip here: the button takes the initial focus, and a tooltip opened by that focus would swallow the first Escape. */}
+                <Button variant="ghost" className="bd-icon-button" aria-label={t('ui.close')}>
+                  <Icon name="x" />
+                </Button>
               </DialogPrimitive.Close>
             )}
           </header>
