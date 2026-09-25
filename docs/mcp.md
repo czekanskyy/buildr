@@ -1,6 +1,6 @@
 # MCP server: building pages with AI agents
 
-> Status: the package scaffold, backend interface and server factory are implemented (PB-133); the rest is skeleton. The decisions are recorded in [ADR-024](adr/ADR-024-mcp-server.md); the implementation lands in phase 14 ([backlog](backlog/phase-14-mcp-server.md)). Sections are filled in by the tasks named below.
+> Status: the package scaffold, backend interface, server factory (PB-133) and edit sessions (PB-134) are implemented; the rest is skeleton. The decisions are recorded in [ADR-024](adr/ADR-024-mcp-server.md); the implementation lands in phase 14 ([backlog](backlog/phase-14-mcp-server.md)). Sections are filled in by the tasks named below.
 
 A [Model Context Protocol](https://modelcontextprotocol.io) server that lets an AI agent discover the component catalogue, read and change a page **through the same commands the editor uses**, validate it and save it as a draft. The server never calls an LLM itself: it exposes tools, and the client brings the model.
 
@@ -76,6 +76,38 @@ await server.connect(transport); // stdio, Streamable HTTP, or an in-memory pair
 ```
 
 `createBuildrMcpServer` returns an MCP SDK `Server` with server info (`buildr`, the package version), the `tools` capability and the instructions string (`DEFAULT_INSTRUCTIONS`, replaceable via `options.instructions`). It serves the tools passed as `options.tools` (an `McpTool`: name, description, JSON Schema input, annotations, `handler(args, { backend, options })`); the built-in tools are added by PB-136 - PB-138. A throwing handler yields a generic error result, never its message. The host owns the transport.
+
+## Edit sessions
+
+An agent never edits the backend's document directly: it edits a **working copy** held in an `EditSession` (ADR-024, decision 5) and saves it explicitly with `baseRevision`. A session is the editor store without React: `load()` + `createRegistryMeta(manifest)` + core's history.
+
+```ts
+import { createSessionStore } from '@buildr/mcp';
+
+const sessions = createSessionStore({ backend }); // ttlMs, maxSessionsPerUser, manifestCheckIntervalMs, now
+const opened = await sessions.open({ collection: 'pages', id: '1' }, { locale: 'de' }); // or sessions.create({ collection, title, slug? })
+if (!opened.ok) return opened.error; // SessionError: { code, message, command?, backend?, details? }
+
+const session = opened.value;
+const changed = session.apply([insertCommand, setPropCommand], { label: 'add hero' }); // atomic (executeBatch), one undo step
+session.undo(); session.redo();
+session.dirty; // history cursor !== the cursor at load/save, so it is right after undo/redo
+const saved = await backend.save(session.ref, session.doc, session.revision);
+if (saved.ok) session.markSaved(saved.value); // new base revision, current state is clean
+sessions.close(session.id); // refuses a dirty session unless { discard: true }
+```
+
+| Guarantee | How |
+|---|---|
+| Only commands change the document | `apply` is `executeBatch`; `undo`/`redo` replay history patches; `session.doc` is deeply frozen |
+| Atomic | a rejected command (`command-rejected`, with the core `CommandError` incl. `commandIndex`) leaves document and history untouched |
+| Limits | a batch holds at most 500 commands; a change that grows the document past `getSession().limits` (`maxNodes`, `maxBytes`) is refused (`limit-exceeded`), while removals stay possible |
+| Read-only | a document that is `readOnly`, or an agent user without `canEdit`, opens read-only; `apply` returns `read-only` |
+| TTL | 30 minutes idle by default; every `get` refreshes; expired sessions (unsaved changes included) are dropped lazily, there are no timers; the error says to open the document again |
+| Cap | 5 open sessions per backend user by default; the next `open` is `session-limit` (nothing is evicted) |
+| Manifest pin | the manifest hash is recorded at open; `get` re-checks it at most every `manifestCheckIntervalMs` (60 s) and answers `manifest-changed` (reopen). `get(id, { ignoreManifest: true })` still reaches the session, e.g. to close it |
+
+Errors are the `SessionErrorCode`s in `packages/mcp/src/session/errors.ts`; a backend failure is `backend` with the typed `McpError` attached (`conflict`, `forbidden`, ...). The tools in PB-137/PB-138 are thin wrappers over this API.
 
 ## Installing and connecting
 

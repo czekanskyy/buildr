@@ -19,4 +19,5 @@ export {
   type McpToolContext,
   type McpToolResult,
 } from './server.ts';
+export * from './session/index.ts';
 export { MCP_SERVER_VERSION } from './version.ts';
