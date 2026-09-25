@@ -1,7 +1,7 @@
 import type { ComponentMeta, PageNode, PropDef, Value } from '@buildr/core';
-import { useId } from 'react';
+import { useId, useState } from 'react';
 import { type MessageKey, useT } from '../../messages/index.tsx';
-import { Button } from '../../ui/index.ts';
+import { Icon, IconButton } from '../../ui/index.ts';
 import { propLabel, renderControl } from './controls/index.ts';
 import { type PropReading, readProp, translationLocale } from './value.ts';
 import { TranslationHint } from './values/translation.tsx';
@@ -16,6 +16,47 @@ export const isAdvancedProp = (def: PropDef) =>
 const titleCase = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
 export { propLabel };
+
+/** Short controls sit on one row with their label; long ones are stacked under it. */
+const ROW_KINDS: ReadonlySet<string> = new Set(['boolean', 'select', 'number', 'icon']);
+
+const storageKey = (type: string) => `buildr.editor.inspector.groups.${type}`;
+
+/** The groups the user closed for a component type (localStorage, best effort). */
+function loadClosed(type: string): ReadonlySet<string> {
+  try {
+    const raw = window.localStorage.getItem(storageKey(type));
+    const parsed: unknown = raw === null ? [] : JSON.parse(raw);
+    return new Set(Array.isArray(parsed) ? parsed.filter((x) => typeof x === 'string') : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function saveClosed(type: string, closed: ReadonlySet<string>): void {
+  try {
+    window.localStorage.setItem(storageKey(type), JSON.stringify([...closed]));
+  } catch {
+    // storage is unavailable: the state just is not remembered
+  }
+}
+
+/** Which prop groups are collapsed, remembered per component type. */
+function useClosedGroups(type: string) {
+  const [state, setState] = useState(() => ({ type, closed: loadClosed(type) }));
+  let closed = state.closed;
+  if (state.type !== type) {
+    closed = loadClosed(type);
+    setState({ type, closed });
+  }
+  const toggle = (group: string) => {
+    const next = new Set(closed);
+    if (!next.delete(group)) next.add(group);
+    saveClosed(type, next);
+    setState({ type, closed: next });
+  };
+  return { closed, toggle };
+}
 
 export interface PropsPanelProps {
   readonly node: PageNode;
@@ -78,14 +119,14 @@ function Field(props: {
     disabled,
     onChange: (value) => props.onChange(name, def, value),
   });
-  const inline = def.kind === 'boolean';
+  const layout = ROW_KINDS.has(def.kind) ? 'row' : 'stack';
 
   return (
     <div
       className="bd-field"
       data-prop={name}
       data-kind={def.kind}
-      data-inline={inline}
+      data-layout={layout}
       data-untranslated={translating && !reading.isSet ? true : undefined}
     >
       <div className="bd-field-head">
@@ -100,26 +141,27 @@ function Field(props: {
           <span className="bd-field-label">{label}</span>
         )}
         {reading.isSet ? (
-          <Button
+          <IconButton
             variant="ghost"
+            icon="rotate-ccw"
             className="bd-field-reset"
             disabled={disabled}
-            aria-label={`${t(translating ? 'translation.remove' : 'inspector.reset')}: ${label}`}
+            label={`${t(translating ? 'translation.remove' : 'inspector.reset')}: ${label}`}
             onClick={() => props.onReset(name, def)}
-          >
-            {t(translating ? 'translation.remove' : 'inspector.reset')}
-          </Button>
+          />
         ) : null}
       </div>
-      <ValueEditor
-        def={def}
-        label={label}
-        raw={props.raw}
-        disabled={disabled}
-        staticControl={control}
-        onSet={(value) => props.onSetValue?.(name, def, value)}
-        onFixed={() => props.onFixed?.(name, def)}
-      />
+      <div className="bd-field-body">
+        <ValueEditor
+          def={def}
+          label={label}
+          raw={props.raw}
+          disabled={disabled}
+          staticControl={control}
+          onSet={(value) => props.onSetValue?.(name, def, value)}
+          onFixed={() => props.onFixed?.(name, def)}
+        />
+      </div>
       {translating && editable ? (
         <TranslationHint
           translated={reading.isSet}
@@ -148,12 +190,17 @@ function Field(props: {
 export function PropsPanel(props: PropsPanelProps) {
   const t = useT();
   const { node, meta, scope, locale, defaultLocale } = props;
+  const { closed, toggle } = useClosedGroups(node.type);
+  const panelId = useId();
   const entries = Object.entries(meta.props).filter(
     ([, def]) => isAdvancedProp(def) === (scope === 'advanced'),
   );
   if (entries.length === 0) {
     return scope === 'content' ? (
-      <p className="bd-inspector-empty">{t('inspector.noProps')}</p>
+      <div className="bd-inspector-empty" data-state="no-props">
+        <Icon name="box" size="md" />
+        <p className="bd-inspector-empty-title">{t('inspector.noProps')}</p>
+      </div>
     ) : null;
   }
   const groups = new Map<string, [string, PropDef][]>();
@@ -167,26 +214,41 @@ export function PropsPanel(props: PropsPanelProps) {
     <div className="bd-props">
       {[...groups].map(([group, list]) => (
         <section key={group} className="bd-props-group" data-group={group}>
-          {group !== '' ? <h4 className="bd-props-heading">{titleCase(group)}</h4> : null}
-          {list.map(([name, def]) => (
-            <Field
-              key={name}
-              name={name}
-              def={def}
-              reading={readProp(node, name, def, locale, defaultLocale)}
-              raw={
-                node.props !== undefined && Object.hasOwn(node.props, name)
-                  ? node.props[name]
-                  : undefined
-              }
-              disabled={props.disabled}
-              translating={translationLocale(def, locale, defaultLocale) !== undefined}
-              onChange={props.onChange}
-              onReset={props.onReset}
-              onSetValue={props.onSetValue}
-              onFixed={props.onFixed}
-            />
-          ))}
+          {group !== '' ? (
+            <h4 className="bd-props-heading">
+              <button
+                type="button"
+                className="bd-props-toggle"
+                aria-expanded={!closed.has(group)}
+                aria-controls={`${panelId}-${group}`}
+                onClick={() => toggle(group)}
+              >
+                <Icon name={closed.has(group) ? 'chevron-right' : 'chevron-down'} />
+                {titleCase(group)}
+              </button>
+            </h4>
+          ) : null}
+          <div id={`${panelId}-${group}`} className="bd-props-fields" hidden={closed.has(group)}>
+            {list.map(([name, def]) => (
+              <Field
+                key={name}
+                name={name}
+                def={def}
+                reading={readProp(node, name, def, locale, defaultLocale)}
+                raw={
+                  node.props !== undefined && Object.hasOwn(node.props, name)
+                    ? node.props[name]
+                    : undefined
+                }
+                disabled={props.disabled}
+                translating={translationLocale(def, locale, defaultLocale) !== undefined}
+                onChange={props.onChange}
+                onReset={props.onReset}
+                onSetValue={props.onSetValue}
+                onFixed={props.onFixed}
+              />
+            ))}
+          </div>
         </section>
       ))}
     </div>
