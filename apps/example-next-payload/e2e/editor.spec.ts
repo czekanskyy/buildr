@@ -160,3 +160,17 @@ test('translating a heading shows the translation on /en, after publishing', asy
   const polish = await page.request.get(`/pl/${scratch.slug}`);
   expect(await polish.text()).toContain(HEADLINE);
 });
+
+test('the Payload admin document view offers the editor and renders without errors', async ({
+  scratch,
+  page,
+}) => {
+  const problems: string[] = [];
+  page.on('pageerror', (error) => problems.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') problems.push(message.text());
+  });
+  await page.goto(`/admin/collections/pages/${String(scratch.id)}`);
+  await expect(page.getByRole('button', { name: 'Edit with Visual Builder' })).toBeVisible();
+  expect(problems.filter((text) => /config|destructure|server rendering/i.test(text))).toEqual([]);
+});
