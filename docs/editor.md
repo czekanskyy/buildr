@@ -298,6 +298,17 @@ See dedicated pages: [drag-and-drop.md](drag-and-drop.md), [state-management.md]
 - **Preview and Publish.** The toolbar only calls `onPreview` (PB-091, flushes the save first) and `onPublish` (the dialog of PB-088). Both are disabled without a handler; Publish is also disabled without `canPublish`, for a read-only document and during a conflict.
 - **Links.** Back to the CMS (`adapter.cmsUrl`) and the version history are plain links, left out when the adapter has no such URL.
 
+### Redesign (PB-123)
+
+The toolbar has three zones on the dark toolbar surface (`toolbar/toolbar-{left,centre,right}.tsx`):
+
+- **Left**: the link back to the CMS as an icon button, the title, and a draft / published pill (`status`). A slot at the far left is reserved for the panel toggles of the narrow layout (PB-122).
+- **Centre**: `BreakpointControl`, a segmented control with `monitor` / `tablet` / `smartphone` icons and `Tablet - 768px` style tooltips (buttons keep `aria-pressed` and the translated name); `ZoomMenu` with Fit, 50, 75, 100 and 125%, calling `onZoomChange` (the shell wires it to `host.setZoom` and reads the current zoom back from the host state).
+- **Right**: undo and redo icon buttons, `SaveIndicator` (icon plus short text), the locale and sample pickers (`pickers`), Preview (secondary), Publish (the only primary button) and the more menu.
+- **More menu** (`more-menu.tsx`): the theme switch (light / dark / system; `useThemePreference` remembers the choice under `buildr:theme` in `localStorage` and the switch is hidden when the host sets `config.theme` to `light` or `dark`), the shortcuts help, and, when the row runs out of room, the version history and the CMS link.
+- **Overflow.** `useOverflowLevel` observes the toolbar row with a `ResizeObserver` (not a media query: the editor may be embedded) and collapses in steps: version history into the menu, the save text to an icon, the CMS link into the menu. Every action stays reachable at 1024px.
+- **Theme in floating layers.** `PortalContainerProvider` makes Radix menus, popovers, dialogs and tooltips render inside the editor root, so they inherit its `data-theme`.
+
 ## Clipboard (PB-085)
 
 `packages/editor/src/clipboard`. Copy, cut and paste of nodes; duplicate is a command (`node.duplicate`, PB-084). `<ClipboardProvider io?>` creates the clipboard for the tree below, and `useClipboardActions()` gives the `copy` / `cut` / `paste` handlers for `<ShortcutProvider actions>` (they start the work and claim the key; a text field with focus keeps its own copy and paste).
