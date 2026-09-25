@@ -1,10 +1,15 @@
 import type { Diagnostic } from '@buildr/core';
 import { useEffect, useState } from 'react';
 import { type MessageKey, useT } from '../messages/index.tsx';
-import { type PublishPolicy, publishGate, useIssues } from '../panels/issues/index.ts';
+import {
+  type PublishPolicy,
+  publishGate,
+  SEVERITY_ICON,
+  useIssues,
+} from '../panels/issues/index.ts';
 import { type PublishOutcome, usePersistence, usePersistenceState } from '../persistence/index.ts';
 import { useEditor, useEditorState } from '../store/index.ts';
-import { Button, Dialog } from '../ui/index.ts';
+import { Button, Dialog, Icon } from '../ui/index.ts';
 
 export interface PublishDialogProps {
   readonly open: boolean;
@@ -64,18 +69,27 @@ export function PublishDialog(props: PublishDialogProps) {
       onOpenChange={onOpenChange}
       title={t('publish.title')}
       description={t('publish.description')}
+      footer={
+        <Button
+          variant="primary"
+          disabled={gate.blocked || readOnly || working || done || status === 'conflict'}
+          onClick={() => void publish()}
+        >
+          {working ? t('publish.working') : t('toolbar.publish')}
+        </Button>
+      }
     >
       <p className="bd-publish-notice">{t('publish.notice')}</p>
       <ul className="bd-publish-summary" aria-label={t('publish.summary')}>
-        <li data-severity="error">
-          {gate.counts.error} {t('issues.filter.error')}
-        </li>
-        <li data-severity="warning">
-          {gate.counts.warning} {t('issues.filter.warning')}
-        </li>
-        <li data-severity="info">
-          {gate.counts.info} {t('issues.filter.info')}
-        </li>
+        {(['error', 'warning', 'info'] as const).map((severity) => (
+          <li key={severity} className="bd-publish-badge" data-severity={severity}>
+            <Icon name={SEVERITY_ICON[severity]} />
+            <span aria-hidden="true">{gate.counts[severity]}</span>
+            <span className="bd-visually-hidden">
+              {t(`publish.count.${severity}`).replace('{count}', String(gate.counts[severity]))}
+            </span>
+          </li>
+        ))}
       </ul>
       {gate.blocked ? (
         <p role="alert" className="bd-publish-blocked">
@@ -99,13 +113,6 @@ export function PublishDialog(props: PublishDialogProps) {
           {t('publish.done')}
         </p>
       ) : null}
-      <Button
-        variant="primary"
-        disabled={gate.blocked || readOnly || working || done || status === 'conflict'}
-        onClick={() => void publish()}
-      >
-        {working ? t('publish.working') : t('toolbar.publish')}
-      </Button>
     </Dialog>
   );
 }

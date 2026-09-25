@@ -404,19 +404,6 @@
   padding: var(--bd-space-7);
   color: var(--bd-text-muted);
 }
-.buildr-editor .bd-app-notice {
-  position: fixed;
-  bottom: var(--bd-space-5);
-  left: 50%;
-  transform: translateX(-50%);
-  margin: 0;
-  padding: var(--bd-space-3) var(--bd-space-4);
-  border-radius: var(--bd-radius-md);
-  background: var(--bd-surface);
-  color: var(--bd-text);
-  box-shadow: var(--bd-elevation-2);
-}
-
 /* Content language (PB-115) */
 .buildr-editor .bd-translation-banner {
   margin: 0;

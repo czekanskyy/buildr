@@ -276,4 +276,12 @@ export const pl: Messages = {
   'inspector.duplicate': 'Duplikuj element',
   'inspector.delete': 'Usuń element',
   'inspector.nodeName': 'Nazwa elementu',
+  'toast.dismiss': 'Zamknij powiadomienie',
+  'issues.group.error': 'Błędy',
+  'issues.group.warning': 'Ostrzeżenia',
+  'issues.group.info': 'Uwagi',
+  'issues.nodeless': 'Dokument',
+  'publish.count.error': 'Błędy: {count}',
+  'publish.count.warning': 'Ostrzeżenia: {count}',
+  'publish.count.info': 'Uwagi: {count}',
 };

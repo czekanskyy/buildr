@@ -42,7 +42,7 @@ import {
   useLocaleState,
 } from '../store/index.ts';
 import { LocaleSwitcher, PublishDialog, SamplePicker, Toolbar } from '../toolbar/index.ts';
-import { Tabs } from '../ui/index.ts';
+import { Tabs, ToastProvider, useToast } from '../ui/index.ts';
 import { type BuilderEditorProps, type DocumentRef, resolveConfig } from './config.ts';
 import { EditorLayout } from './layout.tsx';
 import { ManifestProvider } from './manifest.tsx';
@@ -165,23 +165,25 @@ function Session(props: EditorAppProps & { readonly ready: Ready }) {
   const { ready, adapter, manifest } = props;
   const config = useMemo(() => resolveConfig(props.config), [props.config]);
   return (
-    <EditorStoreProvider store={ready.store}>
-      <LocaleProvider store={ready.localeStore}>
-        <ManifestProvider manifest={manifest}>
-          <PersistenceProvider controller={ready.persistence}>
-            <MediaLibraryProvider media={adapter.media}>
-              <DragProvider>
-                <ClipboardProvider>
-                  <Keys overrides={config.shortcuts}>
-                    <Shell {...props} />
-                  </Keys>
-                </ClipboardProvider>
-              </DragProvider>
-            </MediaLibraryProvider>
-          </PersistenceProvider>
-        </ManifestProvider>
-      </LocaleProvider>
-    </EditorStoreProvider>
+    <ToastProvider>
+      <EditorStoreProvider store={ready.store}>
+        <LocaleProvider store={ready.localeStore}>
+          <ManifestProvider manifest={manifest}>
+            <PersistenceProvider controller={ready.persistence}>
+              <MediaLibraryProvider media={adapter.media}>
+                <DragProvider>
+                  <ClipboardProvider>
+                    <Keys overrides={config.shortcuts}>
+                      <Shell {...props} />
+                    </Keys>
+                  </ClipboardProvider>
+                </DragProvider>
+              </MediaLibraryProvider>
+            </PersistenceProvider>
+          </ManifestProvider>
+        </LocaleProvider>
+      </EditorStoreProvider>
+    </ToastProvider>
   );
 }
 
@@ -243,6 +245,12 @@ function Shell(props: EditorAppProps & { readonly ready: Ready }) {
   const forward = useForwardedKeys();
   const data = useDataContext(adapter, documentRef);
   const preview = usePreview({ adapter, docRef: documentRef });
+  const toast = useToast();
+  const previewError = preview.error;
+  useEffect(() => {
+    if (previewError === '') toast.dismiss('preview');
+    else toast.show({ id: 'preview', variant: 'error', message: previewError });
+  }, [previewError, toast]);
   const issueCounts = countIssues(useIssues(diagnostics));
 
   useRegisterDragHost(host as DragHost | null);
@@ -349,11 +357,6 @@ function Shell(props: EditorAppProps & { readonly ready: Ready }) {
         canvasDiagnostics={diagnostics}
       />
       {preview.overlay}
-      {preview.error !== '' ? (
-        <p className="bd-app-notice" role="status">
-          {preview.error}
-        </p>
-      ) : null}
     </>
   );
 }
