@@ -35,6 +35,8 @@ export const sessionResponseSchema = z.object({
     canUnlockTemplates: z.boolean(),
   }),
   limits: z.object({ maxNodes: z.number(), maxBytes: z.number() }),
+  /** `a11y.publish`: with `block`, a document with accessibility errors cannot be published. */
+  publishPolicy: z.enum(['warn', 'block']).optional(),
   /** The languages of the site; absent without Payload localization. */
   locales: z
     .object({

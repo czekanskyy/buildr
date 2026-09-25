@@ -84,7 +84,21 @@ const server = createBuildrMcpServer({ backend, options: { allowPublish: false }
 await server.connect(transport); // stdio, Streamable HTTP, or an in-memory pair in tests
 ```
 
-`createBuildrMcpServer` returns an MCP SDK `Server` with server info (`buildr`, the package version), the `tools` capability and the instructions string (`DEFAULT_INSTRUCTIONS`, replaceable via `options.instructions`). It serves the tools passed as `options.tools` (an `McpTool`: name, description, JSON Schema input, annotations, `handler(args, { backend, options })`); the built-in tools are added by PB-136 - PB-138. `options.resources` (an `McpResources`: `templates`, `list`, `read`; SDK-free) enables the `resources` capability. A throwing handler yields a generic error result, never its message. The host owns the transport.
+`createBuildrMcpServer` returns an MCP SDK `Server` with server info (`buildr`, the package version), the `tools` capability and the instructions string (`DEFAULT_INSTRUCTIONS`, replaceable via `options.instructions`). It serves the tools passed as `options.tools` (an `McpTool`: name, description, JSON Schema input, annotations, `handler(args, { backend, options })`); the built-in tools come from `createBuildrTools` (below). `options.resources` (an `McpResources`: `templates`, `list`, `read`; SDK-free) enables the `resources` capability. A throwing handler yields a generic error result, never its message. The host owns the transport.
+
+### One-liner for hosts
+
+```ts
+import { createBuildrMcpServerWithTools } from '@buildr/mcp';
+
+const { server, store } = await createBuildrMcpServerWithTools({
+  backend,
+  options: { allowPublish: false }, // sessions?: { ttlMs, maxSessionsPerUser, ... }
+});
+await server.connect(transport);
+```
+
+It creates the session store, the complete tool list (`createBuildrTools`: discovery, documents, editing, quality, persistence) and the `buildr://` resources, and passes them to `createBuildrMcpServer`. An explicit `options.tools` / `options.resources` wins. The stdio CLI (PB-141) and the site's HTTP route (PB-142) use exactly this.
 
 ## Edit sessions
 
@@ -203,9 +217,20 @@ const server = createBuildrMcpServer({ backend, options: { tools } });
 
 Every editing result lists the new node ids with their outline, the changed nodes and whether unsaved changes remain. Each tool is a single `session.apply` (`executeBatch`): a rejected command leaves the document untouched, and core checks `assertDocumentInvariants`-level invariants after every command, so no tool can produce an invalid document. Templates come from the session's manifest (`registry.getTemplate`), so custom templates work without extra wiring.
 
+## Validate, save and publish
+
+| Tool | Purpose |
+|---|---|
+| `validate` | Structure, nesting, props, bindings, styles, accessibility and missing translations (every language of the site). Each finding has `nodeId`, `severity`, `code`, `message` and, when unambiguous, a `suggestedCall` (an a11y fix becomes an `apply_commands` call, a missing translation an `update_node` with `locale`). Read-only. The accessibility `expectH1` setting is the default (`layout`): the backend does not expose it per collection |
+| `save` | `backend.save(ref, doc, session.revision)`, then `session.markSaved`. Saves the **draft** only. Nothing to save when the copy is clean. **409**: nothing is written; the result gives the current revision and tells the agent to `close_document` (discard), `open_document` again and re-apply. **422**: the server's diagnostics, each mapped to its node. **403**: the permission message, working copy stays dirty |
+| `publish` | See below |
+| `get_preview_url` | The view URL of the saved draft (optionally per `locale`); warns when the copy has unsaved changes |
+
 ## Publishing
 
-Disabled by default. Requires the plugin option `mcp.allowPublish`, the user's `canPublish` and `confirm: true`; `publishPolicy: block` is respected (ADR-024, decision 5).
+Disabled by default. `publish` exists only when **both** the server option `allowPublish` is on **and** the backend session reports `permissions.canPublish`. The tool list is fixed at server creation and reading the session is asynchronous, so `createBuildrTools` reads the session once and passes `canPublish` to `createPersistenceTools({ store, allowPublish, canPublish })` (a session that cannot be read means no `publish`). It is a registration filter only: every call re-reads the session and refuses when `canPublish` is gone, and the backend re-checks it.
+
+A call needs `confirm: true` (to be set only after the user asked for it), refuses unsaved changes (publish publishes the saved draft), and runs the same check as `validate`. `publishPolicy` comes from the backend session (`session.publishPolicy`; `GET /api/buildr/session` reports the plugin's `a11y.publish`; absent means `warn`): a structural (blocking) problem stops it under any policy, an error stops it under `block`, and the blocking findings are listed by node. A 409 or 422 from the backend is explained like for `save`; a conflict never overwrites (ADR-024, decision 5).
 
 ## Security notes
 
