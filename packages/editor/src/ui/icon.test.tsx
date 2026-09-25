@@ -42,6 +42,15 @@ describe('icon maps', () => {
 
   it('draws every editor icon, under real lucide names', async () => {
     const names: IconName[] = [
+      'text-align-center',
+      'text-align-start',
+      'arrow-right',
+      'braces',
+      'database',
+      'hash',
+      'sigma',
+      'stretch-vertical',
+      'type',
       'arrow-down',
       'arrow-left',
       'arrow-up',

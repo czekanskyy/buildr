@@ -11,12 +11,15 @@ import {
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { axe } from 'vitest-axe';
+import * as matchers from 'vitest-axe/matchers';
 import { ManifestProvider } from '../../../app/manifest.tsx';
 import { MessagesProvider } from '../../../messages/index.tsx';
-import { createEditorStore, EditorStoreProvider } from '../../../store/index.ts';
+import { createEditorStore, EditorStoreProvider, useEditorState } from '../../../store/index.ts';
 import { checkStyleInput } from './model.ts';
 import { StyleInspector } from './style-inspector.tsx';
 
+expect.extend(matchers);
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const box: ComponentMeta = {
@@ -59,6 +62,13 @@ const fixture = (): BuilderDocument => ({
 let container: HTMLElement;
 let root: Root;
 beforeEach(() => {
+  (globalThis as { ResizeObserver?: unknown }).ResizeObserver ??= class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+  Element.prototype.scrollIntoView ??= () => {};
+  Element.prototype.hasPointerCapture ??= () => false;
   container = document.createElement('div');
   document.body.append(container);
   root = createRoot(container);
@@ -79,7 +89,7 @@ async function mount(breakpoint?: string): Promise<Store> {
   });
   store.select('box0000001');
   const View = () => {
-    const node = store.getState().doc.nodes['box0000001'];
+    const node = useEditorState((state) => state.doc.nodes['box0000001']);
     if (node === undefined) return null;
     return <StyleInspector node={node} {...(breakpoint !== undefined ? { breakpoint } : {})} />;
   };
@@ -196,5 +206,128 @@ describe('StyleInspector', () => {
     await mount('watch');
     expect(container.textContent).toContain('not in the theme');
     expect(inputAt('layout.gap').disabled).toBe(true);
+  });
+});
+
+const press = (element: HTMLElement, key: string, init: KeyboardEventInit = {}) =>
+  act(async () => {
+    element.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, ...init }));
+  });
+const buttonNamed = (name: string) =>
+  [...container.querySelectorAll('button')].find(
+    (b) => b.getAttribute('aria-label') === name || b.textContent === name,
+  ) as HTMLButtonElement;
+
+describe('style inspector controls (PB-128)', () => {
+  it('steps a number with the arrow keys, Shift takes ten, and one undo undoes the run', async () => {
+    const store = await mount();
+    const input = inputAt('layout.gap');
+    await type(input, '10px');
+    await press(input, 'ArrowUp');
+    expect(styles(store)?.base?.layout?.gap).toBe('11px');
+    await press(input, 'ArrowUp', { shiftKey: true });
+    expect(styles(store)?.base?.layout?.gap).toBe('21px');
+    await press(input, 'ArrowDown');
+    expect(styles(store)?.base?.layout?.gap).toBe('20px');
+    await act(async () => {
+      store.undo();
+    });
+    expect(styles(store)?.base?.layout?.gap).toBe('$space.4');
+  });
+
+  it('offers only the units of the grammar and keeps the number when the unit changes', async () => {
+    await mount();
+    await type(inputAt('layout.gap'), '10px');
+    const trigger = container.querySelector(
+      '[data-path="layout.gap"] .bd-select-trigger',
+    ) as HTMLElement;
+    expect(trigger.getAttribute('aria-label')).toContain('Unit');
+    expect(trigger.textContent).toContain('px');
+  });
+
+  it('never steps to a value outside the grammar', async () => {
+    const store = await mount();
+    const input = inputAt('layout.gap');
+    await type(input, 'auto');
+    await press(input, 'ArrowUp');
+    expect(input.value).toBe('auto');
+    expect(styles(store)?.base?.layout?.gap).toBe('$space.4');
+  });
+
+  it('writes both sides of an axis on Alt-click as one undo step', async () => {
+    const store = await mount();
+    await act(async () => {
+      buttonNamed('Margin left').dispatchEvent(
+        new MouseEvent('click', { bubbles: true, altKey: true }),
+      );
+    });
+    await type(inputAt('spacing.margin.left'), '12px');
+    const margin = styles(store)?.base?.spacing?.margin;
+    expect(margin?.left).toBe('12px');
+    expect(margin?.right).toBe('12px');
+    expect(margin?.top).toBeUndefined();
+    await act(async () => {
+      store.undo();
+    });
+    expect(styles(store)?.base?.spacing?.margin?.left).toBeUndefined();
+    expect(styles(store)?.base?.spacing?.margin?.right).toBeUndefined();
+  });
+
+  it('chooses a side by clicking it and writes only that side', async () => {
+    const store = await mount();
+    await act(async () => buttonNamed('Padding bottom').click());
+    await type(inputAt('spacing.padding.bottom'), '$space.2');
+    expect(styles(store)?.base?.spacing?.padding).toEqual({ bottom: '$space.2' });
+  });
+
+  it('writes the same command as typing when a segment is pressed, and unsets on a second press', async () => {
+    const store = await mount();
+    await act(async () => buttonNamed('column').click());
+    expect(styles(store)?.base?.layout?.direction).toBe('column');
+    const group = container.querySelector('[data-style-prop="layout.direction"] fieldset');
+    expect(group?.querySelector('[aria-pressed=true]')?.getAttribute('aria-label')).toBe('column');
+    await act(async () => buttonNamed('column').click());
+    expect(styles(store)?.base?.layout?.direction).toBeUndefined();
+  });
+
+  it('keeps keywords without a segment reachable through the other-values menu', async () => {
+    const store = await mount();
+    const select = container.querySelector(
+      '[data-style-prop="layout.justify"] select',
+    ) as HTMLSelectElement;
+    expect([...select.options].map((o) => o.value)).toContain('space-evenly');
+    await act(async () => {
+      select.value = 'space-evenly';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(styles(store)?.base?.layout?.justify).toBe('space-evenly');
+  });
+
+  it('marks where a value comes from', async () => {
+    await mount('mobile');
+    const origin = (path: string) =>
+      container.querySelector(`[data-style-prop="${path}"]`)?.getAttribute('data-origin');
+    expect(origin('layout.gap')).toBe('inherited');
+    expect(origin('layout.rowGap')).toBe('default');
+    await mount('tablet');
+    expect(origin('layout.display')).toBe('set');
+    const dot = container.querySelector('[data-style-prop="layout.display"] .bd-source-dot');
+    expect(dot?.getAttribute('aria-label')).toBe('Set on this breakpoint');
+  });
+
+  it('picks a token from the picker, which writes the token reference', async () => {
+    const store = await mount();
+    await act(async () => buttonNamed('Tokens: Gap').click());
+    const token = [...document.querySelectorAll('.bd-token')].find((b) =>
+      b.textContent?.startsWith('2'),
+    ) as HTMLElement | undefined;
+    expect(token).toBeDefined();
+    await act(async () => token?.click());
+    expect(styles(store)?.base?.layout?.gap).toBe('$space.2');
+  });
+
+  it('has no accessibility violations', async () => {
+    await mount();
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

@@ -176,6 +176,12 @@ The selection lives in the editor store (`selectedIds`, `anchorId`, `selectedIns
 - **Nothing outside the grammar is written.** Typed text goes through `checkStyleInput`: numeric text becomes a number where the grammar takes one, then `parseStyleValue` must accept it and every `$scale.name` token must exist in the theme; otherwise the field is `aria-invalid`, shows the reason and dispatches nothing. Pure enumerations are a select of their keywords; `visibility.hidden` is a checkbox; box (margin, padding, inset, border width) and corner (radius) properties get one field per side/corner. Tokens and keywords are offered as suggestions.
 - **Writing.** `node.setStyle` with `layer: {}` (desktop) or `{ bp }`; typing coalesces through the command's merge key. An emptied field or "Reset" dispatches `node.unsetStyle` for this layer only.
 - **Sources.** `effectiveStyles` gives each value and the layer it comes from; one inherited from a wider breakpoint is labelled "from desktop"/"from tablet" and a reset button appears only where this layer sets the value. Groups holding a value start open.
+- **Controls (PB-128).** Each control only changes how a value is entered; it writes the same `node.setStyle` / `node.unsetStyle` as the plain field it replaced, and the text still goes through `checkStyleInput`, so a value outside the grammar stays unrepresentable.
+  - `NumberUnitInput` (`ui/primitives.tsx`): ArrowUp/ArrowDown step by 1 (Shift x10, Alt /10; 0.1 for a number confined to a small range such as opacity) and a unit menu offers only the units of the property's grammar. Stepping is typing, so a run of steps coalesces into one undo step through the merge key.
+  - **Box model** (margin, padding, other per-side properties): the four sides around a box, each showing its value; click a side to edit it, Alt-click to edit both sides of its axis with one field (one undo step, through `store.transaction`).
+  - **Tokens**: a "Tokens" picker lists the theme's tokens the property accepts, with a swatch for colours (`ColorSwatch`, painted only for a colour notation) and the value for spacing and fonts; it writes the `$scale.name` reference.
+  - **Segments**: direction, align, justify and text-align are a `SegmentedControl` of icons (`styles/segments.ts`); a keyword without a segment stays reachable in the "Other values" menu. Pressing the active segment resets it.
+  - **Origin dot** beside each property: filled = set on this breakpoint, amber = inherited from a wider one, hollow = default; Reset removes this layer's key only.
 - The active breakpoint comes from the toolbar (PB-083); styles locks disable the fields.
 
 ### Keyboard shortcuts (PB-084)
@@ -322,11 +328,11 @@ See dedicated pages: [drag-and-drop.md](drag-and-drop.md), [state-management.md]
 
 ## Value modes and the binding picker (PB-081)
 
-A prop whose definition has `accepts` can hold a static value, a data binding or a formula. The inspector shows a **Fixed / Data / Formula** switch next to it (`ValueEditor`, `panels/inspector/values`). Props without `accepts` keep the plain control; a non-static value there shows a chip.
+A prop whose definition has `accepts` can hold a static value, a data binding or a formula. The inspector shows a **Fixed / Data / Formula** switch (a `SegmentedControl` with icons, PB-128) next to it (`ValueEditor`, `panels/inspector/values`). Props without `accepts` keep the plain control; a non-static value there shows a chip.
 
 - **Data**: a path input plus a searchable list of the schema's fields whose type the prop accepts (`bindingOptions`). Choosing one writes `bind(path, { format, fallback })` through `node.setProp`. A format editor offers the families that fit the field type (`formatKindsFor`). A path missing from the schema, or of the wrong type, is flagged (`checkBinding`).
 - **Formula**: an expression or a `{{ }}` template. The draft is parsed and typechecked on every change (`checkFormula`); diagnostics are listed with their span, and only a formula without errors is written. An invalid draft stays local ("Not saved").
-- **Preview**: with a sample `DataContext`, `previewValue` shows the resolved (and formatted) value; it never throws.
+- **Preview**: with a sample `DataContext`, `previewValue` shows the resolved (and formatted) value in a card; it never throws. The field list shows an icon per data type.
 - Switching back to Fixed writes a static value again (`node.unsetProp` when it equals the default).
 
 The schema and sample data come from `<InspectorDataProvider schema context>`; without them, paths are unchecked and there is no preview.
