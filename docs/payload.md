@@ -53,6 +53,7 @@ buildrPlugin({
 | GET | `/api/buildr/session` | — | `{ user, permissions, limits, locales }` | authenticated |
 | GET | `/api/buildr/manifest` | — | `RegistryManifest` | edit |
 | GET | `/api/buildr/documents/:collection/:id` | `?draft=1&locale=` | `{ ref, title, slug, status, updatedAt, revision, document, contextRef, previewPath, readOnly? }` | read + edit |
+| GET | `/api/buildr/documents/:collection/:id/revision` | — | `{ revision, updatedAt, updatedBy? }` (`updatedBy` only with `mcp.enabled`) | edit |
 | PUT | `/api/buildr/documents/:collection/:id` | `{ document, baseRevision, autosave }` | `200 { revision, updatedAt }` / `409 { currentRevision }` / `422 { diagnostics }` | edit |
 | POST | `/api/buildr/documents/:collection/:id/publish` | `{ baseRevision }` | `200 { status, publishedAt }` / `409` / `422` | publish |
 | GET | `/api/buildr/data-schema/:collection` | — | `DataSchema` | edit |
@@ -225,6 +226,7 @@ Both need `edit`, the `media.collection` option and the caller's own access on t
 - **`createPayloadCanvasDataSource({ baseUrl, ... })`** returns a `DataSource` for the canvas: `query` -> `POST /buildr/data/query`, `getMedia` -> `POST /buildr/data/media` (one batch, de-duplicated).
 - **Validation**: every response is checked against the schemas of `contract.ts`; a document is parsed with core's `parseDocument`. A body that breaks the contract rejects.
 - **Results and rejections**: a save or publish answered `409` is `{ ok: false, kind: 'conflict', currentRevision }`, `422` is `{ ok: false, kind: 'invalid', diagnostics }`. Everything else that is not `200` (no network, `401`, `403`, `404`, `5xx`) rejects with an `AdapterError { status?, message }`, which the editor retries or shows.
+- **Revision**: `getRevision(ref)` calls `GET /buildr/documents/:collection/:id/revision` (see [above](#revision-query-pb-143)) and returns `{ revision, updatedAt, updatedBy? }`.
 - **Session and locales**: the session is fetched once and cached (until it fails); `GET /buildr/session` now also sends `locales` when Payload localization is configured. `getContext` uses `options.locale()` (else the default language) and `options.timeZone` (else the browser's) to complete the `DataContext`.
 - **Media**: `media.search` maps `mimeTypes` (when all share one type) to `type`, the cursor is the page number; `media.upload(file, alt)` posts multipart and rejects with the server's reason on `422` (no `alt`).
 - `@buildr/editor` is an optional peer used for types only.
@@ -262,6 +264,10 @@ Editing a template in the builder is not part of this task: for now the layout o
 ## API keys and agents (PB-139)
 
 With `mcp.enabled`, requests authenticated by a Payload API key (`Authorization: <collection> API-Key <key>`) may use the builder endpoints and the document list/create endpoints; without it they get `403`. `access.unlockTemplates` never applies to API keys, publishing needs `mcp.allowPublish` on top of `access.publish`, and `mcp.collections` narrows the collections. Writes record the user in `buildrUpdatedBy` and are rate limited per API-key user. See [mcp.md](mcp.md#authentication).
+
+### Revision query (PB-143)
+
+`GET /buildr/documents/:collection/:id/revision` answers with the stored `buildrRevision`, `updatedAt` and, with `mcp.enabled`, `updatedBy`: the name (else the email) of the user in `buildrUpdatedBy`. It reads three fields only and never the layout, so the editor can poll it cheaply. It needs the same permission as loading the document (edit, and the collection must be allowed for API keys). The label is read on the server's authority, so an editor learns who saved, not more about that user. `createPayloadAdapter` maps it to the editor's optional `DocumentAdapter.getRevision`.
 
 ## Forms (PB-102)
 

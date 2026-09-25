@@ -135,6 +135,8 @@ export async function latestOf(
     readonly localeArgs?: LocaleArgs | undefined;
     readonly depth?: number;
     readonly draft?: boolean;
+    /** Only these fields are read (Payload's `select`). */
+    readonly select?: Record<string, true>;
   } = {},
 ): Promise<Guarded<Record<string, unknown>>> {
   try {
@@ -143,6 +145,7 @@ export async function latestOf(
       id: target.id,
       draft: options.draft ?? true,
       depth: options.depth ?? 0,
+      ...(options.select === undefined ? {} : { select: options.select }),
       req,
       overrideAccess: false,
       ...options.localeArgs,
