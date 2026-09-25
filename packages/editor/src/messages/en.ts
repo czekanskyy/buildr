@@ -266,6 +266,9 @@ export const en = {
   'editor.resize.left': 'Resize the left panel',
   'editor.resize.right': 'Resize the right panel',
   'ui.close': 'Close',
+  'external.banner': 'A newer version of this page was saved.',
+  'external.banner.by': '{name} saved a newer version of this page.',
+  'external.reload': 'Reload the latest version',
 } as const;
 
 export type MessageKey = keyof typeof en;

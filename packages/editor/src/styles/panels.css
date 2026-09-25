@@ -590,3 +590,29 @@
 .bd-media-preview img {
   object-fit: cover;
 }
+
+/* External changes (PB-143): a non-blocking notice; the live region stays mounted so it is announced. */
+.buildr-editor .bd-external-banner,
+.bd-external-banner {
+  position: fixed;
+  top: calc(var(--bd-toolbar-height) + var(--bd-space-3));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: var(--bd-space-5);
+  max-width: calc(100vw - var(--bd-space-8));
+  padding: var(--bd-space-3) var(--bd-space-5);
+  border: 1px solid var(--bd-border);
+  border-radius: var(--bd-radius-md);
+  background: var(--bd-surface);
+  color: var(--bd-text);
+  box-shadow: var(--bd-elevation-2);
+  font-size: var(--bd-text-md);
+}
+.bd-external-banner:empty {
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+}

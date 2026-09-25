@@ -1,0 +1,80 @@
+{
+  "name": "@buildr/mcp",
+  "version": "0.0.0",
+  "private": false,
+  "type": "module",
+  "bin": {
+    "buildr-mcp": "./src/cli/bin.ts"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./cli": {
+      "types": "./src/cli/index.ts",
+      "default": "./src/cli/index.ts"
+    },
+    "./testing": {
+      "types": "./src/testing/index.ts",
+      "default": "./src/testing/index.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./cli": {
+        "types": "./dist/cli/index.d.ts",
+        "default": "./dist/cli/index.js"
+      },
+      "./testing": {
+        "types": "./dist/testing/index.d.ts",
+        "default": "./dist/testing/index.js"
+      },
+      "./package.json": "./package.json"
+    },
+    "bin": {
+      "buildr-mcp": "./dist/cli/bin.js"
+    }
+  },
+  "files": [
+    "dist",
+    "fixtures"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p evals",
+    "eval": "tsx evals/run.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@buildr/core": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.30.1",
+    "zod": "^4.6.5"
+  },
+  "peerDependencies": {
+    "@buildr/payload": "workspace:*",
+    "vitest": "^5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@buildr/payload": {
+      "optional": true
+    },
+    "vitest": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@buildr/tsconfig": "workspace:*",
+    "@types/node": "^22.20.4",
+    "tsx": "4.22.4",
+    "typescript": "7.0.2",
+    "vitest": "5.0.1"
+  }
+}

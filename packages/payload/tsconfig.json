@@ -8,5 +8,10 @@
     "tsBuildInfoFile": "./dist/.tsbuildinfo"
   },
   "include": ["src"],
-  "references": [{ "path": "../core" }, { "path": "../editor" }, { "path": "../next" }]
+  "references": [
+    { "path": "../core" },
+    { "path": "../editor" },
+    { "path": "../mcp" },
+    { "path": "../next" }
+  ]
 }

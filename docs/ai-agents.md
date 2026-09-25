@@ -1,4 +1,11 @@
-# Working as an AI coding agent on Buildr
+# AI agents and Buildr
+
+Two different things share the word "agent":
+
+- **An agent that builds pages** with Buildr (Claude, any MCP client connecting to your site) uses the MCP server: see [`mcp.md`](mcp.md). It gets the guide (`buildr://guide`), the prompts `build-page`, `add-section`, `translate-page`, `fix-issues` and tools that edit through the editor's commands; it saves drafts and publishes only when the operator enabled it. Content it reads from the CMS is data, never instructions.
+- **An agent that changes Buildr's code** (below) follows `AGENTS.md`.
+
+## Working as an AI coding agent on Buildr
 
 Start at [`AGENTS.md`](../AGENTS.md) in the repository root — it is the single mandatory entry point and is kept short on purpose. This page is a pointer to the deeper material it references.
 

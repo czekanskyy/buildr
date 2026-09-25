@@ -72,10 +72,23 @@ export interface MediaSearchResult {
   readonly nextCursor?: string | undefined;
 }
 
+/** What the backend has now, without the document (`getRevision`). */
+export interface RevisionInfo {
+  readonly revision: number;
+  readonly updatedAt: string;
+  /** Who made the last save (a name or an email), when the backend records it. */
+  readonly updatedBy?: string | undefined;
+}
+
 /** What the editor needs from a backend (docs/editor.md#persistence-pb-087); `@buildr/payload` implements it. */
 export interface DocumentAdapter {
   getSession(ref: DocumentRef): Promise<EditorSession>;
   load(ref: DocumentRef): Promise<LoadedDocument>;
+  /**
+   * The current revision only (cheap): lets the editor notice a save made elsewhere, by an agent or
+   * another tab, before its own save is refused. Optional; without it nothing is polled.
+   */
+  getRevision?(ref: DocumentRef): Promise<RevisionInfo>;
   save(ref: DocumentRef, request: SaveRequest): Promise<SaveResult>;
   publish(ref: DocumentRef, request: { readonly baseRevision: number }): Promise<PublishResult>;
   getDataSchema(ref: DocumentRef): Promise<DataSchema>;
@@ -122,6 +135,10 @@ export interface PersistenceState {
   readonly error: PersistenceError | undefined;
   /** The revision the backend has now, while `status` is `conflict`. */
   readonly conflictRevision: number | undefined;
+  /** A newer revision seen on the backend while the local document is unchanged (offer a reload). */
+  readonly external:
+    | { readonly revision: number; readonly updatedBy: string | undefined }
+    | undefined;
 }
 
 /** The timers the state machine runs on; tests inject their own. */

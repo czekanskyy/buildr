@@ -10,7 +10,12 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MessagesProvider } from '../messages/index.tsx';
 import { createEditorStore, type EditorStore, EditorStoreProvider } from '../store/index.ts';
-import { createPersistence, RETRY_DELAYS_MS } from './controller.ts';
+import {
+  createPersistence,
+  EXTERNAL_CHECK_INTERVAL_MS,
+  type PersistenceOptions,
+  RETRY_DELAYS_MS,
+} from './controller.ts';
 import { LoadError, loadDocument } from './load.ts';
 import { PersistenceProvider, SaveStatus, useSaveAction } from './react.tsx';
 import type { DocumentAdapter, LoadedDocument, SaveRequest, SaveResult } from './types.ts';
@@ -56,6 +61,9 @@ interface Fake {
   next: (request: SaveRequest) => Promise<SaveResult> | SaveResult;
   loaded: unknown;
   canEdit: boolean;
+  /** What `getRevision` answers; `revisionCalls` counts the asks. */
+  remote: { revision: number; updatedBy?: string };
+  revisionCalls: number;
 }
 
 function fakeAdapter(): Fake {
@@ -72,7 +80,13 @@ function fakeAdapter(): Fake {
       document: fixture(),
     },
     canEdit: true,
+    remote: { revision: 1 },
+    revisionCalls: 0,
     adapter: {
+      getRevision: async () => {
+        fake.revisionCalls += 1;
+        return { updatedAt: 't', ...fake.remote };
+      },
       getSession: async () => ({ canEdit: fake.canEdit, canPublish: false }),
       load: async () => fake.loaded as LoadedDocument,
       save: async (_ref, request) => {
@@ -91,7 +105,7 @@ function fakeAdapter(): Fake {
   return fake;
 }
 
-function setup(fake = fakeAdapter(), revision = 1) {
+function setup(fake = fakeAdapter(), revision = 1, extra: Partial<PersistenceOptions> = {}) {
   const store = createEditorStore({
     doc: fixture(),
     registry: registryMeta,
@@ -105,6 +119,7 @@ function setup(fake = fakeAdapter(), revision = 1) {
     revision,
     debounceMs: 2000,
     maxWaitMs: 20_000,
+    ...extra,
   });
   const stop = controller.start();
   return { fake, store, controller, stop };
@@ -314,6 +329,108 @@ describe('conflicts', () => {
   });
 });
 
+describe('external changes', () => {
+  it('offers a reload when somebody saved and the document is unchanged', async () => {
+    const { fake, controller } = setup();
+    await advance(EXTERNAL_CHECK_INTERVAL_MS - 1);
+    expect(fake.revisionCalls).toBe(0);
+    await advance(1);
+    expect(fake.revisionCalls).toBe(1);
+    expect(controller.state.getState().external).toBeUndefined();
+    fake.remote = { revision: 2, updatedBy: 'agent@example.com' };
+    await advance(EXTERNAL_CHECK_INTERVAL_MS);
+    expect(controller.state.getState().external).toEqual({
+      revision: 2,
+      updatedBy: 'agent@example.com',
+    });
+    expect(status(controller)).toBe('clean');
+    fake.loaded = { ...(fake.loaded as object), revision: 2 };
+    await act(async () => controller.reload());
+    expect(controller.state.getState()).toMatchObject({ revision: 2, external: undefined });
+  });
+
+  it('turns local edits after a seen external save into an immediate conflict', async () => {
+    const { fake, store, controller } = setup();
+    fake.remote = { revision: 4 };
+    await advance(EXTERNAL_CHECK_INTERVAL_MS);
+    expect(controller.state.getState().external?.revision).toBe(4);
+    edit(store);
+    expect(status(controller)).toBe('conflict');
+    expect(controller.state.getState().conflictRevision).toBe(4);
+    expect(fake.saves).toHaveLength(0);
+    // Overwrite builds on the revision that was seen, so it needs no second round trip.
+    await act(async () => controller.overwrite());
+    expect(fake.saves[0]).toMatchObject({ baseRevision: 4 });
+    expect(status(controller)).toBe('clean');
+  });
+
+  it('finds a save made elsewhere while dirty before the autosave is refused', async () => {
+    const { fake, store, controller } = setup(fakeAdapter(), 1, {
+      debounceMs: 60_000,
+      maxWaitMs: 90_000,
+    });
+    edit(store);
+    fake.remote = { revision: 5 };
+    await advance(EXTERNAL_CHECK_INTERVAL_MS);
+    expect(status(controller)).toBe('conflict');
+    expect(controller.state.getState().conflictRevision).toBe(5);
+    expect(fake.saves).toHaveLength(0);
+  });
+
+  it('does not poll while the tab is hidden, and checks on demand when it is shown again', async () => {
+    let visible = false;
+    const { fake, controller } = setup(fakeAdapter(), 1, { isVisible: () => visible });
+    await advance(EXTERNAL_CHECK_INTERVAL_MS * 3);
+    expect(fake.revisionCalls).toBe(0);
+    visible = true;
+    fake.remote = { revision: 2 };
+    await act(async () => controller.checkExternal());
+    expect(fake.revisionCalls).toBe(1);
+    expect(controller.state.getState().external?.revision).toBe(2);
+  });
+
+  it('stops polling when stopped, ignores failures, and needs getRevision', async () => {
+    const fake = fakeAdapter();
+    const { controller, stop } = setup(fake);
+    fake.adapter.getRevision = async () => {
+      fake.revisionCalls += 1;
+      throw new Error('offline');
+    };
+    await advance(EXTERNAL_CHECK_INTERVAL_MS);
+    expect(fake.revisionCalls).toBe(1);
+    expect(status(controller)).toBe('clean');
+    expect(controller.state.getState().external).toBeUndefined();
+    stop();
+    await advance(EXTERNAL_CHECK_INTERVAL_MS * 3);
+    expect(fake.revisionCalls).toBe(1);
+
+    const bare = fakeAdapter();
+    delete bare.adapter.getRevision;
+    const other = setup(bare);
+    await advance(EXTERNAL_CHECK_INTERVAL_MS * 2);
+    await other.controller.checkExternal();
+    expect(bare.revisionCalls).toBe(0);
+  });
+
+  it('ignores an answer that a save overtook', async () => {
+    const fake = fakeAdapter();
+    const { store, controller } = setup(fake);
+    let release: () => void = () => undefined;
+    fake.adapter.getRevision = () =>
+      new Promise((resolve) => {
+        release = () => resolve({ revision: 2, updatedAt: 't' });
+      });
+    const pending = controller.checkExternal();
+    edit(store);
+    await advance(2000);
+    expect(controller.state.getState().revision).toBe(2);
+    release();
+    await act(async () => pending);
+    expect(controller.state.getState().external).toBeUndefined();
+    expect(status(controller)).toBe('clean');
+  });
+});
+
 describe('loadDocument', () => {
   it('returns the validated document', async () => {
     const fake = fakeAdapter();
@@ -404,6 +521,23 @@ describe('PersistenceProvider', () => {
     const dirty = new Event('beforeunload', { cancelable: true });
     window.dispatchEvent(dirty);
     expect(dirty.defaultPrevented).toBe(true);
+  });
+
+  it('shows a status banner naming who saved, and reloads from it', async () => {
+    const fake = fakeAdapter();
+    const { controller } = await mount(fake);
+    const banner = () => container.ownerDocument.querySelector('.bd-external-banner');
+    expect(banner()?.getAttribute('role')).toBe('status');
+    expect(banner()?.textContent).toBe('');
+    fake.remote = { revision: 2, updatedBy: 'Claude agent' };
+    fake.loaded = { ...(fake.loaded as object), revision: 2 };
+    await act(async () => window.dispatchEvent(new Event('focus')));
+    expect(banner()?.textContent).toContain('Claude agent saved a newer version');
+    const reload = banner()?.querySelector('button');
+    expect(reload?.textContent).toBe('Reload the latest version');
+    await act(async () => reload?.click());
+    expect(banner()?.textContent).toBe('');
+    expect(controller.state.getState().revision).toBe(2);
   });
 
   it('asks the author to choose in a conflict', async () => {

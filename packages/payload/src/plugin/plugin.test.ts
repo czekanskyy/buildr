@@ -191,3 +191,42 @@ describe('buildrPlugin', () => {
     });
   });
 });
+
+describe('buildrPlugin mcp option', () => {
+  const collections = { pages: { context: 'page' } };
+  const users = (auth: NonNullable<CollectionConfig['auth']>): CollectionConfig => ({
+    slug: 'users',
+    auth,
+    fields: [],
+  });
+
+  it('is off by default and needs no API-key collection then', async () => {
+    const config = await configOf({ collections }, [pages]);
+    const page = config.collections.find((c) => c.slug === 'pages');
+    expect(page?.fields.some((f) => 'name' in f && f.name === 'buildrUpdatedBy')).toBe(false);
+  });
+
+  it('requires an auth collection with useAPIKey when enabled', async () => {
+    await expect(
+      configOf({ collections, mcp: { enabled: true } }, [pages, users(true)]),
+    ).rejects.toThrow(/useAPIKey/);
+  });
+
+  it('adds buildrUpdatedBy when enabled', async () => {
+    const config = await configOf({ collections, mcp: { enabled: true } }, [
+      pages,
+      users({ useAPIKey: true }),
+    ]);
+    const page = config.collections.find((c) => c.slug === 'pages');
+    expect(page?.fields.some((f) => 'name' in f && f.name === 'buildrUpdatedBy')).toBe(true);
+  });
+
+  it('rejects mcp.collections that are not builder collections', async () => {
+    await expect(
+      configOf({ collections, mcp: { enabled: true, collections: ['posts'] } }, [
+        pages,
+        users({ useAPIKey: true }),
+      ]),
+    ).rejects.toThrow(/mcp\.collections "posts"/);
+  });
+});

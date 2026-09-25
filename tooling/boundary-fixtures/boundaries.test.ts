@@ -47,6 +47,10 @@ describe('check:boundaries fixtures', () => {
     ['core-commands-imports-protocol', 'core-commands-forbidden'],
     ['next-editor-leaks-outside-subpath', 'next-editor-confined-to-its-subpath'],
     ['react-relative-path-into-next', 'react-no-downstream-packages'],
+    ['mcp-imports-react', 'mcp-no-frameworks'],
+    ['mcp-imports-payload', 'mcp-no-frameworks'],
+    ['mcp-imports-buildr-package', 'mcp-only-core'],
+    ['payload-mcp-imports-payload', 'payload-mcp-backend-isolated'],
   ] as const)('%s fails with the %s rule', async (caseName, ruleName) => {
     const violations = await cruise(caseName);
     expect(violations.map((v) => v.rule.name)).toContain(ruleName);
