@@ -27,7 +27,25 @@ To be written in PB-141 (stdio CLI) and PB-142 (HTTP endpoint).
 
 ## Authentication
 
-Payload API keys for a dedicated, low-privilege agent user (ADR-024, decision 3). To be written in PB-139.
+Payload API keys for a dedicated, low-privilege agent user (ADR-024, decision 3). Implemented in the Payload plugin (PB-139):
+
+```ts
+buildrPlugin({
+  // ...
+  mcp: {
+    enabled: true,          // off by default
+    allowPublish: false,    // an API-key user may publish only when this AND access.publish allow it
+    collections: ['pages'], // optional: the builder collections an agent may use (default: all of them)
+    rateLimit: { limit: 60, windowMs: 60_000 }, // writes per API-key user and window; or `rateLimiter`
+  },
+})
+```
+
+- The users collection (any auth collection) must set `auth: { useAPIKey: true }`; `mcp.enabled` fails at startup otherwise. Create a dedicated agent user, give it only the collection access it needs (it can do exactly what the same user can do in the editor, nothing more), enable its API key in the admin and rotate the key regularly. Requests carry `Authorization: <users-collection> API-Key <key>`.
+- While `mcp.enabled` is off, an API-key request is refused (`403`) by every builder endpoint; browser sessions are unaffected.
+- `GET /api/buildr/documents?collection&search&page` lists the builder documents the user may read (`documentListResponseSchema`: title, slug, status, `updatedAt`, `revision`, `layoutSource`, `previewPath`; 20 per page, newest first). `POST /api/buildr/documents` (`createDocumentRequestSchema`: `collection`, `title`, optional `slug` and template id) creates a **draft**, subject to collection access; it never publishes. Both exist only when `mcp.enabled`.
+- Every builder write (create, save, publish) records the acting user in the hidden `buildrUpdatedBy` field, which Payload keeps in each version, so history names the agent user. Writes by API-key requests are rate limited (`429` with `Retry-After`).
+- The schemas live in `packages/payload/src/contract.ts` and are shared with the HTTP backend (PB-140, `@buildr/payload/mcp`).
 
 ## Tool reference
 

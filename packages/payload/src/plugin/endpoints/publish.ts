@@ -3,8 +3,17 @@ import type { Endpoint } from 'payload';
 import { publishRequestSchema, publishResponseSchema } from '../../contract.ts';
 import { processLayout } from '../hooks/process-layout.ts';
 import { configuredLocales } from '../locales.ts';
-import { BUILDR_WRITE } from '../write-guard.ts';
-import { allowed, bodyOf, type EndpointEnv, latestOf, revisionOf, targetOf } from './context.ts';
+import {
+  allowed,
+  bodyOf,
+  type EndpointEnv,
+  latestOf,
+  revisionOf,
+  targetOf,
+  updatedBy,
+  writeContext,
+  writeLimit,
+} from './context.ts';
 import { mutationGuard } from './guards.ts';
 import { conflict, fail, invalid, json } from './respond.ts';
 
@@ -24,6 +33,8 @@ export const publishEndpoint = (env: EndpointEnv): Endpoint => ({
     if (!(await allowed(env, 'publish', req))) {
       return fail(403, 'You may not publish with the builder.');
     }
+    const limited = await writeLimit(env, req);
+    if (limited !== undefined) return limited;
     const body = await bodyOf(req);
     if (!body.ok) return body.response;
     const parsed = publishRequestSchema.safeParse(body.value);
@@ -59,12 +70,12 @@ export const publishEndpoint = (env: EndpointEnv): Endpoint => ({
     const published = await req.payload.update({
       collection: target.value.collection,
       id: target.value.id,
-      data: { _status: 'published' },
+      data: { _status: 'published', ...updatedBy(env, req) },
       draft: false,
       depth: 0,
       req,
       overrideAccess: false,
-      context: { [BUILDR_WRITE]: true },
+      context: writeContext(req),
     });
     const updatedAt = String(published['updatedAt']);
     return json(

@@ -9,6 +9,10 @@ export interface Permissions {
   readonly canUnlockTemplates: boolean;
 }
 
+/** Whether the request was authenticated by a Payload API key (`user._strategy`, set by Payload). */
+export const isApiKeyRequest = (req: PayloadRequest): boolean =>
+  (req.user as { _strategy?: string } | null | undefined)?._strategy === 'api-key';
+
 const isAuthenticated = (req: PayloadRequest): boolean =>
   req.user !== null && req.user !== undefined;
 
@@ -19,17 +23,23 @@ const isAuthenticated = (req: PayloadRequest): boolean =>
  * make uses the caller's `req` with `overrideAccess: false`.
  */
 export async function allowed(
-  options: Pick<ResolvedOptions, 'access'>,
+  options: Pick<ResolvedOptions, 'access' | 'mcp'>,
   action: Action,
   req: PayloadRequest,
 ): Promise<boolean> {
   if (!isAuthenticated(req)) return false;
+  if (isApiKeyRequest(req)) {
+    // An API key reaches the builder only through the opt-in `mcp` option; it publishes only with `mcp.allowPublish`.
+    if (!options.mcp.enabled) return false;
+    if (action === 'publish' && !options.mcp.allowPublish) return false;
+    if (action === 'unlockTemplates') return false;
+  }
   const check = options.access[action];
   return check === undefined ? true : Boolean(await check({ req }));
 }
 
 export async function permissionsOf(
-  options: Pick<ResolvedOptions, 'access'>,
+  options: Pick<ResolvedOptions, 'access' | 'mcp'>,
   req: PayloadRequest,
 ): Promise<Permissions> {
   const [canEdit, canPublish, canUnlockTemplates] = await Promise.all([
