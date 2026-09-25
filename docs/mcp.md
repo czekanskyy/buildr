@@ -180,7 +180,28 @@ createBuildrMcpServer({
 
 ## Tool reference
 
-To be generated from the tool definitions (PB-144).
+The full reference is generated from the tool definitions (PB-144). Document and editing tools (PB-137) are built by two factories that close over one `SessionStore`:
+
+```ts
+const store = createSessionStore({ backend });
+const tools = [...createDocumentTools({ store }), ...createEditingTools({ store })];
+const server = createBuildrMcpServer({ backend, options: { tools } });
+```
+
+| Tool | Purpose |
+|---|---|
+| `list_documents` | Documents the user can edit (collection, id, title, slug, status, revision); read-only |
+| `create_document` | New **draft** in a collection, optionally seeded with a template; opens it and returns `sessionId`. The template is checked before anything is created |
+| `open_document` | Working copy: `sessionId`, revision, `layoutSource`, outline; notes read-only and shared layouts |
+| `get_outline`, `get_node` | Read the working copy (outline text or JSON, one node in full); read-only |
+| `close_document` | Frees the session; refuses unsaved changes unless `discard: true` |
+| `insert_nodes` | A `tree` (validated by `parseTreeInput`) or a `template` (+ `variant`) at `parentId`/`slot`/`index` or `after` a sibling (default: end of the page). A lone list-item is refused with a pointer to inserting the parent tree or `duplicate_nodes` |
+| `update_node` | Props (plain value = static, or a full `Value`), `unsetProps`, `locale` (translations go to `l10n` only), `styles`/`unsetStyles` (`bp`, `state`), `resetStyles`, `attributes` (name, anchor, region, lock, visibleIf), all in one batch |
+| `move_nodes`, `remove_nodes`, `duplicate_nodes`, `wrap_nodes`, `unwrap_node` | One core command each; `remove_nodes` has `destructiveHint` |
+| `apply_commands` | Raw core commands as one atomic batch: every command type of [commands.md](commands.md) (`node.insert`, `remove`, `move`, `setProp`, `unsetProp`, `setStyle`, `unsetStyle`, `resetStyles`, `duplicate`, `wrap`, `unwrap`, `setAttr`). `doc.replace` is deliberately not available (it swaps the document and erases history) |
+| `undo`, `redo` | One tool call is one step |
+
+Every editing result lists the new node ids with their outline, the changed nodes and whether unsaved changes remain. Each tool is a single `session.apply` (`executeBatch`): a rejected command leaves the document untouched, and core checks `assertDocumentInvariants`-level invariants after every command, so no tool can produce an invalid document. Templates come from the session's manifest (`registry.getTemplate`), so custom templates work without extra wiring.
 
 ## Publishing
 

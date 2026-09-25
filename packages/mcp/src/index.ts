@@ -31,4 +31,6 @@ export {
 } from './server.ts';
 export * from './session/index.ts';
 export { createDiscoveryTools } from './tools/discovery.ts';
+export { createDocumentTools, type ToolFactoryOptions } from './tools/documents.ts';
+export { createEditingTools } from './tools/editing.ts';
 export { MCP_SERVER_VERSION } from './version.ts';
