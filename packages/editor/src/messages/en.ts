@@ -280,6 +280,8 @@ export const en = {
   'inspector.duplicate': 'Duplicate element',
   'inspector.delete': 'Delete element',
   'inspector.nodeName': 'Element name',
+  'editor.canvas.width': '{name} · {width}px',
+  'editor.canvas.error.title': 'The page preview could not be shown',
   'toast.dismiss': 'Dismiss notification',
   'issues.group.error': 'Errors',
   'issues.group.warning': 'Warnings',

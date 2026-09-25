@@ -276,6 +276,8 @@ export const pl: Messages = {
   'inspector.duplicate': 'Duplikuj element',
   'inspector.delete': 'Usuń element',
   'inspector.nodeName': 'Nazwa elementu',
+  'editor.canvas.width': '{name} · {width}px',
+  'editor.canvas.error.title': 'Nie można wyświetlić podglądu strony',
   'toast.dismiss': 'Zamknij powiadomienie',
   'issues.group.error': 'Błędy',
   'issues.group.warning': 'Ostrzeżenia',
