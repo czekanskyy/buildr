@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { BreakpointConfig } from '../app/config.ts';
 import { type MessageKey, useT } from '../messages/index.tsx';
 import { useEditor } from '../store/index.ts';
-import { Button } from '../ui/index.ts';
+import { Button, Icon } from '../ui/index.ts';
 import { type CanvasHost, type CanvasHostOptions, createCanvasHost } from './host.ts';
 
 export interface CanvasFrameProps {
@@ -39,6 +39,46 @@ export function canvasSource(canvasUrl: string, session: string): { src: string;
   return { src: url.toString(), origin: url.origin };
 }
 
+export interface StageMetrics {
+  /** The scale applied to the iframe. */
+  readonly scale: number;
+  /** The iframe's own (unscaled) CSS height: the visible height divided by the scale (0: unknown). */
+  readonly frameHeight: number;
+  /** The width the scaled page takes on the stage. */
+  readonly stageWidth: number;
+  /** The visible height of the stage (0: unknown). */
+  readonly stageHeight: number;
+}
+
+/**
+ * The stage arithmetic (A8): the frame is scaled with `transform`, which does not change its
+ * layout box, so the frame's height is the visible height divided by the scale; the scaled
+ * page then fills the visible stage exactly. `room` and `roomHeight` are the stage area in CSS
+ * pixels (0 while not measured); with no height known the frame fills its parent.
+ */
+export function stageMetrics(input: {
+  readonly width: number;
+  readonly room: number;
+  readonly roomHeight: number;
+  readonly zoom: 'fit' | number;
+}): StageMetrics {
+  const { width, room, roomHeight, zoom } = input;
+  const raw = zoom === 'fit' ? (room > 0 ? Math.min(1, room / width) : 1) : zoom;
+  const scale = Number.isFinite(raw) && raw > 0 ? raw : 1;
+  return {
+    scale,
+    frameHeight: roomHeight > 0 ? roomHeight / scale : 0,
+    stageWidth: width * scale,
+    stageHeight: roomHeight > 0 ? roomHeight : 0,
+  };
+}
+
+const BREAKPOINT_LABELS: Readonly<Record<string, MessageKey>> = {
+  desktop: 'toolbar.breakpoint.desktop',
+  tablet: 'toolbar.breakpoint.tablet',
+  mobile: 'toolbar.breakpoint.mobile',
+};
+
 /**
  * The canvas iframe, its channel and its status screens. A "Reload canvas" button (or a fatal
  * error) mounts a new frame with a new session; nothing is lost, because the store holds the
@@ -56,7 +96,8 @@ export function CanvasFrame(props: CanvasFrameProps) {
   const iframe = useRef<HTMLIFrameElement>(null);
   const area = useRef<HTMLDivElement>(null);
   const [host, setHost] = useState<CanvasHost | null>(null);
-  const [room, setRoom] = useState(0);
+  const wrap = useRef<HTMLDivElement>(null);
+  const [room, setRoom] = useState({ width: 0, height: 0 });
 
   const propsRef = useRef(props);
   propsRef.current = props;
@@ -101,9 +142,14 @@ export function CanvasFrame(props: CanvasFrameProps) {
   }, [store, session, source.origin]);
 
   useEffect(() => {
-    const element = area.current;
+    const element = wrap.current;
     if (element === null) return;
-    const measure = () => setRoom(element.clientWidth);
+    const measure = () =>
+      setRoom((prev) =>
+        prev.width === element.clientWidth && prev.height === element.clientHeight
+          ? prev
+          : { width: element.clientWidth, height: element.clientHeight },
+      );
     measure();
     const Observer = (globalThis as { ResizeObserver?: typeof ResizeObserver }).ResizeObserver;
     if (Observer === undefined) return;
@@ -115,30 +161,52 @@ export function CanvasFrame(props: CanvasFrameProps) {
   const hostState = useHostState(host);
   const width = hostState?.width ?? props.breakpoints[0]?.width ?? 1280;
   const zoom = hostState?.zoom ?? 'fit';
-  const scale = zoom === 'fit' ? (room > 0 ? Math.min(1, room / width) : 1) : zoom;
+  const metrics = stageMetrics({ width, room: room.width, roomHeight: room.height, zoom });
+  const { scale } = metrics;
+  const breakpointId = hostState?.breakpoint ?? props.breakpoint;
+  const breakpointKey = breakpointId === undefined ? undefined : BREAKPOINT_LABELS[breakpointId];
+  const widthLabel = t('editor.canvas.width')
+    .replace('{name}', breakpointKey !== undefined ? t(breakpointKey) : (breakpointId ?? ''))
+    .replace('{width}', String(width));
   const status = hostState?.status ?? 'connecting';
   const error = hostState?.error;
 
   return (
     <div className="bd-canvas-host" ref={area} data-status={status}>
-      <div className="bd-canvas-stage" style={{ width: width * scale }}>
-        <iframe
-          ref={iframe}
-          key={session}
-          className="bd-canvas-frame"
-          title={t('editor.canvas.frame')}
-          src={source.src}
-          data-status={status}
-          style={{ width, transform: `scale(${scale})` }}
-        />
+      <p className="bd-canvas-width">{widthLabel}</p>
+      <div className="bd-canvas-stage-area" ref={wrap}>
+        <div
+          className="bd-canvas-stage"
+          style={{
+            width: metrics.stageWidth,
+            ...(metrics.stageHeight > 0 ? { height: metrics.stageHeight } : {}),
+          }}
+        >
+          <iframe
+            ref={iframe}
+            key={session}
+            className="bd-canvas-frame"
+            title={t('editor.canvas.frame')}
+            src={source.src}
+            data-status={status}
+            style={{
+              width,
+              ...(metrics.frameHeight > 0 ? { height: metrics.frameHeight } : {}),
+              transform: `scale(${scale})`,
+            }}
+          />
+        </div>
       </div>
       {status === 'connecting' ? (
-        <p className="bd-canvas-status" role="status">
-          {t('editor.canvas.connecting')}
-        </p>
+        <div className="bd-canvas-card bd-canvas-status" role="status">
+          <Icon name="monitor-smartphone" size="md" />
+          <p className="bd-canvas-title">{t('editor.canvas.connecting')}</p>
+        </div>
       ) : null}
       {status === 'error' && error !== undefined ? (
-        <div className="bd-canvas-error" role="alert">
+        <div className="bd-canvas-card bd-canvas-error" role="alert">
+          <Icon name="triangle-alert" size="md" />
+          <p className="bd-canvas-title">{t('editor.canvas.error.title')}</p>
           <p>{t(`editor.canvas.error.${error.kind}` satisfies MessageKey)}</p>
           {error.kind === 'canvas' ? <p className="bd-canvas-detail">{error.message}</p> : null}
           {error.details !== undefined ? (

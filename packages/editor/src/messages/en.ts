@@ -279,6 +279,8 @@ export const en = {
   'external.banner': 'A newer version of this page was saved.',
   'external.banner.by': '{name} saved a newer version of this page.',
   'external.reload': 'Reload the latest version',
+  'editor.canvas.width': '{name} · {width}px',
+  'editor.canvas.error.title': 'The page preview could not be shown',
   'toast.dismiss': 'Dismiss notification',
   'issues.group.error': 'Errors',
   'issues.group.warning': 'Warnings',

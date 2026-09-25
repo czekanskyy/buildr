@@ -275,6 +275,8 @@ export const pl: Messages = {
   'external.banner': 'Zapisano nowszą wersję tej strony.',
   'external.banner.by': 'Użytkownik {name} zapisał nowszą wersję tej strony.',
   'external.reload': 'Wczytaj najnowszą wersję',
+  'editor.canvas.width': '{name} · {width}px',
+  'editor.canvas.error.title': 'Nie można wyświetlić podglądu strony',
   'toast.dismiss': 'Zamknij powiadomienie',
   'issues.group.error': 'Błędy',
   'issues.group.warning': 'Ostrzeżenia',
