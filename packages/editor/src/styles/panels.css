@@ -122,7 +122,8 @@
   background: var(--bd-surface-hover);
   color: var(--bd-text);
 }
-.buildr-editor .bd-layer-rename ~ .bd-layer-more {
+.buildr-editor .bd-layer[data-hovered] .bd-layer-rename ~ .bd-layer-more,
+.buildr-editor .bd-layer[data-selected] .bd-layer-rename ~ .bd-layer-more {
   display: none;
 }
 /* The rename field fits inside the row (row height minus a hairline of air above and below). */
