@@ -82,6 +82,21 @@ describe('getBuildrDocument', () => {
     expect(calls[0]?.keys).toContain('slug:about');
   });
 
+  it('exposes the page of a listing as route.params.page, keyed in the cache', async () => {
+    await create({ title: 'Blog', slug: 'blog', layout: withChild(title('Hi')) }, 'published');
+    const { cache, calls } = spyCache();
+    const entry = await getBuildrDocument({
+      payload: h.payload,
+      collection: 'pages',
+      slug: 'blog',
+      contextName: 'page',
+      page: 2,
+      cache,
+    });
+    expect(entry?.context).toMatchObject({ scopes: { route: { params: { page: 2 } } } });
+    expect(calls[0]?.keys).toContain('page:2');
+  });
+
   it('reads by id and falls back to the built-in layout', async () => {
     const page = await create({ title: 'Bare', slug: 'bare' }, 'published');
     const entry = await getBuildrDocument({

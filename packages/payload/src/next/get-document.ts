@@ -45,6 +45,8 @@ export interface GetBuildrDocumentInput {
   readonly path?: (doc: Record<string, unknown>) => string;
   /** Relation depth of the read. Default `1`. */
   readonly depth?: number;
+  /** The page of a paginated listing: `route.params.page`. */
+  readonly page?: number;
   readonly timeZone?: string;
   /** Replaces the tagged cache (tests, hosts with their own). */
   readonly cache?: CacheRead;
@@ -185,7 +187,11 @@ export async function getBuildrDocument(
       collection,
       doc,
       site,
-      route: { path, locale: locale ?? localeConfig.default },
+      route: {
+        path,
+        locale: locale ?? localeConfig.default,
+        ...(input.page === undefined ? {} : { page: input.page }),
+      },
     });
     const context: DataContext = {
       scopes: scopes as Record<string, JsonValue>,
@@ -225,6 +231,7 @@ export async function getBuildrDocument(
           input.slug !== undefined ? `slug:${input.slug}` : `id:${String(input.id)}`,
           locale ?? '',
           String(input.depth ?? 1),
+          input.page === undefined ? '' : `page:${input.page}`,
         ],
         { tags },
       )();

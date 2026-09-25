@@ -323,7 +323,12 @@ function Shell(props: EditorAppProps & { readonly ready: Ready }) {
             <Inspector
               locale={locale}
               defaultLocale={locales.default}
-              renderStyle={(node) => <StyleInspector node={node} />}
+              renderStyle={(node) => (
+                <StyleInspector
+                  node={node}
+                  {...(breakpoint === config.breakpoints[0]?.id ? {} : { breakpoint })}
+                />
+              )}
             />
           </InspectorDataProvider>
         }

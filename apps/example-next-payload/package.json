@@ -11,7 +11,7 @@
     "test": "vitest run --passWithNoTests",
     "generate:importmap": "payload generate:importmap",
     "seed": "payload run src/seed/run.ts",
-    "e2e": "echo \"e2e arrives with PB-112\""
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@buildr/components": "workspace:*",
@@ -34,7 +34,9 @@
     "sharp": "^0.35.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@buildr/tsconfig": "workspace:*",
+    "@playwright/test": "^1.63.0",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
