@@ -104,6 +104,7 @@ const EDITOR_ICONS = {
   box: Box,
   'chevron-down': ChevronDown,
   'chevron-right': ChevronRight,
+  ellipsis: Ellipsis,
   eye: Eye,
   link: Link,
   list: List,
