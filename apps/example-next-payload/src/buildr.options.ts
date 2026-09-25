@@ -27,12 +27,14 @@ export const pluginCollections = {
     path: (doc: { slug?: string }) => `/blog/${doc.slug}`,
     templates: true,
     depth: 1,
+    expectH1: true,
   },
   products: {
     context: 'product',
     path: (doc: { slug?: string }) => `/products/${doc.slug}`,
     templates: true,
     depth: 1,
+    expectH1: true,
   },
 } as unknown as BuildrPluginOptions['collections'];
 

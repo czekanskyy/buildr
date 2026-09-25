@@ -201,3 +201,11 @@ The flow *Payload → "Edit with Visual Builder" → a separate tab → edit →
 - `next.config.ts` carries the security header rules. They are the output of `buildrSecurityHeaders()`, written out because Node loads `next.config.ts` itself and does not compile a workspace package's TypeScript; an application using the published package imports the function instead.
 
 Verified by hand against a local database: the editor opens, the canvas handshake completes, inserting a heading and publishing changes `/pl`. Automated end-to-end coverage is PB-112.
+
+## The example application seeds (PB-111)
+
+`pnpm --filter @buildr/example-next-payload seed` fills the database with the six demo scenarios in Polish (default) and English: a landing page (`home`), a company page (`about`, with pricing and FAQ), the blog listing (`blog`, eight posts so pagination has a second page), a contact page, and the default layout templates for `posts` and `products` (`buildr-templates`), plus authors, categories, media (generated SVG), posts and four products.
+
+- **Idempotent.** Every document is looked up by its natural key (slug, filename) and skipped when present; a second run creates nothing.
+- **Static, deterministic documents.** Page layouts are composed from `defaultTemplates` with a seeded id generator; the Polish text is the stored value and English rides along as `l10n.en`.
+- **Checked in tests.** `src/seed/documents.test.ts` asserts that every seeded document passes `validateDocument` and `runA11y` with zero issues (`expectH1: "document"`).
