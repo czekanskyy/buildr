@@ -1,5 +1,7 @@
 import type { NodeId } from '@buildr/core';
 import type { CanvasStore } from '../store.ts';
+import { CHIP_HEIGHT, placeChip } from './chip.ts';
+import { OVERLAY_STYLE, PAGE_STYLE } from './palette.ts';
 
 export interface OverlayOptions {
   readonly document: Document;
@@ -8,6 +10,8 @@ export interface OverlayOptions {
   readonly warn?: boolean;
   /** The pointer went down on the drag handle of the selected node. */
   readonly onHandleDown?: (event: PointerEvent) => void;
+  /** The human label of a component type (`Hero`); the type itself is used when absent. */
+  readonly labelOf?: (type: string) => string | undefined;
 }
 
 export interface Overlay {
@@ -26,32 +30,13 @@ export interface Box {
   readonly top: number;
   readonly width: number;
   readonly height: number;
-  /** The type label, on the primary box of a selected node only. */
+  /** The component label (or its type), on the primary box of a selected node only. */
   readonly label?: string;
+  /** The node's own name (layers-panel label), when it has one. */
+  readonly name?: string;
   /** Whether the node can be moved with a handle (a selected node other than the root). */
   readonly movable?: boolean;
 }
-
-const STYLE = `
-:host { all: initial; }
-.layer { position: fixed; inset: 0; pointer-events: none; z-index: 2147483647; }
-.box { position: fixed; box-sizing: border-box; pointer-events: none; }
-.box.selected { outline: 2px solid #2563eb; outline-offset: -1px; }
-.box.hover { outline: 1px solid #60a5fa; outline-offset: -1px; }
-.box.secondary { outline-style: dashed; }
-.label { position: absolute; left: -1px; top: -20px; padding: 1px 6px; font: 600 11px/18px system-ui, sans-serif;
-  color: #fff; background: #2563eb; white-space: nowrap; }
-.label.inside { top: 0; }
-.handle { position: absolute; right: -1px; top: -20px; width: 20px; height: 18px; background: #2563eb; color: #fff;
-  font: 700 12px/18px system-ui, sans-serif; text-align: center; cursor: grab; pointer-events: auto; touch-action: none; }
-.handle.inside { top: 0; }
-.drop { position: fixed; box-sizing: border-box; pointer-events: none; }
-.drop.line { background: #f59e0b; }
-.drop.inside { background: rgba(245, 158, 11, 0.16); outline: 2px solid #f59e0b; outline-offset: -1px; }
-.drop.forbidden { background: rgba(220, 38, 38, 0.12); outline: 2px solid #dc2626; outline-offset: -1px; }
-.drop .reason { position: absolute; left: 0; top: 0; max-width: 320px; padding: 2px 6px; background: #dc2626; color: #fff;
-  font: 500 11px/16px system-ui, sans-serif; }
-`;
 
 function inProduction(): boolean {
   const proc = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process;
@@ -83,7 +68,11 @@ export function openAncestorDetails(element: Element): boolean {
  * `getBoundingClientRect` only (viewport-relative, which is what `position: fixed` wants, so a
  * fixed or sticky element is drawn where it is).
  */
-export function computeBoxes(doc: Document, store: CanvasStore): Box[] {
+export function computeBoxes(
+  doc: Document,
+  store: CanvasStore,
+  labelOf?: (type: string) => string | undefined,
+): Box[] {
   const { selection, hover, doc: replica } = store.getState();
   const root = replica?.root;
   const boxes: Box[] = [];
@@ -92,7 +81,8 @@ export function computeBoxes(doc: Document, store: CanvasStore): Box[] {
     elements.forEach((el, index) => {
       const rect = el.getBoundingClientRect();
       if (rect.width === 0 && rect.height === 0) return;
-      const type = store.getNode(id)?.type;
+      const node = store.getNode(id);
+      const type = node?.type;
       boxes.push({
         kind,
         primary: index === 0,
@@ -100,7 +90,10 @@ export function computeBoxes(doc: Document, store: CanvasStore): Box[] {
         top: rect.top,
         width: rect.width,
         height: rect.height,
-        ...(kind === 'selected' && index === 0 && type !== undefined ? { label: type } : {}),
+        ...(kind === 'selected' && index === 0 && type !== undefined
+          ? { label: labelOf?.(type) ?? type }
+          : {}),
+        ...(kind === 'selected' && index === 0 && node?.name ? { name: node.name } : {}),
         ...(kind === 'selected' && index === 0 && root !== undefined && id !== root
           ? { movable: true }
           : {}),
@@ -129,11 +122,16 @@ export function createOverlay(options: OverlayOptions): Overlay {
   host.setAttribute('data-buildr-overlay', '');
   const shadow = host.attachShadow({ mode: 'open' });
   const style = doc.createElement('style');
-  style.textContent = STYLE;
+  style.textContent = OVERLAY_STYLE;
   const layer = doc.createElement('div');
   layer.className = 'layer';
   shadow.append(style, layer);
   doc.body.append(host);
+  // The empty-slot placeholder is part of the page, so its style goes into the page (namespaced).
+  const pageStyle = doc.createElement('style');
+  pageStyle.setAttribute('data-buildr-canvas-style', '');
+  pageStyle.textContent = PAGE_STYLE;
+  doc.head.append(pageStyle);
 
   const observed = new Set<Element>();
   const observer =
@@ -187,7 +185,11 @@ export function createOverlay(options: OverlayOptions): Overlay {
       }
     }
 
-    const boxes = computeBoxes(doc, store);
+    const boxes = computeBoxes(doc, store, options.labelOf);
+    const pendingChips: {
+      chip: HTMLElement;
+      place: (w: number) => ReturnType<typeof placeChip>;
+    }[] = [];
     layer.replaceChildren(
       ...boxes.map((box) => {
         const el = doc.createElement('div');
@@ -196,19 +198,39 @@ export function createOverlay(options: OverlayOptions): Overlay {
         el.style.top = `${box.top}px`;
         el.style.width = `${box.width}px`;
         el.style.height = `${box.height}px`;
-        if (box.label !== undefined) {
-          const label = doc.createElement('span');
-          label.className = box.top < 22 ? 'label inside' : 'label';
-          label.textContent = box.label;
-          el.append(label);
-        }
-        if (
+        const hasHandle =
           box.movable === true &&
           options.onHandleDown !== undefined &&
-          store.getState().mode === 'edit'
-        ) {
+          store.getState().mode === 'edit';
+        let chip: HTMLElement | undefined;
+        if (box.label !== undefined) {
+          chip = doc.createElement('span');
+          chip.className = 'label';
+          chip.textContent = box.label;
+          if (box.name !== undefined && box.name !== box.label) {
+            const name = doc.createElement('span');
+            name.className = 'name';
+            name.textContent = ` · ${box.name}`;
+            chip.append(name);
+          }
+          el.append(chip);
+        }
+        const place = (chipWidth: number) =>
+          placeChip({
+            boxLeft: box.left,
+            boxTop: box.top,
+            chipWidth,
+            viewportWidth: win.innerWidth,
+            reservedRight: hasHandle ? CHIP_HEIGHT : 0,
+          });
+        if (chip !== undefined) {
+          // Measured once it is in the page (the box is only attached below, so measure on the layer).
+          pendingChips.push({ chip, place });
+        }
+        if (hasHandle && options.onHandleDown !== undefined) {
           const handle = doc.createElement('span');
-          handle.className = box.top < 22 ? 'handle inside' : 'handle';
+          handle.className = box.top < CHIP_HEIGHT ? 'handle inside' : 'handle';
+          if (box.top < 0) handle.style.top = `${-box.top}px`;
           handle.setAttribute('data-buildr-handle', '');
           handle.textContent = '✥';
           handle.addEventListener('pointerdown', options.onHandleDown);
@@ -217,10 +239,20 @@ export function createOverlay(options: OverlayOptions): Overlay {
         return el;
       }),
     );
+    for (const { chip, place } of pendingChips) {
+      const placed = place(chip.offsetWidth);
+      if (placed.placement === 'inside') {
+        chip.classList.add('inside');
+        chip.style.top = `${placed.offsetY}px`;
+      }
+      if (placed.offsetX !== 0) chip.style.left = `${placed.offsetX}px`;
+    }
     const drop = store.getState().drop;
     if (drop !== null) {
       const el = doc.createElement('div');
-      el.className = `drop ${drop.kind}`;
+      el.className = `drop ${drop.kind}${
+        drop.kind === 'line' ? (drop.rect.width >= drop.rect.height ? ' h' : ' v') : ''
+      }`;
       el.setAttribute('data-buildr-drop', drop.kind);
       el.style.left = `${drop.rect.x}px`;
       el.style.top = `${drop.rect.y}px`;
@@ -260,6 +292,7 @@ export function createOverlay(options: OverlayOptions): Overlay {
       win.removeEventListener('resize', schedule);
       observer?.disconnect();
       host.remove();
+      pageStyle.remove();
     },
   };
 }

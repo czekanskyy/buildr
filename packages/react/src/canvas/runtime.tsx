@@ -284,7 +284,12 @@ export function CanvasRuntime(props: CanvasRuntimeProps) {
       registry: () => propsRef.current.registry.meta,
     });
     dndRef.current = dnd;
-    const overlay = createOverlay({ document: doc, store, onHandleDown: dnd.beginMove });
+    const overlay = createOverlay({
+      document: doc,
+      store,
+      onHandleDown: dnd.beginMove,
+      labelOf: (type) => propsRef.current.registry.meta.get(type)?.label,
+    });
     return () => {
       stop();
       stopInline();
