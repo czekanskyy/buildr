@@ -1,0 +1,26 @@
+{
+  "rules": {
+    "declaration-property-value-disallowed-list": {
+      "/.+/": [
+        "/#[0-9a-fA-F]{3,8}\\b/",
+        "/\\b(rgb|rgba|hsl|hsla|hwb|lab|lch|oklab|oklch|color)\\(/"
+      ],
+      "/^(margin|padding)(-[a-z]+)*$/": ["/(^|[\\s(*+/-])\\d*\\.?\\d+(px|rem|em|ch|vw|vh)\\b/"],
+      "/^(gap|row-gap|column-gap|grid-gap)$/": [
+        "/(^|[\\s(*+/-])\\d*\\.?\\d+(px|rem|em|ch|vw|vh)\\b/"
+      ],
+      "/^font-size$/": ["/\\d/"],
+      "/^font$/": ["/\\d+(\\.\\d+)?(px|rem|em|pt)\\b/"]
+    },
+    "color-named": "never"
+  },
+  "overrides": [
+    {
+      "files": ["**/styles/tokens.css"],
+      "rules": {
+        "declaration-property-value-disallowed-list": null,
+        "color-named": null
+      }
+    }
+  ]
+}

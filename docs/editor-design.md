@@ -1,6 +1,6 @@
 # Editor design guidelines
 
-Status: **first draft (PB-147).** PB-119 turns the token section into the reference tables and adds the layout grid and do/don't examples; PB-120 adds the icon rules. Sections marked *placeholder* are filled by those tasks. The source of truth for values is [design/identity.md](design/identity.md); mockups are in [design/mockups/](design/mockups/).
+Status: **reference (PB-119).** Token values are shipped in `packages/editor/src/styles/tokens.css`; PB-120 adds the icon rules. The source of the approved values is [design/identity.md](design/identity.md); mockups are in [design/mockups/](design/mockups/).
 
 Every editor task in [phase 13](backlog/phase-13-editor-visual-polish.md) references this document. Where it disagrees with a mockup, the token tables in `identity.md` win.
 
@@ -33,30 +33,115 @@ Every editor task in [phase 13](backlog/phase-13-editor-visual-polish.md) refere
 
 ## Token reference
 
-*Placeholder (PB-119):* generated tables of every token as shipped in `styles/tokens.css`, kept in sync by the contrast unit test.
+All tokens are CSS custom properties with the `--bd-` prefix, defined **only** in `styles/tokens.css`. A unit test recomputes the contrast table of `identity.md` from that file and fails if a `var(--bd-*)` is used but not defined or carries a fallback value.
+
+### Stylesheet layout
+
+| File | Contents |
+|---|---|
+| `styles/tokens.css` | every token, both themes, reduced-motion override |
+| `styles/base.css` | `@font-face` (Inter), box-sizing, root text style, focus ring, scrollbars, tabular numerals |
+| `styles/shell.css` | toolbar, body grid, panels, splitters, issues row, canvas host, application frame |
+| `styles/primitives.css` | buttons, inputs, select, tabs, toggle, popover, tooltip, dialog, menu, notices, drag ghost |
+| `styles/panels.css` | layers, insert palette, inspector, value editor, issues and publish, media picker |
+
+`src/styles.css` only `@import`s the partials in that order (used in development). The published `dist/styles.css` is the same partials inlined in the same order by `tooling/scripts/bundle-css.mjs`, with `dist/fonts/` (six woff2 files and `LICENSE-inter.txt`). Each area task of phase 13 owns one partial. `pnpm lint:css` (stylelint) forbids literal colours, spacing (`margin`, `padding`, `gap`) and `font-size` outside `tokens.css`.
+
+### Theme
+
+Light is the default block. Dark applies with `@media (prefers-color-scheme: dark)` unless the root has `data-theme="light"`, and always with `data-theme="dark"`. `data-theme="system"` (or no attribute) follows the system. Each block sets `color-scheme`, so native controls and scrollbars match; `scrollbar-width: thin` and `scrollbar-color` use `--bd-border-strong`. Radix renders menus, popovers, dialogs and tooltips in a portal on `<body>`; those classes receive the tokens directly (an explicit `data-theme` on the editor root does not reach them until the theme switch of PB-123 marks the portal container).
+
+### Colour roles
+
+Values per theme: [identity.md sections 3.2 and 3.3](design/identity.md#3-colour). Meaning:
+
+| Role | Use |
+|---|---|
+| `bg` | app background, canvas stage, gutters |
+| `surface`, `surface-2` | panels, dialogs, menus, inputs / wells, tiles, chips |
+| `surface-hover`, `surface-selected` | hover of rows, tiles, menu items / selected row or tile |
+| `border`, `border-strong` | decorative hairlines / boundary of interactive controls (>= 3:1) |
+| `text`, `text-muted`, `text-subtle` | primary, labels, hints and placeholders |
+| `accent`, `accent-hover`, `accent-soft`, `accent-text` | accent text and icons, hover, tinted background, text on solid accent |
+| `primary`, `primary-hover`, `primary-text` | the solid primary button and toggles (same in both themes) |
+| `focus` | focus ring |
+| `danger`, `warning`, `success`, `info` (+ `-soft`) | semantic text/icon and matching tinted background; `danger-text` is text on a solid danger fill |
+| `toolbar`, `toolbar-hover`, `toolbar-border`, `toolbar-text`, `toolbar-muted`, `toolbar-focus` | the dark toolbar (dark in both themes) |
+| `shadow`, `overlay` | shadow colour for elevation, dialog backdrop |
+| `canvas-page` | the white page drawn on the stage (user content, not chrome) |
+
+### Scales
+
+| Group | Tokens |
+|---|---|
+| Spacing | `--bd-space-0..8` = 2 / 4 / 6 / 8 / 12 / 16 / 20 / 24 / 32px |
+| Type size and line | `--bd-text-xs/sm/md/lg` = 11 / 12 / 13 / 15px with `--bd-leading-xs/sm/md/lg` = 16 / 16 / 20 / 24px |
+| Weight | `--bd-weight-regular/medium/semibold` = 400 / 500 / 600 |
+| Font | `--bd-font` (Inter, then the system stack), `--bd-font-mono`, `--bd-tracking-tight` (titles) |
+| Radius | `--bd-radius-sm/md/lg/pill` = 4 / 6 / 8px / pill; `--bd-radius` = md |
+| Controls | `--bd-control-sm/md/lg` = 24 / 28 / 32px; `--bd-panel-header` 40px; `--bd-toolbar-height` 44px; `--bd-statusbar-height` 28px |
+| Borders | `--bd-border-width` 1px |
+| Elevation | `--bd-elevation-1` (stage page), `-2` (menus, popovers, tooltips, toasts), `-3` (dialogs, overlays) |
+| Motion | `--bd-duration-fast` 100ms, `--bd-duration-base` 160ms, `--bd-ease`; both durations become 0ms under `prefers-reduced-motion` |
+| Layout (runtime) | `--bd-left`, `--bd-right` panel widths (defaults in `tokens.css`, set inline by the layout), `--bd-splitter-size`, `--bd-issues-height` |
+
+### Type styles
+
+| Style | Tokens | Weight | Used for |
+|---|---|---|---|
+| Title | `lg` | semibold | dialog titles, inspector component name, toolbar title |
+| Body | `md` | regular | inputs, tree rows, menu items |
+| Label | `sm` | medium / semibold | field labels, tabs, section headings |
+| Caption | `xs` | regular | hints, slot suffix, counts |
+
+Section headings are sentence case: no `text-transform`, no letter-spacing on small text. Numeric inputs use tabular numerals (`input[type="number"]` and the `.bd-tabular` utility).
+
+### Fonts
+
+Inter 400 / 500 / 600, self-hosted: latin and latin-ext (Polish) woff2 subsets in `src/fonts/`, `font-display: swap`, loaded through `@font-face` in `base.css`, so the host's CSP needs no font or style origin. The licence (SIL OFL 1.1) is `LICENSE-inter.txt` next to the files and in `dist/fonts/`. If the files fail to load the system stack takes over.
 
 ## Layout grid
 
-*Placeholder (PB-119, PB-122):* panel anatomy (40px header, scroll body with 16px side padding, optional sticky footer), splitters (1px line, 8px hit area), the 28px status bar, panel widths, and the narrow-screen overlay rule (below 1100px the canvas keeps at least 480px).
+Spacing sits on a 4px grid with 2px and 6px as fine steps (`--bd-space-0`, `-2`); use the fine steps only inside a control (chip padding, icon gaps).
+
+| Element | Rule |
+|---|---|
+| Toolbar | 44px, dark, `--bd-space-4` side padding, gap `--bd-space-3` |
+| Panel (PB-122) | 40px header (tabs or title), scroll body with `--bd-space-5` side padding, optional sticky footer; panels are flat and separated by a 1px line |
+| Between field groups | `--bd-space-4`; label to control `--bd-space-3` (`--bd-space-1` inside a compact field) |
+| Rows (layers, menu items, list view) | `--bd-control-md` (28px) |
+| Tiles | 68px high, `--bd-space-3` gaps |
+| Splitters | 1px line with an 8px invisible hit area (PB-122; 6px bar until then) |
+| Status bar (PB-122) | 28px |
+| Narrow screens (PB-122, V9) | below 1100px the side panels are overlays; the canvas keeps at least 480px |
 
 ## Icons
 
-*Placeholder (PB-120):* the `Icon` and `ComponentIcon` components, the curated map, sizes (16px in rows, 20px in tiles), colours per state, and the fallback icon. Until then see [identity.md section 7](design/identity.md#7-icons).
+*Stub, filled by PB-120:* the `Icon` and `ComponentIcon` components, the curated map, sizes (16px in rows, 20px in tiles), colours per state, and the fallback icon. Until then see [identity.md section 7](design/identity.md#7-icons).
 
 ## Density rules
 
-*Placeholder (PB-119):* the density target (full toolbar on one row at 1280px; a typical component's Content tab fits without scrolling), field layout rules (short controls in a two-column row, long ones stacked), and row heights.
+- Default control height is 28px (`--bd-control-md`); 24px only for icon buttons in dense rows and segmented items; 32px for dialog buttons.
+- Body text is 13px, labels 12px, captions 11px. Nothing below 11px; nothing between the four sizes.
+- Short controls (numbers, selects, toggles) go two to a row; long ones (text, rich text, lists) stack at full width.
+- Target: a 1280px screen shows the full toolbar on one row, and a typical component's Content tab fits the inspector without scrolling.
 
 ## Do and don't
 
-*Placeholder (PB-119):* short before/after examples. Starter rules until then:
-
-- Do use `--bd-border-strong` for the boundary of anything the user can type into or toggle; do not use `--bd-border` there (it is decorative and fails 3:1).
-- Do use `--bd-text-subtle` for hints and placeholders; do not go lighter.
-- Do show selection with `--bd-surface-selected` and an accent bar; do not fill a row with the solid accent.
-- Do keep one primary button per region; do not add a second saturated button next to it.
-- Do use the notice/toast component (PB-129) for messages; do not add another `position: fixed` message box.
+| Do | Don't |
+|---|---|
+| `padding: 0 var(--bd-space-4); color: var(--bd-text-muted);` | `padding: 0 12px; color: #5b6270;` (stylelint fails) |
+| `font-size: var(--bd-text-sm); line-height: var(--bd-leading-sm);` | `font-size: 12px;` or `font: 12px/1.4 sans-serif;` |
+| `background: var(--bd-surface-hover);` | `background: var(--bd-surface-hover, #eee);` (no fallbacks; an undefined token fails the unit test) |
+| Add a token to `tokens.css` (both themes, contrast row in the test) when a role is missing | Introduce a one-off colour in a partial |
+| `box-shadow: var(--bd-elevation-2);` on a floating layer | A shadow on a panel or on a card inside a panel |
+| `--bd-border-strong` for the boundary of anything the user types into or toggles | `--bd-border` there (decorative, fails 3:1) |
+| `--bd-text-subtle` for hints and placeholders | `opacity` on text to make it lighter (breaks contrast) |
+| Selection: `--bd-surface-selected` plus a 2px `--bd-accent` bar | A row filled with the solid accent |
+| One primary button per region | A second saturated button next to it |
+| The notice/toast component (PB-129) for messages | Another `position: fixed` message box |
+| `transition: ... var(--bd-duration-fast) var(--bd-ease)` | Literal durations (they ignore `prefers-reduced-motion`) |
 
 ## Themes
 
-Follows the system by default, with a light / dark / system switch remembered per user (V5, PB-123); a host that sets `data-theme` explicitly wins and the switch is hidden. `color-scheme` and scrollbar colours follow the theme (PB-119).
+Follows the system by default, with a light / dark / system switch remembered per user (V5, PB-123); a host that sets `data-theme` explicitly wins and the switch is hidden. `color-scheme` and scrollbar colours follow the theme (implemented in PB-119, see [Theme](#theme) above).
