@@ -2,7 +2,20 @@
 
 > An open-source Visual Page Builder for React and Next.js, with a first-class Payload CMS integration.
 
-**Status: pre-alpha — design phase.** There is no product code yet. This repository currently contains the architecture blueprint, Architecture Decision Records and the implementation backlog that contributors and coding agents follow to build the system step by step.
+**Status: 0.1 MVP.** The packages, the reference application (`apps/example-next-payload`) and the end-to-end tests are in place; 0.1.0 is prepared for release (see [docs/roadmap.md](docs/roadmap.md)).
+
+## Quickstart
+
+Node >= 22 and pnpm >= 10:
+
+```bash
+git clone https://github.com/czekanskyy/buildr.git && cd buildr
+pnpm install
+SEED_ADMIN_EMAIL=you@example.com SEED_ADMIN_PASSWORD='choose-a-password' pnpm --filter @buildr/example-next-payload seed
+pnpm dev:example    # http://localhost:3000/pl, admin at /admin
+```
+
+Then open a page in the admin and click **Edit with Visual Builder**. The full walkthrough is in [docs/getting-started.md](docs/getting-started.md).
 
 ## What Buildr is
 
@@ -19,7 +32,7 @@
 - Styles are a typed model compiled to deterministic CSS with design tokens, cascade layers and desktop-first responsive overrides.
 - One page structure serves all languages; translations live in the document, CMS data is fetched per locale.
 
-## Planned packages
+## Packages
 
 | Package | Purpose |
 |---|---|
@@ -45,4 +58,4 @@ The project is built task by task from the [backlog](docs/backlog/README.md). Re
 
 ## License
 
-MIT (the `LICENSE` file is added in task PB-005). The name “Buildr” is subject to a trademark policy that will be published with the first release.
+MIT (see `LICENSE`). The name “Buildr” is subject to a trademark policy that will be published with the first release.
