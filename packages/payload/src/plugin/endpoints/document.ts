@@ -17,7 +17,11 @@ import {
 } from './context.ts';
 import { fail, invalid, json } from './respond.ts';
 
-const titleOf = (req: PayloadRequest, target: DocumentTarget, doc: Record<string, unknown>) => {
+export const titleOf = (
+  req: PayloadRequest,
+  target: DocumentTarget,
+  doc: Record<string, unknown>,
+) => {
   const field = req.payload.collections[target.collection]?.config.admin?.useAsTitle ?? 'title';
   const value = doc[field];
   return typeof value === 'string' && value !== '' ? value : target.id;

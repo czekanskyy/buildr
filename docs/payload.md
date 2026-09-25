@@ -61,6 +61,8 @@ buildrPlugin({
 | POST | `/api/buildr/data/media` | `{ ids }` | `Record<id, MediaAsset>` | edit |
 | GET/POST | `/api/buildr/media` | `?search&type&page` / multipart `{ file, alt }` | `{ items, page, totalPages }` / `MediaAsset` | read/create media |
 | GET | `/api/buildr/samples/:collection` | `?search` | `{ items: { id, title }[] }` | edit (template sample data) |
+| GET | `/api/buildr/documents` | `?collection&search&page` (only with `mcp.enabled`) | `{ items, page, totalPages }` | edit + collection read |
+| POST | `/api/buildr/documents` | `{ collection, title, slug?, template? }` (only with `mcp.enabled`) | `201 DocumentSummary` (a draft) | edit + collection create |
 | POST | `/api/buildr/forms/:collection/:id/:nodeId` | form data / JSON | `{ ok }` / `422` / `429` | public |
 
 Read/data endpoints accept a `locale` parameter (defaulting to the default locale) and pass it through to the Local API's own `locale`/`fallbackLocale`. Every endpoint runs Local API calls with `user: req.user, overrideAccess: false`. Request/response types are defined once (Zod, `@buildr/payload/src/contract.ts`) and shared between the endpoint implementations and the HTTP adapter.
@@ -256,6 +258,10 @@ Unless `draft` is set, only published templates count; access applies as for `re
 `GET /buildr/documents/:collection/:id` adds `layoutSource` and `layoutRef` to the response. A document that inherits is opened with the template's layout as `document`, so saving writes it as an own layout ("create an own layout"). For `builtin` the canvas stays blank: the built-in layout is only a render fallback.
 
 Editing a template in the builder is not part of this task: for now the layout of a template is a validated JSON field.
+
+## API keys and agents (PB-139)
+
+With `mcp.enabled`, requests authenticated by a Payload API key (`Authorization: <collection> API-Key <key>`) may use the builder endpoints and the document list/create endpoints; without it they get `403`. `access.unlockTemplates` never applies to API keys, publishing needs `mcp.allowPublish` on top of `access.publish`, and `mcp.collections` narrows the collections. Writes record the user in `buildrUpdatedBy` and are rate limited per API-key user. See [mcp.md](mcp.md#authentication).
 
 ## Forms (PB-102)
 
