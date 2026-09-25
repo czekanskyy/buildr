@@ -176,6 +176,36 @@ describe('Inspector', () => {
     expect(container.textContent).toContain('Select an element to edit it.');
   });
 
+  it('collapses a prop group and remembers it per component type', async () => {
+    window.localStorage.clear();
+    await mount('widget0001');
+    const toggle = () =>
+      container.querySelector(
+        '.bd-props-group[data-group=content] .bd-props-toggle',
+      ) as HTMLElement;
+    expect(toggle().getAttribute('aria-expanded')).toBe('true');
+    await act(async () => toggle().click());
+    expect(toggle().getAttribute('aria-expanded')).toBe('false');
+    expect(window.localStorage.getItem('buildr.editor.inspector.groups.buildr/widget')).toBe(
+      '["content"]',
+    );
+    await act(async () => root.unmount());
+    root = createRoot(container);
+    await mount('widget0001');
+    expect(toggle().getAttribute('aria-expanded')).toBe('false');
+    window.localStorage.clear();
+  });
+
+  it('duplicates and deletes from the header with the same commands as the layers', async () => {
+    const store = await mount('widget0001');
+    const named = (label: string) =>
+      container.querySelector(`button[aria-label="${label}"]`) as HTMLElement;
+    await act(async () => named('Duplicate element').click());
+    expect(Object.keys(store.getState().doc.nodes)).toHaveLength(4);
+    await act(async () => named('Delete element').click());
+    expect(Object.keys(store.getState().doc.nodes)).toHaveLength(3);
+  });
+
   it('gives every control an accessible name and passes axe', async () => {
     await mount('widget0001');
     expect(container.querySelector('h3')?.textContent).toBe('Widget');

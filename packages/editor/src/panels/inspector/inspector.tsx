@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { componentMeta, useManifest } from '../../app/manifest.tsx';
 import { useT } from '../../messages/index.tsx';
 import { useEditor, useEditorState, useSelectedNode } from '../../store/index.ts';
-import { Button, Input, Tabs } from '../../ui/index.ts';
+import { Button, ComponentIcon, Icon, IconButton, Input, Tabs } from '../../ui/index.ts';
 import { PropsPanel } from './props-panel.tsx';
 import { translationLocale } from './value.ts';
 import { TranslationBanner } from './values/translation.tsx';
@@ -55,6 +55,34 @@ function AttrField(props: {
   );
 }
 
+/** The node's own name in the header: the same `name` attribute as the Advanced tab's field. */
+function HeaderName(props: {
+  readonly nodeId: string;
+  readonly value: string;
+  readonly placeholder: string;
+  readonly disabled: boolean;
+  readonly onChange: (attr: 'name' | 'anchor', value: string) => void;
+}) {
+  const t = useT();
+  const [draft, setDraft] = useState<string | undefined>(undefined);
+  return (
+    <Input
+      className="bd-inspector-name"
+      aria-label={t('inspector.nodeName')}
+      value={draft ?? props.value}
+      disabled={props.disabled}
+      placeholder={props.placeholder}
+      autoComplete="off"
+      spellCheck={false}
+      onChange={(event) => {
+        setDraft(event.target.value);
+        props.onChange('name', event.target.value);
+      }}
+      onBlur={() => setDraft(undefined)}
+    />
+  );
+}
+
 /**
  * The properties of the selected node (docs/editor.md#inspector): Content (the component's props
  * as controls), Style and Advanced (name, anchor, the display condition, and the props the
@@ -67,13 +95,18 @@ export function Inspector({ locale, defaultLocale, renderStyle }: InspectorProps
   const node = useSelectedNode();
   const doc = useEditorState((state) => state.doc);
   const readOnly = useEditorState((state) => state.readOnly);
-  const count = useEditorState((state) => state.selectedIds.length);
+  const selectedIds = useEditorState((state) => state.selectedIds);
+  const count = selectedIds.length;
   const [notice, setNotice] = useState('');
 
   if (node === undefined) {
     return (
       <div className="bd-inspector">
-        <p className="bd-inspector-empty">{t('inspector.empty')}</p>
+        <div className="bd-inspector-empty" data-state="nothing">
+          <Icon name="mouse-pointer-click" size="md" />
+          <p className="bd-inspector-empty-title">{t('inspector.empty')}</p>
+          <p className="bd-inspector-empty-hint">{t('inspector.emptyHint')}</p>
+        </div>
       </div>
     );
   }
@@ -169,7 +202,38 @@ export function Inspector({ locale, defaultLocale, renderStyle }: InspectorProps
   return (
     <div className="bd-inspector">
       <header className="bd-inspector-head">
-        <h3 className="bd-inspector-title">{meta?.label ?? node.type}</h3>
+        <div className="bd-inspector-headline">
+          <ComponentIcon meta={meta} size="md" className="bd-inspector-icon" />
+          <h3 className="bd-inspector-title">{meta?.label ?? node.type}</h3>
+          <div className="bd-inspector-actions">
+            <IconButton
+              variant="ghost"
+              icon="copy"
+              label={t('inspector.duplicate')}
+              disabled={disabled}
+              onClick={() =>
+                report(store.dispatch({ type: 'node.duplicate', payload: { ids: selectedIds } }))
+              }
+            />
+            <IconButton
+              variant="ghost"
+              icon="trash-2"
+              label={t('inspector.delete')}
+              disabled={disabled}
+              onClick={() =>
+                report(store.dispatch({ type: 'node.remove', payload: { ids: selectedIds } }))
+              }
+            />
+          </div>
+        </div>
+        <HeaderName
+          key={node.id}
+          nodeId={node.id}
+          value={node.name ?? ''}
+          placeholder={meta?.label ?? node.type}
+          disabled={disabled}
+          onChange={setAttr}
+        />
         {count > 1 ? (
           <p className="bd-inspector-count">{`${count} ${t('inspector.selected')}`}</p>
         ) : null}

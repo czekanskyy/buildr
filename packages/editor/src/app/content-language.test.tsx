@@ -160,7 +160,7 @@ describe('content language', () => {
     expect(l10nOf(store, 'widget0001')).toBeUndefined();
 
     await click(button('Translate'));
-    await click(button('Remove translation'));
+    await click(container.querySelector('button[aria-label^="Remove translation"]'));
     expect(l10nOf(store, 'widget0001')).toBeUndefined();
     // The default-language value is untouched by all of it.
     expect(

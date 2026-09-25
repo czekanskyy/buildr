@@ -139,7 +139,7 @@ Rules:
 
 - Default control height is 28px (`--bd-control-md`); 24px only for icon buttons in dense rows and segmented items; 32px for dialog buttons.
 - Body text is 13px, labels 12px, captions 11px. Nothing below 11px; nothing between the four sizes.
-- Short controls (numbers, selects, toggles) go two to a row; long ones (text, rich text, lists) stack at full width.
+- Short controls (numbers, selects, toggles) go two to a row; long ones (text, rich text, lists) stack at full width. In the inspector this is `data-layout="row"` / `"stack"` on `.bd-field` (kinds boolean, select, number, icon are rows); the Content tab of a Heading and of a Button fits 800px of window height.
 - Target: a 1280px screen shows the full toolbar on one row, and a typical component's Content tab fits the inspector without scrolling.
 
 ## Toolbar pattern
