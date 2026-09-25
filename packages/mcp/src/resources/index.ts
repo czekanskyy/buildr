@@ -6,11 +6,13 @@ import {
   renderComponent,
   renderTemplate,
 } from './catalogue.ts';
+import { GUIDE_MIME_TYPE, GUIDE_URI, renderGuide } from './guide.ts';
 import { renderStyleReference } from './style-reference.ts';
 
 // The `buildr://` resources (PB-136): the same content as the discovery tools, addressable by URI
 // so a client can attach a component description or the style reference as context.
 
+export { GUIDE_URI };
 export const STYLE_REFERENCE_URI = 'buildr://style-reference';
 const COMPONENT_PREFIX = 'buildr://components/';
 const TEMPLATE_PREFIX = 'buildr://templates/';
@@ -78,6 +80,13 @@ export function createResources(cache: DiscoveryCache = createDiscoveryCache()):
         : [];
       return [
         {
+          uri: GUIDE_URI,
+          name: 'guide',
+          description:
+            'Read first: how to build pages with Buildr (structure, templates, styles, bindings, localization, accessibility, workflow, what never to do).',
+          mimeType: GUIDE_MIME_TYPE,
+        },
+        {
           uri: STYLE_REFERENCE_URI,
           name: 'style-reference',
           description: 'Style storage, value grammar per property, theme tokens and breakpoints.',
@@ -88,6 +97,9 @@ export function createResources(cache: DiscoveryCache = createDiscoveryCache()):
     },
 
     async read(uri, { backend }) {
+      if (uri === GUIDE_URI) {
+        return { uri, mimeType: GUIDE_MIME_TYPE, text: renderGuide() };
+      }
       const type = idFrom(uri, COMPONENT_PREFIX);
       const templateId = idFrom(uri, TEMPLATE_PREFIX);
       if (uri !== STYLE_REFERENCE_URI && type === null && templateId === null) return null;
