@@ -5,7 +5,10 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import {
   CallToolRequestSchema,
   ErrorCode,
+  ListResourcesRequestSchema,
+  ListResourceTemplatesRequestSchema,
   ListToolsRequestSchema,
+  ReadResourceRequestSchema,
   McpError as SdkMcpError,
 } from '@modelcontextprotocol/sdk/types.js';
 import type { McpBackend } from './backend.ts';
@@ -39,6 +42,8 @@ export interface BuildrMcpServerOptions {
   readonly allowPublish?: boolean;
   /** Tools to serve; PB-136 - PB-138 provide the built-in set. */
   readonly tools?: readonly McpTool[];
+  /** Resources to serve (PB-136); enables the `resources` capability. */
+  readonly resources?: McpResources;
 }
 
 export interface CreateBuildrMcpServerInput {
@@ -78,6 +83,38 @@ export interface McpTool {
   handler(args: Record<string, unknown>, context: McpToolContext): Promise<McpToolResult>;
 }
 
+/** A concrete, listed resource. */
+export interface McpResourceDefinition {
+  readonly uri: string;
+  readonly name: string;
+  readonly description?: string;
+  readonly mimeType?: string;
+}
+
+/** A parameterised resource, e.g. `buildr://components/{type}`. */
+export interface McpResourceTemplate {
+  readonly uriTemplate: string;
+  readonly name: string;
+  readonly description?: string;
+  readonly mimeType?: string;
+}
+
+export interface McpResourceContents {
+  readonly uri: string;
+  readonly mimeType?: string;
+  readonly text: string;
+}
+
+/**
+ * The SDK-free resource seam: `list` returns the concrete resources, `templates` the URI templates
+ * and `read` resolves one URI (`null` when there is no such resource). Read-only by design.
+ */
+export interface McpResources {
+  readonly templates?: readonly McpResourceTemplate[];
+  list(context: McpToolContext): Promise<readonly McpResourceDefinition[]>;
+  read(uri: string, context: McpToolContext): Promise<McpResourceContents | null>;
+}
+
 /**
  * Creates the MCP server for one backend. It carries server info, capabilities and the
  * instructions string, and serves the tools passed in `options.tools` (none by default). The host
@@ -97,7 +134,10 @@ export function createBuildrMcpServer(input: CreateBuildrMcpServerInput): Buildr
   const server = new Server(
     { name: options.name ?? DEFAULT_SERVER_NAME, version: options.version ?? MCP_SERVER_VERSION },
     {
-      capabilities: { tools: { listChanged: false } },
+      capabilities: {
+        tools: { listChanged: false },
+        ...(options.resources ? { resources: { listChanged: false } } : {}),
+      },
       instructions: options.instructions ?? DEFAULT_INSTRUCTIONS,
     },
   );
@@ -131,6 +171,31 @@ export function createBuildrMcpServer(input: CreateBuildrMcpServerInput): Buildr
       };
     }
   });
+
+  const resources = options.resources;
+  if (resources) {
+    server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+      resources: (await resources.list(context)).map((resource) => ({ ...resource })),
+    }));
+    server.setRequestHandler(ListResourceTemplatesRequestSchema, async () => ({
+      resourceTemplates: (resources.templates ?? []).map((template) => ({ ...template })),
+    }));
+    server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+      let contents: McpResourceContents | null;
+      try {
+        contents = await resources.read(request.params.uri, context);
+      } catch {
+        throw new SdkMcpError(ErrorCode.InternalError, 'The resource could not be read.');
+      }
+      if (!contents) {
+        throw new SdkMcpError(
+          ErrorCode.InvalidParams,
+          `Unknown resource: ${request.params.uri.slice(0, 200)}`,
+        );
+      }
+      return { contents: [{ ...contents }] };
+    });
+  }
 
   return server;
 }
