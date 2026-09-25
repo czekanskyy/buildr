@@ -29,3 +29,5 @@ export {
   Toggle,
   Tooltip,
 } from './primitives.tsx';
+export type { ToastApi, ToastOptions, ToastVariant } from './toast.tsx';
+export { TOAST_MS, ToastProvider, useToast } from './toast.tsx';

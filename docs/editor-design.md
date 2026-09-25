@@ -42,7 +42,7 @@ All tokens are CSS custom properties with the `--bd-` prefix, defined **only** i
 | `styles/tokens.css` | every token, both themes, reduced-motion override |
 | `styles/base.css` | `@font-face` (Inter), box-sizing, root text style, focus ring, scrollbars, tabular numerals |
 | `styles/shell.css` | toolbar, body grid, panels, splitters, issues row, canvas host, application frame |
-| `styles/primitives.css` | buttons, inputs, select, tabs, toggle, popover, tooltip, dialog, menu, notices, drag ghost |
+| `styles/primitives.css` | buttons, inputs, select, tabs, toggle, popover, tooltip, dialog, menu, toasts, drag ghost |
 | `styles/panels.css` | layers, insert palette, inspector, value editor, issues and publish, media picker |
 
 `src/styles.css` only `@import`s the partials in that order (used in development). The published `dist/styles.css` is the same partials inlined in the same order by `tooling/scripts/bundle-css.mjs`, with `dist/fonts/` (six woff2 files and `LICENSE-inter.txt`). Each area task of phase 13 owns one partial. `pnpm lint:css` (stylelint) forbids literal colours, spacing (`margin`, `padding`, `gap`) and `font-size` outside `tokens.css`.
@@ -155,7 +155,7 @@ Rules:
 | `--bd-text-subtle` for hints and placeholders | `opacity` on text to make it lighter (breaks contrast) |
 | Selection: `--bd-surface-selected` plus a 2px `--bd-accent` bar | A row filled with the solid accent |
 | One primary button per region | A second saturated button next to it |
-| The notice/toast component (PB-129) for messages | Another `position: fixed` message box |
+| `useToast()` (PB-129) for messages | Another `position: fixed` message box |
 | `transition: ... var(--bd-duration-fast) var(--bd-ease)` | Literal durations (they ignore `prefers-reduced-motion`) |
 
 ## Themes
@@ -176,3 +176,22 @@ The three side panels (Insert / Layers, Inspector) share one frame, provided by 
 A panel renders `<PanelHeader>`, `<PanelBody>` and optionally `<PanelFooter>` as its top-level children. Until a panel adopts them (PB-125, PB-126, PB-127) its content simply fills the frame without padding. Never add a second scroll container inside a panel body unless the content needs one (a virtualised list).
 
 The status bar (`.bd-issues-bar`, 28px, `--bd-statusbar-height`) sits below the columns: the issues toggle with error (`circle-alert`, `--bd-danger`) and warning (`triangle-alert`, `--bd-warning`) counts on the left; breakpoint, zoom and save state on the right. Below 1100px the panels are overlays (`.bd-body[data-narrow="true"]`) with `--bd-elevation-3`.
+
+## Feedback surfaces (PB-129)
+
+**Toasts.** `<ToastProvider>` (`ui/toast.tsx`) is mounted once, in the editor app's session, and renders the only toast region. It is the one component that positions a message with `position: fixed` (bottom centre, `z-index` above dialogs); every other message is inline or goes through it. Panels call the hook:
+
+```ts
+const toast = useToast();
+toast.show({ message, detail?, variant?: 'success' | 'info' | 'warning' | 'error', id?, duration?: number | null, action?: { label, onSelect } });
+toast.dismiss(id);
+```
+
+- The region holds two always-mounted lists: `role="status"` (polite) for success, info and warning, and `role="alert"` for errors, so screen readers announce what is added.
+- Auto-dismiss after `TOAST_MS` (6s) unless `duration: null`; the timer pauses while the toast is hovered or holds focus. Showing a toast with the `id` of a visible one replaces it and restarts its timer (used by the clipboard, the preview error and the external-changes notice). Each toast has a dismiss button.
+- Wired: the clipboard refusals (`clipboard`), the preview error (`preview`) and the external-changes notice (`external-changes`, persistent, with a "reload" action). PB-125 (insert panel) and PB-127 (inspector) replace their local notice `div`s with `useToast()`.
+- Inside a dialog, messages that belong to the dialog stay inline (`role="alert"` / `role="status"`), because a modal makes the region behind it inert.
+
+**Dialogs.** `<Dialog title description footer hideClose>`: a header (title, description, close icon button), a body that scrolls on its own, and a right-aligned footer for the actions. Use `footer` for buttons; `hideClose` only for a dialog that has to be answered (the save conflict).
+
+**Issues drawer and publish dialog.** The drawer groups findings under an Errors / Warnings / Notes heading (severity icon and count); each row shows the severity icon, the component icon and name (or "Document") and the message. The publish dialog shows the three counts as icon badges (the spoken text stays "N errors").

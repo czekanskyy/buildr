@@ -26,6 +26,7 @@ import {
   type PublishResult,
 } from '../persistence/index.ts';
 import { createEditorStore, EditorStoreProvider } from '../store/index.ts';
+import { ToastProvider } from '../ui/index.ts';
 import { PublishDialog } from './publish-dialog.tsx';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -162,10 +163,12 @@ describe('the Issues panel and the publish dialog', () => {
         root.render(
           <MessagesProvider locale="en">
             <EditorStoreProvider store={store}>
-              <PersistenceProvider controller={controller}>
-                <IssuesPanel />
-                <PublishDialog open={open} onOpenChange={() => undefined} policy={policy} />
-              </PersistenceProvider>
+              <ToastProvider>
+                <PersistenceProvider controller={controller}>
+                  <IssuesPanel />
+                  <PublishDialog open={open} onOpenChange={() => undefined} policy={policy} />
+                </PersistenceProvider>
+              </ToastProvider>
             </EditorStoreProvider>
           </MessagesProvider>,
         ),
@@ -186,6 +189,34 @@ describe('the Issues panel and the publish dialog', () => {
     expect(target).not.toBeNull();
     await act(async () => target.click());
     expect(store.getState().selectedIds).toEqual(['widget0001']);
+  });
+
+  it('groups issues by severity, with severity and component icons', async () => {
+    const { store, view } = setup(broken(), 'warn');
+    await view(false);
+    await act(async () => void store.validateNow());
+    const sections = [...container.querySelectorAll('.bd-issues-severity')];
+    expect(sections.length).toBeGreaterThan(0);
+    const order = sections.map((section) => section.getAttribute('data-severity'));
+    expect(order).toEqual(['error', 'warning', 'info'].filter((sev) => order.includes(sev)));
+    for (const section of sections) {
+      expect(section.querySelector('.bd-issues-heading svg')).not.toBeNull();
+      expect(section.querySelector('.bd-issue-severity[role=img]')).not.toBeNull();
+      expect(section.querySelector('.bd-issue-owner')?.textContent).not.toBe('');
+    }
+  });
+
+  it('shows the publish counts as icon badges with a spoken text', async () => {
+    const { view } = setup(broken(), 'warn');
+    await view(true);
+    const badges = [...document.querySelectorAll('.bd-publish-badge')];
+    expect(badges.map((badge) => badge.getAttribute('data-severity'))).toEqual([
+      'error',
+      'warning',
+      'info',
+    ]);
+    for (const badge of badges) expect(badge.querySelector('svg')).not.toBeNull();
+    expect(badges[0]?.textContent).toMatch(/[0-9] errors/);
   });
 
   it('refuses to publish while errors exist under the block policy', async () => {

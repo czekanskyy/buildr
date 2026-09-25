@@ -19,4 +19,4 @@ export {
   publishGate,
 } from './collect.ts';
 export type { IssuesPanelProps } from './issues-panel.tsx';
-export { IssuesPanel, useIssues } from './issues-panel.tsx';
+export { IssuesPanel, SEVERITY_ICON, useIssues } from './issues-panel.tsx';
