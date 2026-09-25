@@ -281,4 +281,12 @@ export const pl: Messages = {
   'external.banner': 'Zapisano nowszą wersję tej strony.',
   'external.banner.by': 'Użytkownik {name} zapisał nowszą wersję tej strony.',
   'external.reload': 'Wczytaj najnowszą wersję',
+  'toast.dismiss': 'Zamknij powiadomienie',
+  'issues.group.error': 'Błędy',
+  'issues.group.warning': 'Ostrzeżenia',
+  'issues.group.info': 'Uwagi',
+  'issues.nodeless': 'Dokument',
+  'publish.count.error': 'Błędy: {count}',
+  'publish.count.warning': 'Ostrzeżenia: {count}',
+  'publish.count.info': 'Uwagi: {count}',
 };

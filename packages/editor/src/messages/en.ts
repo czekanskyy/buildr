@@ -285,6 +285,14 @@ export const en = {
   'external.banner': 'A newer version of this page was saved.',
   'external.banner.by': '{name} saved a newer version of this page.',
   'external.reload': 'Reload the latest version',
+  'toast.dismiss': 'Dismiss notification',
+  'issues.group.error': 'Errors',
+  'issues.group.warning': 'Warnings',
+  'issues.group.info': 'Notes',
+  'issues.nodeless': 'Document',
+  'publish.count.error': '{count} errors',
+  'publish.count.warning': '{count} warnings',
+  'publish.count.info': '{count} notes',
 } as const;
 
 export type MessageKey = keyof typeof en;

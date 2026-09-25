@@ -19,6 +19,7 @@ import {
 } from '../persistence/index.ts';
 import { ShortcutProvider } from '../shortcuts/index.ts';
 import { createEditorStore, EditorStoreProvider } from '../store/index.ts';
+import { ToastProvider } from '../ui/index.ts';
 import { ThemeProvider, type ThemeState } from './theme.tsx';
 import { Toolbar, type ToolbarProps } from './toolbar.tsx';
 
@@ -103,13 +104,15 @@ describe('Toolbar', () => {
         <MessagesProvider locale="en">
           <EditorStoreProvider store={store}>
             <ShortcutProvider platform="other">
-              <PersistenceProvider controller={controller}>
-                <ThemeProvider value={options.theme}>
-                  <div role="toolbar" aria-label="Toolbar">
-                    <Toolbar {...props} />
-                  </div>
-                </ThemeProvider>
-              </PersistenceProvider>
+              <ToastProvider>
+                <PersistenceProvider controller={controller}>
+                  <ThemeProvider value={options.theme}>
+                    <div role="toolbar" aria-label="Toolbar">
+                      <Toolbar {...props} />
+                    </div>
+                  </ThemeProvider>
+                </PersistenceProvider>
+              </ToastProvider>
             </ShortcutProvider>
           </EditorStoreProvider>
         </MessagesProvider>,

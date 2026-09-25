@@ -136,11 +136,37 @@ describe('UI primitives', () => {
     const dialog = document.body.querySelector('[role=dialog]');
     expect(dialog?.textContent).toContain('Rename');
     expect(dialog?.getAttribute('aria-labelledby')).not.toBeNull();
-    const close = [...(dialog?.querySelectorAll('button') ?? [])].find(
-      (b) => b.textContent === 'Close',
-    );
+    const close = dialog?.querySelector<HTMLButtonElement>('header button[aria-label="Close"]');
+    expect(close).not.toBeNull();
     await act(async () => close?.click());
     expect(document.body.querySelector('[role=dialog]')).toBeNull();
+  });
+
+  it('Dialog has a header, a scrollable body and a footer for actions, and passes axe', async () => {
+    await show(
+      <Dialog
+        open
+        onOpenChange={() => {}}
+        title="Rename"
+        footer={<Button variant="primary">Save</Button>}
+      >
+        <p>body</p>
+      </Dialog>,
+    );
+    const dialog = document.body.querySelector('[role=dialog]') as HTMLElement;
+    expect(dialog.querySelector('header .bd-dialog-title')?.textContent).toBe('Rename');
+    expect(dialog.querySelector('.bd-dialog-body')?.textContent).toBe('body');
+    expect(dialog.querySelector('footer button')?.textContent).toBe('Save');
+    expect(await axe(dialog)).toHaveNoViolations();
+  });
+
+  it('Dialog can hide its close button', async () => {
+    await show(
+      <Dialog open onOpenChange={() => {}} title="Choose" hideClose>
+        <p>body</p>
+      </Dialog>,
+    );
+    expect(document.body.querySelector('[role=dialog] header button')).toBeNull();
   });
 
   it('Popover opens from its trigger', async () => {
