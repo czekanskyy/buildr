@@ -1,0 +1,73 @@
+name: Visual
+
+# Screenshots of the gallery at three widths. They are only comparable when taken in the Playwright
+# Docker image, so this is the only place that takes them. A pull request labelled `visual` updates
+# the baselines (and commits them to the branch); without the label a difference fails the check.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+
+concurrency:
+  group: visual-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  TURBO_TELEMETRY_DISABLED: '1'
+  LEFTHOOK: '0'
+
+jobs:
+  compare:
+    name: Compare
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'visual') }}
+    runs-on: ubuntu-latest
+    container: mcr.microsoft.com/playwright:v1.63.0-noble
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trust the workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - uses: ./.github/actions/setup
+      - name: Screenshots
+        run: pnpm --filter @buildr/playground e2e:visual
+      - name: Upload the differences
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-diff
+          path: |
+            apps/playground/playwright-report
+            apps/playground/test-results
+          retention-days: 7
+
+  update:
+    name: Update baselines
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'visual') && github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    container: mcr.microsoft.com/playwright:v1.63.0-noble
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Trust the workspace
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - uses: ./.github/actions/setup
+      - name: Take the screenshots
+        run: pnpm --filter @buildr/playground e2e:visual:update
+      - name: Verify them
+        run: pnpm --filter @buildr/playground e2e:visual
+      - name: Commit the baselines
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/playground/e2e/visual/__screenshots__
+          if git diff --cached --quiet; then
+            echo "Baselines are up to date."
+          else
+            git commit -m "test(repo): update visual baselines"
+            git push
+          fi

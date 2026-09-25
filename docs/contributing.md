@@ -47,3 +47,9 @@ See the full breakdown (general, component, composite/template, editor feature, 
 ## License
 
 MIT, with no CLA — see [ADR-022](adr/ADR-022-license.md).
+
+## Visual regression and accessibility checks (PB-113)
+
+`apps/playground/e2e/visual` takes a screenshot of every gallery fixture at 375, 768 and 1280 px (`pnpm --filter @buildr/playground e2e:visual`) and compares it with the baselines in `e2e/visual/__screenshots__`. Fonts and anti-aliasing differ between operating systems, so the baselines are only ever taken in the Playwright Docker image, by the `Visual` workflow: a pull request without the `visual` label fails when a screenshot differs (the differences are uploaded as an artifact); a pull request **with** the `visual` label re-takes the baselines and commits them to the branch. Review the changed images in the diff before merging.
+
+`e2e/a11y.spec.ts` runs axe (WCAG 2.0/2.1 A and AA) over the gallery in the normal `pnpm --filter @buildr/playground e2e`; the example application's pages are checked by `apps/example-next-payload/e2e/public.spec.ts`.

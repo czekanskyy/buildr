@@ -21,7 +21,13 @@ function Frame({ fixture, width }: { fixture: GalleryFixture; width: number | un
     <>
       <div
         data-testid="frame"
-        style={{ width: width ?? '100%', border: '1px dashed #999', margin: '0 auto', padding: 8 }}
+        style={{
+          boxSizing: 'border-box',
+          width: width ?? '100%',
+          border: '1px dashed #999',
+          margin: '0 auto',
+          padding: 8,
+        }}
       >
         <DocumentRenderer
           document={fixture.document}
