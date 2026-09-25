@@ -13,3 +13,10 @@ export {
   TEST_DATA_SCHEMA,
   TEST_MEDIA,
 } from './fixtures.ts';
+export {
+  CORE_TOOL_NAMES,
+  runToolScenario,
+  type ScenarioClient,
+  type ToolScenarioOptions,
+  type ToolScenarioResult,
+} from './scenario.ts';
