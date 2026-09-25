@@ -187,41 +187,186 @@
   color: var(--bd-danger);
 }
 
-/* --- Inspector ---------------------------------------------------------------------------- */
+/* --- Inspector (layout: PB-127) ----------------------------------------------------------- */
 .buildr-editor .bd-inspector {
   display: flex;
   flex-direction: column;
   gap: var(--bd-space-3);
+  padding: var(--bd-space-3) var(--bd-space-4);
+}
+.buildr-editor .bd-inspector-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-space-2);
+}
+.buildr-editor .bd-inspector-headline {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-space-3);
+}
+.buildr-editor .bd-inspector-icon {
+  flex: none;
+  color: var(--bd-accent);
 }
 .buildr-editor .bd-inspector-title {
+  flex: 1;
+  min-width: 0;
   margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: var(--bd-text-lg);
   line-height: var(--bd-leading-lg);
   font-weight: var(--bd-weight-semibold);
   letter-spacing: var(--bd-tracking-tight);
 }
+.buildr-editor .bd-inspector-actions {
+  display: flex;
+  flex: none;
+  gap: var(--bd-space-0);
+}
+.buildr-editor .bd-inspector-count,
+.buildr-editor .bd-inspector-locked {
+  margin: 0;
+  font-size: var(--bd-text-xs);
+  line-height: var(--bd-leading-xs);
+  color: var(--bd-text-subtle);
+}
+.buildr-editor .bd-inspector .bd-tabs-list {
+  padding: 0;
+}
+.buildr-editor .bd-inspector .bd-tab {
+  flex: 1;
+  padding: var(--bd-space-2) var(--bd-space-3);
+}
+.buildr-editor .bd-inspector-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--bd-space-2);
+  padding: var(--bd-space-7) var(--bd-space-4);
+  text-align: center;
+  color: var(--bd-text-subtle);
+}
+.buildr-editor .bd-inspector-empty p {
+  margin: 0;
+  font-size: var(--bd-text-sm);
+  line-height: var(--bd-leading-sm);
+}
+.buildr-editor .bd-inspector-empty-title {
+  color: var(--bd-text-muted);
+  font-weight: var(--bd-weight-medium);
+}
+.buildr-editor .bd-props-group + .bd-props-group {
+  border-top: var(--bd-border-width) solid var(--bd-border);
+}
 .buildr-editor .bd-props-heading {
-  margin: var(--bd-space-4) 0 var(--bd-space-1);
+  margin: 0;
   font-size: var(--bd-text-sm);
   line-height: var(--bd-leading-sm);
   font-weight: var(--bd-weight-semibold);
 }
-.buildr-editor .bd-field {
+.buildr-editor .bd-props-toggle {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: var(--bd-space-1);
-  margin: var(--bd-space-3) 0;
+  width: 100%;
+  padding: var(--bd-space-3) 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.buildr-editor .bd-props-fields {
+  padding-bottom: var(--bd-space-2);
+}
+/* A field is a grid: the label row (label, reset, value modes) and the control under it; short
+   controls put the control beside the label instead. */
+.buildr-editor .bd-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--bd-space-3);
+  row-gap: var(--bd-space-1);
+  margin: var(--bd-space-2) 0;
+}
+.buildr-editor .bd-field > * {
+  grid-column: 1 / -1;
+  min-width: 0;
 }
 .buildr-editor .bd-field-head {
+  grid-column: 1;
+  grid-row: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--bd-space-3);
+  gap: var(--bd-space-2);
+  min-height: var(--bd-control-sm);
+}
+.buildr-editor .bd-field-body {
+  display: contents;
+}
+.buildr-editor .bd-field-body > .bd-value {
+  display: contents;
+}
+.buildr-editor .bd-field-body > .bd-value > :not(.bd-value-modes),
+.buildr-editor .bd-field-body > :not(.bd-value) {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+.buildr-editor .bd-field .bd-value-modes {
+  grid-column: 2;
+  grid-row: 1;
+}
+.buildr-editor .bd-field .bd-value-modes .bd-button {
+  min-height: var(--bd-control-sm);
+  padding: 0 var(--bd-space-2);
+  font-size: var(--bd-text-xs);
+}
+.buildr-editor .bd-field[data-layout="row"] {
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+}
+.buildr-editor .bd-field[data-layout="row"] > .bd-field-head {
+  grid-column: 1;
+}
+.buildr-editor .bd-field[data-layout="row"] > .bd-field-body {
+  display: block;
+  grid-column: 2;
+  grid-row: 1;
+}
+.buildr-editor .bd-field[data-layout="row"] > .bd-field-body > .bd-value {
+  display: flex;
+}
+.buildr-editor .bd-field[data-layout="row"] > .bd-field-body > .bd-value > * {
+  grid-column: auto;
+}
+.buildr-editor .bd-field[data-layout="row"] > .bd-field-hint,
+.buildr-editor .bd-field[data-layout="row"] > .bd-field-unsupported {
+  grid-column: 2;
 }
 .buildr-editor .bd-field-label {
   font-size: var(--bd-text-sm);
   line-height: var(--bd-leading-sm);
   font-weight: var(--bd-weight-medium);
+}
+/* Reset is an icon that shows on hover or focus, and always where there is no hover. */
+.buildr-editor .bd-field-reset {
+  opacity: 0;
+  width: var(--bd-control-sm);
+  height: var(--bd-control-sm);
+  min-height: 0;
+}
+.buildr-editor .bd-field:hover .bd-field-reset,
+.buildr-editor .bd-field:focus-within .bd-field-reset,
+.buildr-editor .bd-field-reset:focus-visible {
+  opacity: 1;
+}
+@media (hover: none) {
+  .buildr-editor .bd-field-reset {
+    opacity: 1;
+  }
 }
 .buildr-editor .bd-field-hint,
 .buildr-editor .bd-field-unsupported {
@@ -232,11 +377,12 @@
 }
 .buildr-editor .bd-field-chip {
   margin: 0;
-  padding: var(--bd-space-1) var(--bd-space-3);
+  padding: var(--bd-space-0) var(--bd-space-3);
   border: var(--bd-border-width) solid var(--bd-border);
-  border-radius: var(--bd-radius-md);
+  border-radius: var(--bd-radius-pill);
   font-size: var(--bd-text-sm);
   line-height: var(--bd-leading-sm);
+  overflow-wrap: anywhere;
 }
 .buildr-editor .bd-textarea {
   min-height: 72px;

@@ -268,6 +268,10 @@ export const en = {
   'external.banner': 'A newer version of this page was saved.',
   'external.banner.by': '{name} saved a newer version of this page.',
   'external.reload': 'Reload the latest version',
+  'inspector.emptyHint': 'Click an element on the page, or select a layer and press Enter.',
+  'inspector.duplicate': 'Duplicate element',
+  'inspector.delete': 'Delete element',
+  'inspector.nodeName': 'Element name',
 } as const;
 
 export type MessageKey = keyof typeof en;

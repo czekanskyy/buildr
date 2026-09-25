@@ -264,4 +264,8 @@ export const pl: Messages = {
   'external.banner': 'Zapisano nowszą wersję tej strony.',
   'external.banner.by': 'Użytkownik {name} zapisał nowszą wersję tej strony.',
   'external.reload': 'Wczytaj najnowszą wersję',
+  'inspector.emptyHint': 'Kliknij element na stronie albo wybierz warstwę i naciśnij Enter.',
+  'inspector.duplicate': 'Duplikuj element',
+  'inspector.delete': 'Usuń element',
+  'inspector.nodeName': 'Nazwa elementu',
 };
