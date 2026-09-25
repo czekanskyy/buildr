@@ -136,6 +136,7 @@ export function createPayloadAdapter(options: PayloadAdapterOptions): DocumentAd
         updatedAt: body.updatedAt,
         revision: body.revision,
         document: parsed.value,
+        contextRef: body.contextRef,
         ...(body.readOnly === true ? { readOnly: true } : {}),
       };
     },
@@ -165,10 +166,13 @@ export function createPayloadAdapter(options: PayloadAdapterOptions): DocumentAd
       const current = await loadSession();
       const locales = localesOf(current);
       const locale = options.locale?.() ?? locales?.default ?? 'en';
+      // A sample is `collection:id` (what `listSamples` returns); a bare id belongs to the document's own collection.
+      const sample = request?.sampleId;
+      const at = sample === undefined ? -1 : sample.indexOf(':');
       const reply = await http.send('GET', '/buildr/data/context', {
         query: {
-          collection: ref.collection,
-          id: String(request?.sampleId ?? ref.id),
+          collection: sample !== undefined && at > 0 ? sample.slice(0, at) : ref.collection,
+          id: sample === undefined ? String(ref.id) : sample.slice(at + 1),
           draft: '1',
           locale,
         },
@@ -187,7 +191,8 @@ export function createPayloadAdapter(options: PayloadAdapterOptions): DocumentAd
     async listSamples(ref) {
       const reply = await http.send('GET', `/buildr/samples/${seg(ref.collection)}`);
       const body = expectBody(reply, samplesResponseSchema);
-      return body.items.map((item) => ({ id: item.id, label: item.title }));
+      // The id is the canvas's `contextRef` (`collection:id`), so choosing a sample needs no translation.
+      return body.items.map((item) => ({ id: `${ref.collection}:${item.id}`, label: item.title }));
     },
 
     media: {

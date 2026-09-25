@@ -114,6 +114,7 @@ test('a heading bound to data previews the data and publishes it', async ({ scra
   await page.getByRole('button', { name: /^page.title/ }).click();
   await expect(page.getByText('Bound to data:')).toBeVisible();
   await expect(page.getByText('Preview: Scratch')).toBeVisible();
+  await expect(canvas.getByRole('heading', { name: 'Scratch' })).toBeVisible();
 
   await publish(page);
   await expect

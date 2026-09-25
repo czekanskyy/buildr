@@ -33,6 +33,8 @@ export interface LoadedDocument {
   readonly document: BuilderDocument;
   /** A viewer's role, or a component newer than this build knows: the document may not be changed. */
   readonly readOnly?: boolean | undefined;
+  /** What the canvas binds against by default: the entry this document is (`collection:id` for Payload). */
+  readonly contextRef?: string | undefined;
 }
 
 export interface SaveRequest {

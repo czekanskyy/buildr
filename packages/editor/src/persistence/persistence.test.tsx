@@ -322,6 +322,12 @@ describe('loadDocument', () => {
     expect(loaded.readOnly).toBe(false);
   });
 
+  it('keeps the context the canvas binds against by default', async () => {
+    const fake = fakeAdapter();
+    fake.loaded = { ...(fake.loaded as object), contextRef: 'pages:7' };
+    expect((await loadDocument(fake.adapter, ref)).contextRef).toBe('pages:7');
+  });
+
   it('opens a document read-only when the session cannot edit or the backend says so', async () => {
     const fake = fakeAdapter();
     fake.canEdit = false;
