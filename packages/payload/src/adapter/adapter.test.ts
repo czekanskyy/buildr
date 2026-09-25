@@ -154,6 +154,21 @@ describe('createPayloadAdapter', () => {
     ).rejects.toMatchObject({ name: 'AdapterError', message: 'offline' });
   });
 
+  it('reads only the revision, with who saved it', async () => {
+    const { fetch, calls } = fakeFetch({
+      'GET /api/buildr/documents/pages/7/revision': () => ({
+        status: 200,
+        body: { revision: 4, updatedAt: 'u', updatedBy: 'agent@example.com' },
+      }),
+    });
+    expect(await createPayloadAdapter({ baseUrl: '/api', fetch }).getRevision?.(REF)).toEqual({
+      revision: 4,
+      updatedAt: 'u',
+      updatedBy: 'agent@example.com',
+    });
+    expect(calls).toHaveLength(1);
+  });
+
   it('publishes with the same result mapping', async () => {
     const { fetch } = fakeFetch({
       'POST /api/buildr/documents/pages/7/publish': () => ({

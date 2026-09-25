@@ -219,3 +219,35 @@ describe('writes by an API key', () => {
     expect(stored['_status']).toBe('draft');
   });
 });
+
+describe('GET /buildr/documents/:collection/:id/revision (PB-143)', () => {
+  it('answers with the revision and names the user who saved, without the document', async () => {
+    const created = await agent('POST', '/buildr/documents', {
+      collection: 'pages',
+      title: 'Watched',
+    });
+    const { id } = created.body.ref;
+    const path = `/buildr/documents/pages/${id}`;
+    const before = await agent('GET', `${path}/revision`);
+    expect(before.status).toBe(200);
+    expect(before.body).toMatchObject({ revision: 0, updatedBy: 'editor-agent@example.com' });
+    expect(before.body.document).toBeUndefined();
+
+    const saved = await agent('PUT', path, {
+      document: withChild(title('Hi')),
+      baseRevision: 0,
+      autosave: false,
+    });
+    expect(saved.status).toBe(200);
+    const after = await agent('GET', `${path}/revision`);
+    expect(after.body).toMatchObject({ revision: 1, updatedBy: 'editor-agent@example.com' });
+    expect(typeof after.body.updatedAt).toBe('string');
+  });
+
+  it('needs a signed-in user and an existing document', async () => {
+    const anonymous = await h.call('GET', '/buildr/documents/pages/1/revision', { token: null });
+    expect(anonymous.status).toBe(401);
+    const missing = await agent('GET', '/buildr/documents/pages/999999/revision');
+    expect(missing.status).toBe(404);
+  });
+});

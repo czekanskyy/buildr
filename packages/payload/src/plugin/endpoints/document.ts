@@ -3,6 +3,8 @@ import {
   type DocumentResponse,
   documentQuerySchema,
   documentResponseSchema,
+  type RevisionResponse,
+  revisionResponseSchema,
 } from '../../contract.ts';
 import { resolveLayout } from '../../data/index.ts';
 import { readLayout } from '../hooks/read-layout.ts';
@@ -75,5 +77,57 @@ export const getDocumentEndpoint = (env: EndpointEnv): Endpoint => ({
       ...(layout.readOnly ? { readOnly: true } : {}),
     };
     return json(documentResponseSchema.parse(body));
+  },
+});
+
+/** The label of the user a write was attributed to; empty when it cannot be told. */
+async function updaterLabel(req: PayloadRequest, ref: unknown): Promise<string | undefined> {
+  const at = ref as { relationTo?: unknown; value?: unknown } | null | undefined;
+  if (typeof at?.relationTo !== 'string') return undefined;
+  const value = at.value as { id?: unknown } | string | number | null | undefined;
+  const id = typeof value === 'object' && value !== null ? value.id : value;
+  if (typeof id !== 'string' && typeof id !== 'number') return undefined;
+  try {
+    // Only the name is read, on the server's authority: an editor may see who saved, not more.
+    const user = (await req.payload.findByID({
+      collection: at.relationTo as never,
+      id,
+      depth: 0,
+      overrideAccess: true,
+    })) as unknown as Record<string, unknown>;
+    const name = user['name'];
+    const email = user['email'];
+    if (typeof name === 'string' && name !== '') return name;
+    return typeof email === 'string' && email !== '' ? email : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * `GET /api/buildr/documents/:collection/:id/revision`: only the revision and who saved it, so
+ * the editor can poll for a save made elsewhere (PB-143) without loading the document.
+ */
+export const revisionEndpoint = (env: EndpointEnv): Endpoint => ({
+  path: '/buildr/documents/:collection/:id/revision',
+  method: 'get',
+  handler: async (req) => {
+    const target = targetOf(env, req);
+    if (!target.ok) return target.response;
+    if (!(await allowed(env, 'edit', req))) return fail(403, 'You may not edit with the builder.');
+    const found = await latestOf(req, target.value, {
+      select: { buildrRevision: true, updatedAt: true, buildrUpdatedBy: true },
+    });
+    if (!found.ok) return found.response;
+    const doc = found.value;
+    const by = env.options.mcp.enabled
+      ? await updaterLabel(req, doc['buildrUpdatedBy'])
+      : undefined;
+    const body: RevisionResponse = {
+      revision: revisionOf(doc),
+      updatedAt: String(doc['updatedAt'] ?? ''),
+      ...(by === undefined ? {} : { updatedBy: by }),
+    };
+    return json(revisionResponseSchema.parse(body));
   },
 });

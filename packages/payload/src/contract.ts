@@ -76,6 +76,15 @@ export const documentResponseSchema = z.object({
 });
 export type DocumentResponse = z.infer<typeof documentResponseSchema>;
 
+/** `GET /api/buildr/documents/:collection/:id/revision`: the revision without the document. */
+export const revisionResponseSchema = z.object({
+  revision: z.number().int().nonnegative(),
+  updatedAt: z.string(),
+  /** Who made the last builder write (a name or an email); only with `mcp.enabled`. */
+  updatedBy: z.string().optional(),
+});
+export type RevisionResponse = z.infer<typeof revisionResponseSchema>;
+
 export const saveRequestSchema = z.object({
   document: z.unknown(),
   baseRevision: z.number().int().nonnegative(),

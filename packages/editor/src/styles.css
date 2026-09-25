@@ -1157,3 +1157,29 @@
 .buildr-editor .bd-toolbar-title {
   min-width: 4ch;
 }
+
+/* External changes (PB-143): a non-blocking notice; the live region stays mounted so it is announced. */
+.buildr-editor .bd-external-banner,
+.bd-external-banner {
+  position: fixed;
+  top: calc(var(--bd-toolbar-height, 44px) + var(--bd-space-2, 8px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: var(--bd-space-3, 12px);
+  max-width: calc(100vw - 32px);
+  padding: var(--bd-space-2, 8px) var(--bd-space-3, 12px);
+  border: 1px solid var(--bd-border, #d5d9e0);
+  border-radius: var(--bd-radius, 6px);
+  background: var(--bd-surface, #fff);
+  color: var(--bd-text, #1a1d23);
+  box-shadow: var(--bd-shadow, 0 8px 24px rgb(15 20 30 / 18%));
+  font-size: 13px;
+}
+.bd-external-banner:empty {
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+}
