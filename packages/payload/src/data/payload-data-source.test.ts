@@ -131,6 +131,18 @@ describe('the allowlist', () => {
   });
 });
 
+describe('item paths', () => {
+  it('gives every item the address the application computes, and none without one', async () => {
+    const withPath = source({
+      itemPath: (collection, doc, locale) => `/${locale}/${collection}/${String(doc['title'])}`,
+    });
+    const items = (await run({ limit: 1 }, withPath)).items as { title: string; path?: string }[];
+    expect(items[0]?.path).toBe(`/en/posts/${items[0]?.title}`);
+    const plain = (await run({ limit: 1 })).items as { path?: string }[];
+    expect(plain[0]).not.toHaveProperty('path');
+  });
+});
+
 describe('access, drafts and the in-memory pass', () => {
   it('reads with the access of the request: a collection closed to visitors fails', async () => {
     await payload.create({ collection: 'guarded' as never, data: { title: 'x' } as never });

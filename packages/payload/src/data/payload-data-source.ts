@@ -38,6 +38,13 @@ export interface PayloadDataSourceOptions {
   readonly contextNames?: Readonly<Record<string, string>> | undefined;
   /** How deep relations are populated in the items (default 1: `author.name` works). */
   readonly depth?: number | undefined;
+  /**
+   * The address of a queried document, exposed to bindings as `item.path` (a card that links to its
+   * post). The application knows its routes and how a locale enters them; without it items have no `path`.
+   */
+  readonly itemPath?:
+    | ((collection: string, doc: Record<string, unknown>, locale: string) => string | undefined)
+    | undefined;
   /** How many documents the in-memory pass may look at (default 1000). */
   readonly scanLimit?: number | undefined;
 }
@@ -155,13 +162,12 @@ export function createPayloadDataSource(options: PayloadDataSourceOptions): Data
           : { and: conditions };
 
     const depth = Math.max(1, options.depth ?? 1);
-    const normalize = (doc: unknown) =>
-      normalizeDoc(
-        { collections },
-        own.fields,
-        doc as Record<string, unknown>,
-        options.contextNames ?? {},
-      ) as JsonValue;
+    const normalize = (doc: unknown) => {
+      const record = doc as Record<string, unknown>;
+      const item = normalizeDoc({ collections }, own.fields, record, options.contextNames ?? {});
+      const path = options.itemPath?.(spec.source, record, ctx.locale);
+      return (path === undefined ? item : { ...item, path }) as JsonValue;
+    };
     const common = {
       collection: spec.source,
       depth,
