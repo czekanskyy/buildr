@@ -13,12 +13,14 @@ import {
 import { MessagesProvider, useT } from '../messages/index.tsx';
 import {
   Breadcrumbs,
+  countIssues,
   InsertPanel,
   Inspector,
   InspectorDataProvider,
   IssuesPanel,
   LayersPanel,
   StyleInspector,
+  useIssues,
 } from '../panels/index.ts';
 import {
   createPersistence,
@@ -52,6 +54,7 @@ import { PortalContainerProvider, Tabs } from '../ui/index.ts';
 import { type BuilderEditorProps, type DocumentRef, resolveConfig } from './config.ts';
 import { EditorLayout } from './layout.tsx';
 import { ManifestProvider } from './manifest.tsx';
+import { StatusInfo } from './status-info.tsx';
 
 export interface EditorAppProps extends BuilderEditorProps {
   /** The registry the commands run against (`registry.meta` of the host's registry). */
@@ -258,6 +261,7 @@ function Shell(props: EditorAppProps & { readonly ready: Ready }) {
   const forward = useForwardedKeys();
   const data = useDataContext(adapter, documentRef);
   const preview = usePreview({ adapter, docRef: documentRef });
+  const issueCounts = countIssues(useIssues(diagnostics));
 
   useRegisterDragHost(host as DragHost | null);
   useRegisterCanvas(() => {
@@ -362,6 +366,8 @@ function Shell(props: EditorAppProps & { readonly ready: Ready }) {
           </InspectorDataProvider>
         }
         issues={<IssuesPanel canvasDiagnostics={diagnostics} />}
+        issueCounts={issueCounts}
+        status={<StatusInfo host={host} breakpoints={config.breakpoints} breakpoint={breakpoint} />}
       />
       <PublishDialog
         open={publishOpen}

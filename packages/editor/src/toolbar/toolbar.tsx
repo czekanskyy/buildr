@@ -1,6 +1,7 @@
 import { type ReactNode, useRef } from 'react';
 import type { BreakpointConfig } from '../app/config.ts';
 import { usePersistenceState } from '../persistence/index.ts';
+import { PanelToggle } from './panel-toggles.tsx';
 import { ToolbarCentre } from './toolbar-centre.tsx';
 import { ToolbarLeft } from './toolbar-left.tsx';
 import { ToolbarRight } from './toolbar-right.tsx';
@@ -54,7 +55,7 @@ export function Toolbar(props: ToolbarProps) {
 
   return (
     <div className="bd-toolbar-row" ref={row} data-level={level}>
-      {/* Slot: the panel toggles of the narrow layout (PB-122) go here, at the far left. */}
+      <PanelToggle side="left" />
       <ToolbarLeft
         title={props.title}
         status={props.status}
@@ -80,6 +81,7 @@ export function Toolbar(props: ToolbarProps) {
         historyInMenu={level >= COLLAPSE.versions}
         moreCmsUrl={cmsMoved ? props.cmsUrl : undefined}
       />
+      <PanelToggle side="right" />
     </div>
   );
 }

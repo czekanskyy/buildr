@@ -25,7 +25,7 @@ export function EditorPage() {
     [route.seed],
   );
   return (
-    <div style={{ height: '100vh' }}>
+    <div style={{ height: '100dvh' }}>
       <EditorApp
         adapter={adapter}
         manifest={manifest}

@@ -64,11 +64,47 @@
     ) var(--bd-right);
 }
 
+/* Panel anatomy (PB-122): one column that scrolls as a whole; header and footer stick to its edges. */
 .bd-panel {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   min-height: 0;
   overflow: auto;
   background: var(--bd-surface);
+}
+
+.bd-panel[hidden] {
+  display: none;
+}
+
+.bd-panel-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--bd-space-3);
+  height: var(--bd-panel-header);
+  padding: 0 var(--bd-space-4);
+  background: var(--bd-surface);
+  border-bottom: var(--bd-border-width) solid var(--bd-border);
+}
+
+.bd-panel-body {
+  flex: 1 0 auto;
+  padding: var(--bd-space-4);
+}
+
+.bd-panel-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  flex: none;
+  padding: var(--bd-space-3) var(--bd-space-4);
+  background: var(--bd-surface);
+  border-top: var(--bd-border-width) solid var(--bd-border);
 }
 
 .bd-canvas {
@@ -78,17 +114,61 @@
   background: var(--bd-bg);
 }
 
+/* A 1px line with a wider invisible hit area; the accent line shows on hover, focus and drag. */
 .bd-splitter {
+  position: relative;
+  z-index: 2;
   cursor: col-resize;
   background: var(--bd-border);
   touch-action: none;
 }
 
-.bd-splitter:hover,
-.bd-splitter[data-dragging="true"] {
-  background: var(--bd-accent);
+.bd-splitter::before {
+  content: "";
+  position: absolute;
+  inset: 0 calc((var(--bd-splitter-hit) - var(--bd-splitter-size)) / -2);
 }
 
+.bd-splitter:hover,
+.bd-splitter:focus-visible,
+.bd-splitter[data-dragging="true"] {
+  background: var(--bd-accent);
+  box-shadow: 0 0 0 var(--bd-border-width) var(--bd-accent);
+}
+
+/* Narrow editor (below 1100px, measured): the side panels are overlays the toolbar toggles. */
+.bd-body {
+  position: relative;
+}
+
+.bd-body[data-narrow="true"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.bd-body[data-narrow="true"] > .bd-splitter {
+  display: none;
+}
+
+.bd-body[data-narrow="true"] > .bd-panel {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 10;
+  width: var(--bd-left);
+  max-width: 90%;
+  box-shadow: var(--bd-elevation-3);
+}
+
+.bd-body[data-narrow="true"] > .bd-panel[data-side="left"] {
+  left: 0;
+}
+
+.bd-body[data-narrow="true"] > .bd-panel[data-side="right"] {
+  right: 0;
+  width: var(--bd-right);
+}
+
+/* Status bar (PB-122): 28px, holding the issues toggle with the counts, and read-only facts. */
 .bd-issues {
   flex: none;
   border-top: var(--bd-border-width) solid var(--bd-border);
@@ -96,15 +176,56 @@
 }
 
 .bd-issues[data-open="true"] {
+  display: flex;
+  flex-direction: column;
   height: var(--bd-issues-height);
   overflow: auto;
 }
 
 .bd-issues-bar {
   display: flex;
+  flex: none;
   align-items: center;
+  gap: var(--bd-space-4);
+  height: var(--bd-statusbar-height);
+  padding: 0 var(--bd-space-4);
+  font-size: var(--bd-text-sm);
+  line-height: var(--bd-leading-sm);
+  color: var(--bd-text-muted);
+}
+
+.bd-issues-bar .bd-toolbar-spacer {
+  flex: 1;
+}
+
+.buildr-editor .bd-issues-bar .bd-status-toggle {
+  height: var(--bd-control-sm);
   gap: var(--bd-space-3);
-  padding: var(--bd-space-1) var(--bd-space-4);
+  color: inherit;
+}
+
+.bd-status-count {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bd-space-1);
+  font-variant-numeric: tabular-nums;
+}
+
+.bd-status-count[data-severity="error"] {
+  color: var(--bd-danger);
+}
+
+.bd-status-count[data-severity="warning"] {
+  color: var(--bd-warning);
+}
+
+.bd-status-item {
+  white-space: nowrap;
+}
+
+.bd-status-item[data-status="error"],
+.bd-status-item[data-status="conflict"] {
+  color: var(--bd-danger);
 }
 
 .bd-heading {
@@ -442,4 +563,9 @@
   border-bottom: var(--bd-border-width) solid var(--bd-border);
   background: var(--bd-surface-2);
   color: var(--bd-text-muted);
+}
+
+/* Shell frame (PB-122): the editor never makes its page scroll; what does not fit is clipped inside it. */
+.buildr-editor {
+  overflow: hidden;
 }

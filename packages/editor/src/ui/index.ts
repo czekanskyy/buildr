@@ -1,5 +1,7 @@
 export type { ComponentIconProps, IconName, IconProps } from './icon.tsx';
 export { ComponentIcon, componentIconNames, Icon } from './icon.tsx';
+export type { PanelProps } from './panel.tsx';
+export { Panel, PanelBody, PanelFooter, PanelHeader } from './panel.tsx';
 export type { PortalContainerProviderProps } from './portal.tsx';
 export { PortalContainerProvider, usePortalContainer } from './portal.tsx';
 export type {

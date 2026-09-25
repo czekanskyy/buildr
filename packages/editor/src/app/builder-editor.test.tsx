@@ -2,14 +2,16 @@
 import type { RegistryManifest } from '@buildr/core';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { axe } from 'vitest-axe';
 import * as matchers from 'vitest-axe/matchers';
 import { en } from '../messages/en.ts';
-import { createTranslator, UI_LOCALES } from '../messages/index.tsx';
+import { createTranslator, MessagesProvider, UI_LOCALES } from '../messages/index.tsx';
 import { pl } from '../messages/pl.ts';
+import { PanelToggle } from '../toolbar/panel-toggles.tsx';
 import { BuilderEditor } from './builder-editor.tsx';
 import { type BuilderEditorProps, resolveConfig } from './config.ts';
+import { EditorLayout } from './layout.tsx';
 
 expect.extend(matchers);
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -31,6 +33,7 @@ let container: HTMLElement;
 let root: Root;
 
 beforeEach(() => {
+  window.localStorage.clear();
   container = document.createElement('div');
   document.body.append(container);
   root = createRoot(container);
@@ -125,6 +128,97 @@ describe('BuilderEditor shell', () => {
     await act(async () => toggle?.click());
     expect(toggle?.textContent).toBe(en['editor.issues.hide']);
     expect($('.bd-issues').getAttribute('data-open')).toBe('true');
+  });
+
+  it('resets a panel on double-click and remembers the widths', async () => {
+    await show(props());
+    const [left] = container.querySelectorAll<HTMLElement>('[role=separator]');
+    await key(left, 'ArrowRight');
+    expect(window.localStorage.getItem('buildr:editor:left-width')).toBe('296');
+    await act(async () => {
+      left?.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+    });
+    expect(left?.getAttribute('aria-valuenow')).toBe('280');
+    expect(window.localStorage.getItem('buildr:editor:left-width')).toBe('280');
+
+    window.localStorage.setItem('buildr:editor:left-width', '400');
+    await act(async () => root.unmount());
+    root = createRoot(container);
+    await show(props());
+    expect(container.querySelector('[role=separator]')?.getAttribute('aria-valuenow')).toBe('400');
+  });
+
+  it('works without storage', async () => {
+    const getItem = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('denied');
+    });
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('denied');
+    });
+    await show(props());
+    const [left] = container.querySelectorAll<HTMLElement>('[role=separator]');
+    await key(left, 'ArrowRight');
+    expect(left?.getAttribute('aria-valuenow')).toBe('296');
+    getItem.mockRestore();
+    setItem.mockRestore();
+  });
+
+  it('shows the issue counts on the status bar toggle', async () => {
+    await act(async () =>
+      root.render(
+        <MessagesProvider locale="en">
+          <EditorLayout issueCounts={{ error: 2, warning: 3 }} status={<span>info</span>} />
+        </MessagesProvider>,
+      ),
+    );
+    const toggle = container.querySelector<HTMLButtonElement>('.bd-issues button');
+    expect(toggle?.querySelector('[data-severity=error]')?.textContent).toBe('2');
+    expect(toggle?.querySelector('[data-severity=warning]')?.textContent).toBe('3');
+    expect(toggle?.textContent).toContain(en['editor.issues.show']);
+    expect($('.bd-issues-bar').textContent).toContain('info');
+    await act(async () => toggle?.click());
+    expect($('.bd-issues').getAttribute('data-open')).toBe('true');
+  });
+
+  it('turns the panels into toolbar-toggled overlays when the editor is narrow', async () => {
+    let notify: ((entries: unknown[]) => void) | undefined;
+    class FakeObserver {
+      constructor(callback: (entries: unknown[]) => void) {
+        notify = callback;
+      }
+      observe() {}
+      disconnect() {}
+    }
+    vi.stubGlobal('ResizeObserver', FakeObserver);
+    const width = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(1300);
+    await act(async () =>
+      root.render(
+        <MessagesProvider locale="en">
+          <div className="buildr-editor">
+            <EditorLayout toolbar={<PanelToggle side="left" />} />
+          </div>
+        </MessagesProvider>,
+      ),
+    );
+    expect($('.bd-body').getAttribute('data-narrow')).toBe('false');
+    expect(container.querySelector('.bd-toolbar button')).toBeNull();
+
+    await act(async () => notify?.([{ contentRect: { width: 900 } }]));
+    expect($('.bd-body').getAttribute('data-narrow')).toBe('true');
+    const left = $('aside[data-side=left]');
+    expect(left.hidden).toBe(true);
+    const button = $('.bd-toolbar button');
+    expect(button.getAttribute('aria-label')).toBe(en['editor.panels.left']);
+    await act(async () => button.click());
+    expect(left.hidden).toBe(false);
+    expect(button.getAttribute('aria-pressed')).toBe('true');
+    await key(left, 'Escape');
+    expect(left.hidden).toBe(true);
+
+    await act(async () => notify?.([{ contentRect: { width: 1300 } }]));
+    expect($('.bd-body').getAttribute('data-narrow')).toBe('false');
+    width.mockRestore();
+    vi.unstubAllGlobals();
   });
 
   it('has no accessibility violations', async () => {

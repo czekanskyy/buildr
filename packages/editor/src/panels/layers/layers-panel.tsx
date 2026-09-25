@@ -1,6 +1,7 @@
 import type { NodeId } from '@buildr/core';
 import type { Command } from '@buildr/core/commands';
 import {
+  type CSSProperties,
   type KeyboardEvent,
   type MouseEvent,
   type PointerEvent,
@@ -26,6 +27,7 @@ import {
   ComponentIcon,
   ContextMenu,
   Icon,
+  IconButton,
   type IconName,
   Input,
   type MenuItem,
@@ -38,7 +40,10 @@ export const ROW_HEIGHT = 28;
 const OVERSCAN = 6;
 /** Used until the list has been measured (and where nothing is laid out, as in tests). */
 const FALLBACK_HEIGHT = 400;
+/** Horizontal step per nesting level; CSS reads it as `--layer-indent`. */
 const INDENT = 14;
+/** The left padding of a row, before the indent; CSS reads it as `--layer-pad`. */
+const PAD = 4;
 
 export interface LayersPanelProps {
   /** The component a "Wrap in container" wraps the selection in. */
@@ -270,6 +275,7 @@ export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
   const onClick = (event: MouseEvent<HTMLDivElement>) => {
     const id = rowOf(event);
     if (id === undefined) return;
+    if ((event.target as Element).closest('[data-more]') !== null) return;
     if ((event.target as Element).closest('[data-toggle]') !== null) return toggle(id);
     const mode = event.shiftKey ? 'add' : event.ctrlKey || event.metaKey ? 'toggle' : 'replace';
     store.select(id, { mode });
@@ -280,7 +286,7 @@ export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
     if (press === undefined || readOnly || renaming !== null) return;
     const id = rowOf(event);
     if (id === undefined || id === doc.root) return;
-    if ((event.target as Element).closest('[data-toggle]') !== null) return;
+    if ((event.target as Element).closest('[data-toggle], [data-more]') !== null) return;
     const ids = selected.has(id) ? removable(selectedIds) : [id];
     if (ids.length === 0) return;
     const node = doc.nodes[id];
@@ -293,7 +299,10 @@ export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
 
   const onDoubleClick = (event: MouseEvent<HTMLDivElement>) => {
     const id = rowOf(event);
-    if (id !== undefined && (event.target as Element).closest('[data-toggle]') === null) {
+    if (
+      id !== undefined &&
+      (event.target as Element).closest('[data-toggle], [data-more]') === null
+    ) {
       startRename(id);
     }
   };
@@ -371,7 +380,16 @@ export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
   const rowDomId = (id: NodeId) => `${treeId}-${id}`;
 
   return (
-    <div className="bd-layers">
+    <div
+      className="bd-layers"
+      style={
+        {
+          '--layer-row': `${ROW_HEIGHT}px`,
+          '--layer-indent': `${INDENT}px`,
+          '--layer-pad': `${PAD}px`,
+        } as CSSProperties
+      }
+    >
       <ContextMenu items={menu} label={t('layers.menu')}>
         {/* biome-ignore lint/a11y/useSemanticElements: an ARIA tree has no native element */}
         <div
@@ -495,11 +513,14 @@ function Layer({
       data-selected={selected}
       data-hovered={hovered}
       data-drop={drop}
-      style={{
-        top,
-        height: ROW_HEIGHT,
-        paddingLeft: 4 + (row.level - 1) * INDENT,
-      }}
+      style={
+        {
+          top,
+          height: ROW_HEIGHT,
+          paddingLeft: PAD + (row.level - 1) * INDENT,
+          '--layer-level': row.level - 1,
+        } as CSSProperties
+      }
     >
       <span className="bd-layer-toggle" data-toggle aria-hidden="true">
         {row.hasChildren ? <Icon name={row.expanded ? 'chevron-down' : 'chevron-right'} /> : null}
@@ -525,6 +546,26 @@ function Layer({
           </span>
         </Tooltip>
       ))}
+      <span className="bd-layer-more" data-more>
+        <IconButton
+          icon="ellipsis"
+          label={t('layers.more')}
+          tabIndex={-1}
+          onClick={(event) => {
+            // The menu is the tree's own context menu: ask for it where the button is.
+            event.stopPropagation();
+            const box = event.currentTarget.getBoundingClientRect();
+            event.currentTarget.dispatchEvent(
+              new MouseEvent('contextmenu', {
+                bubbles: true,
+                cancelable: true,
+                clientX: box.left,
+                clientY: box.bottom,
+              }),
+            );
+          }}
+        />
+      </span>
     </div>
   );
 }
