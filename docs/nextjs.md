@@ -202,6 +202,10 @@ The flow *Payload → "Edit with Visual Builder" → a separate tab → edit →
 
 Verified by hand against a local database: the editor opens, the canvas handshake completes, inserting a heading and publishing changes `/pl`. Automated end-to-end coverage is PB-112.
 
+## The MCP route (PB-142)
+
+`apps/example-next-payload/src/app/(builder)/api/buildr/mcp/route.ts` mounts `createBuildrMcpRoute` from `@buildr/payload/mcp/route` at `/api/buildr/mcp` (a static segment, so it wins over Payload's `[...slug]` REST route). The route answers `404` unless the plugin has `mcp.enabled`; the example turns that on with `BUILDR_MCP=1`, which also gives the `users` collection `auth: { useAPIKey: true }` and adds the hidden `buildrUpdatedBy` field (a schema change: run a migration on Postgres). See [mcp.md](mcp.md#remote-server-streamable-http-buildrpayloadmcproute) for authentication, origin and rate-limit rules.
+
 ## The example application seeds (PB-111)
 
 `pnpm --filter @buildr/example-next-payload seed` fills the database with the six demo scenarios in Polish (default) and English: a landing page (`home`), a company page (`about`, with pricing and FAQ), the blog listing (`blog`, eight posts so pagination has a second page), a contact page, and the default layout templates for `posts` and `products` (`buildr-templates`), plus authors, categories, media (generated SVG), posts and four products.

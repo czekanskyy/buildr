@@ -14,7 +14,7 @@ Mechanically enforced by `pnpm check:boundaries` (dependency-cruiser), not just 
 | `payload` (`./plugin`, `./data`, `./admin`) | `@buildr/core`, `payload`, `@payloadcms/ui` (admin only) | `@buildr/editor`, `@buildr/components`, `@buildr/react` (except where a type-only import is needed from `./data`) |
 | `payload` (`./adapter`) | `@buildr/core` | `payload`, `@payloadcms/*`, `next`, `@buildr/next` |
 | `payload` (`./next`) | `@buildr/core`, `@buildr/next`, `next`, `payload` | `@buildr/editor` |
-| `payload` (`./mcp`) | `@buildr/core`, `@buildr/mcp` (types and backend tests), `./contract`; `mcp/route.ts` additionally `@buildr/next`-free `next` and `payload` (the site route handler) | `payload`, `@payloadcms/*`, `next` (all except `route.ts`), `@buildr/editor`, `@buildr/react`, `@buildr/components` |
+| `payload` (`./mcp`, `./mcp/route`) | `@buildr/core`, `@buildr/mcp` (types and backend tests), `./contract`; `mcp/route.ts` (the separate `./mcp/route` entry, so the stdio CLI never loads `payload`) additionally `@modelcontextprotocol/sdk`, `@buildr/next`-free `next` and `payload` (the site route handler) | `payload`, `@payloadcms/*`, `next` (all except `route.ts`), `@buildr/editor`, `@buildr/react`, `@buildr/components` |
 | `mcp` | `@buildr/core`, `@modelcontextprotocol/sdk`, `zod` | `react`, `react-dom`, `next`, `payload`, every other `@buildr/*` package |
 | `mcp` (`./cli`) | as `mcp`, plus `@buildr/payload/mcp` only through an optional peer dependency (dynamic import) | `react`, `next`, `payload` |
 

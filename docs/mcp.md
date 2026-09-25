@@ -132,6 +132,37 @@ sessions.close(session.id); // refuses a dirty session unless { discard: true }
 
 Errors are the `SessionErrorCode`s in `packages/mcp/src/session/errors.ts`; a backend failure is `backend` with the typed `McpError` attached (`conflict`, `forbidden`, ...). The tools in PB-137/PB-138 are thin wrappers over this API.
 
+### Remote server (Streamable HTTP, `@buildr/payload/mcp/route`)
+
+A site serves the same tools to remote clients (PB-142). Mount the route handler in the Next.js app:
+
+```ts
+// app/(builder)/api/buildr/mcp/route.ts
+import { createBuildrMcpRoute } from '@buildr/payload/mcp/route';
+import config from '@payload-config';
+import { getPayload } from 'payload';
+import { registry, theme } from '@/buildr.registry';
+
+export const { POST, GET, DELETE } = createBuildrMcpRoute({
+  payload: () => getPayload({ config }),
+  registry,
+  theme,
+});
+```
+
+Point a client at `https://<site>/api/buildr/mcp` with the header `Authorization: users API-Key <key>`. The peers `@buildr/mcp` and `@modelcontextprotocol/sdk` must be installed.
+
+- **Disabled by default**: the route answers `404` unless the plugin has `mcp.enabled` (it checks that the agent endpoints are registered). `publish` is offered only with `allowPublish: true` on the route, `mcp.allowPublish` on the plugin and `access.publish` for the user.
+- **Authentication**: only `Authorization: <collection> API-Key <key>`, verified through Payload's API-key strategy. Cookies are never read: a request with only a session cookie (or a `JWT` header) is `401`, so a browser cannot drive the endpoint cross-site. Clients that fail to authenticate 30 times a minute (by `x-forwarded-for`) are answered `429` for the rest of the window.
+- **Origin**: a request carrying a browser `Origin` must come from the site itself, Payload's `csrf` list or the `allowedOrigins` option, otherwise `403` (the transport spec's DNS-rebinding protection). MCP clients that are not web pages send no `Origin`.
+- **Rate limiting**: 120 requests per user and minute (`rateLimit`, or `rateLimiter` for a shared store on serverless); the plugin's write limit applies on top. Bodies over 1 MB (`maxBodyBytes`) are `413`.
+- **Local backend, no HTTP hop**: the tools run against `createPayloadMcpBackend` whose `fetch` answers from `handleEndpoints` of the same Payload, as the agent user. Payload's access control, the plugin's `access`, `mcp.collections`, the write limit, the revision checks and server-side validation therefore behave exactly as for the HTTP backend; `registry` serves the manifest when the plugin has none.
+- **Stateless**: every `POST` is one JSON-RPC exchange on a fresh server (`enableJsonResponse`), so it works on serverless platforms; `GET` and `DELETE` are `405`. Open documents live in a per-user edit-session store in the route's closure (one per `createBuildrMcpRoute` call, never a global): a user's later requests, from any connection, continue the same working copies. On serverless the store lives as long as the instance; a session lost to a cold start is reported (`session-not-found`) and the agent reopens the document. Use one long-lived instance (or accept reopening) when agents work on long editing sessions.
+
+#### One scenario over every transport
+
+`runToolScenario(client, { collection, tree?, expectType?, expectText? })` from `@buildr/mcp/testing` is the shared test matrix: it lists the tools, creates a draft, inserts a tree, checks the outline, validates, saves, closes, reopens the document to prove the save reached the backend and returns `{ ref, revision }`. It takes any connected SDK `Client`, so PB-145 runs it over stdio, and `mcp-route.test.ts` over Streamable HTTP against a live Payload (SQLite). `scenario.test.ts` runs it over the in-memory transport.
+
 ## Installing and connecting
 
 ### stdio CLI (`buildr-mcp`)
@@ -175,7 +206,7 @@ claude mcp add buildr-playground -- npx buildr-mcp --playground ./buildr-playgro
 }
 ```
 
-The HTTP endpoint is described in PB-142.
+The remote HTTP endpoint is described under "Remote server" above.
 
 ## Authentication
 
