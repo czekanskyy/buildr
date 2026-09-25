@@ -218,3 +218,7 @@ Verified by hand against a local database: the editor opens, the canvas handshak
 - `editor.spec.ts` — each test edits its own scratch page (a copy of the landing page created through the REST API, so the seed stays untouched): the canvas handshake, insert, undo/redo, autosave and reload, a mobile-only style, a data binding, translating a heading and seeing it on `/en/...`, and publishing to the live page. The tests wait on visible states (the canvas heading, the "Published." status) and poll the server, never on timeouts.
 
 Tests select by role and accessible name. `pnpm --filter @buildr/example-next-payload e2e --repeat-each=4` ran 164 tests with no failure.
+
+### One copy of `@payloadcms/ui`
+
+The admin field of `@buildr/payload` and the Payload admin must load the same copy of `@payloadcms/ui`, or its React contexts do not match (`Cannot destructure property 'config' ... as it is undefined` when the document view opens). pnpm makes one copy per combination of resolved peers, so in this monorepo `packages/payload` pins `next`, `payload` and `@types/node` to the same versions as the example application. An application using the published package has a single peer instance and needs nothing. `e2e/editor.spec.ts` opens the admin document view to catch a regression.
