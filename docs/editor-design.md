@@ -141,6 +141,10 @@ Rules:
 - Short controls (numbers, selects, toggles) go two to a row; long ones (text, rich text, lists) stack at full width.
 - Target: a 1280px screen shows the full toolbar on one row, and a typical component's Content tab fits the inspector without scrolling.
 
+## Toolbar pattern
+
+Three zones (left: back, title, status pill; centre: segmented breakpoint control and zoom menu; right: history, save status, pickers, Preview, Publish, more). Segmented controls (`.bd-segmented` / `.bd-segment`) use icons with the label and width in the tooltip. Publish is the only primary button; Preview is secondary. Collapse is driven by a `ResizeObserver` on the row, never a media query. Floating layers portal into the editor root so they carry the theme.
+
 ## Do and don't
 
 | Do | Don't |

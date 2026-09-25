@@ -320,7 +320,10 @@
 
 /* On the dark toolbar the active segment is the inverse of the bar. */
 .buildr-editor .bd-toolbar .bd-segmented .bd-button.bd-segment[aria-pressed="true"],
-.buildr-editor .bd-toolbar .bd-segmented .bd-button.bd-segment[aria-pressed="true"]:hover:not(:disabled) {
+.buildr-editor
+  .bd-toolbar
+  .bd-segmented
+  .bd-button.bd-segment[aria-pressed="true"]:hover:not(:disabled) {
   background: var(--bd-toolbar-text);
   color: var(--bd-toolbar);
 }

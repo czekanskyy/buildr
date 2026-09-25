@@ -230,7 +230,8 @@ describe('Toolbar', () => {
   });
 
   const menuButtons = () => [...document.querySelectorAll('.bd-menu-list button')];
-  const openMore = async () => act(async () => (byName('More actions') as HTMLButtonElement).click());
+  const openMore = async () =>
+    act(async () => (byName('More actions') as HTMLButtonElement).click());
 
   it('shows the breakpoints as icon buttons with the width in the tooltip', async () => {
     await mount({ breakpoint: 'tablet' });
