@@ -260,5 +260,8 @@ export const pl: Messages = {
   'editor.issues.hide': 'Ukryj problemy',
   'editor.resize.left': 'Zmień szerokość lewego panelu',
   'editor.resize.right': 'Zmień szerokość prawego panelu',
+  'insert.clear': 'Wyczyść wyszukiwanie',
+  'insert.view.grid': 'Widok siatki',
+  'insert.view.list': 'Widok listy',
   'ui.close': 'Zamknij',
 };

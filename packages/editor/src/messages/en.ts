@@ -264,6 +264,9 @@ export const en = {
   'editor.issues.hide': 'Hide issues',
   'editor.resize.left': 'Resize the left panel',
   'editor.resize.right': 'Resize the right panel',
+  'insert.clear': 'Clear search',
+  'insert.view.grid': 'Grid view',
+  'insert.view.list': 'List view',
   'ui.close': 'Close',
 } as const;
 
