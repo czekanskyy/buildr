@@ -1,6 +1,6 @@
 # MCP server: building pages with AI agents
 
-> Status: skeleton. The decisions are recorded in [ADR-024](adr/ADR-024-mcp-server.md); the implementation lands in phase 14 ([backlog](backlog/phase-14-mcp-server.md)). Sections are filled in by the tasks named below.
+> Status: the package scaffold, backend interface and server factory are implemented (PB-133); the rest is skeleton. The decisions are recorded in [ADR-024](adr/ADR-024-mcp-server.md); the implementation lands in phase 14 ([backlog](backlog/phase-14-mcp-server.md)). Sections are filled in by the tasks named below.
 
 A [Model Context Protocol](https://modelcontextprotocol.io) server that lets an AI agent discover the component catalogue, read and change a page **through the same commands the editor uses**, validate it and save it as a draft. The server never calls an LLM itself: it exposes tools, and the client brings the model.
 
@@ -19,7 +19,63 @@ A [Model Context Protocol](https://modelcontextprotocol.io) server that lets an 
   HTTP backend (@buildr/payload/mcp)   memory / file backend
 ```
 
-Packages and boundaries: [ai/package-boundaries.md](ai/package-boundaries.md). Scaffold and backend interface: PB-133.
+Packages and boundaries: [ai/package-boundaries.md](ai/package-boundaries.md). `@buildr/mcp` depends only on `@buildr/core`, `@modelcontextprotocol/sdk` and `zod`; all SDK usage is isolated in `src/server.ts`.
+
+## The backend interface
+
+`McpBackend` (`@buildr/mcp`) is the seam between the tool layer and a CMS, the way `DocumentAdapter` is for the editor. Every method returns a `Promise<McpResult<T>>` (`Result` from core with a typed `McpError`); expected failures never throw.
+
+| Method | Purpose |
+|---|---|
+| `getSession()` | agent user, `permissions` (`canEdit`, `canPublish`, `canUnlockTemplates`), document `limits`, site `locales` |
+| `getManifest()` / `getTheme()` | the site's component manifest (custom components included) and theme |
+| `listDocuments(query)` | `{ collection?, search?, status?, page, limit }` -> summaries (`ref`, `title`, `slug`, `status`, `updatedAt`, `revision`) |
+| `createDocument(input)` | `{ collection, title, slug? }` -> a **draft** with an empty layout, revision 0 (never published; no deletion exists) |
+| `load(ref, { locale })` | the draft as a parsed `BuilderDocument` plus `revision`, `contextRef`, `layoutSource`, `layoutRef`, `previewPath`, `readOnly?` |
+| `save(ref, doc, baseRevision)` | persists the document as the new draft; a stale `baseRevision` writes nothing |
+| `publish(ref, baseRevision)` | publishes the draft; needs `canPublish` |
+| `getDataSchema(collection)` | scopes and entities bindings can use |
+| `listMedia(query)` | `{ search?, type?, page }` -> `MediaAsset`s |
+| `previewUrl(ref, locale)` | a URL to view the document, or `null` |
+
+Errors are one of five codes: `conflict` (carries `currentRevision`), `invalid` (carries core `Diagnostic`s), `forbidden`, `not-found`, `network` (carries `retryable`). Rules for implementations:
+
+- Input and output shapes are Zod schemas exported from `@buildr/mcp` (`documentRefSchema`, `sessionSchema`, `listDocumentsQuerySchema`, `createDocumentInputSchema`, ...); validate at the boundary. Documents pass `parseDocument`.
+- The backend is the trust boundary: `save` and `publish` re-validate and check permissions regardless of what the tool layer did.
+- A returned document is a copy; the backend never hands out references into its own store.
+- Secrets (API keys) never appear in an error message.
+
+### Backend contract tests
+
+`@buildr/mcp/testing` exports `runBackendContract({ name, create })`, the behavioural definition of a valid backend (vitest is an optional peer dependency; import this subpath from test files only). `create()` returns a fresh `BackendContractSubject` per test: the `backend`, an `existing` editable draft, a `missing` ref, a creatable `collection`, an `unknownCollection`, collections with and without a data schema, and optionally a `readOnlyBackend` and a `noPublishBackend` over the same store to enable the `forbidden` cases. The memory backend runs it in this package; the HTTP backend (PB-140) runs the same suite against a mock `fetch`.
+
+```ts
+import { runBackendContract } from '@buildr/mcp/testing';
+
+runBackendContract({
+  name: 'my backend',
+  async create() {
+    return { backend, existing, missing, collection: 'pages', unknownCollection: 'nope', dataSchemaCollection: 'pages', noDataSchemaCollection: 'nope' };
+  },
+});
+```
+
+The same entry point exports `createTestManifest()` (page, section, heading) and `createTestMemoryBackend(overrides)` for tests of the tool layer.
+
+### Memory backend
+
+`createMemoryBackend({ manifest, theme?, documents?, collections?, session?, dataSchemas?, media?, previewBaseUrl?, now? })` implements the whole contract in memory (revisions, conflicts, permissions, `parseDocument` with the session limits). The default session may edit and publish; override `session.permissions`. Used for tests and the `--playground` mode of the CLI (PB-141). `now` is injectable for deterministic timestamps.
+
+## The server
+
+```ts
+import { createBuildrMcpServer } from '@buildr/mcp';
+
+const server = createBuildrMcpServer({ backend, options: { allowPublish: false } });
+await server.connect(transport); // stdio, Streamable HTTP, or an in-memory pair in tests
+```
+
+`createBuildrMcpServer` returns an MCP SDK `Server` with server info (`buildr`, the package version), the `tools` capability and the instructions string (`DEFAULT_INSTRUCTIONS`, replaceable via `options.instructions`). It serves the tools passed as `options.tools` (an `McpTool`: name, description, JSON Schema input, annotations, `handler(args, { backend, options })`); the built-in tools are added by PB-136 - PB-138. A throwing handler yields a generic error result, never its message. The host owns the transport.
 
 ## Installing and connecting
 
