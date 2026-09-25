@@ -12,7 +12,7 @@ export const Input = defineComponent({
   description: 'A single-line text field.',
   keywords: ['text field', 'email', 'phone', 'form'],
   category: 'forms',
-  icon: 'pencil',
+  icon: 'text-cursor-input',
   contentCategories: ['flow', 'phrasing', 'form-control'],
   parents: { requireAncestor: ['buildr/form'] },
   props: inputProps,

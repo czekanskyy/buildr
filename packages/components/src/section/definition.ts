@@ -13,7 +13,7 @@ export const Section = defineComponent({
     'A band of the page: a landmark or a plain wrapper, with an optional background image.',
   keywords: ['band', 'region', 'hero', 'wrapper'],
   category: 'layout',
-  icon: 'layout-grid',
+  icon: 'rectangle-horizontal',
   contentCategories: ['flow', 'landmark'],
   props: sectionProps,
   slots: { default: { label: 'Content', axis: 'vertical' } },

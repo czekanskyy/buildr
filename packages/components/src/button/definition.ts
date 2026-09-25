@@ -16,7 +16,7 @@ export const Button = defineComponent({
   description: 'A button, or a link that looks like one.',
   keywords: ['cta', 'call to action', 'submit', 'link'],
   category: 'content',
-  icon: 'send',
+  icon: 'mouse-pointer-click',
   contentCategories: ['flow', 'phrasing', 'interactive'],
   props: buttonProps,
   styles: {

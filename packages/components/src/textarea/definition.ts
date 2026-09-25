@@ -10,7 +10,7 @@ export const Textarea = defineComponent({
   description: 'A multi-line text field.',
   keywords: ['message', 'comment', 'long text', 'form'],
   category: 'forms',
-  icon: 'file-text',
+  icon: 'align-left',
   contentCategories: ['flow', 'phrasing', 'form-control'],
   parents: { requireAncestor: ['buildr/form'] },
   props: textareaProps,

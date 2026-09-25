@@ -15,7 +15,7 @@ export const Form = defineComponent({
   description: 'A form whose submissions are collected by the site.',
   keywords: ['contact', 'newsletter', 'submit', 'fields'],
   category: 'forms',
-  icon: 'send',
+  icon: 'clipboard-list',
   contentCategories: ['flow'],
   props: formProps,
   slots: { default: { label: 'Fields', allow: ['#flow'], axis: 'vertical' } },

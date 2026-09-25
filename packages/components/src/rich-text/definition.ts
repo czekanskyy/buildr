@@ -14,7 +14,7 @@ export const RichText = defineComponent({
   description: 'Formatted content: headings, paragraphs, lists, quotes and links.',
   keywords: ['content', 'article', 'body', 'wysiwyg', 'post'],
   category: 'content',
-  icon: 'file-text',
+  icon: 'pilcrow',
   contentCategories: ['flow'],
   props: richTextProps,
   styles: {
