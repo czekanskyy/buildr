@@ -47,7 +47,7 @@ Errors are one of five codes: `conflict` (carries `currentRevision`), `invalid` 
 
 ### Backend contract tests
 
-`@buildr/mcp/testing` exports `runBackendContract({ name, create })`, the behavioural definition of a valid backend (vitest is an optional peer dependency; import this subpath from test files only). `create()` returns a fresh `BackendContractSubject` per test: the `backend`, an `existing` editable draft, a `missing` ref, a creatable `collection`, an `unknownCollection`, collections with and without a data schema, and optionally a `readOnlyBackend` and a `noPublishBackend` over the same store to enable the `forbidden` cases. The memory backend runs it in this package; the HTTP backend (PB-140) runs the same suite against a mock `fetch`.
+`@buildr/mcp/testing` exports `runBackendContract({ name, create })`, the behavioural definition of a valid backend (vitest is an optional peer dependency; import this subpath from test files only). `create()` returns a fresh `BackendContractSubject` per test: the `backend`, an `existing` editable draft, a `missing` ref, a creatable `collection`, an `unknownCollection`, collections with and without a data schema, and optionally a `readOnlyBackend` and a `noPublishBackend` over the same store to enable the `forbidden` cases. The memory backend runs it in this package; the HTTP backend runs the same suite against a live Payload (SQLite) through a `fetch` bridged to Payload's request handler (`packages/payload/src/plugin/endpoints/mcp-http-backend.test.ts`); its retry, error-mapping and secret-hygiene behaviour is covered with a mock `fetch`.
 
 ```ts
 import { runBackendContract } from '@buildr/mcp/testing';
@@ -61,6 +61,15 @@ runBackendContract({
 ```
 
 The same entry point exports `createTestManifest()` (page, section, heading) and `createTestMemoryBackend(overrides)` for tests of the tool layer.
+
+### HTTP backend (`@buildr/payload/mcp`)
+
+`createPayloadMcpBackend({ baseUrl, apiKey, collection?, collections?, theme?, siteUrl?, timeoutMs?, retries? })` implements `McpBackend` over the builder API (`contract.ts`) of a site whose plugin has `mcp.enabled`. `baseUrl` is Payload's API root (`https://example.com/api`), `apiKey` the key of the dedicated agent user and `collection` its auth collection (default `users`); the key is sent only as `Authorization: <collection> API-Key <key>`.
+
+- Every response is parsed with the contract schemas; documents with `parseDocument`. `save` parses the document before sending. Statuses map to errors: `401`/`403` -> `forbidden`, `404` -> `not-found`, `409` -> `conflict` (with `currentRevision`), `422`/`400` -> `invalid`, `429`/`5xx`/no answer -> `network` (`retryable`), an answer that breaks the contract -> non-retryable `network`.
+- Timeouts (default 15 s). Only `GET`s are retried (network errors, `429`, `502`-`504`; exponential backoff, `retries` default 2); writes are never retried.
+- The API key never appears in a URL, an error message or a diagnostic: every message is scrubbed of it, and the cause of a failed `fetch` is dropped.
+- The builder API has no collection index, no theme endpoint and a fixed page size of 20, so: `listDocuments` without a `collection` lists the `collections` option (and is refused as `invalid` without it); `limit`/`page` are mapped onto the server pages and `total` is exact; a `status` filter or several collections fetch up to 500 documents per collection; `getTheme()` returns the `theme` option (default theme); `previewUrl` prefixes the document's `previewPath` with the origin of `baseUrl` (or `siteUrl`); a site without a media collection lists no media.
 
 ### Memory backend
 

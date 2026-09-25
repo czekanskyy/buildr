@@ -261,7 +261,7 @@ Editing a template in the builder is not part of this task: for now the layout o
 
 ## API keys and agents (PB-139)
 
-With `mcp.enabled`, requests authenticated by a Payload API key (`Authorization: <collection> API-Key <key>`) may use the builder endpoints and the document list/create endpoints; without it they get `403`. `access.unlockTemplates` never applies to API keys, publishing needs `mcp.allowPublish` on top of `access.publish`, and `mcp.collections` narrows the collections. Writes record the user in `buildrUpdatedBy` and are rate limited per API-key user. See [mcp.md](mcp.md#authentication).
+With `mcp.enabled`, requests authenticated by a Payload API key (`Authorization: <collection> API-Key <key>`) may use the builder endpoints and the document list/create endpoints; without it they get `403`. `access.unlockTemplates` never applies to API keys, publishing needs `mcp.allowPublish` on top of `access.publish`, and `mcp.collections` narrows the collections. Writes record the user in `buildrUpdatedBy` and are rate limited per API-key user. See [mcp.md](mcp.md#authentication). The `@buildr/payload/mcp` subpath is the client side: `createPayloadMcpBackend` connects `@buildr/mcp` to these endpoints ([mcp.md](mcp.md#http-backend-buildrpayloadmcp)); it imports neither `payload` nor `next`.
 
 ## Forms (PB-102)
 
