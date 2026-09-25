@@ -65,6 +65,37 @@ for (const theme of themes) {
         });
       }
 
+      // PB-130: the canvas overlay. Dragging over is not captured: a pointer drag across the iframe
+      // is not deterministic enough for a pixel baseline (covered by the jsdom and dnd tests).
+      test('canvas: hover outline', async ({ page }) => {
+        await open(page, 'landing', theme);
+        await page
+          .frameLocator('iframe')
+          .getByRole('heading', { name: 'A headline that says what you do' })
+          .hover();
+        await shot(page, name('canvas-hover'));
+      });
+
+      test('canvas: selected node with label chip', async ({ page }) => {
+        await open(page, 'landing', theme);
+        await page
+          .frameLocator('iframe')
+          .getByRole('heading', { name: 'A headline that says what you do' })
+          .click();
+        await page.mouse.move(0, 0);
+        await shot(page, name('canvas-selected'));
+      });
+
+      test('canvas: empty slot placeholder', async ({ page }) => {
+        await open(page, 'landing', theme);
+        const placeholder = page
+          .frameLocator('iframe')
+          .locator('[data-buildr-placeholder="empty-slot"]')
+          .first();
+        await expect(placeholder).toBeVisible();
+        await shot(page, name('canvas-empty-slot'));
+      });
+
       test('layers tab expanded', async ({ page }) => {
         await open(page, 'landing', theme);
         await expandLayers(page);
