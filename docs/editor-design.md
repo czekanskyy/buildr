@@ -122,6 +122,7 @@ Lucide, through `lucide-react`, imported **statically by name** (tree-shaken; no
 | Piece | Use |
 |---|---|
 | `<Icon name size label? />` (`ui/icon.tsx`) | the editor's own chrome; `name` is a key of a small curated map (`IconName`), so a typo fails typecheck |
+| `Icon` names for the insert panel | `search`, `layout-grid` (view toggle) were added to the editor map for PB-125 |
 | `<ComponentIcon meta size />` | a component's `meta.icon` (palette tile, layer row), resolved against a second curated map of about 75 names; a missing or unknown name gives the neutral `box` icon, **never a letter** |
 | `<IconButton icon label />` | an icon-only button; `icon` is an `IconName`, `label` is required (accessible name and tooltip) |
 | `<Select>` | shows a `chevron-down` icon itself |
