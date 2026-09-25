@@ -12,6 +12,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { MessagesProvider } from '../messages/index.tsx';
 import { ShortcutProvider } from '../shortcuts/index.ts';
 import { createEditorStore, EditorStoreProvider } from '../store/index.ts';
+import { ToastProvider } from '../ui/index.ts';
 import { type ClipboardIO, createClipboard } from './clipboard.ts';
 import {
   CLIPBOARD_MARKER,
@@ -358,13 +359,15 @@ describe('ClipboardProvider', () => {
     await act(async () =>
       root.render(
         <MessagesProvider locale="en">
-          <EditorStoreProvider store={store}>
-            <ClipboardProvider io={io}>
-              <Shortcuts>
-                <Bridge />
-              </Shortcuts>
-            </ClipboardProvider>
-          </EditorStoreProvider>
+          <ToastProvider>
+            <EditorStoreProvider store={store}>
+              <ClipboardProvider io={io}>
+                <Shortcuts>
+                  <Bridge />
+                </Shortcuts>
+              </ClipboardProvider>
+            </EditorStoreProvider>
+          </ToastProvider>
         </MessagesProvider>,
       ),
     );
