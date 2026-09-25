@@ -265,6 +265,15 @@ export const en = {
   'editor.resize.left': 'Resize the left panel',
   'editor.resize.right': 'Resize the right panel',
   'ui.close': 'Close',
+  'toolbar.status.draft': 'Draft',
+  'toolbar.status.published': 'Published',
+  'toolbar.zoom': 'Zoom',
+  'toolbar.zoom.fit': 'Fit',
+  'toolbar.more': 'More actions',
+  'toolbar.theme': 'Theme',
+  'toolbar.theme.light': 'Light',
+  'toolbar.theme.dark': 'Dark',
+  'toolbar.theme.system': 'System',
 } as const;
 
 export type MessageKey = keyof typeof en;

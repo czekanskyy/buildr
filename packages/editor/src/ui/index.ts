@@ -27,3 +27,5 @@ export {
   Toggle,
   Tooltip,
 } from './primitives.tsx';
+export type { PortalContainerProviderProps } from './portal.tsx';
+export { PortalContainerProvider, usePortalContainer } from './portal.tsx';

@@ -4,18 +4,19 @@
  *
  * Theme: dark follows `prefers-color-scheme` unless the host sets `data-theme="light"`;
  * `data-theme="dark"` forces dark; `data-theme="system"` (or no attribute) follows the system.
- * Radix renders menus, popovers, dialogs and tooltips into a portal on <body>, outside
- * `.buildr-editor`, so those layers receive the tokens through their own selectors.
+ * Radix renders menus, popovers, dialogs and tooltips into the editor root (the portal container
+ * of `ui/portal.tsx`), so they inherit its tokens and its `data-theme`. Rendered outside a root
+ * (on <body>, e.g. a bare primitive), they receive the tokens through their own selectors.
  */
 
 .buildr-editor,
-.bd-portal,
-.bd-popover,
-.bd-select-content,
-.bd-tooltip,
-.bd-dialog,
-.bd-dialog-overlay,
-.bd-menu {
+.bd-portal:not(.buildr-editor *),
+.bd-popover:not(.buildr-editor *),
+.bd-select-content:not(.buildr-editor *),
+.bd-tooltip:not(.buildr-editor *),
+.bd-dialog:not(.buildr-editor *),
+.bd-dialog-overlay:not(.buildr-editor *),
+.bd-menu:not(.buildr-editor *) {
   /* Colour roles: light */
   color-scheme: light;
   --bd-bg: #e9ebf0;
@@ -113,13 +114,13 @@
 
 @media (prefers-color-scheme: dark) {
   .buildr-editor:not([data-theme="light"]),
-  .bd-portal,
-  .bd-popover,
-  .bd-select-content,
-  .bd-tooltip,
-  .bd-dialog,
-  .bd-dialog-overlay,
-  .bd-menu {
+  .bd-portal:not(.buildr-editor *),
+  .bd-popover:not(.buildr-editor *),
+  .bd-select-content:not(.buildr-editor *),
+  .bd-tooltip:not(.buildr-editor *),
+  .bd-dialog:not(.buildr-editor *),
+  .bd-dialog-overlay:not(.buildr-editor *),
+  .bd-menu:not(.buildr-editor *) {
     color-scheme: dark;
     --bd-bg: #121317;
     --bd-surface: #1c1d22;
@@ -200,13 +201,13 @@
 
 @media (prefers-reduced-motion: reduce) {
   .buildr-editor,
-  .bd-portal,
-  .bd-popover,
-  .bd-select-content,
-  .bd-tooltip,
-  .bd-dialog,
-  .bd-dialog-overlay,
-  .bd-menu {
+  .bd-portal:not(.buildr-editor *),
+  .bd-popover:not(.buildr-editor *),
+  .bd-select-content:not(.buildr-editor *),
+  .bd-tooltip:not(.buildr-editor *),
+  .bd-dialog:not(.buildr-editor *),
+  .bd-dialog-overlay:not(.buildr-editor *),
+  .bd-menu:not(.buildr-editor *) {
     --bd-duration-fast: 0ms;
     --bd-duration-base: 0ms;
   }

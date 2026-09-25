@@ -261,4 +261,13 @@ export const pl: Messages = {
   'editor.resize.left': 'Zmień szerokość lewego panelu',
   'editor.resize.right': 'Zmień szerokość prawego panelu',
   'ui.close': 'Zamknij',
+  'toolbar.status.draft': 'Wersja robocza',
+  'toolbar.status.published': 'Opublikowana',
+  'toolbar.zoom': 'Powiększenie',
+  'toolbar.zoom.fit': 'Dopasuj',
+  'toolbar.more': 'Więcej działań',
+  'toolbar.theme': 'Motyw',
+  'toolbar.theme.light': 'Jasny',
+  'toolbar.theme.dark': 'Ciemny',
+  'toolbar.theme.system': 'Systemowy',
 };

@@ -39,8 +39,16 @@ import {
   type LocaleStore,
   useLocaleState,
 } from '../store/index.ts';
-import { LocaleSwitcher, PublishDialog, SamplePicker, Toolbar } from '../toolbar/index.ts';
-import { Tabs } from '../ui/index.ts';
+import {
+  LocaleSwitcher,
+  PublishDialog,
+  SamplePicker,
+  ThemeProvider,
+  Toolbar,
+  useThemePreference,
+  type Zoom,
+} from '../toolbar/index.ts';
+import { PortalContainerProvider, Tabs } from '../ui/index.ts';
 import { type BuilderEditorProps, type DocumentRef, resolveConfig } from './config.ts';
 import { EditorLayout } from './layout.tsx';
 import { ManifestProvider } from './manifest.tsx';
@@ -80,6 +88,10 @@ type Phase =
 export function EditorApp(props: EditorAppProps) {
   const config = useMemo(() => resolveConfig(props.config), [props.config]);
   const { adapter, documentRef, registry } = props;
+  // The host's `config.theme` wins; otherwise the author's remembered light / dark / system choice.
+  const theme = useThemePreference(config.theme);
+  // Menus, popovers and dialogs render inside the root, so they inherit its `data-theme`.
+  const [root, setRoot] = useState<HTMLElement | null>(null);
   const [phase, setPhase] = useState<Phase>({ kind: 'loading' });
   const refKey = `${documentRef.collection}:${documentRef.id}`;
   // biome-ignore lint/correctness/useExhaustiveDependencies: `documentRef` is identified by `refKey`
@@ -134,17 +146,22 @@ export function EditorApp(props: EditorAppProps) {
 
   return (
     <MessagesProvider locale={config.uiLocale}>
-      <div
-        className="buildr-editor"
-        lang={config.uiLocale}
-        {...(config.theme !== 'system' ? { 'data-theme': config.theme } : {})}
-      >
-        {phase.kind === 'ready' ? (
-          <Session {...props} ready={phase} />
-        ) : (
-          <Status failed={phase.kind === 'error'} />
-        )}
-      </div>
+      <ThemeProvider value={theme}>
+        <PortalContainerProvider container={root}>
+          <div
+            ref={setRoot}
+            className="buildr-editor"
+            lang={config.uiLocale}
+            {...(theme.attribute !== 'system' ? { 'data-theme': theme.attribute } : {})}
+          >
+            {phase.kind === 'ready' ? (
+              <Session {...props} ready={phase} />
+            ) : (
+              <Status failed={phase.kind === 'error'} />
+            )}
+          </div>
+        </PortalContainerProvider>
+      </ThemeProvider>
     </MessagesProvider>
   );
 }
@@ -231,6 +248,7 @@ function Shell(props: EditorAppProps & { readonly ready: Ready }) {
   );
   const [host, setHost] = useState<CanvasHost | null>(null);
   const [breakpoint, setBreakpoint] = useState(config.breakpoints[0]?.id ?? 'desktop');
+  const [zoom, setZoom] = useState<Zoom>('fit');
   const [publishOpen, setPublishOpen] = useState(false);
   const [diagnostics, setDiagnostics] = useState<
     NonNullable<Parameters<typeof IssuesPanel>[0]['canvasDiagnostics']>
@@ -254,7 +272,10 @@ function Shell(props: EditorAppProps & { readonly ready: Ready }) {
 
   useEffect(() => {
     if (host === null) return;
-    return host.state.subscribe((state) => setDiagnostics(state.diagnostics as never));
+    return host.state.subscribe((state) => {
+      setDiagnostics(state.diagnostics as never);
+      setZoom(state.zoom);
+    });
   }, [host]);
 
   const changeBreakpoint = useCallback(
@@ -269,26 +290,31 @@ function Shell(props: EditorAppProps & { readonly ready: Ready }) {
     <>
       <EditorLayout
         toolbar={
-          <>
-            <Toolbar
-              title={ready.loaded.title}
-              breakpoints={config.breakpoints}
-              breakpoint={breakpoint}
-              onBreakpointChange={changeBreakpoint}
-              cmsUrl={adapter.cmsUrl?.(documentRef)}
-              onPreview={preview.preview}
-              onPublish={() => setPublishOpen(true)}
-              canPublish={ready.canPublish}
-            />
-            <LocaleSwitcher onChange={(next) => host?.setLocale(next)} />
-            <SamplePicker
-              adapter={adapter}
-              docRef={documentRef}
-              onChange={(contextRef) =>
-                host?.setContextRef(contextRef ?? ready.loaded.contextRef ?? null)
-              }
-            />
-          </>
+          <Toolbar
+            title={ready.loaded.title}
+            status={ready.loaded.status}
+            breakpoints={config.breakpoints}
+            breakpoint={breakpoint}
+            onBreakpointChange={changeBreakpoint}
+            zoom={zoom}
+            onZoomChange={(next) => host?.setZoom(next)}
+            cmsUrl={adapter.cmsUrl?.(documentRef)}
+            onPreview={preview.preview}
+            onPublish={() => setPublishOpen(true)}
+            canPublish={ready.canPublish}
+            pickers={
+              <>
+                <LocaleSwitcher onChange={(next) => host?.setLocale(next)} />
+                <SamplePicker
+                  adapter={adapter}
+                  docRef={documentRef}
+                  onChange={(contextRef) =>
+                    host?.setContextRef(contextRef ?? ready.loaded.contextRef ?? null)
+                  }
+                />
+              </>
+            }
+          />
         }
         left={
           <Tabs

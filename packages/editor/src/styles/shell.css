@@ -189,9 +189,10 @@
   color: var(--bd-text-muted);
 }
 
-/* Toolbar (PB-083) */
+/* Toolbar (PB-083, redesigned in PB-123) */
 .buildr-editor .bd-toolbar-title {
-  min-width: 4ch;
+  flex: none;
+  max-width: 40ch;
   margin: 0;
   font-size: var(--bd-text-lg);
   line-height: var(--bd-leading-lg);
@@ -220,12 +221,6 @@
   text-decoration: none;
 }
 
-/* Toolbar sizing: controls keep their natural width, only the title and the spacer give way. */
-.buildr-editor .bd-toolbar > :not(.bd-toolbar-title):not(.bd-toolbar-spacer) {
-  flex: none;
-  white-space: nowrap;
-}
-
 .buildr-editor .bd-toolbar .bd-select-trigger {
   width: auto;
   min-width: 88px;
@@ -243,6 +238,145 @@
 .bd-save-status[data-status="error"],
 .bd-save-status[data-status="conflict"] {
   color: var(--bd-danger);
+}
+
+/* Toolbar zones and collapsing (PB-123). The row is measured by a ResizeObserver, not a media query. */
+.buildr-editor .bd-toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-space-4);
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.buildr-editor .bd-toolbar-zone {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-space-3);
+  flex: none;
+  white-space: nowrap;
+}
+
+/* Last step of collapsing: only now may the title give way. */
+.buildr-editor .bd-toolbar-row[data-level="4"] .bd-toolbar-title {
+  flex: 0 1 auto;
+  min-width: 6ch;
+}
+
+.buildr-editor .bd-status-pill {
+  padding: var(--bd-space-0) var(--bd-space-3);
+  border: var(--bd-border-width) solid var(--bd-toolbar-border);
+  border-radius: var(--bd-radius-pill);
+  color: var(--bd-toolbar-muted);
+  font-size: var(--bd-text-xs);
+  line-height: var(--bd-leading-xs);
+  font-weight: var(--bd-weight-medium);
+}
+
+.buildr-editor .bd-toolbar .bd-icon-button {
+  min-width: var(--bd-control-md);
+}
+
+.buildr-editor .bd-toolbar .bd-toolbar-link {
+  color: var(--bd-toolbar-text);
+}
+
+.buildr-editor .bd-toolbar .bd-save-status {
+  gap: var(--bd-space-2);
+  white-space: nowrap;
+}
+
+/* Segmented control: breakpoints in the toolbar, the theme switch in the more menu. */
+.bd-segmented {
+  display: inline-flex;
+  gap: var(--bd-space-0);
+  padding: var(--bd-space-0);
+  border: var(--bd-border-width) solid var(--bd-border);
+  border-radius: var(--bd-radius-md);
+}
+
+.bd-segmented .bd-segment {
+  min-height: var(--bd-control-sm);
+  padding: 0 var(--bd-space-3);
+  border-radius: var(--bd-radius-sm);
+}
+
+.bd-breakpoints .bd-segment {
+  width: var(--bd-control-md);
+  padding: 0;
+}
+
+.bd-segmented .bd-button.bd-segment[aria-pressed="true"],
+.bd-segmented .bd-button.bd-segment[aria-pressed="true"]:hover:not(:disabled) {
+  background: var(--bd-surface-selected);
+  color: var(--bd-text);
+}
+
+.buildr-editor .bd-toolbar .bd-segmented {
+  border-color: var(--bd-toolbar-border);
+}
+
+/* On the dark toolbar the active segment is the inverse of the bar. */
+.buildr-editor .bd-toolbar .bd-segmented .bd-button.bd-segment[aria-pressed="true"],
+.buildr-editor .bd-toolbar .bd-segmented .bd-button.bd-segment[aria-pressed="true"]:hover:not(:disabled) {
+  background: var(--bd-toolbar-text);
+  color: var(--bd-toolbar);
+}
+
+.buildr-editor .bd-zoom-trigger {
+  gap: var(--bd-space-1);
+  min-width: 64px;
+  justify-content: space-between;
+}
+
+/* Menu-like popovers (zoom, more): a plain list of items. */
+.bd-popover.bd-menu-popover {
+  min-width: 160px;
+  padding: var(--bd-space-1);
+}
+
+.bd-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-space-0);
+}
+
+.bd-menu-list .bd-menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-space-3);
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  text-decoration: none;
+}
+
+.bd-menu-list .bd-menu-item:hover,
+.bd-menu-list .bd-menu-item:focus-visible {
+  background: var(--bd-surface-hover);
+}
+
+.bd-menu-list .bd-menu-item[aria-pressed="true"] {
+  background: var(--bd-surface-selected);
+  font-weight: var(--bd-weight-semibold);
+}
+
+.bd-menu-group {
+  margin: 0;
+  padding: var(--bd-space-2) var(--bd-space-1) var(--bd-space-1);
+  border: 0;
+  border-top: var(--bd-border-width) solid var(--bd-border);
+}
+
+.bd-menu-label {
+  padding: 0 var(--bd-space-1) var(--bd-space-1);
+  color: var(--bd-text-muted);
+  font-size: var(--bd-text-xs);
+  line-height: var(--bd-leading-xs);
 }
 
 /* Preview (PB-091) */
