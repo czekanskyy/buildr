@@ -7,6 +7,7 @@ export {
   type MemoryBackendOptions,
   type MemoryDocumentInput,
 } from './backends/memory.ts';
+export * from './serialize/index.ts';
 export {
   type BuildrMcpServer,
   type BuildrMcpServerOptions,

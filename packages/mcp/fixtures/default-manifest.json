@@ -1,0 +1,4463 @@
+{
+  "hash": "34tv8n7flmewq",
+  "components": {
+    "buildr/page": {
+      "type": "buildr/page",
+      "version": 1,
+      "label": "Page",
+      "description": "The root of a document. Everything else lives inside it.",
+      "category": "layout",
+      "icon": "file",
+      "contentCategories": ["flow"],
+      "props": {},
+      "slots": {
+        "default": {
+          "label": "Content",
+          "axis": "vertical"
+        }
+      },
+      "capabilities": {
+        "root": true,
+        "insertable": false,
+        "draggable": false,
+        "removable": false,
+        "duplicable": false
+      },
+      "styles": {
+        "groups": ["spacing", "typography", "background"]
+      },
+      "a11y": {
+        "element": "div"
+      },
+      "editor": {
+        "emptySlotText": {
+          "default": "Add a section to start the page"
+        }
+      },
+      "runtime": "shared"
+    },
+    "buildr/section": {
+      "type": "buildr/section",
+      "version": 1,
+      "label": "Section",
+      "description": "A band of the page: a landmark or a plain wrapper, with an optional background image.",
+      "keywords": ["band", "region", "hero", "wrapper"],
+      "category": "layout",
+      "icon": "layout-grid",
+      "contentCategories": ["flow", "landmark"],
+      "props": {
+        "as": {
+          "kind": "select",
+          "label": "Element",
+          "localizable": false,
+          "accepts": [],
+          "options": ["section", "div", "header", "footer", "main", "aside", "nav", "article"],
+          "default": "section"
+        },
+        "container": {
+          "kind": "select",
+          "label": "Content width",
+          "localizable": false,
+          "accepts": [],
+          "options": ["full", "sm", "md", "lg", "xl"],
+          "default": "lg"
+        },
+        "backgroundImage": {
+          "kind": "media",
+          "label": "Background image",
+          "bindable": true,
+          "localizable": false,
+          "accepts": ["media"],
+          "default": null,
+          "accept": ["image"]
+        },
+        "ariaLabel": {
+          "kind": "text",
+          "label": "Accessible name",
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        }
+      },
+      "slots": {
+        "default": {
+          "label": "Content",
+          "axis": "vertical"
+        }
+      },
+      "styles": {
+        "groups": ["layout", "size", "spacing", "background", "border", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "section",
+        "landmark": true
+      },
+      "editor": {
+        "emptySlotText": {
+          "default": "Drop content here"
+        }
+      },
+      "runtime": "shared"
+    },
+    "buildr/container": {
+      "type": "buildr/container",
+      "version": 1,
+      "label": "Container",
+      "description": "Keeps its content to a readable width, centred.",
+      "keywords": ["width", "column", "centre", "max-width"],
+      "category": "layout",
+      "icon": "maximize",
+      "contentCategories": ["flow"],
+      "props": {
+        "width": {
+          "kind": "select",
+          "label": "Max width",
+          "localizable": false,
+          "accepts": [],
+          "options": ["sm", "md", "lg", "xl"],
+          "default": "lg"
+        }
+      },
+      "slots": {
+        "default": {
+          "label": "Content",
+          "axis": "vertical"
+        }
+      },
+      "styles": {
+        "groups": ["layout", "spacing", "background", "border", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "div"
+      },
+      "editor": {
+        "emptySlotText": {
+          "default": "Drop content here"
+        }
+      },
+      "runtime": "shared"
+    },
+    "buildr/stack": {
+      "type": "buildr/stack",
+      "version": 1,
+      "label": "Stack",
+      "description": "Lays its children out in a row or a column.",
+      "keywords": ["flex", "row", "column", "group", "flexbox"],
+      "category": "layout",
+      "icon": "list",
+      "contentCategories": ["flow"],
+      "props": {
+        "role": {
+          "kind": "select",
+          "label": "Role",
+          "localizable": false,
+          "accepts": [],
+          "options": ["none", "group", "list"],
+          "default": "none"
+        },
+        "ariaLabel": {
+          "kind": "text",
+          "label": "Accessible name",
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        }
+      },
+      "slots": {
+        "default": {
+          "label": "Content",
+          "axis": "auto"
+        }
+      },
+      "styles": {
+        "groups": ["layout", "size", "spacing", "background", "border", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "div"
+      },
+      "editor": {
+        "emptySlotText": {
+          "default": "Drop content here"
+        }
+      },
+      "runtime": "shared"
+    },
+    "buildr/grid": {
+      "type": "buildr/grid",
+      "version": 1,
+      "label": "Grid",
+      "description": "Lays its children out in columns.",
+      "keywords": ["columns", "layout", "css grid", "responsive"],
+      "category": "layout",
+      "icon": "layout-grid",
+      "contentCategories": ["flow"],
+      "props": {
+        "ariaLabel": {
+          "kind": "text",
+          "label": "Accessible name",
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        }
+      },
+      "slots": {
+        "default": {
+          "label": "Cells",
+          "axis": "auto"
+        }
+      },
+      "styles": {
+        "groups": ["layout", "size", "spacing", "background", "border", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "div"
+      },
+      "editor": {
+        "emptySlotText": {
+          "default": "Drop content here"
+        }
+      },
+      "runtime": "shared"
+    },
+    "buildr/heading": {
+      "type": "buildr/heading",
+      "version": 1,
+      "label": "Heading",
+      "description": "A title. Its level is the outline; its look is a style.",
+      "keywords": ["title", "h1", "h2", "headline"],
+      "category": "content",
+      "icon": "hash",
+      "contentCategories": ["flow", "heading"],
+      "props": {
+        "text": {
+          "kind": "text",
+          "label": "Text",
+          "bindable": true,
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": "Heading"
+        },
+        "level": {
+          "kind": "select",
+          "label": "Level",
+          "localizable": false,
+          "accepts": [],
+          "options": [1, 2, 3, 4, 5, 6],
+          "default": 2
+        }
+      },
+      "styles": {
+        "groups": ["typography", "spacing", "background", "border", "size", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "h1-h6",
+        "requiresName": true
+      },
+      "editor": {
+        "inlineProp": "text",
+        "placeholder": "Heading"
+      },
+      "runtime": "shared"
+    },
+    "buildr/text": {
+      "type": "buildr/text",
+      "version": 1,
+      "label": "Text",
+      "description": "A paragraph or a short piece of text.",
+      "keywords": ["paragraph", "copy", "body", "span"],
+      "category": "content",
+      "icon": "file-text",
+      "contentCategories": ["flow", "phrasing"],
+      "props": {
+        "text": {
+          "kind": "textarea",
+          "label": "Text",
+          "bindable": true,
+          "localizable": true,
+          "accepts": ["string"],
+          "default": ""
+        },
+        "as": {
+          "kind": "select",
+          "label": "Element",
+          "localizable": false,
+          "accepts": [],
+          "options": ["p", "span", "small", "div"],
+          "default": "p"
+        }
+      },
+      "styles": {
+        "groups": ["typography", "spacing", "background", "border", "size", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "p"
+      },
+      "editor": {
+        "inlineProp": "text",
+        "placeholder": "Write something"
+      },
+      "runtime": "shared"
+    },
+    "buildr/rich-text": {
+      "type": "buildr/rich-text",
+      "version": 1,
+      "label": "Rich text",
+      "description": "Formatted content: headings, paragraphs, lists, quotes and links.",
+      "keywords": ["content", "article", "body", "wysiwyg", "post"],
+      "category": "content",
+      "icon": "file-text",
+      "contentCategories": ["flow"],
+      "props": {
+        "content": {
+          "kind": "richText",
+          "label": "Content",
+          "bindable": true,
+          "localizable": true,
+          "accepts": ["richText", "string"],
+          "default": null
+        }
+      },
+      "styles": {
+        "groups": ["typography", "spacing", "background", "border", "size", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "div"
+      },
+      "editor": {
+        "placeholder": "Write something"
+      },
+      "runtime": "shared"
+    },
+    "buildr/button": {
+      "type": "buildr/button",
+      "version": 1,
+      "label": "Button",
+      "description": "A button, or a link that looks like one.",
+      "keywords": ["cta", "call to action", "submit", "link"],
+      "category": "content",
+      "icon": "send",
+      "contentCategories": ["flow", "phrasing", "interactive"],
+      "props": {
+        "label": {
+          "kind": "text",
+          "label": "Label",
+          "bindable": true,
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": "Button"
+        },
+        "href": {
+          "kind": "link",
+          "label": "Link",
+          "bindable": true,
+          "localizable": true,
+          "accepts": ["url", "link", "string"],
+          "default": ""
+        },
+        "type": {
+          "kind": "select",
+          "label": "Type",
+          "localizable": false,
+          "accepts": [],
+          "options": ["button", "submit"],
+          "default": "button"
+        },
+        "variant": {
+          "kind": "select",
+          "label": "Variant",
+          "localizable": false,
+          "accepts": [],
+          "options": ["primary", "secondary", "outline", "ghost"],
+          "default": "primary"
+        },
+        "size": {
+          "kind": "select",
+          "label": "Size",
+          "localizable": false,
+          "accepts": [],
+          "options": ["sm", "md", "lg"],
+          "default": "md"
+        },
+        "icon": {
+          "kind": "icon",
+          "label": "Icon",
+          "localizable": false,
+          "accepts": [],
+          "default": ""
+        },
+        "iconPosition": {
+          "kind": "select",
+          "label": "Icon position",
+          "localizable": false,
+          "accepts": [],
+          "options": ["start", "end"],
+          "default": "start"
+        },
+        "ariaLabel": {
+          "kind": "text",
+          "label": "Accessible name",
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        },
+        "newTab": {
+          "kind": "boolean",
+          "label": "Open in a new tab",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": false
+        }
+      },
+      "styles": {
+        "groups": ["typography", "spacing", "background", "border", "size", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "button",
+        "requiresName": true
+      },
+      "editor": {
+        "inlineProp": "label",
+        "placeholder": "Button"
+      },
+      "runtime": "shared"
+    },
+    "buildr/link": {
+      "type": "buildr/link",
+      "version": 1,
+      "label": "Link",
+      "description": "A text link.",
+      "keywords": ["anchor", "href", "url", "navigation"],
+      "category": "content",
+      "icon": "link",
+      "contentCategories": ["flow", "phrasing", "interactive"],
+      "props": {
+        "label": {
+          "kind": "text",
+          "label": "Text",
+          "bindable": true,
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": "Link"
+        },
+        "href": {
+          "kind": "link",
+          "label": "Link",
+          "bindable": true,
+          "localizable": true,
+          "accepts": ["url", "link", "string"],
+          "default": "#"
+        },
+        "ariaLabel": {
+          "kind": "text",
+          "label": "Accessible name",
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        },
+        "newTab": {
+          "kind": "boolean",
+          "label": "Open in a new tab",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": false
+        }
+      },
+      "styles": {
+        "groups": ["typography", "spacing", "background", "border", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "a",
+        "requiresName": true
+      },
+      "editor": {
+        "inlineProp": "label",
+        "placeholder": "Link"
+      },
+      "runtime": "shared"
+    },
+    "buildr/image": {
+      "type": "buildr/image",
+      "version": 1,
+      "label": "Image",
+      "description": "A picture, with alternative text.",
+      "keywords": ["picture", "photo", "media", "img"],
+      "category": "media",
+      "icon": "image",
+      "contentCategories": ["flow", "phrasing", "media"],
+      "props": {
+        "image": {
+          "kind": "media",
+          "label": "Image",
+          "bindable": true,
+          "localizable": false,
+          "accepts": ["media"],
+          "default": null,
+          "accept": ["image"]
+        },
+        "alt": {
+          "kind": "text",
+          "label": "Alternative text",
+          "bindable": true,
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        },
+        "decorative": {
+          "kind": "boolean",
+          "label": "Decorative",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": false
+        },
+        "sizes": {
+          "kind": "select",
+          "label": "Display width",
+          "localizable": false,
+          "accepts": [],
+          "options": ["full", "half", "third", "quarter"],
+          "default": "full"
+        },
+        "fit": {
+          "kind": "select",
+          "label": "Fit",
+          "localizable": false,
+          "accepts": [],
+          "options": ["cover", "contain", "fill", "none", "scale-down"],
+          "default": "cover"
+        },
+        "priority": {
+          "kind": "boolean",
+          "label": "Load first",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": false
+        }
+      },
+      "styles": {
+        "groups": ["size", "spacing", "border", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "img",
+        "requiresName": true
+      },
+      "editor": {
+        "placeholder": "Choose an image"
+      },
+      "runtime": "shared"
+    },
+    "buildr/icon": {
+      "type": "buildr/icon",
+      "version": 1,
+      "label": "Icon",
+      "description": "A small pictogram.",
+      "keywords": ["symbol", "pictogram", "svg"],
+      "category": "media",
+      "icon": "sparkles",
+      "contentCategories": ["flow", "phrasing", "media"],
+      "props": {
+        "name": {
+          "kind": "icon",
+          "label": "Icon",
+          "localizable": false,
+          "accepts": [],
+          "default": "star"
+        },
+        "label": {
+          "kind": "text",
+          "label": "Accessible name",
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        },
+        "size": {
+          "kind": "select",
+          "label": "Size",
+          "localizable": false,
+          "accepts": [],
+          "options": ["sm", "md", "lg", "xl"],
+          "default": "md"
+        }
+      },
+      "styles": {
+        "groups": ["size", "spacing", "typography", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "svg"
+      },
+      "runtime": "shared"
+    },
+    "buildr/list": {
+      "type": "buildr/list",
+      "version": 1,
+      "label": "List",
+      "description": "A bulleted or numbered list.",
+      "keywords": ["bullets", "ul", "ol", "items"],
+      "category": "content",
+      "icon": "list",
+      "contentCategories": ["flow"],
+      "props": {
+        "ordered": {
+          "kind": "boolean",
+          "label": "Numbered",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": false
+        },
+        "ariaLabel": {
+          "kind": "text",
+          "label": "Accessible name",
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        }
+      },
+      "slots": {
+        "default": {
+          "label": "Items",
+          "allow": ["#list-item", "buildr/loop"],
+          "axis": "vertical"
+        }
+      },
+      "defaults": {
+        "slots": {
+          "default": [
+            {
+              "type": "buildr/list-item",
+              "props": {
+                "text": {
+                  "kind": "static",
+                  "value": "Item 1"
+                }
+              }
+            },
+            {
+              "type": "buildr/list-item",
+              "props": {
+                "text": {
+                  "kind": "static",
+                  "value": "Item 2"
+                }
+              }
+            },
+            {
+              "type": "buildr/list-item",
+              "props": {
+                "text": {
+                  "kind": "static",
+                  "value": "Item 3"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "styles": {
+        "groups": ["typography", "spacing", "background", "border", "size", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "ul"
+      },
+      "editor": {
+        "emptySlotText": {
+          "default": "Add a list item"
+        }
+      },
+      "runtime": "shared"
+    },
+    "buildr/list-item": {
+      "type": "buildr/list-item",
+      "version": 1,
+      "label": "List item",
+      "description": "One entry of a list.",
+      "category": "content",
+      "icon": "minus",
+      "contentCategories": ["list-item"],
+      "parents": {
+        "allow": ["buildr/list", "buildr/loop"]
+      },
+      "props": {
+        "text": {
+          "kind": "text",
+          "label": "Text",
+          "bindable": true,
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": "Item"
+        }
+      },
+      "slots": {
+        "default": {
+          "label": "More content",
+          "allow": ["#flow"],
+          "axis": "vertical"
+        }
+      },
+      "capabilities": {
+        "insertable": false
+      },
+      "styles": {
+        "groups": ["typography", "spacing", "background", "border", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "li"
+      },
+      "editor": {
+        "inlineProp": "text",
+        "placeholder": "Item"
+      },
+      "runtime": "shared"
+    },
+    "buildr/divider": {
+      "type": "buildr/divider",
+      "version": 1,
+      "label": "Divider",
+      "description": "A horizontal rule.",
+      "keywords": ["hr", "rule", "separator", "line"],
+      "category": "content",
+      "icon": "minus",
+      "contentCategories": ["flow"],
+      "props": {
+        "decorative": {
+          "kind": "boolean",
+          "label": "Decorative",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": false
+        }
+      },
+      "styles": {
+        "groups": ["size", "spacing", "border", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "hr"
+      },
+      "runtime": "shared"
+    },
+    "buildr/badge": {
+      "type": "buildr/badge",
+      "version": 1,
+      "label": "Badge",
+      "description": "A short status or category label.",
+      "keywords": ["tag", "label", "status", "pill", "chip"],
+      "category": "content",
+      "icon": "tag",
+      "contentCategories": ["flow", "phrasing"],
+      "props": {
+        "text": {
+          "kind": "text",
+          "label": "Text",
+          "bindable": true,
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": "Badge"
+        },
+        "variant": {
+          "kind": "select",
+          "label": "Variant",
+          "localizable": false,
+          "accepts": [],
+          "options": ["neutral", "primary", "success", "warning", "danger"],
+          "default": "neutral"
+        }
+      },
+      "styles": {
+        "groups": ["typography", "spacing", "background", "border", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "span"
+      },
+      "editor": {
+        "inlineProp": "text",
+        "placeholder": "Badge"
+      },
+      "runtime": "shared"
+    },
+    "buildr/card": {
+      "type": "buildr/card",
+      "version": 1,
+      "label": "Card",
+      "description": "A boxed piece of content with media, text and actions.",
+      "keywords": ["box", "tile", "teaser", "panel"],
+      "category": "ui",
+      "icon": "layout-grid",
+      "contentCategories": ["flow"],
+      "props": {
+        "href": {
+          "kind": "link",
+          "label": "Link",
+          "bindable": true,
+          "localizable": true,
+          "accepts": ["url", "link", "string"],
+          "default": ""
+        },
+        "linkLabel": {
+          "kind": "text",
+          "label": "Link name",
+          "bindable": true,
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        },
+        "newTab": {
+          "kind": "boolean",
+          "label": "Open in a new tab",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": false
+        },
+        "variant": {
+          "kind": "select",
+          "label": "Variant",
+          "localizable": false,
+          "accepts": [],
+          "options": ["outlined", "elevated", "flat"],
+          "default": "outlined"
+        },
+        "as": {
+          "kind": "select",
+          "label": "Element",
+          "localizable": false,
+          "accepts": [],
+          "options": ["article", "div"],
+          "default": "article"
+        }
+      },
+      "slots": {
+        "media": {
+          "label": "Media",
+          "allow": ["#media"],
+          "max": 1,
+          "axis": "vertical"
+        },
+        "body": {
+          "label": "Body",
+          "allow": ["#flow"],
+          "axis": "vertical"
+        },
+        "actions": {
+          "label": "Actions",
+          "allow": ["#interactive"],
+          "axis": "horizontal"
+        }
+      },
+      "styles": {
+        "groups": ["layout", "size", "spacing", "background", "border", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "article"
+      },
+      "editor": {
+        "emptySlotText": {
+          "media": "Add an image",
+          "body": "Add a heading and text",
+          "actions": "Add a button"
+        }
+      },
+      "runtime": "shared"
+    },
+    "buildr/accordion": {
+      "type": "buildr/accordion",
+      "version": 1,
+      "label": "Accordion",
+      "description": "Expandable sections, such as a list of questions and answers.",
+      "keywords": ["faq", "collapse", "details", "expand", "toggle"],
+      "category": "ui",
+      "icon": "chevrons-up-down",
+      "contentCategories": ["flow"],
+      "props": {
+        "allowMultiple": {
+          "kind": "boolean",
+          "label": "Allow several open at once",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": true
+        }
+      },
+      "slots": {
+        "default": {
+          "label": "Items",
+          "allow": ["buildr/accordion-item", "buildr/loop"],
+          "axis": "vertical"
+        }
+      },
+      "defaults": {
+        "slots": {
+          "default": [
+            {
+              "type": "buildr/accordion-item",
+              "props": {
+                "summary": {
+                  "kind": "static",
+                  "value": "Question 1"
+                }
+              }
+            },
+            {
+              "type": "buildr/accordion-item",
+              "props": {
+                "summary": {
+                  "kind": "static",
+                  "value": "Question 2"
+                }
+              }
+            },
+            {
+              "type": "buildr/accordion-item",
+              "props": {
+                "summary": {
+                  "kind": "static",
+                  "value": "Question 3"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "styles": {
+        "groups": ["layout", "size", "spacing", "background", "border", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "div"
+      },
+      "editor": {
+        "emptySlotText": {
+          "default": "Add an item"
+        }
+      },
+      "runtime": "shared"
+    },
+    "buildr/accordion-item": {
+      "type": "buildr/accordion-item",
+      "version": 1,
+      "label": "Accordion item",
+      "description": "One section of an accordion.",
+      "category": "ui",
+      "icon": "chevron-down",
+      "contentCategories": ["flow"],
+      "parents": {
+        "allow": ["buildr/accordion", "buildr/loop"]
+      },
+      "props": {
+        "summary": {
+          "kind": "text",
+          "label": "Summary",
+          "bindable": true,
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": "Question"
+        },
+        "defaultOpen": {
+          "kind": "boolean",
+          "label": "Open at first",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": false
+        }
+      },
+      "slots": {
+        "default": {
+          "label": "Content",
+          "allow": ["#flow"],
+          "axis": "vertical"
+        }
+      },
+      "capabilities": {
+        "insertable": false
+      },
+      "styles": {
+        "groups": ["spacing", "background", "border", "typography", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "details",
+        "requiresName": true
+      },
+      "editor": {
+        "inlineProp": "summary",
+        "placeholder": "Question",
+        "revealOnSelect": true,
+        "emptySlotText": {
+          "default": "Add the answer"
+        }
+      },
+      "runtime": "shared"
+    },
+    "buildr/loop": {
+      "type": "buildr/loop",
+      "version": 1,
+      "label": "Loop",
+      "description": "Repeats a template for every entry of a list or a collection.",
+      "keywords": ["repeat", "list", "collection", "query", "cms", "each"],
+      "category": "cms",
+      "icon": "refresh-cw",
+      "contentCategories": ["flow"],
+      "props": {
+        "source": {
+          "kind": "listSource",
+          "label": "Source",
+          "localizable": false,
+          "accepts": ["list"],
+          "default": null
+        },
+        "as": {
+          "kind": "text",
+          "label": "Item name",
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        }
+      },
+      "slots": {
+        "item": {
+          "label": "Item template",
+          "axis": "vertical"
+        },
+        "empty": {
+          "label": "When empty",
+          "axis": "vertical"
+        },
+        "after": {
+          "label": "After the items",
+          "axis": "vertical"
+        }
+      },
+      "styles": {
+        "groups": ["layout", "size", "spacing", "background", "border", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "div"
+      },
+      "editor": {
+        "emptySlotText": {
+          "item": "Design one item: it is repeated for every entry",
+          "empty": "What to show when there is nothing to list",
+          "after": "Add a pagination, for example"
+        }
+      },
+      "runtime": "shared"
+    },
+    "buildr/pagination": {
+      "type": "buildr/pagination",
+      "version": 1,
+      "label": "Pagination",
+      "description": "Links to the pages of a listing.",
+      "keywords": ["pages", "next", "previous", "paging"],
+      "category": "cms",
+      "icon": "ellipsis",
+      "contentCategories": ["flow", "landmark"],
+      "props": {
+        "page": {
+          "kind": "number",
+          "label": "Current page",
+          "bindable": true,
+          "localizable": false,
+          "accepts": ["number"],
+          "default": 1,
+          "min": 1
+        },
+        "totalPages": {
+          "kind": "number",
+          "label": "Number of pages",
+          "bindable": true,
+          "localizable": false,
+          "accepts": ["number"],
+          "default": 1,
+          "min": 0
+        },
+        "hrefPattern": {
+          "kind": "link",
+          "label": "Link pattern",
+          "localizable": true,
+          "accepts": ["url", "link", "string"],
+          "default": "?page={page}"
+        },
+        "ariaLabel": {
+          "kind": "text",
+          "label": "Accessible name",
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        }
+      },
+      "styles": {
+        "groups": [
+          "layout",
+          "spacing",
+          "typography",
+          "background",
+          "border",
+          "effects",
+          "visibility"
+        ]
+      },
+      "a11y": {
+        "element": "nav",
+        "landmark": true
+      },
+      "runtime": "shared"
+    },
+    "buildr/form": {
+      "type": "buildr/form",
+      "version": 1,
+      "label": "Form",
+      "description": "A form whose submissions are collected by the site.",
+      "keywords": ["contact", "newsletter", "submit", "fields"],
+      "category": "forms",
+      "icon": "send",
+      "contentCategories": ["flow"],
+      "props": {
+        "successMessage": {
+          "kind": "text",
+          "label": "Success message",
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        },
+        "errorMessage": {
+          "kind": "text",
+          "label": "Error message",
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        },
+        "ariaLabel": {
+          "kind": "text",
+          "label": "Accessible name",
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        }
+      },
+      "slots": {
+        "default": {
+          "label": "Fields",
+          "allow": ["#flow"],
+          "axis": "vertical"
+        }
+      },
+      "styles": {
+        "groups": ["layout", "size", "spacing", "background", "border", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "form"
+      },
+      "editor": {
+        "emptySlotText": {
+          "default": "Add fields and a submit button"
+        }
+      },
+      "runtime": "shared"
+    },
+    "buildr/input": {
+      "type": "buildr/input",
+      "version": 1,
+      "label": "Input",
+      "description": "A single-line text field.",
+      "keywords": ["text field", "email", "phone", "form"],
+      "category": "forms",
+      "icon": "pencil",
+      "contentCategories": ["flow", "phrasing", "form-control"],
+      "parents": {
+        "requireAncestor": ["buildr/form"]
+      },
+      "props": {
+        "label": {
+          "kind": "text",
+          "label": "Label",
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": "Label"
+        },
+        "name": {
+          "kind": "text",
+          "label": "Name",
+          "bindable": false,
+          "localizable": false,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        },
+        "required": {
+          "kind": "boolean",
+          "label": "Required",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": false
+        },
+        "hint": {
+          "kind": "text",
+          "label": "Hint",
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        },
+        "hideLabel": {
+          "kind": "boolean",
+          "label": "Hide the label",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": false
+        },
+        "type": {
+          "kind": "select",
+          "label": "Type",
+          "localizable": false,
+          "accepts": [],
+          "options": ["text", "email", "tel", "url", "number"],
+          "default": "text"
+        },
+        "maxLength": {
+          "kind": "number",
+          "label": "Maximum length (0: no limit)",
+          "localizable": false,
+          "accepts": ["number"],
+          "default": 0,
+          "min": 0,
+          "max": 10000
+        },
+        "placeholder": {
+          "kind": "text",
+          "label": "Placeholder",
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        }
+      },
+      "styles": {
+        "groups": ["size", "spacing", "typography", "background", "border", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "input",
+        "requiresName": true
+      },
+      "formField": {
+        "valueType": "string",
+        "nameProp": "name",
+        "requiredProp": "required",
+        "maxLengthProp": "maxLength"
+      },
+      "editor": {
+        "inlineProp": "label",
+        "placeholder": "Label"
+      },
+      "runtime": "shared"
+    },
+    "buildr/textarea": {
+      "type": "buildr/textarea",
+      "version": 1,
+      "label": "Textarea",
+      "description": "A multi-line text field.",
+      "keywords": ["message", "comment", "long text", "form"],
+      "category": "forms",
+      "icon": "file-text",
+      "contentCategories": ["flow", "phrasing", "form-control"],
+      "parents": {
+        "requireAncestor": ["buildr/form"]
+      },
+      "props": {
+        "label": {
+          "kind": "text",
+          "label": "Label",
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": "Label"
+        },
+        "name": {
+          "kind": "text",
+          "label": "Name",
+          "bindable": false,
+          "localizable": false,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        },
+        "required": {
+          "kind": "boolean",
+          "label": "Required",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": false
+        },
+        "hint": {
+          "kind": "text",
+          "label": "Hint",
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        },
+        "hideLabel": {
+          "kind": "boolean",
+          "label": "Hide the label",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": false
+        },
+        "rows": {
+          "kind": "number",
+          "label": "Rows",
+          "localizable": false,
+          "accepts": ["number"],
+          "default": 4,
+          "min": 2,
+          "max": 30
+        },
+        "maxLength": {
+          "kind": "number",
+          "label": "Maximum length (0: no limit)",
+          "localizable": false,
+          "accepts": ["number"],
+          "default": 0,
+          "min": 0,
+          "max": 100000
+        },
+        "placeholder": {
+          "kind": "text",
+          "label": "Placeholder",
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        }
+      },
+      "styles": {
+        "groups": ["size", "spacing", "typography", "background", "border", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "textarea",
+        "requiresName": true
+      },
+      "formField": {
+        "valueType": "string",
+        "nameProp": "name",
+        "requiredProp": "required",
+        "maxLengthProp": "maxLength"
+      },
+      "editor": {
+        "inlineProp": "label",
+        "placeholder": "Label"
+      },
+      "runtime": "shared"
+    },
+    "buildr/select": {
+      "type": "buildr/select",
+      "version": 1,
+      "label": "Select",
+      "description": "A drop-down list.",
+      "keywords": ["dropdown", "choice", "options", "form"],
+      "category": "forms",
+      "icon": "chevron-down",
+      "contentCategories": ["flow", "phrasing", "form-control"],
+      "parents": {
+        "requireAncestor": ["buildr/form"]
+      },
+      "props": {
+        "label": {
+          "kind": "text",
+          "label": "Label",
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": "Label"
+        },
+        "name": {
+          "kind": "text",
+          "label": "Name",
+          "bindable": false,
+          "localizable": false,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        },
+        "required": {
+          "kind": "boolean",
+          "label": "Required",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": false
+        },
+        "hint": {
+          "kind": "text",
+          "label": "Hint",
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        },
+        "hideLabel": {
+          "kind": "boolean",
+          "label": "Hide the label",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": false
+        },
+        "options": {
+          "kind": "list",
+          "label": "Options",
+          "localizable": false,
+          "accepts": [],
+          "of": {
+            "kind": "object",
+            "localizable": false,
+            "accepts": [],
+            "fields": {
+              "label": {
+                "kind": "text",
+                "label": "Label",
+                "localizable": true,
+                "accepts": ["string", "number", "date", "enum", "url"],
+                "default": "Option"
+              },
+              "value": {
+                "kind": "text",
+                "label": "Value",
+                "localizable": false,
+                "accepts": ["string", "number", "date", "enum", "url"],
+                "default": ""
+              }
+            },
+            "default": {
+              "label": "Option",
+              "value": ""
+            }
+          },
+          "default": [],
+          "max": 500
+        },
+        "placeholder": {
+          "kind": "text",
+          "label": "Placeholder",
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        }
+      },
+      "styles": {
+        "groups": ["size", "spacing", "typography", "background", "border", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "select",
+        "requiresName": true
+      },
+      "formField": {
+        "valueType": "enum",
+        "nameProp": "name",
+        "requiredProp": "required",
+        "optionsProp": "options"
+      },
+      "editor": {
+        "inlineProp": "label",
+        "placeholder": "Label"
+      },
+      "runtime": "shared"
+    },
+    "buildr/checkbox": {
+      "type": "buildr/checkbox",
+      "version": 1,
+      "label": "Checkbox",
+      "description": "A tick box.",
+      "keywords": ["tick", "consent", "agree", "boolean", "form"],
+      "category": "forms",
+      "icon": "circle-check",
+      "contentCategories": ["flow", "phrasing", "form-control"],
+      "parents": {
+        "requireAncestor": ["buildr/form"]
+      },
+      "props": {
+        "label": {
+          "kind": "text",
+          "label": "Label",
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": "Label"
+        },
+        "name": {
+          "kind": "text",
+          "label": "Name",
+          "bindable": false,
+          "localizable": false,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        },
+        "required": {
+          "kind": "boolean",
+          "label": "Required",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": false
+        },
+        "hint": {
+          "kind": "text",
+          "label": "Hint",
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        },
+        "defaultChecked": {
+          "kind": "boolean",
+          "label": "Ticked at first",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": false
+        }
+      },
+      "styles": {
+        "groups": ["spacing", "typography", "background", "border", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "input",
+        "requiresName": true
+      },
+      "formField": {
+        "valueType": "boolean",
+        "nameProp": "name",
+        "requiredProp": "required"
+      },
+      "editor": {
+        "inlineProp": "label",
+        "placeholder": "Label"
+      },
+      "runtime": "shared"
+    }
+  },
+  "templates": {
+    "buildr/hero": {
+      "id": "buildr/hero",
+      "version": 1,
+      "label": "Hero",
+      "category": "marketing",
+      "thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'%3E%3Cpath fill='%23d1d5db' d='M10 30h60v8h-60zM10 44h50v4h-50zM10 52h44v4h-44z'/%3E%3Cpath fill='%239ca3af' d='M86 18h64v62h-64z'/%3E%3Cpath fill='%232563eb' d='M10 66h22v9h-22z'/%3E%3C/svg%3E",
+      "lock": "structure",
+      "tree": {
+        "type": "buildr/section",
+        "props": {
+          "container": {
+            "kind": "static",
+            "value": "lg"
+          }
+        },
+        "children": [
+          {
+            "type": "buildr/grid",
+            "children": [
+              {
+                "type": "buildr/image",
+                "props": {
+                  "sizes": {
+                    "kind": "static",
+                    "value": "half"
+                  }
+                },
+                "name": "Image"
+              },
+              {
+                "type": "buildr/stack",
+                "children": [
+                  {
+                    "type": "buildr/heading",
+                    "props": {
+                      "text": {
+                        "kind": "static",
+                        "value": "A headline that says what you do"
+                      },
+                      "level": {
+                        "kind": "static",
+                        "value": 1
+                      }
+                    },
+                    "styles": {
+                      "bp": {
+                        "tablet": {
+                          "typography": {
+                            "fontSize": "$fontSize.4xl"
+                          }
+                        },
+                        "mobile": {
+                          "typography": {
+                            "fontSize": "$fontSize.3xl"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "buildr/text",
+                    "props": {
+                      "text": {
+                        "kind": "static",
+                        "value": "One or two sentences that tell a visitor why it matters and what to do next."
+                      }
+                    }
+                  },
+                  {
+                    "type": "buildr/stack",
+                    "children": [
+                      {
+                        "type": "buildr/button",
+                        "props": {
+                          "label": {
+                            "kind": "static",
+                            "value": "Get started"
+                          },
+                          "href": {
+                            "kind": "static",
+                            "value": "/contact"
+                          }
+                        }
+                      },
+                      {
+                        "type": "buildr/button",
+                        "props": {
+                          "label": {
+                            "kind": "static",
+                            "value": "Learn more"
+                          },
+                          "variant": {
+                            "kind": "static",
+                            "value": "outline"
+                          }
+                        }
+                      }
+                    ],
+                    "styles": {
+                      "base": {
+                        "layout": {
+                          "direction": "row",
+                          "wrap": "wrap",
+                          "gap": "$space.3"
+                        }
+                      }
+                    },
+                    "region": "actions",
+                    "name": "Actions"
+                  }
+                ],
+                "styles": {
+                  "base": {
+                    "layout": {
+                      "gap": "$space.4",
+                      "justify": "center"
+                    }
+                  }
+                },
+                "name": "Copy"
+              }
+            ],
+            "styles": {
+              "base": {
+                "layout": {
+                  "columns": 2,
+                  "gap": "$space.12",
+                  "align": "center"
+                }
+              },
+              "bp": {
+                "tablet": {
+                  "layout": {
+                    "columns": 1
+                  }
+                },
+                "mobile": {
+                  "layout": {
+                    "columns": 1
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "styles": {
+          "base": {
+            "spacing": {
+              "padding": {
+                "top": "$space.16",
+                "bottom": "$space.16"
+              }
+            }
+          },
+          "bp": {
+            "mobile": {
+              "spacing": {
+                "padding": {
+                  "top": "$space.8",
+                  "bottom": "$space.8"
+                }
+              }
+            }
+          }
+        }
+      },
+      "variants": {
+        "imageRight": {
+          "type": "buildr/section",
+          "props": {
+            "container": {
+              "kind": "static",
+              "value": "lg"
+            }
+          },
+          "children": [
+            {
+              "type": "buildr/grid",
+              "children": [
+                {
+                  "type": "buildr/stack",
+                  "children": [
+                    {
+                      "type": "buildr/heading",
+                      "props": {
+                        "text": {
+                          "kind": "static",
+                          "value": "A headline that says what you do"
+                        },
+                        "level": {
+                          "kind": "static",
+                          "value": 1
+                        }
+                      },
+                      "styles": {
+                        "bp": {
+                          "tablet": {
+                            "typography": {
+                              "fontSize": "$fontSize.4xl"
+                            }
+                          },
+                          "mobile": {
+                            "typography": {
+                              "fontSize": "$fontSize.3xl"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "buildr/text",
+                      "props": {
+                        "text": {
+                          "kind": "static",
+                          "value": "One or two sentences that tell a visitor why it matters and what to do next."
+                        }
+                      }
+                    },
+                    {
+                      "type": "buildr/stack",
+                      "children": [
+                        {
+                          "type": "buildr/button",
+                          "props": {
+                            "label": {
+                              "kind": "static",
+                              "value": "Get started"
+                            },
+                            "href": {
+                              "kind": "static",
+                              "value": "/contact"
+                            }
+                          }
+                        },
+                        {
+                          "type": "buildr/button",
+                          "props": {
+                            "label": {
+                              "kind": "static",
+                              "value": "Learn more"
+                            },
+                            "variant": {
+                              "kind": "static",
+                              "value": "outline"
+                            }
+                          }
+                        }
+                      ],
+                      "styles": {
+                        "base": {
+                          "layout": {
+                            "direction": "row",
+                            "wrap": "wrap",
+                            "gap": "$space.3"
+                          }
+                        }
+                      },
+                      "region": "actions",
+                      "name": "Actions"
+                    }
+                  ],
+                  "styles": {
+                    "base": {
+                      "layout": {
+                        "gap": "$space.4",
+                        "justify": "center"
+                      }
+                    }
+                  },
+                  "name": "Copy"
+                },
+                {
+                  "type": "buildr/image",
+                  "props": {
+                    "sizes": {
+                      "kind": "static",
+                      "value": "half"
+                    }
+                  },
+                  "name": "Image"
+                }
+              ],
+              "styles": {
+                "base": {
+                  "layout": {
+                    "columns": 2,
+                    "gap": "$space.12",
+                    "align": "center"
+                  }
+                },
+                "bp": {
+                  "tablet": {
+                    "layout": {
+                      "columns": 1
+                    }
+                  },
+                  "mobile": {
+                    "layout": {
+                      "columns": 1
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "styles": {
+            "base": {
+              "spacing": {
+                "padding": {
+                  "top": "$space.16",
+                  "bottom": "$space.16"
+                }
+              }
+            },
+            "bp": {
+              "mobile": {
+                "spacing": {
+                  "padding": {
+                    "top": "$space.8",
+                    "bottom": "$space.8"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "centered": {
+          "type": "buildr/section",
+          "props": {
+            "container": {
+              "kind": "static",
+              "value": "md"
+            }
+          },
+          "children": [
+            {
+              "type": "buildr/stack",
+              "children": [
+                {
+                  "type": "buildr/heading",
+                  "props": {
+                    "text": {
+                      "kind": "static",
+                      "value": "A headline that says what you do"
+                    },
+                    "level": {
+                      "kind": "static",
+                      "value": 1
+                    }
+                  },
+                  "styles": {
+                    "bp": {
+                      "tablet": {
+                        "typography": {
+                          "fontSize": "$fontSize.4xl"
+                        }
+                      },
+                      "mobile": {
+                        "typography": {
+                          "fontSize": "$fontSize.3xl"
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "buildr/text",
+                  "props": {
+                    "text": {
+                      "kind": "static",
+                      "value": "One or two sentences that tell a visitor why it matters and what to do next."
+                    }
+                  }
+                },
+                {
+                  "type": "buildr/stack",
+                  "children": [
+                    {
+                      "type": "buildr/button",
+                      "props": {
+                        "label": {
+                          "kind": "static",
+                          "value": "Get started"
+                        },
+                        "href": {
+                          "kind": "static",
+                          "value": "/contact"
+                        }
+                      }
+                    },
+                    {
+                      "type": "buildr/button",
+                      "props": {
+                        "label": {
+                          "kind": "static",
+                          "value": "Learn more"
+                        },
+                        "variant": {
+                          "kind": "static",
+                          "value": "outline"
+                        }
+                      }
+                    }
+                  ],
+                  "styles": {
+                    "base": {
+                      "layout": {
+                        "direction": "row",
+                        "wrap": "wrap",
+                        "gap": "$space.3",
+                        "justify": "center"
+                      }
+                    }
+                  },
+                  "region": "actions",
+                  "name": "Actions"
+                }
+              ],
+              "styles": {
+                "base": {
+                  "layout": {
+                    "gap": "$space.4",
+                    "justify": "center",
+                    "align": "center"
+                  },
+                  "typography": {
+                    "textAlign": "center"
+                  }
+                }
+              },
+              "name": "Copy"
+            }
+          ],
+          "styles": {
+            "base": {
+              "spacing": {
+                "padding": {
+                  "top": "$space.16",
+                  "bottom": "$space.16"
+                }
+              }
+            },
+            "bp": {
+              "mobile": {
+                "spacing": {
+                  "padding": {
+                    "top": "$space.8",
+                    "bottom": "$space.8"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "buildr/feature-grid": {
+      "id": "buildr/feature-grid",
+      "version": 1,
+      "label": "Feature grid",
+      "category": "marketing",
+      "thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'%3E%3Cpath fill='%23d1d5db' d='M50 8h60v7h-60zM12 44h34v4h-34zM12 52h28v3h-28zM62 44h34v4h-34zM62 52h28v3h-28zM112 44h34v4h-34zM112 52h28v3h-28zM12 78h34v4h-34zM12 86h28v3h-28zM62 78h34v4h-34zM62 86h28v3h-28zM112 78h34v4h-34zM112 86h28v3h-28z'/%3E%3Cpath fill='%239ca3af' d='M12 28h10v10h-10zM62 28h10v10h-10zM112 28h10v10h-10zM12 62h10v10h-10zM62 62h10v10h-10zM112 62h10v10h-10z'/%3E%3C/svg%3E",
+      "lock": "none",
+      "tree": {
+        "type": "buildr/section",
+        "props": {
+          "container": {
+            "kind": "static",
+            "value": "lg"
+          }
+        },
+        "children": [
+          {
+            "type": "buildr/stack",
+            "children": [
+              {
+                "type": "buildr/heading",
+                "props": {
+                  "text": {
+                    "kind": "static",
+                    "value": "Everything you need"
+                  },
+                  "level": {
+                    "kind": "static",
+                    "value": 2
+                  }
+                }
+              },
+              {
+                "type": "buildr/text",
+                "props": {
+                  "text": {
+                    "kind": "static",
+                    "value": "A short introduction to the features below."
+                  }
+                }
+              },
+              {
+                "type": "buildr/grid",
+                "children": [
+                  {
+                    "type": "buildr/stack",
+                    "children": [
+                      {
+                        "type": "buildr/icon",
+                        "props": {
+                          "name": {
+                            "kind": "static",
+                            "value": "zap"
+                          },
+                          "size": {
+                            "kind": "static",
+                            "value": "lg"
+                          }
+                        }
+                      },
+                      {
+                        "type": "buildr/heading",
+                        "props": {
+                          "text": {
+                            "kind": "static",
+                            "value": "Fast by default"
+                          },
+                          "level": {
+                            "kind": "static",
+                            "value": 3
+                          }
+                        }
+                      },
+                      {
+                        "type": "buildr/text",
+                        "props": {
+                          "text": {
+                            "kind": "static",
+                            "value": "Say what makes it quick, in a sentence or two."
+                          }
+                        }
+                      }
+                    ],
+                    "styles": {
+                      "base": {
+                        "layout": {
+                          "gap": "$space.2"
+                        }
+                      }
+                    },
+                    "name": "Feature"
+                  },
+                  {
+                    "type": "buildr/stack",
+                    "children": [
+                      {
+                        "type": "buildr/icon",
+                        "props": {
+                          "name": {
+                            "kind": "static",
+                            "value": "shield"
+                          },
+                          "size": {
+                            "kind": "static",
+                            "value": "lg"
+                          }
+                        }
+                      },
+                      {
+                        "type": "buildr/heading",
+                        "props": {
+                          "text": {
+                            "kind": "static",
+                            "value": "Safe to rely on"
+                          },
+                          "level": {
+                            "kind": "static",
+                            "value": 3
+                          }
+                        }
+                      },
+                      {
+                        "type": "buildr/text",
+                        "props": {
+                          "text": {
+                            "kind": "static",
+                            "value": "Say why people can trust it, in a sentence or two."
+                          }
+                        }
+                      }
+                    ],
+                    "styles": {
+                      "base": {
+                        "layout": {
+                          "gap": "$space.2"
+                        }
+                      }
+                    },
+                    "name": "Feature"
+                  },
+                  {
+                    "type": "buildr/stack",
+                    "children": [
+                      {
+                        "type": "buildr/icon",
+                        "props": {
+                          "name": {
+                            "kind": "static",
+                            "value": "layout-grid"
+                          },
+                          "size": {
+                            "kind": "static",
+                            "value": "lg"
+                          }
+                        }
+                      },
+                      {
+                        "type": "buildr/heading",
+                        "props": {
+                          "text": {
+                            "kind": "static",
+                            "value": "Easy to arrange"
+                          },
+                          "level": {
+                            "kind": "static",
+                            "value": 3
+                          }
+                        }
+                      },
+                      {
+                        "type": "buildr/text",
+                        "props": {
+                          "text": {
+                            "kind": "static",
+                            "value": "Say how it fits into what they already do."
+                          }
+                        }
+                      }
+                    ],
+                    "styles": {
+                      "base": {
+                        "layout": {
+                          "gap": "$space.2"
+                        }
+                      }
+                    },
+                    "name": "Feature"
+                  },
+                  {
+                    "type": "buildr/stack",
+                    "children": [
+                      {
+                        "type": "buildr/icon",
+                        "props": {
+                          "name": {
+                            "kind": "static",
+                            "value": "star"
+                          },
+                          "size": {
+                            "kind": "static",
+                            "value": "lg"
+                          }
+                        }
+                      },
+                      {
+                        "type": "buildr/heading",
+                        "props": {
+                          "text": {
+                            "kind": "static",
+                            "value": "Made with care"
+                          },
+                          "level": {
+                            "kind": "static",
+                            "value": 3
+                          }
+                        }
+                      },
+                      {
+                        "type": "buildr/text",
+                        "props": {
+                          "text": {
+                            "kind": "static",
+                            "value": "Say what sets the details apart."
+                          }
+                        }
+                      }
+                    ],
+                    "styles": {
+                      "base": {
+                        "layout": {
+                          "gap": "$space.2"
+                        }
+                      }
+                    },
+                    "name": "Feature"
+                  },
+                  {
+                    "type": "buildr/stack",
+                    "children": [
+                      {
+                        "type": "buildr/icon",
+                        "props": {
+                          "name": {
+                            "kind": "static",
+                            "value": "globe"
+                          },
+                          "size": {
+                            "kind": "static",
+                            "value": "lg"
+                          }
+                        }
+                      },
+                      {
+                        "type": "buildr/heading",
+                        "props": {
+                          "text": {
+                            "kind": "static",
+                            "value": "Ready for everyone"
+                          },
+                          "level": {
+                            "kind": "static",
+                            "value": 3
+                          }
+                        }
+                      },
+                      {
+                        "type": "buildr/text",
+                        "props": {
+                          "text": {
+                            "kind": "static",
+                            "value": "Say who can use it and where."
+                          }
+                        }
+                      }
+                    ],
+                    "styles": {
+                      "base": {
+                        "layout": {
+                          "gap": "$space.2"
+                        }
+                      }
+                    },
+                    "name": "Feature"
+                  },
+                  {
+                    "type": "buildr/stack",
+                    "children": [
+                      {
+                        "type": "buildr/icon",
+                        "props": {
+                          "name": {
+                            "kind": "static",
+                            "value": "heart"
+                          },
+                          "size": {
+                            "kind": "static",
+                            "value": "lg"
+                          }
+                        }
+                      },
+                      {
+                        "type": "buildr/heading",
+                        "props": {
+                          "text": {
+                            "kind": "static",
+                            "value": "Built to last"
+                          },
+                          "level": {
+                            "kind": "static",
+                            "value": 3
+                          }
+                        }
+                      },
+                      {
+                        "type": "buildr/text",
+                        "props": {
+                          "text": {
+                            "kind": "static",
+                            "value": "Say what keeps it useful over time."
+                          }
+                        }
+                      }
+                    ],
+                    "styles": {
+                      "base": {
+                        "layout": {
+                          "gap": "$space.2"
+                        }
+                      }
+                    },
+                    "name": "Feature"
+                  }
+                ],
+                "styles": {
+                  "base": {
+                    "layout": {
+                      "columns": 3,
+                      "gap": "$space.8"
+                    }
+                  },
+                  "bp": {
+                    "tablet": {
+                      "layout": {
+                        "columns": 2
+                      }
+                    },
+                    "mobile": {
+                      "layout": {
+                        "columns": 1
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "styles": {
+              "base": {
+                "layout": {
+                  "gap": "$space.8"
+                }
+              }
+            }
+          }
+        ],
+        "styles": {
+          "base": {
+            "spacing": {
+              "padding": {
+                "top": "$space.16",
+                "bottom": "$space.16"
+              }
+            }
+          },
+          "bp": {
+            "mobile": {
+              "spacing": {
+                "padding": {
+                  "top": "$space.8",
+                  "bottom": "$space.8"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "buildr/cta": {
+      "id": "buildr/cta",
+      "version": 1,
+      "label": "Call to action",
+      "category": "marketing",
+      "thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'%3E%3Cpath fill='%23d1d5db' d='M50 34h60v7h-60zM40 47h80v4h-80zM66 60h28v9h-28z'/%3E%3Cpath fill='%232563eb' d='M0 20h160v60h-160z'/%3E%3C/svg%3E",
+      "lock": "structure",
+      "tree": {
+        "type": "buildr/section",
+        "props": {
+          "container": {
+            "kind": "static",
+            "value": "md"
+          }
+        },
+        "children": [
+          {
+            "type": "buildr/stack",
+            "children": [
+              {
+                "type": "buildr/heading",
+                "props": {
+                  "text": {
+                    "kind": "static",
+                    "value": "Ready to get started?"
+                  },
+                  "level": {
+                    "kind": "static",
+                    "value": 2
+                  }
+                }
+              },
+              {
+                "type": "buildr/text",
+                "props": {
+                  "text": {
+                    "kind": "static",
+                    "value": "Tell people what happens when they click, in one short sentence."
+                  }
+                }
+              },
+              {
+                "type": "buildr/stack",
+                "children": [
+                  {
+                    "type": "buildr/button",
+                    "props": {
+                      "label": {
+                        "kind": "static",
+                        "value": "Get in touch"
+                      },
+                      "variant": {
+                        "kind": "static",
+                        "value": "secondary"
+                      },
+                      "size": {
+                        "kind": "static",
+                        "value": "lg"
+                      },
+                      "href": {
+                        "kind": "static",
+                        "value": "/contact"
+                      }
+                    }
+                  }
+                ],
+                "styles": {
+                  "base": {
+                    "layout": {
+                      "direction": "row",
+                      "justify": "center",
+                      "gap": "$space.3"
+                    }
+                  }
+                },
+                "region": "actions",
+                "name": "Actions"
+              }
+            ],
+            "styles": {
+              "base": {
+                "layout": {
+                  "gap": "$space.4",
+                  "align": "center"
+                },
+                "typography": {
+                  "textAlign": "center"
+                }
+              }
+            },
+            "name": "Copy"
+          }
+        ],
+        "styles": {
+          "base": {
+            "spacing": {
+              "padding": {
+                "top": "$space.16",
+                "bottom": "$space.16"
+              }
+            },
+            "background": {
+              "color": "$color.primary"
+            },
+            "typography": {
+              "color": "$color.on-primary"
+            }
+          },
+          "bp": {
+            "mobile": {
+              "spacing": {
+                "padding": {
+                  "top": "$space.8",
+                  "bottom": "$space.8"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "buildr/testimonial": {
+      "id": "buildr/testimonial",
+      "version": 1,
+      "label": "Testimonial",
+      "category": "marketing",
+      "thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'%3E%3Cpath fill='%23d1d5db' d='M30 26h100v6h-100zM24 38h112v6h-112zM40 50h80v6h-80zM68 76h24v3h-24z'/%3E%3Cpath fill='%239ca3af' d='M62 68h36v4h-36z'/%3E%3C/svg%3E",
+      "lock": "none",
+      "tree": {
+        "type": "buildr/section",
+        "props": {
+          "container": {
+            "kind": "static",
+            "value": "md"
+          }
+        },
+        "children": [
+          {
+            "type": "buildr/stack",
+            "children": [
+              {
+                "type": "buildr/text",
+                "props": {
+                  "text": {
+                    "kind": "static",
+                    "value": "“A sentence from a customer that says what changed for them.”"
+                  }
+                },
+                "styles": {
+                  "base": {
+                    "typography": {
+                      "fontSize": "$fontSize.2xl",
+                      "lineHeight": 1.4
+                    }
+                  }
+                }
+              },
+              {
+                "type": "buildr/stack",
+                "children": [
+                  {
+                    "type": "buildr/text",
+                    "props": {
+                      "text": {
+                        "kind": "static",
+                        "value": "Customer name"
+                      }
+                    },
+                    "styles": {
+                      "base": {
+                        "typography": {
+                          "fontWeight": "$fontWeight.semibold"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "buildr/text",
+                    "props": {
+                      "text": {
+                        "kind": "static",
+                        "value": "Role, Company"
+                      }
+                    },
+                    "styles": {
+                      "base": {
+                        "typography": {
+                          "color": "$color.text-muted",
+                          "fontSize": "$fontSize.sm"
+                        }
+                      }
+                    }
+                  }
+                ],
+                "styles": {
+                  "base": {
+                    "layout": {
+                      "gap": "$space.1"
+                    }
+                  }
+                },
+                "name": "Author"
+              }
+            ],
+            "styles": {
+              "base": {
+                "layout": {
+                  "gap": "$space.6",
+                  "align": "center"
+                },
+                "typography": {
+                  "textAlign": "center"
+                }
+              }
+            },
+            "name": "Quote"
+          }
+        ],
+        "styles": {
+          "base": {
+            "spacing": {
+              "padding": {
+                "top": "$space.16",
+                "bottom": "$space.16"
+              }
+            }
+          },
+          "bp": {
+            "mobile": {
+              "spacing": {
+                "padding": {
+                  "top": "$space.8",
+                  "bottom": "$space.8"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "buildr/pricing": {
+      "id": "buildr/pricing",
+      "version": 1,
+      "label": "Pricing",
+      "category": "marketing",
+      "thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'%3E%3Cpath fill='%23d1d5db' d='M50 8h60v7h-60zM10 26h42v62h-42zM58 26h42v62h-42zM106 26h42v62h-42z'/%3E%3Cpath fill='%239ca3af' d='M16 34h30v6h-30zM16 46h20v8h-20zM16 62h30v3h-30zM64 34h30v6h-30zM64 46h20v8h-20zM64 62h30v3h-30zM112 34h30v6h-30zM112 46h20v8h-20zM112 62h30v3h-30z'/%3E%3Cpath fill='%232563eb' d='M16 76h30v7h-30zM64 76h30v7h-30zM112 76h30v7h-30z'/%3E%3C/svg%3E",
+      "lock": "none",
+      "tree": {
+        "type": "buildr/section",
+        "props": {
+          "container": {
+            "kind": "static",
+            "value": "lg"
+          }
+        },
+        "children": [
+          {
+            "type": "buildr/stack",
+            "children": [
+              {
+                "type": "buildr/heading",
+                "props": {
+                  "text": {
+                    "kind": "static",
+                    "value": "Simple pricing"
+                  },
+                  "level": {
+                    "kind": "static",
+                    "value": 2
+                  }
+                }
+              },
+              {
+                "type": "buildr/text",
+                "props": {
+                  "text": {
+                    "kind": "static",
+                    "value": "Pick the plan that fits. Change it any time."
+                  }
+                }
+              },
+              {
+                "type": "buildr/grid",
+                "children": [
+                  {
+                    "type": "buildr/card",
+                    "props": {
+                      "variant": {
+                        "kind": "static",
+                        "value": "outlined"
+                      }
+                    },
+                    "name": "Starter",
+                    "slots": {
+                      "body": [
+                        {
+                          "type": "buildr/heading",
+                          "props": {
+                            "text": {
+                              "kind": "static",
+                              "value": "Starter"
+                            },
+                            "level": {
+                              "kind": "static",
+                              "value": 3
+                            }
+                          }
+                        },
+                        {
+                          "type": "buildr/stack",
+                          "children": [
+                            {
+                              "type": "buildr/text",
+                              "props": {
+                                "text": {
+                                  "kind": "static",
+                                  "value": "$0"
+                                }
+                              },
+                              "styles": {
+                                "base": {
+                                  "typography": {
+                                    "fontSize": "$fontSize.4xl",
+                                    "fontWeight": "$fontWeight.bold"
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "type": "buildr/text",
+                              "props": {
+                                "text": {
+                                  "kind": "static",
+                                  "value": "per month"
+                                }
+                              },
+                              "styles": {
+                                "base": {
+                                  "typography": {
+                                    "color": "$color.text-muted"
+                                  }
+                                }
+                              }
+                            }
+                          ],
+                          "styles": {
+                            "base": {
+                              "layout": {
+                                "gap": "$space.1"
+                              }
+                            }
+                          },
+                          "name": "Price"
+                        },
+                        {
+                          "type": "buildr/list",
+                          "props": {
+                            "ariaLabel": {
+                              "kind": "static",
+                              "value": "Included"
+                            }
+                          },
+                          "children": [
+                            {
+                              "type": "buildr/list-item",
+                              "props": {
+                                "text": {
+                                  "kind": "static",
+                                  "value": "One feature"
+                                }
+                              }
+                            },
+                            {
+                              "type": "buildr/list-item",
+                              "props": {
+                                "text": {
+                                  "kind": "static",
+                                  "value": "Another feature"
+                                }
+                              }
+                            },
+                            {
+                              "type": "buildr/list-item",
+                              "props": {
+                                "text": {
+                                  "kind": "static",
+                                  "value": "A third feature"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ],
+                      "actions": [
+                        {
+                          "type": "buildr/button",
+                          "props": {
+                            "label": {
+                              "kind": "static",
+                              "value": "Choose Starter"
+                            },
+                            "variant": {
+                              "kind": "static",
+                              "value": "outline"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "buildr/card",
+                    "props": {
+                      "variant": {
+                        "kind": "static",
+                        "value": "elevated"
+                      }
+                    },
+                    "name": "Team",
+                    "slots": {
+                      "body": [
+                        {
+                          "type": "buildr/badge",
+                          "props": {
+                            "text": {
+                              "kind": "static",
+                              "value": "Most popular"
+                            },
+                            "variant": {
+                              "kind": "static",
+                              "value": "primary"
+                            }
+                          }
+                        },
+                        {
+                          "type": "buildr/heading",
+                          "props": {
+                            "text": {
+                              "kind": "static",
+                              "value": "Team"
+                            },
+                            "level": {
+                              "kind": "static",
+                              "value": 3
+                            }
+                          }
+                        },
+                        {
+                          "type": "buildr/stack",
+                          "children": [
+                            {
+                              "type": "buildr/text",
+                              "props": {
+                                "text": {
+                                  "kind": "static",
+                                  "value": "$29"
+                                }
+                              },
+                              "styles": {
+                                "base": {
+                                  "typography": {
+                                    "fontSize": "$fontSize.4xl",
+                                    "fontWeight": "$fontWeight.bold"
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "type": "buildr/text",
+                              "props": {
+                                "text": {
+                                  "kind": "static",
+                                  "value": "per month"
+                                }
+                              },
+                              "styles": {
+                                "base": {
+                                  "typography": {
+                                    "color": "$color.text-muted"
+                                  }
+                                }
+                              }
+                            }
+                          ],
+                          "styles": {
+                            "base": {
+                              "layout": {
+                                "gap": "$space.1"
+                              }
+                            }
+                          },
+                          "name": "Price"
+                        },
+                        {
+                          "type": "buildr/list",
+                          "props": {
+                            "ariaLabel": {
+                              "kind": "static",
+                              "value": "Included"
+                            }
+                          },
+                          "children": [
+                            {
+                              "type": "buildr/list-item",
+                              "props": {
+                                "text": {
+                                  "kind": "static",
+                                  "value": "Everything in Starter"
+                                }
+                              }
+                            },
+                            {
+                              "type": "buildr/list-item",
+                              "props": {
+                                "text": {
+                                  "kind": "static",
+                                  "value": "A team feature"
+                                }
+                              }
+                            },
+                            {
+                              "type": "buildr/list-item",
+                              "props": {
+                                "text": {
+                                  "kind": "static",
+                                  "value": "Priority support"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ],
+                      "actions": [
+                        {
+                          "type": "buildr/button",
+                          "props": {
+                            "label": {
+                              "kind": "static",
+                              "value": "Choose Team"
+                            },
+                            "variant": {
+                              "kind": "static",
+                              "value": "primary"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "buildr/card",
+                    "props": {
+                      "variant": {
+                        "kind": "static",
+                        "value": "outlined"
+                      }
+                    },
+                    "name": "Company",
+                    "slots": {
+                      "body": [
+                        {
+                          "type": "buildr/heading",
+                          "props": {
+                            "text": {
+                              "kind": "static",
+                              "value": "Company"
+                            },
+                            "level": {
+                              "kind": "static",
+                              "value": 3
+                            }
+                          }
+                        },
+                        {
+                          "type": "buildr/stack",
+                          "children": [
+                            {
+                              "type": "buildr/text",
+                              "props": {
+                                "text": {
+                                  "kind": "static",
+                                  "value": "$99"
+                                }
+                              },
+                              "styles": {
+                                "base": {
+                                  "typography": {
+                                    "fontSize": "$fontSize.4xl",
+                                    "fontWeight": "$fontWeight.bold"
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "type": "buildr/text",
+                              "props": {
+                                "text": {
+                                  "kind": "static",
+                                  "value": "per month"
+                                }
+                              },
+                              "styles": {
+                                "base": {
+                                  "typography": {
+                                    "color": "$color.text-muted"
+                                  }
+                                }
+                              }
+                            }
+                          ],
+                          "styles": {
+                            "base": {
+                              "layout": {
+                                "gap": "$space.1"
+                              }
+                            }
+                          },
+                          "name": "Price"
+                        },
+                        {
+                          "type": "buildr/list",
+                          "props": {
+                            "ariaLabel": {
+                              "kind": "static",
+                              "value": "Included"
+                            }
+                          },
+                          "children": [
+                            {
+                              "type": "buildr/list-item",
+                              "props": {
+                                "text": {
+                                  "kind": "static",
+                                  "value": "Everything in Team"
+                                }
+                              }
+                            },
+                            {
+                              "type": "buildr/list-item",
+                              "props": {
+                                "text": {
+                                  "kind": "static",
+                                  "value": "A company feature"
+                                }
+                              }
+                            },
+                            {
+                              "type": "buildr/list-item",
+                              "props": {
+                                "text": {
+                                  "kind": "static",
+                                  "value": "A dedicated contact"
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ],
+                      "actions": [
+                        {
+                          "type": "buildr/button",
+                          "props": {
+                            "label": {
+                              "kind": "static",
+                              "value": "Choose Company"
+                            },
+                            "variant": {
+                              "kind": "static",
+                              "value": "outline"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "styles": {
+                  "base": {
+                    "layout": {
+                      "columns": 3,
+                      "gap": "$space.6"
+                    }
+                  },
+                  "bp": {
+                    "tablet": {
+                      "layout": {
+                        "columns": 1
+                      }
+                    },
+                    "mobile": {
+                      "layout": {
+                        "columns": 1
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "styles": {
+              "base": {
+                "layout": {
+                  "gap": "$space.8"
+                }
+              }
+            }
+          }
+        ],
+        "styles": {
+          "base": {
+            "spacing": {
+              "padding": {
+                "top": "$space.16",
+                "bottom": "$space.16"
+              }
+            }
+          },
+          "bp": {
+            "mobile": {
+              "spacing": {
+                "padding": {
+                  "top": "$space.8",
+                  "bottom": "$space.8"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "buildr/faq": {
+      "id": "buildr/faq",
+      "version": 1,
+      "label": "FAQ",
+      "category": "marketing",
+      "thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'%3E%3Cpath fill='%23d1d5db' d='M50 8h60v7h-60zM24 26h112v11h-112zM24 42h112v11h-112zM24 58h112v11h-112zM24 74h112v11h-112zM30 30h50v3h-50z'/%3E%3C/svg%3E",
+      "lock": "none",
+      "tree": {
+        "type": "buildr/section",
+        "props": {
+          "container": {
+            "kind": "static",
+            "value": "md"
+          }
+        },
+        "children": [
+          {
+            "type": "buildr/stack",
+            "children": [
+              {
+                "type": "buildr/heading",
+                "props": {
+                  "text": {
+                    "kind": "static",
+                    "value": "Frequently asked questions"
+                  },
+                  "level": {
+                    "kind": "static",
+                    "value": 2
+                  }
+                }
+              },
+              {
+                "type": "buildr/accordion",
+                "children": [
+                  {
+                    "type": "buildr/accordion-item",
+                    "props": {
+                      "summary": {
+                        "kind": "static",
+                        "value": "What is this?"
+                      },
+                      "defaultOpen": {
+                        "kind": "static",
+                        "value": true
+                      }
+                    },
+                    "children": [
+                      {
+                        "type": "buildr/text",
+                        "props": {
+                          "text": {
+                            "kind": "static",
+                            "value": "A short, direct answer."
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "buildr/accordion-item",
+                    "props": {
+                      "summary": {
+                        "kind": "static",
+                        "value": "How much does it cost?"
+                      },
+                      "defaultOpen": {
+                        "kind": "static",
+                        "value": false
+                      }
+                    },
+                    "children": [
+                      {
+                        "type": "buildr/text",
+                        "props": {
+                          "text": {
+                            "kind": "static",
+                            "value": "A short, direct answer."
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "buildr/accordion-item",
+                    "props": {
+                      "summary": {
+                        "kind": "static",
+                        "value": "Can I change my mind?"
+                      },
+                      "defaultOpen": {
+                        "kind": "static",
+                        "value": false
+                      }
+                    },
+                    "children": [
+                      {
+                        "type": "buildr/text",
+                        "props": {
+                          "text": {
+                            "kind": "static",
+                            "value": "A short, direct answer."
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "buildr/accordion-item",
+                    "props": {
+                      "summary": {
+                        "kind": "static",
+                        "value": "Who do I ask for help?"
+                      },
+                      "defaultOpen": {
+                        "kind": "static",
+                        "value": false
+                      }
+                    },
+                    "children": [
+                      {
+                        "type": "buildr/text",
+                        "props": {
+                          "text": {
+                            "kind": "static",
+                            "value": "A short, direct answer."
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "styles": {
+              "base": {
+                "layout": {
+                  "gap": "$space.6"
+                }
+              }
+            }
+          }
+        ],
+        "styles": {
+          "base": {
+            "spacing": {
+              "padding": {
+                "top": "$space.16",
+                "bottom": "$space.16"
+              }
+            }
+          },
+          "bp": {
+            "mobile": {
+              "spacing": {
+                "padding": {
+                  "top": "$space.8",
+                  "bottom": "$space.8"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "buildr/contact": {
+      "id": "buildr/contact",
+      "version": 1,
+      "label": "Contact",
+      "category": "marketing",
+      "thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'%3E%3Cpath fill='%23d1d5db' d='M10 22h56v8h-56zM10 38h50v4h-50zM10 46h44v4h-44z'/%3E%3Cpath fill='%239ca3af' d='M84 18h66v10h-66zM84 34h66v10h-66zM84 50h66v22h-66z'/%3E%3Cpath fill='%232563eb' d='M84 78h26v9h-26z'/%3E%3C/svg%3E",
+      "lock": "none",
+      "tree": {
+        "type": "buildr/section",
+        "props": {
+          "container": {
+            "kind": "static",
+            "value": "lg"
+          }
+        },
+        "children": [
+          {
+            "type": "buildr/grid",
+            "children": [
+              {
+                "type": "buildr/stack",
+                "children": [
+                  {
+                    "type": "buildr/heading",
+                    "props": {
+                      "text": {
+                        "kind": "static",
+                        "value": "Get in touch"
+                      },
+                      "level": {
+                        "kind": "static",
+                        "value": 2
+                      }
+                    }
+                  },
+                  {
+                    "type": "buildr/text",
+                    "props": {
+                      "text": {
+                        "kind": "static",
+                        "value": "Tell us a little about what you need and we will reply within two working days."
+                      }
+                    }
+                  }
+                ],
+                "styles": {
+                  "base": {
+                    "layout": {
+                      "gap": "$space.4"
+                    }
+                  }
+                },
+                "name": "Intro"
+              },
+              {
+                "type": "buildr/form",
+                "name": "Contact form",
+                "props": {
+                  "ariaLabel": {
+                    "kind": "static",
+                    "value": "Contact us"
+                  }
+                },
+                "styles": {
+                  "base": {
+                    "layout": {
+                      "gap": "$space.4"
+                    }
+                  }
+                },
+                "children": [
+                  {
+                    "type": "buildr/input",
+                    "props": {
+                      "label": {
+                        "kind": "static",
+                        "value": "Name"
+                      },
+                      "name": {
+                        "kind": "static",
+                        "value": "name"
+                      },
+                      "required": {
+                        "kind": "static",
+                        "value": true
+                      }
+                    }
+                  },
+                  {
+                    "type": "buildr/input",
+                    "props": {
+                      "label": {
+                        "kind": "static",
+                        "value": "Email"
+                      },
+                      "name": {
+                        "kind": "static",
+                        "value": "email"
+                      },
+                      "type": {
+                        "kind": "static",
+                        "value": "email"
+                      },
+                      "required": {
+                        "kind": "static",
+                        "value": true
+                      }
+                    }
+                  },
+                  {
+                    "type": "buildr/textarea",
+                    "props": {
+                      "label": {
+                        "kind": "static",
+                        "value": "Message"
+                      },
+                      "name": {
+                        "kind": "static",
+                        "value": "message"
+                      },
+                      "required": {
+                        "kind": "static",
+                        "value": true
+                      },
+                      "maxLength": {
+                        "kind": "static",
+                        "value": 2000
+                      }
+                    }
+                  },
+                  {
+                    "type": "buildr/checkbox",
+                    "props": {
+                      "label": {
+                        "kind": "static",
+                        "value": "Send me a copy"
+                      },
+                      "name": {
+                        "kind": "static",
+                        "value": "copy"
+                      }
+                    }
+                  },
+                  {
+                    "type": "buildr/button",
+                    "props": {
+                      "label": {
+                        "kind": "static",
+                        "value": "Send message"
+                      },
+                      "type": {
+                        "kind": "static",
+                        "value": "submit"
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "styles": {
+              "base": {
+                "layout": {
+                  "columns": 2,
+                  "gap": "$space.12"
+                }
+              },
+              "bp": {
+                "tablet": {
+                  "layout": {
+                    "columns": 1
+                  }
+                },
+                "mobile": {
+                  "layout": {
+                    "columns": 1
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "styles": {
+          "base": {
+            "spacing": {
+              "padding": {
+                "top": "$space.16",
+                "bottom": "$space.16"
+              }
+            }
+          },
+          "bp": {
+            "mobile": {
+              "spacing": {
+                "padding": {
+                  "top": "$space.8",
+                  "bottom": "$space.8"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "buildr/post-header": {
+      "id": "buildr/post-header",
+      "version": 1,
+      "label": "Post header",
+      "category": "blog",
+      "thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'%3E%3Cpath fill='%23d1d5db' d='M30 12h100v9h-100zM56 28h48v4h-48z'/%3E%3Cpath fill='%239ca3af' d='M20 40h120v48h-120z'/%3E%3C/svg%3E",
+      "lock": "none",
+      "tree": {
+        "type": "buildr/section",
+        "props": {
+          "container": {
+            "kind": "static",
+            "value": "md"
+          }
+        },
+        "children": [
+          {
+            "type": "buildr/stack",
+            "children": [
+              {
+                "type": "buildr/heading",
+                "props": {
+                  "text": {
+                    "kind": "binding",
+                    "path": "post.title",
+                    "fallback": "Untitled"
+                  },
+                  "level": {
+                    "kind": "static",
+                    "value": 1
+                  }
+                },
+                "styles": {
+                  "bp": {
+                    "tablet": {
+                      "typography": {
+                        "fontSize": "$fontSize.4xl"
+                      }
+                    },
+                    "mobile": {
+                      "typography": {
+                        "fontSize": "$fontSize.3xl"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "buildr/text",
+                "props": {
+                  "text": {
+                    "kind": "binding",
+                    "path": "post.publishedAt",
+                    "format": {
+                      "type": "date",
+                      "style": "long"
+                    }
+                  }
+                },
+                "styles": {
+                  "base": {
+                    "typography": {
+                      "color": "$color.text-muted"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "buildr/image",
+                "props": {
+                  "image": {
+                    "kind": "binding",
+                    "path": "post.featuredImage"
+                  },
+                  "sizes": {
+                    "kind": "static",
+                    "value": "full"
+                  }
+                },
+                "name": "Featured image",
+                "styles": {
+                  "base": {
+                    "size": {
+                      "width": "100%"
+                    },
+                    "border": {
+                      "radius": {
+                        "topLeft": "$radius.md",
+                        "topRight": "$radius.md",
+                        "bottomRight": "$radius.md",
+                        "bottomLeft": "$radius.md"
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "styles": {
+              "base": {
+                "layout": {
+                  "gap": "$space.4"
+                }
+              }
+            }
+          }
+        ],
+        "styles": {
+          "base": {
+            "spacing": {
+              "padding": {
+                "top": "$space.16",
+                "bottom": "$space.16"
+              }
+            }
+          },
+          "bp": {
+            "mobile": {
+              "spacing": {
+                "padding": {
+                  "top": "$space.8",
+                  "bottom": "$space.8"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "buildr/post-content": {
+      "id": "buildr/post-content",
+      "version": 1,
+      "label": "Post content",
+      "category": "blog",
+      "thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'%3E%3Cpath fill='%23d1d5db' d='M30 14h60v7h-60zM30 30h100v4h-100zM30 40h100v4h-100zM30 50h92v4h-92zM30 66h100v4h-100zM30 76h70v4h-70z'/%3E%3C/svg%3E",
+      "lock": "none",
+      "tree": {
+        "type": "buildr/section",
+        "props": {
+          "container": {
+            "kind": "static",
+            "value": "sm"
+          }
+        },
+        "children": [
+          {
+            "type": "buildr/rich-text",
+            "props": {
+              "content": {
+                "kind": "binding",
+                "path": "post.content"
+              }
+            },
+            "name": "Article"
+          }
+        ],
+        "styles": {
+          "base": {
+            "spacing": {
+              "padding": {
+                "top": "$space.16",
+                "bottom": "$space.16"
+              }
+            }
+          },
+          "bp": {
+            "mobile": {
+              "spacing": {
+                "padding": {
+                  "top": "$space.8",
+                  "bottom": "$space.8"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "buildr/author-box": {
+      "id": "buildr/author-box",
+      "version": 1,
+      "label": "Author box",
+      "category": "blog",
+      "thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'%3E%3Cpath fill='%23d1d5db' d='M20 26h120v48h-120zM64 36h46v5h-46zM64 47h34v4h-34zM64 56h66v4h-66z'/%3E%3Cpath fill='%239ca3af' d='M28 34h26v26h-26z'/%3E%3C/svg%3E",
+      "lock": "none",
+      "tree": {
+        "type": "buildr/section",
+        "props": {
+          "container": {
+            "kind": "static",
+            "value": "md"
+          },
+          "as": {
+            "kind": "static",
+            "value": "aside"
+          },
+          "ariaLabel": {
+            "kind": "static",
+            "value": "About the author"
+          }
+        },
+        "children": [
+          {
+            "type": "buildr/card",
+            "props": {
+              "variant": {
+                "kind": "static",
+                "value": "flat"
+              },
+              "as": {
+                "kind": "static",
+                "value": "div"
+              }
+            },
+            "slots": {
+              "media": [
+                {
+                  "type": "buildr/image",
+                  "props": {
+                    "image": {
+                      "kind": "binding",
+                      "path": "post.author.avatar"
+                    },
+                    "sizes": {
+                      "kind": "static",
+                      "value": "quarter"
+                    }
+                  },
+                  "name": "Avatar",
+                  "styles": {
+                    "base": {
+                      "size": {
+                        "width": "4rem",
+                        "height": "4rem"
+                      },
+                      "border": {
+                        "radius": {
+                          "topLeft": "$radius.full",
+                          "topRight": "$radius.full",
+                          "bottomRight": "$radius.full",
+                          "bottomLeft": "$radius.full"
+                        }
+                      }
+                    }
+                  }
+                }
+              ],
+              "body": [
+                {
+                  "type": "buildr/stack",
+                  "children": [
+                    {
+                      "type": "buildr/text",
+                      "props": {
+                        "text": {
+                          "kind": "binding",
+                          "path": "post.author.name"
+                        }
+                      },
+                      "styles": {
+                        "base": {
+                          "typography": {
+                            "fontWeight": "$fontWeight.semibold"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "buildr/text",
+                      "props": {
+                        "text": {
+                          "kind": "binding",
+                          "path": "post.author.jobTitle"
+                        }
+                      },
+                      "styles": {
+                        "base": {
+                          "typography": {
+                            "color": "$color.text-muted",
+                            "fontSize": "$fontSize.sm"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "buildr/text",
+                      "props": {
+                        "text": {
+                          "kind": "binding",
+                          "path": "post.author.bio"
+                        }
+                      }
+                    }
+                  ],
+                  "styles": {
+                    "base": {
+                      "layout": {
+                        "gap": "$space.1"
+                      }
+                    }
+                  },
+                  "name": "About"
+                }
+              ]
+            }
+          }
+        ],
+        "styles": {
+          "base": {
+            "spacing": {
+              "padding": {
+                "top": "$space.16",
+                "bottom": "$space.16"
+              }
+            }
+          },
+          "bp": {
+            "mobile": {
+              "spacing": {
+                "padding": {
+                  "top": "$space.8",
+                  "bottom": "$space.8"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "buildr/post-card": {
+      "id": "buildr/post-card",
+      "version": 1,
+      "label": "Post card",
+      "category": "blog",
+      "thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'%3E%3Cpath fill='%23d1d5db' d='M40 8h80v84h-80zM48 52h56v6h-56zM48 64h64v4h-64zM48 72h48v4h-48z'/%3E%3Cpath fill='%239ca3af' d='M44 12h72v34h-72z'/%3E%3C/svg%3E",
+      "lock": "none",
+      "tree": {
+        "type": "buildr/card",
+        "props": {
+          "href": {
+            "kind": "binding",
+            "path": "item.path"
+          },
+          "linkLabel": {
+            "kind": "binding",
+            "path": "item.title"
+          },
+          "variant": {
+            "kind": "static",
+            "value": "outlined"
+          }
+        },
+        "slots": {
+          "media": [
+            {
+              "type": "buildr/image",
+              "props": {
+                "image": {
+                  "kind": "binding",
+                  "path": "item.featuredImage"
+                },
+                "sizes": {
+                  "kind": "static",
+                  "value": "third"
+                }
+              },
+              "name": "Featured image"
+            }
+          ],
+          "body": [
+            {
+              "type": "buildr/heading",
+              "props": {
+                "text": {
+                  "kind": "binding",
+                  "path": "item.title"
+                },
+                "level": {
+                  "kind": "static",
+                  "value": 2
+                }
+              }
+            },
+            {
+              "type": "buildr/text",
+              "props": {
+                "text": {
+                  "kind": "binding",
+                  "path": "item.publishedAt",
+                  "format": {
+                    "type": "date",
+                    "style": "medium"
+                  }
+                }
+              },
+              "styles": {
+                "base": {
+                  "typography": {
+                    "color": "$color.text-muted",
+                    "fontSize": "$fontSize.sm"
+                  }
+                }
+              }
+            },
+            {
+              "type": "buildr/text",
+              "props": {
+                "text": {
+                  "kind": "binding",
+                  "path": "item.excerpt"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "buildr/blog-listing": {
+      "id": "buildr/blog-listing",
+      "version": 1,
+      "label": "Blog listing",
+      "category": "blog",
+      "thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'%3E%3Cpath fill='%23d1d5db' d='M10 8h40v8h-40zM10 26h44v52h-44zM60 26h44v52h-44zM110 26h44v52h-44zM62 86h36v6h-36z'/%3E%3Cpath fill='%239ca3af' d='M13 29h38v22h-38zM63 29h38v22h-38zM113 29h38v22h-38z'/%3E%3C/svg%3E",
+      "lock": "none",
+      "tree": {
+        "type": "buildr/section",
+        "props": {
+          "container": {
+            "kind": "static",
+            "value": "lg"
+          }
+        },
+        "children": [
+          {
+            "type": "buildr/stack",
+            "children": [
+              {
+                "type": "buildr/heading",
+                "props": {
+                  "text": {
+                    "kind": "static",
+                    "value": "Blog"
+                  },
+                  "level": {
+                    "kind": "static",
+                    "value": 1
+                  }
+                }
+              },
+              {
+                "type": "buildr/loop",
+                "name": "Posts",
+                "props": {
+                  "source": {
+                    "kind": "static",
+                    "value": {
+                      "type": "query",
+                      "spec": {
+                        "source": "posts",
+                        "limit": 6,
+                        "sort": [
+                          {
+                            "field": "publishedAt",
+                            "dir": "desc"
+                          }
+                        ],
+                        "page": {
+                          "kind": "binding",
+                          "path": "route.params.page",
+                          "fallback": 1
+                        }
+                      }
+                    }
+                  }
+                },
+                "styles": {
+                  "base": {
+                    "layout": {
+                      "display": "grid",
+                      "columns": 3,
+                      "gap": "$space.6"
+                    }
+                  },
+                  "bp": {
+                    "tablet": {
+                      "layout": {
+                        "columns": 2
+                      }
+                    },
+                    "mobile": {
+                      "layout": {
+                        "columns": 1
+                      }
+                    }
+                  }
+                },
+                "slots": {
+                  "item": [
+                    {
+                      "type": "buildr/card",
+                      "props": {
+                        "href": {
+                          "kind": "binding",
+                          "path": "item.path"
+                        },
+                        "linkLabel": {
+                          "kind": "binding",
+                          "path": "item.title"
+                        },
+                        "variant": {
+                          "kind": "static",
+                          "value": "outlined"
+                        }
+                      },
+                      "slots": {
+                        "media": [
+                          {
+                            "type": "buildr/image",
+                            "props": {
+                              "image": {
+                                "kind": "binding",
+                                "path": "item.featuredImage"
+                              },
+                              "sizes": {
+                                "kind": "static",
+                                "value": "third"
+                              }
+                            },
+                            "name": "Featured image"
+                          }
+                        ],
+                        "body": [
+                          {
+                            "type": "buildr/heading",
+                            "props": {
+                              "text": {
+                                "kind": "binding",
+                                "path": "item.title"
+                              },
+                              "level": {
+                                "kind": "static",
+                                "value": 2
+                              }
+                            }
+                          },
+                          {
+                            "type": "buildr/text",
+                            "props": {
+                              "text": {
+                                "kind": "binding",
+                                "path": "item.publishedAt",
+                                "format": {
+                                  "type": "date",
+                                  "style": "medium"
+                                }
+                              }
+                            },
+                            "styles": {
+                              "base": {
+                                "typography": {
+                                  "color": "$color.text-muted",
+                                  "fontSize": "$fontSize.sm"
+                                }
+                              }
+                            }
+                          },
+                          {
+                            "type": "buildr/text",
+                            "props": {
+                              "text": {
+                                "kind": "binding",
+                                "path": "item.excerpt"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "empty": [
+                    {
+                      "type": "buildr/text",
+                      "props": {
+                        "text": {
+                          "kind": "static",
+                          "value": "No posts yet."
+                        }
+                      }
+                    }
+                  ],
+                  "after": [
+                    {
+                      "type": "buildr/pagination",
+                      "props": {
+                        "page": {
+                          "kind": "binding",
+                          "path": "loop.page"
+                        },
+                        "totalPages": {
+                          "kind": "binding",
+                          "path": "loop.totalPages"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            "styles": {
+              "base": {
+                "layout": {
+                  "gap": "$space.8"
+                }
+              }
+            }
+          }
+        ],
+        "styles": {
+          "base": {
+            "spacing": {
+              "padding": {
+                "top": "$space.16",
+                "bottom": "$space.16"
+              }
+            }
+          },
+          "bp": {
+            "mobile": {
+              "spacing": {
+                "padding": {
+                  "top": "$space.8",
+                  "bottom": "$space.8"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "buildr/product-hero": {
+      "id": "buildr/product-hero",
+      "version": 1,
+      "label": "Product hero",
+      "category": "commerce",
+      "thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'%3E%3Cpath fill='%23d1d5db' d='M88 16h56v8h-56zM88 32h30v7h-30zM88 48h56v4h-56zM88 56h48v4h-48z'/%3E%3Cpath fill='%239ca3af' d='M10 12h66v76h-66z'/%3E%3Cpath fill='%232563eb' d='M88 72h32v9h-32z'/%3E%3C/svg%3E",
+      "lock": "none",
+      "tree": {
+        "type": "buildr/section",
+        "props": {
+          "container": {
+            "kind": "static",
+            "value": "lg"
+          }
+        },
+        "children": [
+          {
+            "type": "buildr/grid",
+            "children": [
+              {
+                "type": "buildr/loop",
+                "name": "Gallery",
+                "props": {
+                  "source": {
+                    "kind": "static",
+                    "value": {
+                      "type": "binding",
+                      "path": "product.images"
+                    }
+                  }
+                },
+                "styles": {
+                  "base": {
+                    "layout": {
+                      "display": "grid",
+                      "columns": 2,
+                      "gap": "$space.3"
+                    }
+                  },
+                  "bp": {
+                    "mobile": {
+                      "layout": {
+                        "columns": 1
+                      }
+                    }
+                  }
+                },
+                "slots": {
+                  "item": [
+                    {
+                      "type": "buildr/image",
+                      "props": {
+                        "image": {
+                          "kind": "binding",
+                          "path": "item"
+                        },
+                        "sizes": {
+                          "kind": "static",
+                          "value": "half"
+                        }
+                      },
+                      "styles": {
+                        "base": {
+                          "size": {
+                            "width": "100%"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "buildr/stack",
+                "children": [
+                  {
+                    "type": "buildr/heading",
+                    "props": {
+                      "text": {
+                        "kind": "binding",
+                        "path": "product.title",
+                        "fallback": "Product"
+                      },
+                      "level": {
+                        "kind": "static",
+                        "value": 1
+                      }
+                    },
+                    "styles": {
+                      "bp": {
+                        "tablet": {
+                          "typography": {
+                            "fontSize": "$fontSize.4xl"
+                          }
+                        },
+                        "mobile": {
+                          "typography": {
+                            "fontSize": "$fontSize.3xl"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "buildr/text",
+                    "props": {
+                      "text": {
+                        "kind": "expression",
+                        "expr": "formatCurrency(product.price, product.currency)",
+                        "mode": "formula"
+                      }
+                    },
+                    "styles": {
+                      "base": {
+                        "typography": {
+                          "fontSize": "$fontSize.2xl",
+                          "fontWeight": "$fontWeight.bold"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "buildr/text",
+                    "props": {
+                      "text": {
+                        "kind": "binding",
+                        "path": "product.shortDescription"
+                      }
+                    }
+                  },
+                  {
+                    "type": "buildr/stack",
+                    "children": [
+                      {
+                        "type": "buildr/button",
+                        "props": {
+                          "label": {
+                            "kind": "static",
+                            "value": "Buy now"
+                          },
+                          "size": {
+                            "kind": "static",
+                            "value": "lg"
+                          },
+                          "href": {
+                            "kind": "binding",
+                            "path": "product.buyUrl"
+                          }
+                        }
+                      }
+                    ],
+                    "styles": {
+                      "base": {
+                        "layout": {
+                          "direction": "row",
+                          "wrap": "wrap",
+                          "gap": "$space.3"
+                        }
+                      }
+                    },
+                    "name": "Actions"
+                  }
+                ],
+                "styles": {
+                  "base": {
+                    "layout": {
+                      "gap": "$space.4",
+                      "justify": "center"
+                    }
+                  }
+                },
+                "name": "Summary"
+              }
+            ],
+            "styles": {
+              "base": {
+                "layout": {
+                  "columns": 2,
+                  "gap": "$space.12"
+                }
+              },
+              "bp": {
+                "tablet": {
+                  "layout": {
+                    "columns": 1
+                  }
+                },
+                "mobile": {
+                  "layout": {
+                    "columns": 1
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "styles": {
+          "base": {
+            "spacing": {
+              "padding": {
+                "top": "$space.16",
+                "bottom": "$space.16"
+              }
+            }
+          },
+          "bp": {
+            "mobile": {
+              "spacing": {
+                "padding": {
+                  "top": "$space.8",
+                  "bottom": "$space.8"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "buildr/product-details": {
+      "id": "buildr/product-details",
+      "version": 1,
+      "label": "Product details",
+      "category": "commerce",
+      "thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'%3E%3Cpath fill='%23d1d5db' d='M30 12h100v4h-100zM30 22h100v4h-100zM30 32h76v4h-76zM80 52h40v4h-40zM80 64h40v4h-40zM80 76h40v4h-40z'/%3E%3Cpath fill='%239ca3af' d='M30 52h30v4h-30zM30 64h30v4h-30zM30 76h30v4h-30z'/%3E%3C/svg%3E",
+      "lock": "none",
+      "tree": {
+        "type": "buildr/section",
+        "props": {
+          "container": {
+            "kind": "static",
+            "value": "md"
+          }
+        },
+        "children": [
+          {
+            "type": "buildr/stack",
+            "children": [
+              {
+                "type": "buildr/rich-text",
+                "props": {
+                  "content": {
+                    "kind": "binding",
+                    "path": "product.description"
+                  }
+                }
+              },
+              {
+                "type": "buildr/heading",
+                "props": {
+                  "text": {
+                    "kind": "static",
+                    "value": "Details"
+                  },
+                  "level": {
+                    "kind": "static",
+                    "value": 2
+                  }
+                }
+              },
+              {
+                "type": "buildr/loop",
+                "name": "Attributes",
+                "props": {
+                  "source": {
+                    "kind": "static",
+                    "value": {
+                      "type": "binding",
+                      "path": "product.attributes"
+                    }
+                  }
+                },
+                "styles": {
+                  "base": {
+                    "layout": {
+                      "display": "grid",
+                      "columns": 1,
+                      "gap": "$space.2"
+                    }
+                  }
+                },
+                "slots": {
+                  "item": [
+                    {
+                      "type": "buildr/stack",
+                      "children": [
+                        {
+                          "type": "buildr/text",
+                          "props": {
+                            "text": {
+                              "kind": "binding",
+                              "path": "item.name"
+                            }
+                          },
+                          "styles": {
+                            "base": {
+                              "typography": {
+                                "fontWeight": "$fontWeight.semibold"
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "buildr/text",
+                          "props": {
+                            "text": {
+                              "kind": "binding",
+                              "path": "item.value"
+                            }
+                          }
+                        }
+                      ],
+                      "styles": {
+                        "base": {
+                          "layout": {
+                            "direction": "row",
+                            "gap": "$space.4",
+                            "justify": "space-between"
+                          },
+                          "border": {
+                            "width": {
+                              "bottom": "1px"
+                            },
+                            "style": "solid",
+                            "color": "$color.border"
+                          },
+                          "spacing": {
+                            "padding": {
+                              "bottom": "$space.2"
+                            }
+                          }
+                        }
+                      },
+                      "name": "Attribute"
+                    }
+                  ]
+                }
+              }
+            ],
+            "styles": {
+              "base": {
+                "layout": {
+                  "gap": "$space.6"
+                }
+              }
+            }
+          }
+        ],
+        "styles": {
+          "base": {
+            "spacing": {
+              "padding": {
+                "top": "$space.16",
+                "bottom": "$space.16"
+              }
+            }
+          },
+          "bp": {
+            "mobile": {
+              "spacing": {
+                "padding": {
+                  "top": "$space.8",
+                  "bottom": "$space.8"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

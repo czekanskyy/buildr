@@ -1,6 +1,6 @@
 # MCP server: building pages with AI agents
 
-> Status: the package scaffold, backend interface, server factory (PB-133) and edit sessions (PB-134) are implemented; the rest is skeleton. The decisions are recorded in [ADR-024](adr/ADR-024-mcp-server.md); the implementation lands in phase 14 ([backlog](backlog/phase-14-mcp-server.md)). Sections are filled in by the tasks named below.
+> Status: the package scaffold, backend interface, server factory (PB-133) edit sessions (PB-134) and agent-facing serialization (PB-135) are implemented; the rest is skeleton. The decisions are recorded in [ADR-024](adr/ADR-024-mcp-server.md); the implementation lands in phase 14 ([backlog](backlog/phase-14-mcp-server.md)). Sections are filled in by the tasks named below.
 
 A [Model Context Protocol](https://modelcontextprotocol.io) server that lets an AI agent discover the component catalogue, read and change a page **through the same commands the editor uses**, validate it and save it as a draft. The server never calls an LLM itself: it exposes tools, and the client brings the model.
 
@@ -143,6 +143,26 @@ buildrPlugin({
 - `GET /api/buildr/documents?collection&search&page` lists the builder documents the user may read (`documentListResponseSchema`: title, slug, status, `updatedAt`, `revision`, `layoutSource`, `previewPath`; 20 per page, newest first). `POST /api/buildr/documents` (`createDocumentRequestSchema`: `collection`, `title`, optional `slug` and template id) creates a **draft**, subject to collection access; it never publishes. Both exist only when `mcp.enabled`.
 - Every builder write (create, save, publish) records the acting user in the hidden `buildrUpdatedBy` field, which Payload keeps in each version, so history names the agent user. Writes by API-key requests are rate limited (`429` with `Retry-After`).
 - The schemas live in `packages/payload/src/contract.ts` and are shared with the HTTP backend (PB-140, `@buildr/payload/mcp`).
+
+## Serialization (agent-facing)
+
+Everything an agent reads or writes goes through `packages/mcp/src/serialize` (PB-135), exported from `@buildr/mcp`. The tools (PB-136 - PB-138) only compose these functions.
+
+| Function | Purpose |
+|---|---|
+| `renderOutline(doc, registry, opts)` / `outlineToJson` / `buildOutline` | Compact tree: `id type "name" "text" [l10n:..] [locked:..] [hidden] [if] [tpl:..]`, one line per node. Options: `nodeId` (zoom), `depth` (default 3), `maxNodes` (500), `maxChars` (30000), `locale`. Deeper or cut content is summarised as `(+N more)` / "output cut after N of M nodes", so a 1000-node page stays under 40k characters at depth 3. |
+| `describeNode` / `formatNodeDetail` | One node: every prop as a `Value` (plus the component default), styles per layer, attributes, lock, region, template origin, parent and slots. |
+| `describeComponent` / `formatComponentDescription` | Props schema, slots and what they allow, parent rules, style groups, a11y notes, a minimal valid example tree and where it can be inserted (`placement`). |
+| `parseTreeInput(registry, input)` | Validates an agent-written tree and returns the core `TreeNode` for `fromTree`. Reports every problem at once with valid alternatives (unknown type or prop or slot, "did you mean"). |
+| `createTreeInputSchema` / `treeInputJsonSchema` / `treeInputDefs` / `TREE_NODE_REF` | The described Zod schema and its JSON Schema (object root, recursion through `$defs.TreeNode`) for tool `inputSchema`s. |
+| `explainReason` / `explainCommandError` / `explainSessionError` / `formatAgentError` | Turn a core `Reason`, command error or session error into one sentence plus the nearest valid alternatives. Every `ReasonCode` and `command.*` code has an explainer (tests enforce it). |
+| `acceptsChild` / `allowedChildTypes` / `allowedParents` | "What can go where" from the registry. |
+
+Tree input accepts a plain JSON prop value as shorthand for a static `Value` (`{ "text": "Hi" }`); bindings and expressions use the full `{ kind: 'binding' | 'expression' }` form. `children` fills the default slot, `slots` names slots explicitly (not both). Components with `insertable: false` (list-item, accordion-item) are valid inside a tree but cannot be inserted alone: duplicate an existing one, or insert the parent tree.
+
+### Test fixture
+
+`@buildr/mcp` must not depend on `@buildr/components` (ADR-024), yet the snapshot tests cover every built-in component. The default manifest is committed as `packages/mcp/fixtures/default-manifest.json` and read by the test kit; `packages/components/src/mcp-manifest-fixture.test.ts` fails when it is stale. Regenerate with `UPDATE_MCP_FIXTURE=1 pnpm test --filter @buildr/components`.
 
 ## Tool reference
 
