@@ -59,6 +59,7 @@ export const loadEntry = cache(
       contextName: CONTEXT[collection],
       path: (doc) => pathOf(collection, String(doc['slug'] ?? slug), locale),
       depth: 1,
+      ...(page > 1 ? { page } : {}),
     });
     return entry === null ? null : { entry, draft, page };
   },

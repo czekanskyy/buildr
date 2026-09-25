@@ -209,3 +209,12 @@ Verified by hand against a local database: the editor opens, the canvas handshak
 - **Idempotent.** Every document is looked up by its natural key (slug, filename) and skipped when present; a second run creates nothing.
 - **Static, deterministic documents.** Page layouts are composed from `defaultTemplates` with a seeded id generator; the Polish text is the stored value and English rides along as `l10n.en`.
 - **Checked in tests.** `src/seed/documents.test.ts` asserts that every seeded document passes `validateDocument` and `runA11y` with zero issues (`expectH1: "document"`).
+
+## End-to-end tests of the example application (PB-112)
+
+`apps/example-next-payload/e2e` is a Playwright suite (`pnpm --filter @buildr/example-next-payload e2e`; CI job `E2E`). `playwright.config.ts` starts `e2e/serve.mjs`, which recreates a SQLite file (`e2e.db`), runs the seed with an administrator (`e2e@buildr.test`; a test-only account created from `SEED_ADMIN_EMAIL`/`SEED_ADMIN_PASSWORD`), builds the app and serves the production build on port 3100.
+
+- `public.spec.ts` — the six scenarios in `pl` and `en` (status, `<html lang>`, the heading), axe (WCAG 2 A/AA) on each, 404s, the redirect from `/`, hreflang + `x-default`, blog pagination, and that a static page loads no editor or canvas script.
+- `editor.spec.ts` — each test edits its own scratch page (a copy of the landing page created through the REST API, so the seed stays untouched): the canvas handshake, insert, undo/redo, autosave and reload, a mobile-only style, a data binding, translating a heading and seeing it on `/en/...`, and publishing to the live page. The tests wait on visible states (the canvas heading, the "Published." status) and poll the server, never on timeouts.
+
+Tests select by role and accessible name. `pnpm --filter @buildr/example-next-payload e2e --repeat-each=4` ran 164 tests with no failure.
