@@ -276,6 +276,8 @@ export const en = {
   'external.banner': 'A newer version of this page was saved.',
   'external.banner.by': '{name} saved a newer version of this page.',
   'external.reload': 'Reload the latest version',
+  'editor.canvas.width': '{name} · {width}px',
+  'editor.canvas.error.title': 'The page preview could not be shown',
 } as const;
 
 export type MessageKey = keyof typeof en;
