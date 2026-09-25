@@ -390,6 +390,9 @@ importers:
       '@buildr/editor':
         specifier: workspace:*
         version: link:../editor
+      '@buildr/mcp':
+        specifier: workspace:*
+        version: link:../mcp
       '@buildr/next':
         specifier: workspace:*
         version: link:../next

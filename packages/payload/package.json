@@ -25,6 +25,10 @@
       "types": "./src/next/index.ts",
       "default": "./src/next/index.ts"
     },
+    "./mcp": {
+      "types": "./src/mcp/index.ts",
+      "default": "./src/mcp/index.ts"
+    },
     "./package.json": "./package.json"
   },
   "publishConfig": {
@@ -50,6 +54,10 @@
         "types": "./dist/next/index.d.ts",
         "default": "./dist/next/index.js"
       },
+      "./mcp": {
+        "types": "./dist/mcp/index.d.ts",
+        "default": "./dist/mcp/index.js"
+      },
       "./package.json": "./package.json"
     }
   },
@@ -67,6 +75,7 @@
   },
   "peerDependencies": {
     "@buildr/editor": "workspace:*",
+    "@buildr/mcp": "workspace:*",
     "@buildr/next": "workspace:*",
     "@payloadcms/ui": "^3.0.0",
     "next": "^15.0.0 || ^16.0.0",
@@ -74,6 +83,9 @@
   },
   "peerDependenciesMeta": {
     "@buildr/editor": {
+      "optional": true
+    },
+    "@buildr/mcp": {
       "optional": true
     },
     "@buildr/next": {
@@ -91,6 +103,7 @@
   },
   "devDependencies": {
     "@buildr/editor": "workspace:*",
+    "@buildr/mcp": "workspace:*",
     "@buildr/next": "workspace:*",
     "@buildr/test-utils": "workspace:*",
     "@buildr/tsconfig": "workspace:*",
