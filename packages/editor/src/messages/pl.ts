@@ -254,6 +254,7 @@ export const pl: Messages = {
   'layers.menu.delete': 'Usuń',
   'layers.menu.wrap': 'Opakuj w kontener',
   'layers.menu.unwrap': 'Rozpakuj',
+  'layers.more': 'Więcej akcji',
   'editor.issues': 'Problemy',
   'editor.breadcrumbs': 'Ścieżka zaznaczenia',
   'editor.issues.show': 'Pokaż problemy',

@@ -106,6 +106,7 @@ const EDITOR_ICONS = {
   'chevron-down': ChevronDown,
   'chevron-right': ChevronRight,
   'circle-alert': CircleAlert,
+  ellipsis: Ellipsis,
   eye: Eye,
   link: Link,
   list: List,
