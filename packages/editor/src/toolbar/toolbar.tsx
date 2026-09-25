@@ -4,6 +4,7 @@ import { SaveStatus, usePersistenceState } from '../persistence/index.ts';
 import { useShortcutHint } from '../shortcuts/index.ts';
 import { useEditor, useEditorState } from '../store/index.ts';
 import { Button, Icon, IconButton } from '../ui/index.ts';
+import { PanelToggle } from './panel-toggles.tsx';
 
 const BREAKPOINT_LABELS: Readonly<Record<string, MessageKey>> = {
   desktop: 'toolbar.breakpoint.desktop',
@@ -47,6 +48,7 @@ export function Toolbar(props: ToolbarProps) {
 
   return (
     <>
+      <PanelToggle side="left" />
       {props.cmsUrl !== undefined && (
         <a className="bd-button bd-toolbar-link" href={props.cmsUrl}>
           <Icon name="arrow-left" /> {t('toolbar.back')}
@@ -109,6 +111,7 @@ export function Toolbar(props: ToolbarProps) {
       >
         {t('toolbar.publish')}
       </Button>
+      <PanelToggle side="right" />
     </>
   );
 }
