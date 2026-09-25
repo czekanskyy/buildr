@@ -7,12 +7,16 @@ import * as matchers from 'vitest-axe/matchers';
 import { MessagesProvider } from '../messages/index.tsx';
 import {
   Button,
+  ColorSwatch,
   Dialog,
   IconButton,
   Input,
+  NumberUnitInput,
   Popover,
   PortalContainerProvider,
+  SegmentedControl,
   Select,
+  stepNumberText,
   Tabs,
   Toggle,
 } from './index.ts';
@@ -211,5 +215,68 @@ describe('UI primitives', () => {
     const trigger = container.querySelector('button');
     expect(trigger?.getAttribute('aria-label')).toBe('Breakpoint');
     expect(trigger?.textContent).toContain('Tablet');
+  });
+
+  it('SegmentedControl: exclusive pressed state, icon-only names, axe', async () => {
+    const onValueChange = vi.fn();
+    await show(
+      <SegmentedControl
+        label="Direction"
+        value="row"
+        onValueChange={onValueChange}
+        options={[
+          { value: 'row', label: 'Row', icon: 'arrow-right', iconOnly: true },
+          { value: 'column', label: 'Column', icon: 'arrow-down', iconOnly: true },
+        ]}
+      />,
+    );
+    const [row, column] = container.querySelectorAll('button');
+    expect(container.querySelector('fieldset')?.getAttribute('aria-label')).toBe('Direction');
+    expect(row?.getAttribute('aria-pressed')).toBe('true');
+    expect(column?.getAttribute('aria-pressed')).toBe('false');
+    expect(column?.getAttribute('aria-label')).toBe('Column');
+    await act(async () => column?.click());
+    expect(onValueChange).toHaveBeenCalledWith('column');
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it('NumberUnitInput: arrows step, Shift takes ten, bare numbers stay bare', async () => {
+    const onValueChange = vi.fn();
+    await show(
+      <NumberUnitInput
+        value="10px"
+        onValueChange={onValueChange}
+        units={['px', 'rem']}
+        unitLabel="Unit"
+        ariaLabel="Gap"
+      />,
+    );
+    const input = container.querySelector('input') as HTMLInputElement;
+    const key = (init: KeyboardEventInit) =>
+      act(async () => {
+        input.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, ...init }));
+      });
+    await key({ key: 'ArrowUp' });
+    await key({ key: 'ArrowDown', shiftKey: true });
+    expect(onValueChange.mock.calls).toEqual([['11px'], ['0px']]);
+    expect(container.querySelector('.bd-select-trigger')?.textContent).toContain('px');
+    expect(stepNumberText('0.5', 0.1, '')).toBe('0.6');
+    expect(stepNumberText('', 1, 'px')).toBe('1px');
+    expect(stepNumberText('auto', 1, 'px')).toBeUndefined();
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it('ColorSwatch paints only colour notations, never raw CSS', async () => {
+    await show(
+      <>
+        <ColorSwatch color="#3f5ae0" />
+        <ColorSwatch color="url(https://x.test/a.png)" />
+        <ColorSwatch color={undefined} />
+      </>,
+    );
+    const [ok, bad, none] = [...container.querySelectorAll('.bd-swatch')] as HTMLElement[];
+    expect(ok?.style.backgroundColor).not.toBe('');
+    expect(bad?.getAttribute('style')).toBeNull();
+    expect(none?.hasAttribute('data-empty')).toBe(true);
   });
 });

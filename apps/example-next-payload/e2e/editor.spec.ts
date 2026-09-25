@@ -100,7 +100,10 @@ test('a style set on mobile does not leak to desktop', async ({ scratch }) => {
     .evaluate((d: HTMLDetailsElement) => {
       d.open = true;
     });
-  await page.getByRole('combobox', { name: 'Text align' }).selectOption('right');
+  await page
+    .getByRole('group', { name: 'Text align' })
+    .getByRole('button', { name: 'right' })
+    .click();
   const align = () => heading.evaluate((element) => getComputedStyle(element).textAlign);
   await expect.poll(align).toBe('right');
   await page.getByRole('button', { name: 'Desktop' }).click();

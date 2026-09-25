@@ -212,6 +212,15 @@ describe('value modes in the inspector', () => {
     expect(title().textContent).toContain('This field does not exist');
   });
 
+  it('shows the mode switch as a segmented control with icons, and the field list with type icons', async () => {
+    await mount({ title: { kind: 'binding', path: 'post.title' } });
+    const modes = title().querySelector('.bd-value-modes.bd-segmented');
+    expect(modes?.tagName).toBe('FIELDSET');
+    expect(modes?.querySelectorAll('svg')).toHaveLength(3);
+    expect(title().querySelector('.bd-value-field-icon')).not.toBeNull();
+    expect(title().querySelector('.bd-value-preview.bd-card')).not.toBeNull();
+  });
+
   it('switching back to Fixed restores a static value', async () => {
     const store = await mount({ title: { kind: 'binding', path: 'post.title' } });
     await click(button('Fixed'));

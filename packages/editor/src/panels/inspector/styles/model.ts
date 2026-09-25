@@ -75,3 +75,57 @@ export function isEnumeration(def: StylePropertyDef): boolean {
 /** The layer a breakpoint id edits: desktop is `{}`. */
 export const layerFor = (breakpoint: string | undefined) =>
   breakpoint === undefined || breakpoint === 'base' ? {} : { bp: breakpoint };
+
+/** The units the property's grammar allows, and nothing else: they are all the unit menu offers. */
+export function unitsOf(def: StylePropertyDef): readonly string[] {
+  const grammar = def.grammar;
+  return grammar.kind === 'composite' ? (grammar.length?.units ?? []) : [];
+}
+
+/** Whether the grammar takes a bare number (`opacity`, `lineHeight`) rather than only lengths. */
+export function takesNumber(def: StylePropertyDef): boolean {
+  const grammar = def.grammar;
+  return grammar.kind === 'composite' && grammar.number !== undefined;
+}
+
+/** How much an arrow key adds: a fraction where the number is confined to a small range. */
+export function stepOf(def: StylePropertyDef): number {
+  const grammar = def.grammar;
+  if (grammar.kind !== 'composite' || grammar.number === undefined) return 1;
+  if (grammar.length !== undefined) return 1;
+  return grammar.number.max - grammar.number.min <= 10 && grammar.number.integer !== true ? 0.1 : 1;
+}
+
+/** Whether the property is edited as a number (with a unit menu) rather than as free keyword text. */
+export function isNumeric(def: StylePropertyDef): boolean {
+  return unitsOf(def).length > 0 || takesNumber(def);
+}
+
+export interface TokenEntry {
+  readonly ref: string;
+  readonly scale: string;
+  readonly name: string;
+  /** What the token stands for in this theme: a colour, a length, a font stack. */
+  readonly value: string;
+}
+
+/** The tokens a property accepts in this theme, with their values, for the picker. */
+export function tokenEntries(def: StylePropertyDef, theme: Theme): TokenEntry[] {
+  const out: TokenEntry[] = [];
+  for (const scale of def.tokenScale ?? []) {
+    for (const [name, value] of Object.entries(theme.tokens[scale])) {
+      out.push({ ref: `$${scale}.${name}`, scale, name, value: String(value) });
+    }
+  }
+  return out;
+}
+
+/** The colour a text stands for, to paint a swatch: a token of the theme or a literal colour. */
+export function colorOf(def: StylePropertyDef, text: string, theme: Theme): string | undefined {
+  if (def.grammar.kind !== 'color') return undefined;
+  if (text.startsWith('$')) {
+    const known = resolveTokenRef(theme, text);
+    return known.ok && known.value.scale === 'color' ? known.value.value : undefined;
+  }
+  return text;
+}

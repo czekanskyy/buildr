@@ -961,3 +961,186 @@
 .bd-media-preview img {
   object-fit: cover;
 }
+
+/* --- Style inspector and value editor controls (PB-128) ----------------------------------- */
+.buildr-editor .bd-style-field {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--bd-space-1);
+}
+.buildr-editor .bd-style-head {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-space-2);
+  min-height: var(--bd-control-sm);
+}
+.buildr-editor .bd-style-head > :first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.buildr-editor .bd-style-head .bd-field-reset {
+  flex: 0 0 auto;
+}
+.buildr-editor .bd-source-dot {
+  flex: 0 0 auto;
+  width: var(--bd-space-3);
+  height: var(--bd-space-3);
+  border-radius: var(--bd-radius-pill);
+  border: var(--bd-border-width) solid var(--bd-border-strong);
+  background: transparent;
+}
+.buildr-editor .bd-source-dot[data-origin="set"] {
+  border-color: var(--bd-accent);
+  background: var(--bd-accent);
+}
+.buildr-editor .bd-source-dot[data-origin="inherited"] {
+  border-color: var(--bd-warning);
+  background: var(--bd-warning-soft);
+}
+.buildr-editor .bd-style-value {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-space-1);
+  min-width: 0;
+}
+.buildr-editor .bd-style-input {
+  display: flex;
+  align-items: stretch;
+  gap: var(--bd-space-1);
+  min-width: 0;
+}
+.buildr-editor .bd-style-input > .bd-input,
+.buildr-editor .bd-style-input > .bd-number-unit {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.buildr-editor .bd-style-enum {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bd-space-2);
+}
+.buildr-editor .bd-style-enum > select {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+}
+.buildr-editor .bd-box-model {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-space-2);
+}
+.buildr-editor .bd-box-diagram {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--bd-control-lg) minmax(0, 1fr) var(--bd-control-lg);
+  grid-template-rows: var(--bd-control-md) var(--bd-control-lg) var(--bd-control-md);
+  gap: var(--bd-space-1);
+  padding: var(--bd-space-2);
+  border: var(--bd-border-width) dashed var(--bd-border-strong);
+  border-radius: var(--bd-radius-md);
+  background: var(--bd-surface-2);
+}
+.buildr-editor .bd-box-diagram[data-kind="padding"] {
+  background: var(--bd-accent-soft);
+}
+.buildr-editor .bd-box-inner {
+  grid-column: 2;
+  grid-row: 2;
+  border: var(--bd-border-width) solid var(--bd-border-strong);
+  border-radius: var(--bd-radius-sm);
+  background: var(--bd-surface);
+}
+.buildr-editor .bd-box-side {
+  min-width: 0;
+  padding: 0 var(--bd-space-1);
+  border: var(--bd-border-width) solid transparent;
+  border-radius: var(--bd-radius-sm);
+  background: transparent;
+  color: var(--bd-text-muted);
+  font: inherit;
+  font-size: var(--bd-text-xs);
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.buildr-editor .bd-box-side[data-source="set"] {
+  color: var(--bd-text);
+  font-weight: var(--bd-weight-semibold);
+}
+.buildr-editor .bd-box-side:hover:not(:disabled) {
+  background: var(--bd-surface-hover);
+}
+.buildr-editor .bd-box-side[aria-pressed="true"] {
+  border-color: var(--bd-accent);
+  background: var(--bd-surface);
+  color: var(--bd-accent);
+}
+.buildr-editor .bd-box-side[data-side="top"] {
+  grid-column: 2;
+  grid-row: 1;
+}
+.buildr-editor .bd-box-side[data-side="bottom"] {
+  grid-column: 2;
+  grid-row: 3;
+}
+.buildr-editor .bd-box-side[data-side="left"] {
+  grid-column: 1;
+  grid-row: 2;
+}
+.buildr-editor .bd-box-side[data-side="right"] {
+  grid-column: 3;
+  grid-row: 2;
+}
+.buildr-editor .bd-value-field {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-space-2);
+  width: 100%;
+  padding: var(--bd-space-1) var(--bd-space-2);
+  border: 0;
+  border-radius: var(--bd-radius-sm);
+  background: transparent;
+  color: var(--bd-text);
+  font: inherit;
+  font-size: var(--bd-text-sm);
+  text-align: left;
+  cursor: pointer;
+}
+.buildr-editor .bd-value-field:hover:not(:disabled) {
+  background: var(--bd-surface-hover);
+}
+.buildr-editor .bd-value-field[aria-pressed="true"] {
+  background: var(--bd-accent-soft);
+}
+.buildr-editor .bd-value-field code {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.buildr-editor .bd-value-field-icon {
+  flex: 0 0 auto;
+  color: var(--bd-text-subtle);
+}
+.buildr-editor .bd-value-field-type {
+  color: var(--bd-text-subtle);
+  font-size: var(--bd-text-xs);
+}
+.buildr-editor .bd-value-preview.bd-card {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-space-2);
+  margin: 0;
+  padding: var(--bd-space-2) var(--bd-space-3);
+  border: var(--bd-border-width) solid var(--bd-border);
+  border-radius: var(--bd-radius-md);
+  background: var(--bd-surface-2);
+}
+.buildr-editor .bd-value-preview.bd-card output {
+  color: var(--bd-text);
+  overflow-wrap: anywhere;
+}

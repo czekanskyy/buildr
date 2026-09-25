@@ -6,12 +6,16 @@ export type { PortalContainerProviderProps } from './portal.tsx';
 export { PortalContainerProvider, usePortalContainer } from './portal.tsx';
 export type {
   ButtonProps,
+  ColorSwatchProps,
   ContextMenuProps,
   DialogProps,
   IconButtonProps,
   InputProps,
   MenuItem,
+  NumberUnitInputProps,
   PopoverProps,
+  SegmentedControlProps,
+  SegmentOption,
   SelectOption,
   SelectProps,
   TabItem,
@@ -21,12 +25,16 @@ export type {
 } from './primitives.tsx';
 export {
   Button,
+  ColorSwatch,
   ContextMenu,
   Dialog,
   IconButton,
   Input,
+  NumberUnitInput,
   Popover,
+  SegmentedControl,
   Select,
+  stepNumberText,
   Tabs,
   Toggle,
   Tooltip,

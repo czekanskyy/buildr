@@ -302,6 +302,18 @@ export const en = {
   'publish.count.error': '{count} errors',
   'publish.count.warning': '{count} warnings',
   'publish.count.info': '{count} notes',
+  'style.origin.set': 'Set on this breakpoint',
+  'style.origin.inherited': 'Inherited from',
+  'style.origin.default': 'Default value',
+  'style.unit': 'Unit',
+  'style.tokens': 'Tokens',
+  'style.box.hint': 'Click a side to edit it. Alt-click edits both sides of an axis.',
+  'style.side.top': 'top',
+  'style.side.right': 'right',
+  'style.side.bottom': 'bottom',
+  'style.side.left': 'left',
+  'style.more': 'Other values',
+  'values.preview.card': 'Live preview',
 } as const;
 
 export type MessageKey = keyof typeof en;

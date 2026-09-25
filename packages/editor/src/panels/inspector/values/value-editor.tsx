@@ -11,7 +11,7 @@ import {
 } from '@buildr/core';
 import { type ReactNode, useEffect, useId, useMemo, useState } from 'react';
 import { type MessageKey, useT } from '../../../messages/index.tsx';
-import { Button, Input, Select } from '../../../ui/index.ts';
+import { Icon, type IconName, Input, SegmentedControl, Select } from '../../../ui/index.ts';
 import {
   type BindingStatus,
   bindingOptions,
@@ -28,6 +28,22 @@ import { useInspectorData } from './data.tsx';
 
 /** How many fields the picker lists at once; a long list is narrowed with the search. */
 const MAX_LISTED = 100;
+
+/** The icon of each data type in the field list. */
+const TYPE_ICON: Record<DataTypeTag, IconName> = {
+  string: 'type',
+  number: 'hash',
+  boolean: 'toggle-left',
+  date: 'calendar',
+  url: 'link',
+  richText: 'text-align-start',
+  media: 'image',
+  link: 'link',
+  enum: 'list',
+  object: 'braces',
+  list: 'list',
+  ref: 'database',
+};
 
 type Mode = 'static' | 'binding' | 'expression';
 
@@ -87,27 +103,26 @@ export function ValueEditor({
     }
     setPending(next);
   };
-  const modes: { mode: Mode; key: MessageKey }[] = [
-    { mode: 'static', key: 'values.mode.static' },
-    { mode: 'binding', key: 'values.mode.binding' },
-    { mode: 'expression', key: 'values.mode.formula' },
+  const modes: { mode: Mode; key: MessageKey; icon: IconName }[] = [
+    { mode: 'static', key: 'values.mode.static', icon: 'type' },
+    { mode: 'binding', key: 'values.mode.binding', icon: 'database' },
+    { mode: 'expression', key: 'values.mode.formula', icon: 'sigma' },
   ];
 
   return (
     <div className="bd-value" data-mode={mode}>
-      <fieldset className="bd-value-modes" aria-label={`${label}: ${t('values.mode')}`}>
-        {modes.map((entry) => (
-          <Button
-            key={entry.mode}
-            variant="ghost"
-            aria-pressed={mode === entry.mode}
-            disabled={disabled}
-            onClick={() => choose(entry.mode)}
-          >
-            {t(entry.key)}
-          </Button>
-        ))}
-      </fieldset>
+      <SegmentedControl
+        className="bd-value-modes"
+        label={`${label}: ${t('values.mode')}`}
+        value={mode}
+        disabled={disabled}
+        options={modes.map((entry) => ({
+          value: entry.mode,
+          label: t(entry.key),
+          icon: entry.icon,
+        }))}
+        onValueChange={(next) => choose(next as Mode)}
+      />
       {mode === 'static' ? staticControl : null}
       {mode === 'binding' ? (
         <BindingEditor
@@ -164,7 +179,8 @@ function Preview({ value }: { readonly value: Value }) {
   const preview = useMemo(() => previewValue(value, context), [value, context]);
   if (context === undefined) return null;
   return (
-    <p className="bd-value-preview">
+    <p className="bd-value-preview bd-card">
+      <Icon name="eye" />
       <span className="bd-value-preview-label">{t('values.preview')}: </span>
       {preview.text !== undefined ? (
         <output>{preview.text}</output>
@@ -303,6 +319,7 @@ function BindingEditor(props: {
                     disabled={disabled}
                     onClick={() => write(option.path, keep)}
                   >
+                    <Icon name={TYPE_ICON[option.tag]} className="bd-value-field-icon" />
                     <code>{option.path}</code>
                     <span className="bd-value-field-type">{option.tag}</span>
                   </button>
@@ -460,22 +477,17 @@ function FormulaEditor(props: {
   return (
     <div className="bd-value-formula">
       {raw !== undefined ? <ValueChip def={def} value={raw} /> : null}
-      <fieldset className="bd-value-modes" aria-label={t('values.formula.mode')}>
-        {modes.map((entry) => (
-          <Button
-            key={entry}
-            variant="ghost"
-            aria-pressed={mode === entry}
-            disabled={disabled}
-            onClick={() => {
-              setMode(entry);
-              write(draft, entry);
-            }}
-          >
-            {t(`values.formula.mode.${entry}`)}
-          </Button>
-        ))}
-      </fieldset>
+      <SegmentedControl
+        className="bd-value-modes"
+        label={t('values.formula.mode')}
+        value={mode}
+        disabled={disabled}
+        options={modes.map((entry) => ({ value: entry, label: t(`values.formula.mode.${entry}`) }))}
+        onValueChange={(entry) => {
+          setMode(entry as FormulaMode);
+          write(draft, entry as FormulaMode);
+        }}
+      />
       <label className="bd-value-row" htmlFor={sourceId}>
         <span>{t('values.formula.source')}</span>
       </label>

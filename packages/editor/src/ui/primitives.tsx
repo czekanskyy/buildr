@@ -337,3 +337,194 @@ export function ContextMenu({ children, items, label }: ContextMenuProps) {
     </ContextMenuPrimitive.Root>
   );
 }
+
+// --- SegmentedControl ----------------------------------------------------------------------------
+
+export interface SegmentOption {
+  readonly value: string;
+  /** Text of the segment; with an `icon` and `iconOnly` it is only the accessible name and tooltip. */
+  readonly label: string;
+  readonly icon?: IconName;
+  readonly iconOnly?: boolean;
+}
+
+export interface SegmentedControlProps {
+  readonly options: readonly SegmentOption[];
+  /** The pressed segment (`undefined`: none). */
+  readonly value: string | undefined;
+  /** Called with the segment that was pressed, also when it is the one already pressed. */
+  readonly onValueChange: (value: string) => void;
+  /** The accessible name of the group. */
+  readonly label: string;
+  readonly disabled?: boolean;
+  readonly className?: string;
+}
+
+/**
+ * A row of mutually exclusive toggle buttons (`aria-pressed`) for a short list of choices: value
+ * modes, direction, alignment. Icon-only segments take their name and tooltip from `label`.
+ */
+export function SegmentedControl({
+  options,
+  value,
+  onValueChange,
+  label,
+  disabled,
+  className,
+}: SegmentedControlProps) {
+  return (
+    <fieldset aria-label={label} className={cx('bd-segmented', className)}>
+      {options.map((option) => {
+        const button = (
+          <Button
+            key={option.value}
+            variant="ghost"
+            className="bd-segment"
+            aria-pressed={value === option.value}
+            disabled={disabled === true}
+            {...(option.iconOnly === true ? { 'aria-label': option.label } : {})}
+            onClick={() => onValueChange(option.value)}
+          >
+            {option.icon !== undefined ? <Icon name={option.icon} /> : null}
+            {option.iconOnly === true ? null : option.label}
+          </Button>
+        );
+        return option.iconOnly === true ? (
+          <Tooltip key={option.value} content={option.label}>
+            {button}
+          </Tooltip>
+        ) : (
+          button
+        );
+      })}
+    </fieldset>
+  );
+}
+
+// --- NumberUnitInput -----------------------------------------------------------------------------
+
+const NUMBER_WITH_UNIT = /^(-?\d+(?:\.\d+)?)([a-z%]*)$/;
+
+/** Adds `delta` to a `12px` / `0.5` / `1.5rem` text; `undefined` when the text is not that. */
+export function stepNumberText(
+  text: string,
+  delta: number,
+  defaultUnit: string,
+): string | undefined {
+  const typed = text.trim();
+  const match = typed === '' ? null : NUMBER_WITH_UNIT.exec(typed);
+  if (typed !== '' && match === null) return undefined;
+  const unit = match?.[2] || defaultUnit;
+  const next = Math.round((Number(match?.[1] ?? 0) + delta) * 1e4) / 1e4;
+  return `${next === 0 ? 0 : next}${unit}`;
+}
+
+export interface NumberUnitInputProps {
+  readonly id?: string;
+  /** What is typed: `12px`, `0.5`, a token or a keyword. */
+  readonly value: string;
+  readonly onValueChange: (text: string) => void;
+  /** The units the grammar allows; empty for a bare number. Nothing else is offered. */
+  readonly units: readonly string[];
+  /** Accessible name of the unit menu. */
+  readonly unitLabel: string;
+  /** How much an arrow key adds (Shift: x10, Alt: /10). */
+  readonly step?: number;
+  /** The grammar takes a bare number as well as a length: stepping keeps a bare number bare. */
+  readonly bareNumber?: boolean;
+  readonly disabled?: boolean;
+  readonly invalid?: boolean;
+  readonly describedBy?: string | undefined;
+  /** The accessible name, when no `<label>` points at the field. */
+  readonly ariaLabel?: string | undefined;
+  readonly list?: string | undefined;
+  readonly placeholder?: string | undefined;
+  readonly onBlur?: () => void;
+}
+
+/**
+ * A text field for a number with a unit: ArrowUp/ArrowDown step the number (Shift x10, Alt /10)
+ * and a unit menu limited to the given units swaps the unit. It only produces text; the caller
+ * checks it against the grammar before anything is stored, so it cannot make a value the grammar
+ * refuses representable.
+ */
+export function NumberUnitInput({
+  id,
+  value,
+  onValueChange,
+  units,
+  unitLabel,
+  step = 1,
+  bareNumber,
+  disabled,
+  invalid,
+  describedBy,
+  ariaLabel,
+  list,
+  placeholder,
+  onBlur,
+}: NumberUnitInputProps) {
+  const match = NUMBER_WITH_UNIT.exec(value.trim());
+  const unit = match?.[2] ?? '';
+  const menuUnit = units.includes(unit) ? unit : undefined;
+  const defaultUnit = bareNumber === true ? '' : (units[0] ?? '');
+  return (
+    <div className="bd-number-unit" data-invalid={invalid === true ? '' : undefined}>
+      <Input
+        {...(id !== undefined ? { id } : {})}
+        value={value}
+        disabled={disabled === true}
+        list={list}
+        placeholder={placeholder}
+        aria-invalid={invalid === true}
+        aria-describedby={describedBy}
+        aria-label={ariaLabel}
+        autoComplete="off"
+        spellCheck={false}
+        onChange={(event) => onValueChange(event.target.value)}
+        {...(onBlur !== undefined ? { onBlur } : {})}
+        onKeyDown={(event) => {
+          if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+          const size = event.shiftKey ? step * 10 : event.altKey ? step / 10 : step;
+          const next = stepNumberText(value, event.key === 'ArrowUp' ? size : -size, defaultUnit);
+          if (next === undefined) return;
+          event.preventDefault();
+          onValueChange(next);
+        }}
+      />
+      {units.length > 0 && match !== null && menuUnit !== undefined ? (
+        <Select
+          label={unitLabel}
+          value={menuUnit}
+          disabled={disabled === true}
+          options={units.map((entry) => ({ value: entry, label: entry }))}
+          onValueChange={(next) => onValueChange(`${match[1]}${next}`)}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+// --- ColorSwatch ---------------------------------------------------------------------------------
+
+/** Colour notations a theme token may hold; anything else is not painted (no raw CSS from data). */
+const SAFE_COLOR = /^(#[0-9a-f]{3,8}|(rgb|hsl|oklch|oklab|lab|lch)a?\([0-9a-z%.,\s/+-]*\))$/i;
+
+export interface ColorSwatchProps {
+  /** A colour value from the theme; an unknown notation or `undefined` shows an empty swatch. */
+  readonly color: string | undefined;
+  readonly className?: string;
+}
+
+/** A small decorative square filled with a colour. */
+export function ColorSwatch({ color, className }: ColorSwatchProps) {
+  const safe = color !== undefined && SAFE_COLOR.test(color.trim());
+  return (
+    <span
+      aria-hidden="true"
+      className={cx('bd-swatch', className)}
+      data-empty={safe ? undefined : ''}
+      {...(safe ? { style: { backgroundColor: color.trim() } } : {})}
+    />
+  );
+}

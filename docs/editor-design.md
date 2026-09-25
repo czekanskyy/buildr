@@ -199,3 +199,7 @@ toast.dismiss(id);
 **Dialogs.** `<Dialog title description footer hideClose>`: a header (title, description, close icon button), a body that scrolls on its own, and a right-aligned footer for the actions. Use `footer` for buttons; `hideClose` only for a dialog that has to be answered (the save conflict).
 
 **Issues drawer and publish dialog.** The drawer groups findings under an Errors / Warnings / Notes heading (severity icon and count); each row shows the severity icon, the component icon and name (or "Document") and the message. The publish dialog shows the three counts as icon badges (the spoken text stays "N errors").
+
+## Value controls (PB-128)
+
+Controls for entering values live in `ui/primitives.tsx` and `styles/primitives.css`: `SegmentedControl` (a `fieldset` of `aria-pressed` buttons in a pill track; icon-only segments get a tooltip and an `aria-label`), `NumberUnitInput` (tabular numerals, unit menu, arrow-key steps) and `ColorSwatch` (decorative; paints only a colour notation). Use a segmented control for 2 to 5 short, mutually exclusive choices and a select beyond that. The style inspector's origin dot uses `--bd-accent` (set here), `--bd-warning` (inherited) and a hollow ring (default).
