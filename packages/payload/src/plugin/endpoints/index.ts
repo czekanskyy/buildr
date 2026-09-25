@@ -3,7 +3,8 @@ import type { EndpointEnv } from './context.ts';
 import { dataMediaEndpoint, dataQueryEndpoint } from './data.ts';
 import { dataContextEndpoint } from './data-context.ts';
 import { dataSchemaEndpoint } from './data-schema.ts';
-import { getDocumentEndpoint } from './document.ts';
+import { getDocumentEndpoint, revisionEndpoint } from './document.ts';
+import { createDocumentEndpoint, listDocumentsEndpoint } from './documents.ts';
 import { formsEndpoint } from './forms.ts';
 import { manifestEndpoint } from './manifest.ts';
 import { mediaListEndpoint, mediaUploadEndpoint } from './media.ts';
@@ -17,6 +18,7 @@ export const buildrEndpoints = (env: EndpointEnv): Endpoint[] => [
   sessionEndpoint(env),
   manifestEndpoint(env),
   getDocumentEndpoint(env),
+  revisionEndpoint(env),
   saveEndpoint(env),
   publishEndpoint(env),
   dataSchemaEndpoint(env),
@@ -26,6 +28,7 @@ export const buildrEndpoints = (env: EndpointEnv): Endpoint[] => [
   dataMediaEndpoint(env),
   mediaListEndpoint(env),
   mediaUploadEndpoint(env),
+  ...(env.options.mcp.enabled ? [listDocumentsEndpoint(env), createDocumentEndpoint(env)] : []),
   ...(env.options.forms.enabled ? [formsEndpoint(env)] : []),
 ];
 

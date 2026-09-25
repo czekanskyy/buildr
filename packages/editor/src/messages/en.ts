@@ -272,6 +272,9 @@ export const en = {
   'editor.status.breakpoint': 'Breakpoint',
   'editor.status.zoom': 'Zoom',
   'editor.status.fit': 'Fit',
+  'external.banner': 'A newer version of this page was saved.',
+  'external.banner.by': '{name} saved a newer version of this page.',
+  'external.reload': 'Reload the latest version',
 } as const;
 
 export type MessageKey = keyof typeof en;

@@ -96,6 +96,40 @@ export const optionsSchema = z.object({
       unlockTemplates: fn<AccessFn>().optional(),
     })
     .default({}),
+  /**
+   * Access for AI agents (docs/mcp.md, ADR-024): Payload API-key requests, document listing and
+   * creation. Off by default; an API-key request is refused by the builder endpoints unless enabled.
+   */
+  mcp: z
+    .object({
+      enabled: z.boolean().default(false),
+      /** Lets an API-key user publish (they still need `access.publish`); off by default. */
+      allowPublish: z.boolean().default(false),
+      /** The collections an agent may list, create in and edit; default: all builder collections. */
+      collections: z.array(z.string().min(1)).optional(),
+      /** Writes per API-key user and window; used by the bundled in-memory limiter. */
+      rateLimit: z
+        .object({
+          limit: z.number().int().positive().default(60),
+          windowMs: z.number().int().positive().default(60_000),
+        })
+        .default({ limit: 60, windowMs: 60_000 }),
+      /** Replaces the in-memory limiter (which does not span serverless instances). */
+      rateLimiter: z
+        .custom<RateLimiter>(
+          (value) =>
+            typeof value === 'object' &&
+            value !== null &&
+            typeof (value as RateLimiter).hit === 'function',
+          'must be a rate limiter',
+        )
+        .optional(),
+    })
+    .default({
+      enabled: false,
+      allowPublish: false,
+      rateLimit: { limit: 60, windowMs: 60_000 },
+    }),
   limits: z
     .object({
       maxNodes: z.number().int().positive().default(5000),

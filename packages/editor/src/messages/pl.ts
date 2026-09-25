@@ -268,4 +268,7 @@ export const pl: Messages = {
   'editor.status.breakpoint': 'Punkt przerwania',
   'editor.status.zoom': 'Powiększenie',
   'editor.status.fit': 'Dopasuj',
+  'external.banner': 'Zapisano nowszą wersję tej strony.',
+  'external.banner.by': 'Użytkownik {name} zapisał nowszą wersję tej strony.',
+  'external.reload': 'Wczytaj najnowszą wersję',
 };

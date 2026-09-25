@@ -1,0 +1,49 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`describeNode > gives every prop as a Value, styles per layer and the place in the tree 1`] = `
+{
+  "defaults": {},
+  "id": "n000000003",
+  "label": "Heading",
+  "name": "Title",
+  "parent": {
+    "id": "n000000002",
+    "index": 0,
+    "slot": "default",
+  },
+  "props": {
+    "level": {
+      "kind": "static",
+      "value": 1,
+    },
+    "text": {
+      "kind": "static",
+      "l10n": {
+        "pl": "Witamy",
+      },
+      "value": "Welcome",
+    },
+  },
+  "slots": {},
+  "type": "buildr/heading",
+}
+`;
+
+exports[`describeNode > renders text with bindings, expressions, translations and styles 1`] = `
+"n000000002 buildr/section (Section)
+anchor: hero
+parent: root slot "default" index 0
+props: (all defaults)
+defaults: as="section", container="lg", backgroundImage=null, ariaLabel=""
+styles: {"base":{"spacing":{"padding":{"top":"$space.8"}}},"bp":{"md":{"layout":{"gap":8}}}}
+slot default: n000000003(buildr/heading), n000000004(buildr/text), n000000005(buildr/text)"
+`;
+
+exports[`describeNode > renders text with bindings, expressions, translations and styles 2`] = `
+"n000000003 buildr/heading (Heading)
+name: "Title"
+parent: n000000002 slot "default" index 0
+props:
+  text: static "Welcome" l10n={"pl":"Witamy"}
+  level: static 1"
+`;
