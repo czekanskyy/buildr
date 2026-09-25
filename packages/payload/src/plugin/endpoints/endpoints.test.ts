@@ -55,6 +55,7 @@ describe('session and manifest', () => {
       canUnlockTemplates: true,
     });
     expect(session.limits).toEqual({ maxNodes: 5000, maxBytes: 2_000_000 });
+    expect(session.publishPolicy).toBe('warn');
   });
 
   it('serves the manifest of the registry', async () => {

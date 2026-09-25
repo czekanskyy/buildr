@@ -270,4 +270,7 @@ export const pl: Messages = {
   'toolbar.theme.light': 'Jasny',
   'toolbar.theme.dark': 'Ciemny',
   'toolbar.theme.system': 'Systemowy',
+  'external.banner': 'Zapisano nowszą wersję tej strony.',
+  'external.banner.by': 'Użytkownik {name} zapisał nowszą wersję tej strony.',
+  'external.reload': 'Wczytaj najnowszą wersję',
 };

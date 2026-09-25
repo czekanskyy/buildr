@@ -11,6 +11,15 @@ const env = {
   SEED_ADMIN_EMAIL: 'e2e@buildr.test',
   SEED_ADMIN_PASSWORD: 'e2e-password-1',
   NEXT_PUBLIC_SITE_URL: `http://localhost:${port}`,
+  // The MCP suite (e2e/mcp) runs only with BUILDR_MCP=1: the agent user and its API key are seeded then.
+  ...(process.env.BUILDR_MCP === '1'
+    ? {
+        SEED_AGENT_EMAIL: 'agent@buildr.test',
+        SEED_AGENT_API_KEY: 'e2e-agent-key-0123456789',
+        // The scripted agent writes a lot in a minute (and the suite may be repeated): no throttling here.
+        BUILDR_MCP_RATE_LIMIT: '100000',
+      }
+    : {}),
 };
 const pnpm = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
 const run = (args) => {
