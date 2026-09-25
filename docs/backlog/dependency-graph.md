@@ -49,6 +49,35 @@ flowchart LR
   P103 --> P108
   P073 --> P108
   P050 --> P108
+  subgraph F13[Phase 13: editor visual polish]
+    P118[PB-118 baseline] --> P147[PB-147 identity] --> P119[PB-119 tokens] --> P120[PB-120 icons]
+    P121[PB-121 component icons]
+    P120 --> P122[PB-122 shell] --> P124[PB-124 canvas stage]
+    P122 --> P129[PB-129 toasts/dialogs]
+    P120 --> P123[PB-123 toolbar]
+    P120 --> P125[PB-125 insert]
+    P121 --> P125
+    P120 --> P126[PB-126 layers]
+    P121 --> P126
+    P120 --> P127[PB-127 inspector] --> P128[PB-128 style/value controls]
+    P119 --> P130[PB-130 canvas overlay]
+    P123 & P124 & P125 & P126 & P128 & P129 & P130 --> P131[PB-131 QA + docs]
+  end
+  subgraph F14[Phase 14: MCP server]
+    P132[PB-132 ADR-024] --> P133[PB-133 scaffold] --> P134[PB-134 sessions] --> P135[PB-135 serialization]
+    P135 --> P136[PB-136 discovery] --> P138[PB-138 validate/save]
+    P135 --> P137[PB-137 editing] --> P138
+    P132 --> P139[PB-139 payload API keys] --> P140[PB-140 HTTP backend]
+    P138 & P140 --> P141[PB-141 stdio CLI]
+    P138 & P139 --> P142[PB-142 HTTP route]
+    P139 --> P143[PB-143 editor external changes]
+    P141 & P142 --> P144[PB-144 guide + docs] --> P145[PB-145 E2E]
+    P143 --> P145
+    P142 -.-> P146[PB-146 screenshots, optional]
+  end
+  P113[PB-113] --> P118
+  P064[PB-064] --> P121
+  P114[PB-114] --> P132
 ```
 
 ## Critical path
@@ -72,5 +101,19 @@ A second, nearly-as-long branch feeds PB-076: `006 -> 012 -> 013 -> 019 -> 021 -
 | G: Editor | 073 (immediately after 002) -> 074-092, 115 | `editor` |
 | H: Payload | 093 (after 007) -> 094-102, 116 | `payload` |
 | I: Next + example | 103-107, 117 -> 108-114 | `next`, `apps` |
+
+## Post-MVP tracks (phases 13 and 14)
+
+The two phases are independent of each other and can run in parallel. They meet only in the editor's message catalogs (new strings from PB-143 and from the phase-13 tasks) — append-only edits that rebase trivially.
+
+| Track | Tasks | Package |
+|---|---|---|
+| J: Editor visuals — foundation | 118 -> 147 -> 119 -> 120 (+ 121 in parallel) | `playground/e2e`, `editor/styles`, `editor/ui`, `components` |
+| K: Editor visuals — areas (after 120, one agent per area) | 122, 123, 124, 125, 126, 127 -> 128, 129, 130 -> 131 | `editor/{app,toolbar,canvas-host,panels}`, `react/canvas` |
+| L: MCP — tool layer | 132 -> 133 -> 134 -> 135 -> 136/137 -> 138 | `mcp` |
+| M: MCP — site integration | 139 -> 140, 142, 143 | `payload`, `editor/persistence`, example app |
+| N: MCP — delivery | 141, 144 -> 145 (146 optional) | `mcp/cli`, docs, e2e |
+
+After PB-119 lands, the phase-13 area tasks each own a separate CSS partial (`styles/*.css`), which is what makes track K parallelisable without merge conflicts.
 
 The full, authoritative dependency list lives in each task's own card under `docs/backlog/phase-*.md` — this graph is a navigational aid, not a substitute for reading the cards.

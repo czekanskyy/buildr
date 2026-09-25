@@ -25,6 +25,8 @@
 | 10 | [phase-10-payload.md](phase-10-payload.md) | PB-093 – PB-102, PB-116 | The Payload plugin and integration |
 | 11 | [phase-11-nextjs.md](phase-11-nextjs.md) | PB-103 – PB-107, PB-117 | The Next.js integration |
 | 12 | [phase-12-example-e2e-release.md](phase-12-example-e2e-release.md) | PB-108 – PB-114 | The example app, end-to-end tests, the 0.1.0 release |
+| 13 | [phase-13-editor-visual-polish.md](phase-13-editor-visual-polish.md) | PB-118 – PB-131, PB-147 | Editor visual polish: a new visual identity, tokens, icons, spacing, layout (post-MVP, no behaviour changes) |
+| 14 | [phase-14-mcp-server.md](phase-14-mcp-server.md) | PB-132 – PB-146 | An MCP server that lets AI agents build pages through the builder's commands |
 
 See [dependency-graph.md](dependency-graph.md) for the full dependency graph, the critical path, and suggested parallel work tracks for multiple agents.
 
@@ -48,3 +50,7 @@ Every item in the MVP scope (see [../roadmap.md](../roadmap.md)) must be traceab
 | R10 | Editor UX quality (the primary adoption risk) | Low adoption | The playground for fast iteration, a design review of templates, user testing before v0.2 |
 | R11 | Architectural drift introduced by agents | Technical debt | dependency-cruiser in CI, AGENTS.md, small tasks, mandatory human review |
 | R12 | A race on the revision check at save time | Rare overwrite | Single-flight saves; a database transaction is planned for v1.0 |
+| R13 | Visual polish drifting into behaviour changes | Regressions in a working editor | Phase 13 freezes behaviour; every task is reviewed as a screenshot diff against the PB-118 baseline; existing integration tests must pass unchanged |
+| R14 | An AI agent producing broken or unwanted pages | Content quality, trust | Agents only use core commands on a working copy; server-side `processLayout` re-validates; saves are drafts; publish disabled by default and gated by `canPublish` + `confirm` (PB-138, PB-139) |
+| R15 | Leaked or over-privileged API keys used by agents | Unauthorized edits | A dedicated low-privilege agent role, keys only via environment variables, rate limits, `updatedBy` audit trail (PB-139, PB-144) |
+| R16 | Prompt injection through CMS content read by an agent | An agent taking unintended actions | Content is returned as data, the guide says so explicitly, destructive tools are annotated, publish requires explicit confirmation (PB-138, PB-144) |
