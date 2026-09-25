@@ -261,4 +261,11 @@ export const pl: Messages = {
   'editor.resize.left': 'Zmień szerokość lewego panelu',
   'editor.resize.right': 'Zmień szerokość prawego panelu',
   'ui.close': 'Zamknij',
+  'editor.panels.left': 'Lewy panel',
+  'editor.panels.right': 'Panel inspektora',
+  'editor.status.errors': 'Błędy',
+  'editor.status.warnings': 'Ostrzeżenia',
+  'editor.status.breakpoint': 'Punkt przerwania',
+  'editor.status.zoom': 'Powiększenie',
+  'editor.status.fit': 'Dopasuj',
 };
