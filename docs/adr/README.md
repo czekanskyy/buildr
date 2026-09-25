@@ -27,5 +27,6 @@ Each ADR follows the same template: **Status, Context, Options, Decision, Conseq
 | [021](ADR-021-build-package-format.md) | Build & package format | Accepted |
 | [022](ADR-022-license.md) | License | Accepted |
 | [023](ADR-023-localization.md) | Localization | Accepted |
+| [024](ADR-024-mcp-server.md) | MCP server for AI agents | Accepted |
 
 To propose a new ADR, see [`docs/ai/architecture-decisions.md`](../ai/architecture-decisions.md).

@@ -35,6 +35,8 @@ export const sessionResponseSchema = z.object({
     canUnlockTemplates: z.boolean(),
   }),
   limits: z.object({ maxNodes: z.number(), maxBytes: z.number() }),
+  /** `a11y.publish`: with `block`, a document with accessibility errors cannot be published. */
+  publishPolicy: z.enum(['warn', 'block']).optional(),
   /** The languages of the site; absent without Payload localization. */
   locales: z
     .object({
@@ -75,6 +77,15 @@ export const documentResponseSchema = z.object({
   readOnly: z.boolean().optional(),
 });
 export type DocumentResponse = z.infer<typeof documentResponseSchema>;
+
+/** `GET /api/buildr/documents/:collection/:id/revision`: the revision without the document. */
+export const revisionResponseSchema = z.object({
+  revision: z.number().int().nonnegative(),
+  updatedAt: z.string(),
+  /** Who made the last builder write (a name or an email); only with `mcp.enabled`. */
+  updatedBy: z.string().optional(),
+});
+export type RevisionResponse = z.infer<typeof revisionResponseSchema>;
 
 export const saveRequestSchema = z.object({
   document: z.unknown(),
@@ -163,3 +174,54 @@ export const mediaListResponseSchema = z.object({
   totalPages: z.number().int(),
 });
 export type MediaListResponse = z.infer<typeof mediaListResponseSchema>;
+
+/** How many documents a page of `GET /buildr/documents` holds. */
+export const DOCUMENT_LIST_PAGE_SIZE = 20;
+
+/** `GET /buildr/documents?collection&search&page`: the builder documents the user may read. */
+export const documentListQuerySchema = z.object({
+  collection: z.string().min(1),
+  search: z.string().max(200).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+});
+export type DocumentListQuery = z.infer<typeof documentListQuerySchema>;
+
+/** One document in a listing (and the answer of a creation): enough to pick it and open it. */
+export const documentSummarySchema = z.object({
+  ref: documentRefSchema,
+  title: z.string(),
+  slug: z.string().nullable(),
+  status: z.enum(['draft', 'published']),
+  updatedAt: z.string(),
+  /** The `baseRevision` an open + save starts from. */
+  revision: z.number().int().nonnegative(),
+  layoutSource: z.enum(['document', 'template', 'default-template', 'builtin']),
+  previewPath: z.string().nullable(),
+});
+export type DocumentSummary = z.infer<typeof documentSummarySchema>;
+
+export const documentListResponseSchema = z.object({
+  items: z.array(documentSummarySchema),
+  page: z.number().int(),
+  totalPages: z.number().int(),
+});
+export type DocumentListResponse = z.infer<typeof documentListResponseSchema>;
+
+/** `POST /buildr/documents`: creates a draft (never published) in a builder collection. */
+export const createDocumentRequestSchema = z.object({
+  collection: z.string().min(1),
+  title: z.string().trim().min(1).max(200),
+  slug: z
+    .string()
+    .min(1)
+    .max(200)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'lowercase words separated by hyphens')
+    .optional(),
+  /** The id of a template of the collection (`buildr-templates`) the document starts from. */
+  template: z.union([z.string().min(1), z.number()]).optional(),
+});
+export type CreateDocumentRequest = z.infer<typeof createDocumentRequestSchema>;
+
+/** `201`: the new draft. */
+export const createDocumentResponseSchema = documentSummarySchema;
+export type CreateDocumentResponse = DocumentSummary;

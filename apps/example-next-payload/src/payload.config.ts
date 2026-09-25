@@ -8,7 +8,7 @@ import { seoPlugin } from '@payloadcms/plugin-seo';
 import { lexicalEditor } from '@payloadcms/richtext-lexical';
 import { buildConfig } from 'payload';
 import sharp from 'sharp';
-import { pluginAccess, pluginCollections, queryable } from './buildr.options.ts';
+import { MCP_ENABLED, pluginAccess, pluginCollections, queryable } from './buildr.options.ts';
 import { DEFAULT_LOCALE, LOCALES, registry } from './buildr.registry.ts';
 import { Authors } from './collections/authors.ts';
 import { Categories, ProductCategories } from './collections/categories.ts';
@@ -72,6 +72,7 @@ export default buildConfig({
       forms: { enabled: true, notifyAllowlist: [] },
       access: pluginAccess,
       a11y: { publish: 'warn' },
+      mcp: { enabled: MCP_ENABLED },
     }),
   ],
 });
