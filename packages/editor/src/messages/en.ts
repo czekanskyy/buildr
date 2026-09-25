@@ -258,6 +258,7 @@ export const en = {
   'layers.menu.delete': 'Delete',
   'layers.menu.wrap': 'Wrap in container',
   'layers.menu.unwrap': 'Unwrap',
+  'layers.more': 'More actions',
   'editor.issues': 'Issues',
   'editor.breadcrumbs': 'Selection path',
   'editor.issues.show': 'Show issues',

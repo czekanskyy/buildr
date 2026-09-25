@@ -309,6 +309,19 @@ describe('LayersPanel', () => {
     expect(store.getState().doc.nodes['root']?.slots?.['default']).toHaveLength(3);
   });
 
+  it('opens the same context menu from the hover "more" button, without starting a rename', async () => {
+    const store = await mount();
+    const more = items()[1]?.querySelector('[data-more] button') as HTMLElement;
+    expect(more.getAttribute('aria-label')).toBe('More actions');
+    await act(async () => {
+      more.click();
+    });
+    expect(store.getState().selectedIds).toEqual(['boxNode001']);
+    const menu = document.body.querySelector('[role=menu]');
+    expect(menu?.getAttribute('aria-label')).toBe('Layer actions');
+    expect(container.querySelector('input')).toBeNull();
+  });
+
   it('does not offer changes in a read-only document', async () => {
     const store = await mount();
     await act(async () => store.setReadOnly(true));
