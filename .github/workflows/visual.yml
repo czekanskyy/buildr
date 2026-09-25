@@ -1,6 +1,7 @@
 name: Visual
 
-# Screenshots of the gallery at three widths. They are only comparable when taken in the Playwright
+# Screenshots of the gallery at three widths and of the editor in its main states (light and dark,
+# two window sizes; PB-118). They are only comparable when taken in the Playwright
 # Docker image, so this is the only place that takes them. A pull request labelled `visual` updates
 # the baselines (and commits them to the branch); without the label a difference fails the check.
 
