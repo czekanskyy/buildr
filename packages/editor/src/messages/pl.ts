@@ -274,4 +274,12 @@ export const pl: Messages = {
   'external.reload': 'Wczytaj najnowszą wersję',
   'editor.canvas.width': '{name} · {width}px',
   'editor.canvas.error.title': 'Nie można wyświetlić podglądu strony',
+  'toast.dismiss': 'Zamknij powiadomienie',
+  'issues.group.error': 'Błędy',
+  'issues.group.warning': 'Ostrzeżenia',
+  'issues.group.info': 'Uwagi',
+  'issues.nodeless': 'Dokument',
+  'publish.count.error': 'Błędy: {count}',
+  'publish.count.warning': 'Ostrzeżenia: {count}',
+  'publish.count.info': 'Uwagi: {count}',
 };

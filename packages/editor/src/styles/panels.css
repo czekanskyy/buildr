@@ -483,7 +483,7 @@
 .buildr-editor .bd-issue-target {
   display: flex;
   flex-direction: column;
-  gap: var(--bd-space-0);
+  gap: var(--bd-space-1);
   padding: 0;
   border: 0;
   background: none;
@@ -494,13 +494,45 @@
 .buildr-editor .bd-issue-target:disabled {
   cursor: default;
 }
-.buildr-editor .bd-issue[data-severity="error"] .bd-issue-severity,
 .bd-publish-blocked,
 .buildr-editor .bd-issue-error {
   color: var(--bd-danger);
 }
+.buildr-editor .bd-issues-severity {
+  margin-top: var(--bd-space-3);
+}
+.buildr-editor .bd-issues-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-space-2);
+  margin: 0;
+  font-size: var(--bd-text-sm);
+  line-height: var(--bd-leading-sm);
+  font-weight: var(--bd-weight-semibold);
+}
+.buildr-editor .bd-issues-severity[data-severity="error"] .bd-issues-heading,
+.buildr-editor .bd-issue[data-severity="error"] .bd-issue-severity {
+  color: var(--bd-danger);
+}
+.buildr-editor .bd-issues-severity[data-severity="warning"] .bd-issues-heading,
 .buildr-editor .bd-issue[data-severity="warning"] .bd-issue-severity {
   color: var(--bd-warning);
+}
+.buildr-editor .bd-issues-severity[data-severity="info"] .bd-issues-heading,
+.buildr-editor .bd-issue[data-severity="info"] .bd-issue-severity {
+  color: var(--bd-info);
+}
+.buildr-editor .bd-issue-head {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-space-2);
+  color: var(--bd-text-muted);
+  font-size: var(--bd-text-sm);
+  line-height: var(--bd-leading-sm);
+}
+.buildr-editor .bd-issue-owner {
+  font-weight: var(--bd-weight-medium);
+  color: var(--bd-text);
 }
 .buildr-editor .bd-issue-source,
 .buildr-editor .bd-issue-help {
@@ -516,10 +548,31 @@
 }
 .bd-publish-summary {
   display: flex;
-  gap: var(--bd-space-4);
+  gap: var(--bd-space-3);
   margin: var(--bd-space-3) 0;
   padding: 0;
   list-style: none;
+}
+.bd-publish-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bd-space-2);
+  padding: var(--bd-space-1) var(--bd-space-3);
+  border-radius: var(--bd-radius-pill);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--bd-weight-medium);
+}
+.bd-publish-badge[data-severity="error"] {
+  background: var(--bd-danger-soft);
+  color: var(--bd-danger);
+}
+.bd-publish-badge[data-severity="warning"] {
+  background: var(--bd-warning-soft);
+  color: var(--bd-warning);
+}
+.bd-publish-badge[data-severity="info"] {
+  background: var(--bd-info-soft);
+  color: var(--bd-info);
 }
 
 /* --- Media picker and control (PB-089) ---------------------------------------------------- */
@@ -589,30 +642,4 @@
 }
 .bd-media-preview img {
   object-fit: cover;
-}
-
-/* External changes (PB-143): a non-blocking notice; the live region stays mounted so it is announced. */
-.buildr-editor .bd-external-banner,
-.bd-external-banner {
-  position: fixed;
-  top: calc(var(--bd-toolbar-height) + var(--bd-space-3));
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  gap: var(--bd-space-5);
-  max-width: calc(100vw - var(--bd-space-8));
-  padding: var(--bd-space-3) var(--bd-space-5);
-  border: 1px solid var(--bd-border);
-  border-radius: var(--bd-radius-md);
-  background: var(--bd-surface);
-  color: var(--bd-text);
-  box-shadow: var(--bd-elevation-2);
-  font-size: var(--bd-text-md);
-}
-.bd-external-banner:empty {
-  padding: 0;
-  border: 0;
-  box-shadow: none;
 }

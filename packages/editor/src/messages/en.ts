@@ -278,6 +278,14 @@ export const en = {
   'external.reload': 'Reload the latest version',
   'editor.canvas.width': '{name} · {width}px',
   'editor.canvas.error.title': 'The page preview could not be shown',
+  'toast.dismiss': 'Dismiss notification',
+  'issues.group.error': 'Errors',
+  'issues.group.warning': 'Warnings',
+  'issues.group.info': 'Notes',
+  'issues.nodeless': 'Document',
+  'publish.count.error': '{count} errors',
+  'publish.count.warning': '{count} warnings',
+  'publish.count.info': '{count} notes',
 } as const;
 
 export type MessageKey = keyof typeof en;

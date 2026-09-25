@@ -2,7 +2,7 @@ import { createContext, type ReactNode, useContext, useEffect } from 'react';
 import { useStore } from 'zustand';
 import { useT } from '../messages/index.tsx';
 import { useEditorState } from '../store/index.ts';
-import { Button, Dialog } from '../ui/index.ts';
+import { Button, Dialog, useToast } from '../ui/index.ts';
 import type { PersistenceController } from './controller.ts';
 import type { PersistenceState } from './types.ts';
 
@@ -68,25 +68,34 @@ export function useSaveAction(): () => boolean {
   };
 }
 
-/** A non-blocking notice that somebody else saved while this document is unchanged: one click reloads. */
+/**
+ * A non-blocking notice, shown as a persistent toast, that somebody else saved while this document
+ * is unchanged: one click reloads. It goes away when the external change is gone.
+ */
 function ExternalChangeBanner() {
   const t = useT();
+  const toast = useToast();
   const controller = usePersistence();
   const external = usePersistenceState((state) => state.external);
-  return (
-    <div className="bd-external-banner" role="status">
-      {external !== undefined && (
-        <>
-          <span>
-            {external.updatedBy === undefined
-              ? t('external.banner')
-              : t('external.banner.by').replace('{name}', external.updatedBy)}
-          </span>
-          <Button onClick={() => void controller.reload()}>{t('external.reload')}</Button>
-        </>
-      )}
-    </div>
-  );
+  const updatedBy = external?.updatedBy;
+  const present = external !== undefined;
+  useEffect(() => {
+    if (!present) {
+      toast.dismiss('external-changes');
+      return;
+    }
+    toast.show({
+      id: 'external-changes',
+      variant: 'info',
+      duration: null,
+      message:
+        updatedBy === undefined
+          ? t('external.banner')
+          : t('external.banner.by').replace('{name}', updatedBy),
+      action: { label: t('external.reload'), onSelect: () => void controller.reload() },
+    });
+  }, [present, updatedBy, toast, t, controller]);
+  return null;
 }
 
 function ConflictDialog() {
@@ -96,18 +105,20 @@ function ConflictDialog() {
   return (
     <Dialog
       open={status === 'conflict'}
+      hideClose
       // The choice is the only way out: closing without one would leave the editor stuck in conflict.
       onOpenChange={() => undefined}
       title={t('save.conflict.title')}
       description={t('save.conflict.description')}
-    >
-      <div className="bd-conflict-actions">
-        <Button onClick={() => void controller.reload()}>{t('save.conflict.reload')}</Button>
-        <Button variant="danger" onClick={() => void controller.overwrite()}>
-          {t('save.conflict.overwrite')}
-        </Button>
-      </div>
-    </Dialog>
+      footer={
+        <>
+          <Button onClick={() => void controller.reload()}>{t('save.conflict.reload')}</Button>
+          <Button variant="danger" onClick={() => void controller.overwrite()}>
+            {t('save.conflict.overwrite')}
+          </Button>
+        </>
+      }
+    />
   );
 }
 

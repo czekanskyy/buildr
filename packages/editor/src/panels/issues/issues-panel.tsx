@@ -1,15 +1,17 @@
 import type { Diagnostic } from '@buildr/core';
 import type { Command } from '@buildr/core/commands';
 import { useMemo, useState } from 'react';
+import { componentMeta, useManifest } from '../../app/manifest.tsx';
 import { type MessageKey, useT } from '../../messages/index.tsx';
 import { useEditor, useEditorState, useLocaleState } from '../../store/index.ts';
-import { Button } from '../../ui/index.ts';
+import { Button, ComponentIcon, Icon, type IconName } from '../../ui/index.ts';
 import {
   collectIssues,
   countIssues,
   filterIssues,
   groupMissingTranslations,
   type IssueItem,
+  type IssueSeverity,
   type SeverityFilter,
 } from './collect.ts';
 
@@ -41,6 +43,14 @@ const FILTERS: readonly { filter: SeverityFilter; key: MessageKey }[] = [
   { filter: 'info', key: 'issues.filter.info' },
 ];
 
+const SEVERITIES: readonly IssueSeverity[] = ['error', 'warning', 'info'];
+
+export const SEVERITY_ICON: Readonly<Record<IssueSeverity, IconName>> = {
+  error: 'circle-alert',
+  warning: 'triangle-alert',
+  info: 'info',
+};
+
 const SOURCE_KEY: Record<IssueItem['source'], MessageKey> = {
   validation: 'issues.source.validation',
   a11y: 'issues.source.a11y',
@@ -62,8 +72,9 @@ export function IssuesPanel({ canvasDiagnostics }: IssuesPanelProps) {
   const [failed, setFailed] = useState<string | undefined>();
   const counts = countIssues(items);
   const shown = filterIssues(items, filter);
-  const { rest, groups } = groupMissingTranslations(shown);
   const config = useLocaleState((state) => state.config);
+  const doc = useEditorState((state) => state.doc);
+  const manifest = useManifest();
 
   const fix = (item: IssueItem) => {
     if (item.fix === undefined) return;
@@ -71,35 +82,73 @@ export function IssuesPanel({ canvasDiagnostics }: IssuesPanelProps) {
     setFailed(result.ok ? undefined : item.key);
   };
 
-  const row = (item: IssueItem) => (
-    <li key={item.key} className="bd-issue" data-severity={item.severity}>
-      <button
-        type="button"
-        className="bd-issue-target"
-        disabled={item.nodeId === undefined}
-        onClick={() => {
-          if (item.nodeId !== undefined) store.select(item.nodeId);
-        }}
-      >
-        <span className="bd-issue-severity">{t(`issues.filter.${item.severity}`)}</span>
-        <span className="bd-issue-message">{item.message}</span>
-        <span className="bd-issue-source">
-          {t(SOURCE_KEY[item.source])} · {item.code}
-        </span>
-      </button>
-      {item.help !== undefined ? <p className="bd-issue-help">{item.help}</p> : null}
-      {item.fix !== undefined ? (
-        <Button disabled={readOnly} onClick={() => fix(item)}>
-          {t('issues.fix')}
-        </Button>
-      ) : null}
-      {failed === item.key ? (
-        <p role="alert" className="bd-issue-error">
-          {t('issues.fix.failed')}
-        </p>
-      ) : null}
-    </li>
-  );
+  const row = (item: IssueItem) => {
+    const node = item.nodeId === undefined ? undefined : doc.nodes[item.nodeId];
+    const meta = node === undefined ? undefined : componentMeta(manifest, node.type);
+    const owner =
+      node === undefined ? t('issues.nodeless') : (node.name ?? meta?.label ?? node.type);
+    return (
+      <li key={item.key} className="bd-issue" data-severity={item.severity}>
+        <button
+          type="button"
+          className="bd-issue-target"
+          disabled={item.nodeId === undefined}
+          onClick={() => {
+            if (item.nodeId !== undefined) store.select(item.nodeId);
+          }}
+        >
+          <span className="bd-issue-head">
+            <Icon
+              name={SEVERITY_ICON[item.severity]}
+              label={t(`issues.filter.${item.severity}`)}
+              className="bd-issue-severity"
+            />
+            {node !== undefined && <ComponentIcon meta={meta} className="bd-issue-component" />}
+            <span className="bd-issue-owner">{owner}</span>
+          </span>
+          <span className="bd-issue-message">{item.message}</span>
+          <span className="bd-issue-source">
+            {t(SOURCE_KEY[item.source])} · {item.code}
+          </span>
+        </button>
+        {item.help !== undefined ? <p className="bd-issue-help">{item.help}</p> : null}
+        {item.fix !== undefined ? (
+          <Button disabled={readOnly} onClick={() => fix(item)}>
+            {t('issues.fix')}
+          </Button>
+        ) : null}
+        {failed === item.key ? (
+          <p role="alert" className="bd-issue-error">
+            {t('issues.fix.failed')}
+          </p>
+        ) : null}
+      </li>
+    );
+  };
+
+  const severitySection = (severity: IssueSeverity) => {
+    const own = shown.filter((item) => item.severity === severity);
+    if (own.length === 0) return null;
+    const { rest, groups } = groupMissingTranslations(own);
+    return (
+      <section key={severity} className="bd-issues-severity" data-severity={severity}>
+        <h3 className="bd-issues-heading">
+          <Icon name={SEVERITY_ICON[severity]} />
+          {t(`issues.group.${severity}`)} ({own.length})
+        </h3>
+        {rest.length > 0 ? <ul className="bd-issues-list">{rest.map(row)}</ul> : null}
+        {groups.map((group) => (
+          <details key={group.locale} className="bd-issues-group" data-locale={group.locale} open>
+            <summary>
+              {t('issues.missingTranslations')}: {config.intl[group.locale] ?? group.locale} (
+              {group.items.length})
+            </summary>
+            <ul className="bd-issues-list">{group.items.map(row)}</ul>
+          </details>
+        ))}
+      </section>
+    );
+  };
 
   return (
     <section className="bd-issues" aria-label={t('issues.title')}>
@@ -118,16 +167,7 @@ export function IssuesPanel({ canvasDiagnostics }: IssuesPanelProps) {
       </fieldset>
       {!checked ? <p className="bd-field-hint">{t('issues.pending')}</p> : null}
       {checked && shown.length === 0 ? <p className="bd-field-hint">{t('issues.empty')}</p> : null}
-      {rest.length > 0 ? <ul className="bd-issues-list">{rest.map(row)}</ul> : null}
-      {groups.map((group) => (
-        <details key={group.locale} className="bd-issues-group" data-locale={group.locale} open>
-          <summary>
-            {t('issues.missingTranslations')}: {config.intl[group.locale] ?? group.locale} (
-            {group.items.length})
-          </summary>
-          <ul className="bd-issues-list">{group.items.map(row)}</ul>
-        </details>
-      ))}
+      {SEVERITIES.map(severitySection)}
     </section>
   );
 }

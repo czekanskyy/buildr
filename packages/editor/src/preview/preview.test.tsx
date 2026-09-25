@@ -12,6 +12,7 @@ import { MessagesProvider } from '../messages/index.tsx';
 import type { DocumentAdapter } from '../persistence/index.ts';
 import { createPersistence, PersistenceProvider } from '../persistence/index.ts';
 import { createEditorStore, EditorStoreProvider } from '../store/index.ts';
+import { ToastProvider } from '../ui/index.ts';
 import { isSafePreviewUrl } from './prepare.ts';
 import { usePreview } from './preview.tsx';
 
@@ -105,9 +106,11 @@ describe('preview', () => {
         root.render(
           <MessagesProvider locale="en">
             <EditorStoreProvider store={store}>
-              <PersistenceProvider controller={controller}>
-                <Probe />
-              </PersistenceProvider>
+              <ToastProvider>
+                <PersistenceProvider controller={controller}>
+                  <Probe />
+                </PersistenceProvider>
+              </ToastProvider>
             </EditorStoreProvider>
           </MessagesProvider>,
         ),
