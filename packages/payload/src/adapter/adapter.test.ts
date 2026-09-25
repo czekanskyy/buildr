@@ -203,6 +203,11 @@ describe('createPayloadAdapter', () => {
     const query = calls.at(-1)?.url.searchParams;
     expect(query?.get('id')).toBe('12');
     expect(query?.get('collection')).toBe('pages');
+
+    await adapter.getContext(REF, { sampleId: 'posts:5' });
+    const qualified = calls.at(-1)?.url.searchParams;
+    expect(qualified?.get('collection')).toBe('posts');
+    expect(qualified?.get('id')).toBe('5');
     expect(query?.get('locale')).toBe('pl');
   });
 
@@ -248,7 +253,7 @@ describe('createPayloadAdapter', () => {
       }),
     });
     const adapter = createPayloadAdapter({ baseUrl: '/api', fetch });
-    expect(await adapter.listSamples?.(REF)).toEqual([{ id: '1', label: 'A' }]);
+    expect(await adapter.listSamples?.(REF)).toEqual([{ id: 'pages:1', label: 'A' }]);
     expect(adapter.previewUrl(REF, { draft: true })).toBe(
       '/buildr/preview?collection=pages&id=7&draft=1',
     );

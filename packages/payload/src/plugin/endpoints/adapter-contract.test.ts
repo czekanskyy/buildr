@@ -38,7 +38,7 @@ describe('the adapter against the real endpoints', () => {
 
   it('lists samples and builds a context', async () => {
     const ref = { collection: 'pages', id: pageId };
-    expect(await adapter().listSamples?.(ref)).toEqual([{ id: pageId, label: 'Home' }]);
+    expect(await adapter().listSamples?.(ref)).toEqual([{ id: `pages:${pageId}`, label: 'Home' }]);
     const context = await adapter().getContext(ref);
     expect(context.scopes['page']).toMatchObject({ title: 'Home' });
     expect(context.mode).toBe('canvas');

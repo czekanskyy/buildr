@@ -284,7 +284,9 @@ function Shell(props: EditorAppProps & { readonly ready: Ready }) {
             <SamplePicker
               adapter={adapter}
               docRef={documentRef}
-              onChange={(contextRef) => host?.setContextRef(contextRef)}
+              onChange={(contextRef) =>
+                host?.setContextRef(contextRef ?? ready.loaded.contextRef ?? null)
+              }
             />
           </>
         }
@@ -306,6 +308,7 @@ function Shell(props: EditorAppProps & { readonly ready: Ready }) {
               locale={locale}
               breakpoints={config.breakpoints}
               breakpoint={breakpoint}
+              contextRef={ready.loaded.contextRef ?? null}
               onHost={setHost}
               callbacks={{
                 onKeyDown: (event) => {

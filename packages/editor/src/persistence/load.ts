@@ -31,6 +31,7 @@ const loadedSchema = z.object({
   revision: z.number().int(),
   document: z.unknown(),
   readOnly: z.boolean().optional(),
+  contextRef: z.string().optional(),
 });
 
 export class LoadError extends Error {
@@ -69,5 +70,6 @@ export async function loadDocument(
     revision: shape.data.revision,
     document,
     readOnly: shape.data.readOnly === true || !session.canEdit,
+    contextRef: shape.data.contextRef,
   };
 }
