@@ -107,11 +107,11 @@ Spacing sits on a 4px grid with 2px and 6px as fine steps (`--bd-space-0`, `-2`)
 | Element | Rule |
 |---|---|
 | Toolbar | 44px, dark, `--bd-space-4` side padding, gap `--bd-space-3` |
-| Panel (PB-122) | 40px header (tabs or title), scroll body with `--bd-space-5` side padding, optional sticky footer; panels are flat and separated by a 1px line |
+| Panel (PB-122) | 40px header (tabs or title), scroll body with `--bd-space-4` padding, optional sticky footer; panels are flat and separated by a 1px line. See [Panel anatomy](#panel-anatomy) |
 | Between field groups | `--bd-space-4`; label to control `--bd-space-3` (`--bd-space-1` inside a compact field) |
 | Rows (layers, menu items, list view) | `--bd-control-md` (28px) |
 | Tiles | 68px high, `--bd-space-3` gaps |
-| Splitters | 1px line with an 8px invisible hit area (PB-122; 6px bar until then) |
+| Splitters | 1px line with an 8px invisible hit area (PB-122) |
 | Status bar (PB-122) | 28px |
 | Narrow screens (PB-122, V9) | below 1100px the side panels are overlays; the canvas keeps at least 480px |
 
@@ -161,3 +161,18 @@ Rules:
 ## Themes
 
 Follows the system by default, with a light / dark / system switch remembered per user (V5, PB-123); a host that sets `data-theme` explicitly wins and the switch is hidden. `color-scheme` and scrollbar colours follow the theme (implemented in PB-119, see [Theme](#theme) above).
+
+## Panel anatomy
+
+The three side panels (Insert / Layers, Inspector) share one frame, provided by the shell (`EditorLayout` renders each slot inside a `Panel`, `ui/panel.tsx`). The panel is one column that scrolls as a whole; the header and the footer are `position: sticky`, so they stay in view.
+
+| Piece | Class / component | Rule |
+|---|---|---|
+| Frame | `.bd-panel` / `<Panel as="aside">` | flat `--bd-surface` column, `overflow: auto`, no border of its own (the splitter is the line) |
+| Header | `.bd-panel-header` / `<PanelHeader>` | 40px (`--bd-panel-header`), sticky top, 1px bottom line, holds tabs or a title; `--bd-space-4` side padding |
+| Body | `.bd-panel-body` / `<PanelBody>` | `--bd-space-4` padding on every side |
+| Footer | `.bd-panel-footer` / `<PanelFooter>` | optional, sticky bottom, 1px top line |
+
+A panel renders `<PanelHeader>`, `<PanelBody>` and optionally `<PanelFooter>` as its top-level children. Until a panel adopts them (PB-125, PB-126, PB-127) its content simply fills the frame without padding. Never add a second scroll container inside a panel body unless the content needs one (a virtualised list).
+
+The status bar (`.bd-issues-bar`, 28px, `--bd-statusbar-height`) sits below the columns: the issues toggle with error (`circle-alert`, `--bd-danger`) and warning (`triangle-alert`, `--bd-warning`) counts on the left; breakpoint, zoom and save state on the right. Below 1100px the panels are overlays (`.bd-body[data-narrow="true"]`) with `--bd-elevation-3`.

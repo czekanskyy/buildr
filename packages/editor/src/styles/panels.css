@@ -25,17 +25,26 @@
   display: flex;
   align-items: center;
   gap: var(--bd-space-1);
-  padding-right: var(--bd-space-3);
+  padding-right: var(--bd-space-1);
   cursor: default;
   white-space: nowrap;
+  /* Indent guides: one hairline per ancestor level, centred under that level's chevron. */
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--bd-border) 0 var(--bd-border-width),
+    transparent var(--bd-border-width) var(--layer-indent)
+  );
+  background-repeat: no-repeat;
+  background-position: calc(var(--layer-pad) + var(--bd-control-sm) / 2) 0;
+  background-size: calc(var(--layer-level) * var(--layer-indent)) 100%;
 }
 .buildr-editor .bd-layer[data-hovered="true"] {
-  background: var(--bd-surface-hover);
+  background-color: var(--bd-surface-hover);
 }
 .buildr-editor .bd-layer[data-selected="true"] {
-  background: var(--bd-surface-selected);
+  background-color: var(--bd-surface-selected);
   color: var(--bd-text);
-  font-weight: var(--bd-weight-semibold);
+  font-weight: var(--bd-weight-medium);
 }
 .buildr-editor .bd-layer[data-selected="true"]::before {
   content: "";
@@ -43,7 +52,7 @@
   top: 0;
   bottom: 0;
   left: 0;
-  width: 2px;
+  width: var(--bd-space-0);
   background: var(--bd-accent);
 }
 .buildr-editor .bd-layers-scroll:focus-visible .bd-layer[data-selected="true"] {
@@ -69,14 +78,21 @@
   color: var(--bd-accent);
 }
 .buildr-editor .bd-layer-label {
-  flex: 1;
+  flex: 0 1 auto;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* The slot name is a muted suffix right after the label; the badges and actions sit at the end. */
 .buildr-editor .bd-layer-slot {
+  flex: none;
+  margin-right: auto;
+  padding-left: var(--bd-space-1);
   font-size: var(--bd-text-xs);
   color: var(--bd-text-subtle);
+}
+.buildr-editor .bd-layer-label:not(:has(+ .bd-layer-slot)) {
+  flex: 1 1 auto;
 }
 .buildr-editor .bd-layer-badge {
   display: grid;
@@ -87,10 +103,35 @@
 .buildr-editor .bd-layer-badge[aria-label] {
   cursor: default;
 }
+.buildr-editor .bd-layer-more {
+  display: none;
+  flex: none;
+}
+.buildr-editor .bd-layer[data-hovered="true"] .bd-layer-more,
+.buildr-editor .bd-layer[data-selected="true"] .bd-layer-more {
+  display: grid;
+}
+.buildr-editor .bd-layer-more .bd-icon-button {
+  width: var(--bd-control-sm);
+  height: var(--bd-control-sm);
+  border-color: transparent;
+  background: transparent;
+  color: var(--bd-text-muted);
+}
+.buildr-editor .bd-layer-more .bd-icon-button:hover {
+  background: var(--bd-surface-hover);
+  color: var(--bd-text);
+}
+.buildr-editor .bd-layer[data-hovered] .bd-layer-rename ~ .bd-layer-more,
+.buildr-editor .bd-layer[data-selected] .bd-layer-rename ~ .bd-layer-more {
+  display: none;
+}
+/* The rename field fits inside the row (row height minus a hairline of air above and below). */
 .buildr-editor .bd-layer-rename {
   flex: 1;
   min-width: 0;
-  height: 22px;
+  height: calc(var(--layer-row) - 2 * var(--bd-space-1));
+  padding-block: 0;
 }
 .buildr-editor .bd-layers-notice {
   margin: 0;
@@ -102,15 +143,17 @@
 .buildr-editor .bd-layers-notice:empty {
   display: none;
 }
+/* Drop indicators (PB-086): a line before/after, a box inside, a red box where it is refused. */
 .buildr-editor .bd-layer[data-drop="inside"] {
   outline: 2px solid var(--bd-accent);
   outline-offset: -2px;
+  background-color: var(--bd-accent-soft);
 }
 .buildr-editor .bd-layer[data-drop="before"] {
-  box-shadow: inset 0 2px 0 var(--bd-accent);
+  box-shadow: inset 0 var(--bd-space-0) 0 var(--bd-accent);
 }
 .buildr-editor .bd-layer[data-drop="after"] {
-  box-shadow: inset 0 -2px 0 var(--bd-accent);
+  box-shadow: inset 0 calc(-1 * var(--bd-space-0)) 0 var(--bd-accent);
 }
 .buildr-editor .bd-layer[data-drop="denied"] {
   outline: 2px solid var(--bd-danger);

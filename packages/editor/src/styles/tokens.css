@@ -96,7 +96,8 @@
   --bd-toolbar-height: 44px;
   --bd-issues-height: 160px;
   --bd-border-width: 1px;
-  --bd-splitter-size: 6px;
+  --bd-splitter-size: 1px;
+  --bd-splitter-hit: 8px;
   --bd-left: 280px;
   --bd-right: 320px;
 
