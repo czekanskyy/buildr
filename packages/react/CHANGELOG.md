@@ -1,5 +1,11 @@
 # @next-buildr/react
 
+## 2.0.0
+
+### Patch Changes
+
+- @next-buildr/core@2.0.0
+
 ## 1.0.0
 
 ### Minor Changes
