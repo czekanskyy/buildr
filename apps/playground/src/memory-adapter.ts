@@ -131,6 +131,13 @@ export function createMemoryAdapter(options: MemoryAdapterOptions = {}): Documen
       });
       return { ok: true, revision: revision + 1, updatedAt: now() };
     },
+    async rename(ref, title) {
+      const current = read(ref) ?? seed(ref);
+      const next = title.trim();
+      if (next === '') throw new Error('The page name cannot be empty.');
+      write(ref, { ...current, title: next });
+      return { title: next };
+    },
     async publish(ref, { baseRevision }) {
       const current = read(ref);
       if (current === undefined || current.revision !== baseRevision) {

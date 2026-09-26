@@ -93,6 +93,7 @@ export function stepOf(def: StylePropertyDef): number {
   const grammar = def.grammar;
   if (grammar.kind !== 'composite' || grammar.number === undefined) return 1;
   if (grammar.length !== undefined) return 1;
+  if (grammar.number.integer === true && grammar.number.min >= 100) return 100;
   return grammar.number.max - grammar.number.min <= 10 && grammar.number.integer !== true ? 0.1 : 1;
 }
 
@@ -128,4 +129,15 @@ export function colorOf(def: StylePropertyDef, text: string, theme: Theme): stri
     return known.ok && known.value.scale === 'color' ? known.value.value : undefined;
   }
   return text;
+}
+
+/** A number confined to a range of at most one (opacity) is also edited with a slider. */
+export function sliderOf(
+  def: StylePropertyDef,
+): { readonly min: number; readonly max: number; readonly step: number } | undefined {
+  const grammar = def.grammar;
+  if (grammar.kind !== 'composite' || grammar.number === undefined) return undefined;
+  if (grammar.length !== undefined) return undefined;
+  const { min, max } = grammar.number;
+  return max - min <= 1 ? { min, max, step: 0.01 } : undefined;
 }

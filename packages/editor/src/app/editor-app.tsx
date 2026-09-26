@@ -265,6 +265,20 @@ function Shell(props: EditorAppProps & { readonly ready: Ready }) {
   const preview = usePreview({ adapter, docRef: documentRef });
   const toast = useToast();
   const previewError = preview.error;
+  const [title, setTitle] = useState(ready.loaded.title);
+  const canRename = adapter.rename !== undefined;
+  const changeTitle = useCallback(
+    async (next: string) => {
+      try {
+        const saved = await adapter.rename?.(documentRef, next);
+        if (saved !== undefined) setTitle(saved.title);
+      } catch (error) {
+        toast.show({ id: 'rename', variant: 'error', message: t('toolbar.title.renameFailed') });
+        throw error;
+      }
+    },
+    [adapter, documentRef, toast, t],
+  );
   useEffect(() => {
     if (previewError === '') toast.dismiss('preview');
     else toast.show({ id: 'preview', variant: 'error', message: previewError });
@@ -303,7 +317,8 @@ function Shell(props: EditorAppProps & { readonly ready: Ready }) {
       <EditorLayout
         toolbar={
           <Toolbar
-            title={ready.loaded.title}
+            title={title}
+            onTitleChange={canRename ? changeTitle : undefined}
             status={ready.loaded.status}
             breakpoints={config.breakpoints}
             breakpoint={breakpoint}

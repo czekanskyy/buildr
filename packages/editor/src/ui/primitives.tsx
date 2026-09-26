@@ -6,7 +6,7 @@ import * as TabsPrimitive from '@radix-ui/react-tabs';
 import * as TogglePrimitive from '@radix-ui/react-toggle';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, Ref } from 'react';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useT } from '../messages/index.tsx';
 import { Icon, type IconName } from './icon.tsx';
 import { usePortalContainer } from './portal.tsx';
@@ -419,7 +419,9 @@ export function SegmentedControl({
 
 // --- NumberUnitInput -----------------------------------------------------------------------------
 
-const NUMBER_WITH_UNIT = /^(-?\d+(?:\.\d+)?)([a-z%]*)$/;
+const NUMBER_WITH_UNIT = /^(-?(?:\d+\.?\d*|\.\d+))([a-z%]*)$/;
+/** What is typed on the way to a number: digits, a sign, a lone dot ("1.", "-", ".5"). */
+const NUMBER_DRAFT = /^-?(?:\d+\.?\d*|\.\d*)?$/;
 
 /** Adds `delta` to a `12px` / `0.5` / `1.5rem` text; `undefined` when the text is not that. */
 export function stepNumberText(
@@ -437,7 +439,7 @@ export function stepNumberText(
 
 export interface NumberUnitInputProps {
   readonly id?: string;
-  /** What is typed: `12px`, `0.5`, a token or a keyword. */
+  /** What is stored: `12px`, `0.5`, a token or a keyword. */
   readonly value: string;
   readonly onValueChange: (text: string) => void;
   /** The units the grammar allows; empty for a bare number. Nothing else is offered. */
@@ -446,7 +448,7 @@ export interface NumberUnitInputProps {
   readonly unitLabel: string;
   /** How much an arrow key adds (Shift: x10, Alt: /10). */
   readonly step?: number;
-  /** The grammar takes a bare number as well as a length: stepping keeps a bare number bare. */
+  /** The grammar takes a bare number as well as a length: the menu then also offers "no unit". */
   readonly bareNumber?: boolean;
   readonly disabled?: boolean;
   readonly invalid?: boolean;
@@ -455,14 +457,26 @@ export interface NumberUnitInputProps {
   readonly ariaLabel?: string | undefined;
   readonly list?: string | undefined;
   readonly placeholder?: string | undefined;
+  /** A narrow field for a row of several (the sides of a box). */
+  readonly compact?: boolean;
+  /** The unit shown while nothing is typed: a row's shared unit. */
+  readonly unit?: string | undefined;
+  /** Leaves the unit menu out: the unit is chosen elsewhere (`unit`). */
+  readonly hideUnitMenu?: boolean;
   readonly onBlur?: () => void;
+  readonly onFocus?: () => void;
 }
 
+/** The label of the "no unit" entry of the menu. */
+const NO_UNIT = '—';
+
 /**
- * A text field for a number with a unit: ArrowUp/ArrowDown step the number (Shift x10, Alt /10)
- * and a unit menu limited to the given units swaps the unit. It only produces text; the caller
- * checks it against the grammar before anything is stored, so it cannot make a value the grammar
- * refuses representable.
+ * A field for a number with a unit chosen from a menu: the field holds only the number, the menu
+ * the unit, so nobody has to type `px`. Typing digits keeps the unit shown; typing a keyword or a
+ * token (`auto`, `$space.4`) switches to text and disables the menu until the field is emptied;
+ * typing a whole length (`1.5rem`) still works. ArrowUp/ArrowDown step the number (Shift x10, Alt
+ * /10). It only produces text; the caller checks it against the grammar before anything is stored,
+ * so it cannot make a value the grammar refuses representable.
  */
 export function NumberUnitInput({
   id,
@@ -478,44 +492,82 @@ export function NumberUnitInput({
   ariaLabel,
   list,
   placeholder,
+  compact,
+  unit: sharedUnit,
+  hideUnitMenu,
   onBlur,
+  onFocus,
 }: NumberUnitInputProps) {
-  const match = NUMBER_WITH_UNIT.exec(value.trim());
-  const unit = match?.[2] ?? '';
-  const menuUnit = units.includes(unit) ? unit : undefined;
+  const typed = value.trim();
+  const match = typed === '' ? null : NUMBER_WITH_UNIT.exec(typed);
+  const isText = typed !== '' && match === null;
   const defaultUnit = bareNumber === true ? '' : (units[0] ?? '');
+  const [pending, setPending] = useState<string | undefined>(undefined);
+  // The unit shown: the one in the value, else the one picked while the field was empty.
+  const unit = match !== null ? (match[2] ?? '') : (pending ?? sharedUnit ?? defaultUnit);
+  const options = [
+    ...(bareNumber === true ? [''] : []),
+    ...units,
+    ...(unit !== '' && !units.includes(unit) ? [unit] : []),
+  ];
+  const shown = match !== null ? match[1] : isText ? value : '';
+
+  const pickUnit = (next: string) => {
+    setPending(next);
+    if (match !== null) onValueChange(`${match[1]}${next}`);
+  };
+
+  const change = (text: string) => {
+    if (units.length > 0 && text !== '' && NUMBER_DRAFT.test(text)) {
+      onValueChange(`${text}${text === '-' ? '' : unit}`);
+    } else {
+      onValueChange(text);
+    }
+  };
+
   return (
-    <div className="bd-number-unit" data-invalid={invalid === true ? '' : undefined}>
+    <div
+      className={cx('bd-number-unit', compact === true && 'bd-number-unit-compact')}
+      data-invalid={invalid === true ? '' : undefined}
+    >
       <Input
         {...(id !== undefined ? { id } : {})}
-        value={value}
+        value={shown}
         disabled={disabled === true}
         list={list}
         placeholder={placeholder}
+        inputMode={isText ? 'text' : 'decimal'}
         aria-invalid={invalid === true}
         aria-describedby={describedBy}
         aria-label={ariaLabel}
         autoComplete="off"
         spellCheck={false}
-        onChange={(event) => onValueChange(event.target.value)}
+        onChange={(event) => change(event.target.value)}
         {...(onBlur !== undefined ? { onBlur } : {})}
+        {...(onFocus !== undefined ? { onFocus } : {})}
         onKeyDown={(event) => {
           if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
           const size = event.shiftKey ? step * 10 : event.altKey ? step / 10 : step;
-          const next = stepNumberText(value, event.key === 'ArrowUp' ? size : -size, defaultUnit);
+          const next = stepNumberText(typed, event.key === 'ArrowUp' ? size : -size, unit);
           if (next === undefined) return;
           event.preventDefault();
           onValueChange(next);
         }}
       />
-      {units.length > 0 && match !== null && menuUnit !== undefined ? (
-        <Select
-          label={unitLabel}
-          value={menuUnit}
-          disabled={disabled === true}
-          options={units.map((entry) => ({ value: entry, label: entry }))}
-          onValueChange={(next) => onValueChange(`${match[1]}${next}`)}
-        />
+      {units.length > 0 && hideUnitMenu !== true ? (
+        <select
+          className="bd-unit-select"
+          aria-label={unitLabel}
+          value={unit}
+          disabled={disabled === true || isText}
+          onChange={(event) => pickUnit(event.target.value)}
+        >
+          {options.map((entry) => (
+            <option key={entry} value={entry}>
+              {entry === '' ? NO_UNIT : entry}
+            </option>
+          ))}
+        </select>
       ) : null}
     </div>
   );
@@ -542,5 +594,47 @@ export function ColorSwatch({ color, className }: ColorSwatchProps) {
       data-empty={safe ? undefined : ''}
       {...(safe ? { style: { backgroundColor: color.trim() } } : {})}
     />
+  );
+}
+
+// --- ColorInput ----------------------------------------------------------------------------------
+
+/** `#abc` and `#aabbcc` as the `#rrggbb` a colour input takes; `undefined` for any other notation. */
+export function hexOf(color: string | undefined): string | undefined {
+  const text = color?.trim().toLowerCase() ?? '';
+  if (/^#[0-9a-f]{6}$/.test(text)) return text;
+  const short = /^#([0-9a-f])([0-9a-f])([0-9a-f])$/.exec(text);
+  if (short === null) return undefined;
+  return `#${short[1]}${short[1]}${short[2]}${short[2]}${short[3]}${short[3]}`;
+}
+
+export interface ColorInputProps {
+  /** The colour being edited, as the theme or the author wrote it; only the swatch paints it. */
+  readonly color: string | undefined;
+  /** Accessible name of the picker. */
+  readonly label: string;
+  readonly disabled?: boolean;
+  /** Called with a `#rrggbb` colour the browser's own picker chose. */
+  readonly onColorChange: (hex: string) => void;
+}
+
+/**
+ * The colour swatch as a button that opens the browser's colour picker. The native input sits
+ * invisibly over the swatch, so it keeps the platform's keyboard and screen-reader behaviour; what
+ * it returns is a hex colour, which the caller still checks against the grammar.
+ */
+export function ColorInput({ color, label, disabled, onColorChange }: ColorInputProps) {
+  return (
+    <span className="bd-color-input">
+      <ColorSwatch color={color} />
+      <input
+        type="color"
+        className="bd-color-native"
+        aria-label={label}
+        value={hexOf(color) ?? '#000000'}
+        disabled={disabled === true}
+        onChange={(event) => onColorChange(event.target.value)}
+      />
+    </span>
   );
 }

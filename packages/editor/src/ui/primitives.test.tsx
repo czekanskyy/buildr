@@ -7,8 +7,10 @@ import * as matchers from 'vitest-axe/matchers';
 import { MessagesProvider } from '../messages/index.tsx';
 import {
   Button,
+  ColorInput,
   ColorSwatch,
   Dialog,
+  hexOf,
   IconButton,
   Input,
   NumberUnitInput,
@@ -286,10 +288,55 @@ describe('UI primitives', () => {
     await key({ key: 'ArrowUp' });
     await key({ key: 'ArrowDown', shiftKey: true });
     expect(onValueChange.mock.calls).toEqual([['11px'], ['0px']]);
-    expect(container.querySelector('.bd-select-trigger')?.textContent).toContain('px');
+    const select = container.querySelector('select.bd-unit-select') as HTMLSelectElement;
+    expect(select.value).toBe('px');
+    expect([...select.options].map((o) => o.value)).toEqual(['px', 'rem']);
+    expect(input.value).toBe('10');
     expect(stepNumberText('0.5', 0.1, '')).toBe('0.6');
     expect(stepNumberText('', 1, 'px')).toBe('1px');
     expect(stepNumberText('auto', 1, 'px')).toBeUndefined();
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it('NumberUnitInput: the menu picks the unit, typed digits keep it, a keyword disables the menu', async () => {
+    const onValueChange = vi.fn();
+    await show(
+      <NumberUnitInput
+        value="10px"
+        onValueChange={onValueChange}
+        units={['px', 'rem']}
+        unitLabel="Unit"
+        ariaLabel="Gap"
+      />,
+    );
+    const select = container.querySelector('select.bd-unit-select') as HTMLSelectElement;
+    await act(async () => {
+      const set = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value')?.set;
+      set?.call(select, 'rem');
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(onValueChange).toHaveBeenLastCalledWith('10rem');
+    await show(
+      <NumberUnitInput
+        value="auto"
+        onValueChange={onValueChange}
+        units={['px', 'rem']}
+        unitLabel="Unit"
+        ariaLabel="Gap"
+      />,
+    );
+    expect((container.querySelector('select.bd-unit-select') as HTMLSelectElement).disabled).toBe(
+      true,
+    );
+  });
+
+  it('hexOf and ColorInput: the native picker returns a hex colour', async () => {
+    expect(hexOf('#abc')).toBe('#aabbcc');
+    expect(hexOf('$color.primary')).toBeUndefined();
+    const onColorChange = vi.fn();
+    await show(<ColorInput color="#3f5ae0" label="Colour" onColorChange={onColorChange} />);
+    const native = container.querySelector('input[type=color]') as HTMLInputElement;
+    expect(native.value).toBe('#3f5ae0');
     expect(await axe(container)).toHaveNoViolations();
   });
 

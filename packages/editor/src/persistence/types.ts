@@ -90,6 +90,12 @@ export interface DocumentAdapter {
    */
   getRevision?(ref: DocumentRef): Promise<RevisionInfo>;
   save(ref: DocumentRef, request: SaveRequest): Promise<SaveResult>;
+  /**
+   * Renames the page and returns the name the backend kept (it may trim it). The name is not part of
+   * the document, so it is neither versioned nor autosaved. Optional; the editor's title is read-only
+   * without it. A refusal rejects.
+   */
+  rename?(ref: DocumentRef, title: string): Promise<{ readonly title: string }>;
   publish(ref: DocumentRef, request: { readonly baseRevision: number }): Promise<PublishResult>;
   getDataSchema(ref: DocumentRef): Promise<DataSchema>;
   /** The data the page is shown with; `sampleId` (one of `listSamples`) picks the entry a template is previewed against. */

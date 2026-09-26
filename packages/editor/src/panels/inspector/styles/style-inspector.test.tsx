@@ -163,10 +163,10 @@ describe('StyleInspector', () => {
     await mount('mobile');
     const field = container.querySelector('[data-path="layout.gap"]') as HTMLElement;
     expect(field.textContent).toContain('from desktop');
-    const select = container.querySelector(
-      '[data-style-prop="layout.display"] select',
-    ) as HTMLSelectElement;
-    expect(select.options[0]?.text).toContain('grid (tablet)');
+    const pressed = container.querySelector(
+      '[data-style-prop="layout.display"] [aria-pressed=true]',
+    );
+    expect(pressed?.textContent).toBe('grid');
   });
 
   it('does not save a value outside the grammar and says why', async () => {
@@ -238,11 +238,12 @@ describe('style inspector controls (PB-128)', () => {
   it('offers only the units of the grammar and keeps the number when the unit changes', async () => {
     await mount();
     await type(inputAt('layout.gap'), '10px');
-    const trigger = container.querySelector(
-      '[data-path="layout.gap"] .bd-select-trigger',
-    ) as HTMLElement;
-    expect(trigger.getAttribute('aria-label')).toContain('Unit');
-    expect(trigger.textContent).toContain('px');
+    const menu = container.querySelector(
+      '[data-path="layout.gap"] select.bd-unit-select',
+    ) as HTMLSelectElement;
+    expect(menu.getAttribute('aria-label')).toContain('Unit');
+    expect(menu.value).toBe('px');
+    expect(inputAt('layout.gap').value).toBe('10');
   });
 
   it('never steps to a value outside the grammar', async () => {
@@ -254,18 +255,11 @@ describe('style inspector controls (PB-128)', () => {
     expect(styles(store)?.base?.layout?.gap).toBe('$space.4');
   });
 
-  it('writes both sides of an axis on Alt-click as one undo step', async () => {
+  it('moves linked sides together as one undo step', async () => {
     const store = await mount();
-    await act(async () => {
-      buttonNamed('Margin left').dispatchEvent(
-        new MouseEvent('click', { bubbles: true, altKey: true }),
-      );
-    });
     await type(inputAt('spacing.margin.left'), '12px');
     const margin = styles(store)?.base?.spacing?.margin;
-    expect(margin?.left).toBe('12px');
-    expect(margin?.right).toBe('12px');
-    expect(margin?.top).toBeUndefined();
+    expect(margin).toEqual({ top: '12px', right: '12px', bottom: '12px', left: '12px' });
     await act(async () => {
       store.undo();
     });
@@ -273,9 +267,9 @@ describe('style inspector controls (PB-128)', () => {
     expect(styles(store)?.base?.spacing?.margin?.right).toBeUndefined();
   });
 
-  it('chooses a side by clicking it and writes only that side', async () => {
+  it('writes only one side once the sides are unlinked', async () => {
     const store = await mount();
-    await act(async () => buttonNamed('Padding bottom').click());
+    await act(async () => buttonNamed('Padding: Link sides').click());
     await type(inputAt('spacing.padding.bottom'), '$space.2');
     expect(styles(store)?.base?.spacing?.padding).toEqual({ bottom: '$space.2' });
   });
