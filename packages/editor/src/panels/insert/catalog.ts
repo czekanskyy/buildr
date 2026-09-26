@@ -75,6 +75,21 @@ export function filterItems(items: readonly PaletteItem[], query: string): Palet
   return items.filter((item) => words.every((word) => item.haystack.includes(word)));
 }
 
+/** The order categories appear in; a category this list does not know follows, alphabetically. */
+export const CATEGORY_ORDER: readonly string[] = [
+  'layout',
+  'content',
+  'media',
+  'forms',
+  'ui',
+  'cms',
+];
+
+const categoryRank = (category: string): number => {
+  const index = CATEGORY_ORDER.indexOf(category);
+  return index === -1 ? CATEGORY_ORDER.length : index;
+};
+
 export function groupByCategory(items: readonly PaletteItem[]): PaletteGroup[] {
   const groups = new Map<string, PaletteItem[]>();
   for (const item of items) {
@@ -82,5 +97,10 @@ export function groupByCategory(items: readonly PaletteItem[]): PaletteGroup[] {
     if (list === undefined) groups.set(item.category, [item]);
     else list.push(item);
   }
-  return [...groups].map(([category, list]) => ({ category, items: list }));
+  return [...groups]
+    .map(([category, list]) => ({ category, items: list }))
+    .sort(
+      (a, b) =>
+        categoryRank(a.category) - categoryRank(b.category) || a.category.localeCompare(b.category),
+    );
 }

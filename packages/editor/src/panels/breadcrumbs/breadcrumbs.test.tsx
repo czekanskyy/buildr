@@ -55,7 +55,7 @@ describe('Breadcrumbs', () => {
 
     await act(async () => store.select('textNodeA1'));
     const buttons = [...container.querySelectorAll('button')];
-    expect(buttons.map((b) => b.textContent)).toEqual(['buildr/page', 'Hero', 'buildr/text']);
+    expect(buttons.map((b) => b.textContent)).toEqual(['page', 'Hero', 'text']);
     expect(buttons[2]?.getAttribute('aria-current')).toBe('location');
     expect(container.querySelector('nav')?.getAttribute('aria-label')).toBe('Selection path');
     expect(await axe(container)).toHaveNoViolations();
