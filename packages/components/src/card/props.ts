@@ -1,4 +1,4 @@
-import { p } from '@buildr/core';
+import { p } from '@next-buildr/core';
 
 export const CARD_VARIANTS = ['outlined', 'elevated', 'flat'] as const;
 export const CARD_ELEMENTS = ['article', 'div'] as const;

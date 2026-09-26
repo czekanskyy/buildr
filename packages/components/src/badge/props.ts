@@ -1,4 +1,4 @@
-import { p } from '@buildr/core';
+import { p } from '@next-buildr/core';
 
 export const BADGE_VARIANTS = ['neutral', 'primary', 'success', 'warning', 'danger'] as const;
 

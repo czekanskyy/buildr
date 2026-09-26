@@ -1,4 +1,4 @@
-import { defaultTheme, s, validateDocument } from '@buildr/core';
+import { defaultTheme, s, validateDocument } from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import { AccordionItem } from '../accordion-item/definition.ts';
 import { accordionItemFixtures } from '../accordion-item/fixtures.ts';

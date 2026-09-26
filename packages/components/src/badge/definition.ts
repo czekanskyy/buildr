@@ -1,4 +1,4 @@
-import { defineComponent } from '@buildr/react';
+import { defineComponent } from '@next-buildr/react';
 import { badgeProps } from './props.ts';
 import { BadgeView } from './view.tsx';
 

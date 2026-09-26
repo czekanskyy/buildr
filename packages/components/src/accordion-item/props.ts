@@ -1,4 +1,4 @@
-import { p } from '@buildr/core';
+import { p } from '@next-buildr/core';
 
 export const accordionItemProps = {
   summary: p.text({ label: 'Summary', default: 'Question', bindable: true }),

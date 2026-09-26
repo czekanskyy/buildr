@@ -1,4 +1,4 @@
-import { defineComponent } from '@buildr/react';
+import { defineComponent } from '@next-buildr/react';
 import { containerProps } from './props.ts';
 import { ContainerView } from './view.tsx';
 

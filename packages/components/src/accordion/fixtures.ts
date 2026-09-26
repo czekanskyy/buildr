@@ -1,4 +1,4 @@
-import { s } from '@buildr/core';
+import { s } from '@next-buildr/core';
 import type { ComponentFixture } from '../fixtures.ts';
 
 const item = (summary: string, answer: string, open = false) => ({

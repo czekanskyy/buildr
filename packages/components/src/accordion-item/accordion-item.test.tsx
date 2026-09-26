@@ -1,4 +1,4 @@
-import { defaultTheme, runA11y, s, validateDocument } from '@buildr/core';
+import { defaultTheme, runA11y, s, validateDocument } from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import { Accordion } from '../accordion/definition.ts';
 import { Page } from '../page/definition.ts';
