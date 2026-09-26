@@ -12,33 +12,34 @@ import {
   type StylePropertyDef,
   type Theme,
 } from '@next-buildr/core';
-import { useId, useState } from 'react';
+import { type ReactNode, useId, useState } from 'react';
 import { componentMeta, useManifest } from '../../../app/manifest.tsx';
 import { type MessageKey, useT } from '../../../messages/index.tsx';
 import { useEditor, useEditorState } from '../../../store/index.ts';
 import {
-  ColorSwatch,
+  ColorInput,
   IconButton,
   Input,
   NumberUnitInput,
   SegmentedControl,
   Tooltip,
 } from '../../../ui/index.ts';
-import { BoxModel } from './box-model.tsx';
 import {
-  checkStyleInput,
   colorOf,
   isEnumeration,
   isNumeric,
   keywordsOf,
   layerFor,
   partsOf,
+  sliderOf,
   stepOf,
   takesNumber,
   unitsOf,
 } from './model.ts';
-import { SEGMENTED } from './segments.ts';
+import { PAIRS, SEGMENTED } from './segments.ts';
+import { SidesEditor, type SideWrite } from './sides-editor.tsx';
 import { TokenPicker } from './token-picker.tsx';
+import { useStyleValue } from './use-style-value.ts';
 
 export interface StyleInspectorProps {
   readonly node: PageNode;
@@ -75,7 +76,7 @@ function SourceDot(props: { readonly origin: Origin; readonly from: string | und
   );
 }
 
-/** One field for a single value (a whole property, one side or one corner). */
+/** One field for a single value (a whole property). */
 function ValueField(props: {
   readonly def: StylePropertyDef;
   readonly path: string;
@@ -94,43 +95,23 @@ function ValueField(props: {
   const t = useT();
   const ownId = useId();
   const id = props.inputId ?? ownId;
-  const { def, path, effective } = props;
-  const current = Object.hasOwn(effective, path) ? effective[path] : undefined;
-  const [draft, setDraft] = useState<string | undefined>(undefined);
-  const [error, setError] = useState('');
-  const shown = draft ?? (current !== undefined ? String(current.value) : '');
-  const inherited = current !== undefined && current.source !== props.layer;
-
-  const change = (text: string) => {
-    setDraft(text);
-    if (text.trim() === '') {
-      setError('');
-      if (current?.source === props.layer) props.onUnset();
-      return;
-    }
-    const checked = checkStyleInput(def, text, props.theme);
-    if (!checked.ok) {
-      setError(checked.message);
-      return;
-    }
-    setError('');
-    props.onSet(checked.value);
-  };
-  const pick = (ref: string) => {
-    setDraft(undefined);
-    setError('');
-    props.onSet(ref);
-  };
-  // A field whose label is drawn by the caller (a box side) is named by aria-label instead.
+  const { def, path } = props;
+  const field = useStyleValue({
+    def,
+    path,
+    effective: props.effective,
+    layer: props.layer,
+    theme: props.theme,
+    onSet: props.onSet,
+    onUnset: props.onUnset,
+  });
+  const { current, shown, error } = field;
   const ariaLabel =
     props.hideLabel === true && props.inputId === undefined ? props.label : undefined;
   const describedBy = error !== '' ? `${id}-error` : undefined;
   const listId = props.keywords.length > 0 ? `${id}-list` : undefined;
   const swatch = colorOf(def, shown.trim(), props.theme);
-  const blur = () => {
-    setDraft(undefined);
-    setError('');
-  };
+  const slider = sliderOf(def);
 
   return (
     <div className="bd-style-value" data-path={path} data-source={current?.source ?? 'none'}>
@@ -140,7 +121,14 @@ function ValueField(props: {
         </label>
       )}
       <div className="bd-style-input">
-        {def.grammar.kind === 'color' ? <ColorSwatch color={swatch} /> : null}
+        {def.grammar.kind === 'color' ? (
+          <ColorInput
+            color={swatch}
+            label={`${props.label}: ${t('style.colorPicker')}`}
+            disabled={props.disabled}
+            onColorChange={field.change}
+          />
+        ) : null}
         {isNumeric(def) ? (
           <NumberUnitInput
             id={id}
@@ -154,8 +142,8 @@ function ValueField(props: {
             describedBy={describedBy}
             ariaLabel={ariaLabel}
             list={listId}
-            onValueChange={change}
-            onBlur={blur}
+            onValueChange={field.change}
+            onBlur={field.blur}
           />
         ) : (
           <Input
@@ -168,8 +156,8 @@ function ValueField(props: {
             aria-label={ariaLabel}
             autoComplete="off"
             spellCheck={false}
-            onChange={(event) => change(event.target.value)}
-            onBlur={blur}
+            onChange={(event) => field.change(event.target.value)}
+            onBlur={field.blur}
           />
         )}
         <TokenPicker
@@ -178,9 +166,26 @@ function ValueField(props: {
           label={props.label}
           current={current !== undefined ? String(current.value) : undefined}
           disabled={props.disabled}
-          onPick={pick}
+          onPick={field.pick}
         />
       </div>
+      {slider !== undefined ? (
+        <input
+          type="range"
+          className="bd-range"
+          aria-label={`${props.label}: ${t('style.slider')}`}
+          min={slider.min}
+          max={slider.max}
+          step={slider.step}
+          value={
+            Number.isFinite(Number(field.stored)) && field.stored !== ''
+              ? Number(field.stored)
+              : slider.max
+          }
+          disabled={props.disabled}
+          onChange={(event) => field.change(event.target.value)}
+        />
+      ) : null}
       {listId !== undefined ? (
         <datalist id={listId}>
           {props.keywords.map((keyword) => (
@@ -188,7 +193,7 @@ function ValueField(props: {
           ))}
         </datalist>
       ) : null}
-      {inherited ? (
+      {field.inherited && current !== undefined ? (
         <span className="bd-style-source">{`${t('style.from')} ${current.source === 'base' ? t('style.desktop') : current.source}`}</span>
       ) : null}
       {error !== '' ? (
@@ -208,12 +213,18 @@ function StyleProperty(props: {
   readonly theme: Theme;
   readonly disabled: boolean;
   readonly onError: (message: string) => void;
+  /** Draws the sides as a ring around this box (margin around padding). */
+  readonly ring?: boolean;
+  /** Label on the left, control on the right (Elementor style) instead of one above the other. */
+  readonly inline?: boolean;
+  /** What sits inside the ring. */
+  readonly children?: ReactNode;
 }) {
   const t = useT();
   const store = useEditor();
   const { def, nodeId, effective, layer } = props;
   const id = useId();
-  const label = humanize(def.name);
+  const label = def.group === 'border' && def.name === 'width' ? 'Border' : humanize(def.name);
   const parts = partsOf(def);
   const layerObject = layerFor(layer);
 
@@ -242,13 +253,15 @@ function StyleProperty(props: {
     });
   type Result = ReturnType<typeof setOne>;
   const report = (result: Result) => props.onError(result.ok ? '' : (result.error?.message ?? ''));
-  /** Several sides at once (Alt-click in the box model) are one undo step. */
-  const many = (sides: readonly string[], run: (side: string) => Result) => {
-    if (sides.length === 1) return report(run(sides[0] as string));
+  /** Several sides at once (linked sides) are one undo step. */
+  const apply = (writes: readonly SideWrite[]) => {
+    const run = (write: SideWrite): Result =>
+      write.value === undefined ? unsetOne(write.part) : setOne(write.value, write.part);
+    if (writes.length === 1) return report(run(writes[0] as SideWrite));
     let failure = '';
     store.transaction(label, () => {
-      for (const side of sides) {
-        const result = run(side);
+      for (const write of writes) {
+        const result = run(write);
         if (!result.ok) failure ||= result.error?.message ?? '';
       }
       return failure === '';
@@ -267,9 +280,10 @@ function StyleProperty(props: {
   const keywords = keywordsOf(def);
   const key = pathOf(def);
 
-  const head = (control: React.ReactNode) => (
+  const head = (control: ReactNode, extras?: ReactNode) => (
     <div className="bd-style-head">
       {control}
+      {extras}
       <SourceDot origin={origin} from={from} />
       {here ? (
         <IconButton
@@ -279,9 +293,10 @@ function StyleProperty(props: {
           label={`${t('inspector.reset')}: ${label}`}
           onClick={() =>
             parts.length > 0
-              ? many(
-                  parts.filter((part) => effective[pathOf(def, part)]?.source === layer),
-                  unsetOne,
+              ? apply(
+                  parts
+                    .filter((part) => effective[pathOf(def, part)]?.source === layer)
+                    .map((part) => ({ part, value: undefined })),
                 )
               : unset()
           }
@@ -309,49 +324,30 @@ function StyleProperty(props: {
     );
   }
 
-  let title: React.ReactNode = <span className="bd-field-label">{label}</span>;
-  let body: React.ReactNode;
-  if (def.shape === 'box') {
-    body = (
-      <BoxModel
-        def={def}
-        label={label}
-        effective={effective}
-        layer={layer}
-        disabled={props.disabled}
-        renderEditor={(sides) => {
-          const first = sides[0] as string;
-          return (
-            <ValueField
-              {...base}
-              keywords={keywords}
-              path={pathOf(def, first)}
-              label={`${label} ${t(`style.side.${first}` as MessageKey)}`}
-              hideLabel
-              onSet={(value) => many(sides, (side) => setOne(value, side))}
-              onUnset={() => many(sides, (side) => unsetOne(side))}
-            />
-          );
-        }}
-      />
-    );
-  } else if (parts.length > 0) {
-    body = (
-      <div className="bd-style-box" data-shape={def.shape}>
-        {parts.map((part) => (
-          <ValueField
-            key={part}
-            {...base}
-            keywords={keywords}
-            path={pathOf(def, part)}
-            label={humanize(part)}
-            onSet={(value) => set(value, part)}
-            onUnset={() => unset(part)}
-          />
-        ))}
+  if (parts.length > 0) {
+    return (
+      <div
+        className={props.ring === true ? 'bd-style-field bd-style-ring' : 'bd-field bd-style-field'}
+        data-style-prop={key}
+        data-origin={origin}
+      >
+        <SidesEditor
+          {...base}
+          label={label}
+          parts={parts}
+          layout={props.ring === true ? 'ring' : 'row'}
+          apply={apply}
+          renderHead={(extras) => head(<span className="bd-field-label">{label}</span>, extras)}
+        >
+          {props.children}
+        </SidesEditor>
       </div>
     );
-  } else if (isEnumeration(def)) {
+  }
+
+  let title: ReactNode = <span className="bd-field-label">{label}</span>;
+  let body: ReactNode;
+  if (isEnumeration(def)) {
     const current = effective[key];
     const segments = SEGMENTED[key]?.filter((segment) => keywords.includes(segment.keyword));
     const currentText = current !== undefined ? String(current.value) : undefined;
@@ -373,8 +369,8 @@ function StyleProperty(props: {
             options={segments.map((segment) => ({
               value: segment.keyword,
               label: segment.keyword,
-              icon: segment.icon,
-              iconOnly: true,
+              ...(segment.icon !== undefined ? { icon: segment.icon } : {}),
+              iconOnly: segment.icon !== undefined,
             }))}
             onValueChange={(keyword) =>
               current?.source === layer && currentText === keyword ? unset() : set(keyword)
@@ -432,7 +428,11 @@ function StyleProperty(props: {
   }
 
   return (
-    <div className="bd-field bd-style-field" data-style-prop={key} data-origin={origin}>
+    <div
+      className={`bd-field bd-style-field${props.inline === true ? ' bd-style-inline' : ''}`}
+      data-style-prop={key}
+      data-origin={origin}
+    >
       {head(title)}
       {body}
     </div>
@@ -478,6 +478,7 @@ export function StyleInspector({ node, breakpoint, theme = defaultTheme }: Style
           theme={theme}
           disabled={disabled || !knownLayer}
           onError={setNotice}
+          boxBorder={groups.includes('spacing') && groups.includes('border')}
         />
       ))}
       <div role="status" className="bd-inspector-notice">
@@ -495,27 +496,76 @@ function StyleGroupSection(props: {
   readonly theme: Theme;
   readonly disabled: boolean;
   readonly onError: (message: string) => void;
+  /** Spacing and border are both allowed: border width sits between margin and padding. */
+  readonly boxBorder: boolean;
 }) {
   const t = useT();
+  const borderWidth = getStyleProperty('border', 'width');
+  const inBox = props.boxBorder && borderWidth !== undefined;
   const defs = propertiesOfGroup(props.group).filter(
-    (def) => getStyleProperty(def.group, def.name) !== undefined,
+    (def) =>
+      getStyleProperty(def.group, def.name) !== undefined &&
+      !(inBox && def.group === 'border' && def.name === 'width'),
   );
   const used = Object.keys(props.effective).some((path) => path.startsWith(`${props.group}.`));
+  const byName = new Map(defs.map((def) => [def.name, def]));
+  const common = {
+    nodeId: props.nodeId,
+    effective: props.effective,
+    layer: props.layer,
+    theme: props.theme,
+    disabled: props.disabled,
+    onError: props.onError,
+  };
+
+  // Margin wraps padding as a ring (the way the page nests them); pairs share one row.
+  const nested = props.group === 'spacing' && byName.has('margin') && byName.has('padding');
+  const paired = new Map<string, StylePropertyDef>();
+  for (const [first, second] of PAIRS[props.group] ?? []) {
+    const a = byName.get(first);
+    const b = byName.get(second);
+    if (a !== undefined && b !== undefined) paired.set(first, b);
+  }
+  const seconds = new Set([...paired.values()].map((def) => def.name));
+
+  const rows: ReactNode[] = [];
+  for (const def of defs) {
+    if (seconds.has(def.name)) continue;
+    if (nested && def.name === 'padding') continue;
+    if (nested && def.name === 'margin') {
+      const padding = (
+        <StyleProperty def={byName.get('padding') as StylePropertyDef} ring {...common} />
+      );
+      rows.push(
+        <StyleProperty key={def.name} def={def} ring {...common}>
+          {inBox && borderWidth !== undefined ? (
+            <StyleProperty def={borderWidth} ring {...common}>
+              {padding}
+            </StyleProperty>
+          ) : (
+            padding
+          )}
+        </StyleProperty>,
+      );
+      continue;
+    }
+    const second = paired.get(def.name);
+    if (second !== undefined) {
+      rows.push(
+        <div key={def.name} className="bd-style-pair">
+          <StyleProperty def={def} {...common} />
+          <StyleProperty def={second} {...common} />
+        </div>,
+      );
+      continue;
+    }
+    rows.push(<StyleProperty key={def.name} def={def} inline {...common} />);
+  }
+
   return (
     <details className="bd-style-group" open={used} data-group={props.group}>
       <summary>{t(`style.group.${props.group}` as MessageKey)}</summary>
-      {defs.map((def) => (
-        <StyleProperty
-          key={def.name}
-          nodeId={props.nodeId}
-          def={def}
-          effective={props.effective}
-          layer={props.layer}
-          theme={props.theme}
-          disabled={props.disabled}
-          onError={props.onError}
-        />
-      ))}
+      {rows}
     </details>
   );
 }

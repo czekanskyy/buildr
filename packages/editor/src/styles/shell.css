@@ -607,3 +607,70 @@
 .buildr-editor {
   overflow: hidden;
 }
+
+/* Product identity (top left of the toolbar) */
+.buildr-editor .bd-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bd-space-3);
+  flex: none;
+  padding-right: var(--bd-space-4);
+  border-right: var(--bd-border-width) solid var(--bd-toolbar-border);
+  color: var(--bd-toolbar-text);
+  font-size: var(--bd-text-lg);
+  line-height: var(--bd-leading-lg);
+  font-weight: var(--bd-weight-semibold);
+  letter-spacing: var(--bd-tracking-tight);
+  user-select: none;
+}
+
+.buildr-editor .bd-brand-tile {
+  fill: var(--bd-primary);
+}
+
+.buildr-editor .bd-brand-block {
+  fill: var(--bd-primary-text);
+}
+
+/* The name is the first thing to go when the row runs short. */
+.buildr-editor .bd-toolbar-row[data-level="4"] .bd-brand-name {
+  display: none;
+}
+
+.buildr-editor .bd-toolbar-row[data-level="4"] .bd-brand {
+  padding-right: 0;
+  border-right: 0;
+}
+
+/* The page name is a field that reads as a heading until it is hovered or focused. */
+.buildr-editor .bd-title-input {
+  min-width: 0;
+  height: var(--bd-control-md);
+  padding: 0 var(--bd-space-2);
+  border: var(--bd-border-width) solid transparent;
+  border-radius: var(--bd-radius-sm);
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  text-overflow: ellipsis;
+}
+
+.buildr-editor .bd-title-input:hover:not(:disabled) {
+  border-color: var(--bd-toolbar-border);
+}
+
+.buildr-editor .bd-title-input:focus-visible {
+  border-color: var(--bd-primary);
+  background: var(--bd-toolbar-hover);
+  outline: none;
+}
+
+.buildr-editor .bd-title-input:disabled {
+  opacity: 1;
+}
+
+.buildr-editor .bd-toolbar-heading {
+  display: flex;
+  min-width: 0;
+  margin: 0;
+}

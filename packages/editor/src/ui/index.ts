@@ -6,6 +6,7 @@ export type { PortalContainerProviderProps } from './portal.tsx';
 export { PortalContainerProvider, usePortalContainer } from './portal.tsx';
 export type {
   ButtonProps,
+  ColorInputProps,
   ColorSwatchProps,
   ContextMenuProps,
   DialogProps,
@@ -25,9 +26,11 @@ export type {
 } from './primitives.tsx';
 export {
   Button,
+  ColorInput,
   ColorSwatch,
   ContextMenu,
   Dialog,
+  hexOf,
   IconButton,
   Input,
   NumberUnitInput,

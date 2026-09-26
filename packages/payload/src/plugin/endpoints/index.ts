@@ -9,6 +9,7 @@ import { formsEndpoint } from './forms.ts';
 import { manifestEndpoint } from './manifest.ts';
 import { mediaListEndpoint, mediaUploadEndpoint } from './media.ts';
 import { publishEndpoint } from './publish.ts';
+import { renameEndpoint } from './rename.ts';
 import { samplesEndpoint } from './samples.ts';
 import { saveEndpoint } from './save.ts';
 import { sessionEndpoint } from './session.ts';
@@ -20,6 +21,7 @@ export const buildrEndpoints = (env: EndpointEnv): Endpoint[] => [
   getDocumentEndpoint(env),
   revisionEndpoint(env),
   saveEndpoint(env),
+  renameEndpoint(env),
   publishEndpoint(env),
   dataSchemaEndpoint(env),
   dataContextEndpoint(env),

@@ -2,6 +2,9 @@ import { useMemo } from 'react';
 import { useT } from '../../messages/index.tsx';
 import { pathTo, useEditor, useEditorState } from '../../store/index.ts';
 
+/** `buildr/section` reads as `section`: the namespace says nothing to the author. */
+const shortType = (type: string): string => type.slice(type.indexOf('/') + 1);
+
 /**
  * The path from the root to the selected node, each step a button that selects it. Hovering a step
  * highlights that node on the canvas (through the store's `hoveredId`).
@@ -32,7 +35,7 @@ export function Breadcrumbs() {
                 onFocus={() => store.setHovered(id)}
                 onBlur={() => store.setHovered(null)}
               >
-                {node?.name ?? node?.type ?? id}
+                {node?.name ?? (node === undefined ? id : shortType(node.type))}
               </button>
             </li>
           );

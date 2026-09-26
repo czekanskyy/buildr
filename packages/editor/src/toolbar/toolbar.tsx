@@ -11,6 +11,8 @@ import type { Zoom } from './zoom-menu.tsx';
 export interface ToolbarProps {
   /** The document's title, shown after the link back. */
   readonly title: string;
+  /** Saves a new page name (`adapter.rename`); the title is not editable without it. */
+  readonly onTitleChange?: ((title: string) => Promise<void>) | undefined;
   /** Draft or published, as a pill next to the title. */
   readonly status?: 'draft' | 'published' | undefined;
   readonly breakpoints: readonly BreakpointConfig[];
@@ -58,6 +60,7 @@ export function Toolbar(props: ToolbarProps) {
       <PanelToggle side="left" />
       <ToolbarLeft
         title={props.title}
+        onRename={props.onTitleChange}
         status={props.status}
         cmsUrl={cmsMoved ? undefined : props.cmsUrl}
       />
