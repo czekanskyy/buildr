@@ -28,7 +28,7 @@
     "dependency-cruiser": "^18.4.0",
     "lefthook": "2.1.14",
     "stylelint": "^17.15.0",
-    "turbo": "2.11.2",
+    "turbo": "2.11.4",
     "typescript": "7.0.2",
     "vitest": "5.0.1"
   }
