@@ -41,6 +41,7 @@ The builder is never a full-screen field embedded inside Payload's admin dashboa
 | `@buildr/editor` | core, react (peer, deps), zustand, radix, lexical | The standalone visual editor application |
 | `@buildr/next` | core, react, next | `BuildrPage`, platform bindings, draft mode, canvas/editor routes, metadata, cache tags |
 | `@buildr/payload` | core, payload, (`@buildr/next` in the `next` subpath) | Plugin, endpoints, data source, HTTP adapter, admin UI |
+| `@buildr/mcp` | core, `@modelcontextprotocol/sdk`, zod | MCP server for AI agents: tools, edit sessions, stdio CLI (`buildr-mcp`); the HTTP route lives in `@buildr/payload/mcp` ([mcp.md](mcp.md)) |
 
 Full package layout, subpath exports and the dependency-cruiser-enforced boundary table are in [`ai/package-boundaries.md`](ai/package-boundaries.md).
 
@@ -56,6 +57,8 @@ Full package layout, subpath exports and the dependency-cruiser-enforced boundar
 - [Renderer](renderer.md)
 - [Editor](editor.md), [Drag and drop](drag-and-drop.md), [State management](state-management.md), [Commands](commands.md)
 - [Payload integration](payload.md)
+- [MCP server for AI agents](mcp.md) and [Releasing](releasing.md)
 - [Next.js integration](nextjs.md)
-- [Migrations](migrations.md), [Security](security.md), [Performance](performance.md), [Testing](testing.md)
-- [Roadmap and MVP scope](roadmap.md)
+- [Migrations](migrations.md), [Security](security.md), [Performance](performance.md), [Testing](ai/testing-rules.md)
+- [Roadmap, release status and known gaps](roadmap.md)
+- [Releasing](releasing.md)

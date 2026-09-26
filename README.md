@@ -2,7 +2,7 @@
 
 > An open-source Visual Page Builder for React and Next.js, with a first-class Payload CMS integration.
 
-**Status: 0.1 MVP.** The packages, the reference application (`apps/example-next-payload`) and the end-to-end tests are in place; 0.1.0 is prepared for release (see [docs/roadmap.md](docs/roadmap.md)).
+**Status: 1.0.** All `@buildr/*` packages are versioned together and released as 1.0.0: the document model, renderer, components, the visual editor (with its visual polish), the Next.js and Payload integrations and the MCP server for AI agents, with a reference application and end-to-end tests. Some things that were planned for 1.0 are not done; the honest list is in [docs/roadmap.md](docs/roadmap.md#known-gaps--not-in-100).
 
 ![The Buildr editor: insert panel, canvas and inspector](apps/playground/e2e/visual/__screenshots__/editor-hero-content-light-1440.png)
 
@@ -11,13 +11,24 @@
 Node >= 22 and pnpm >= 10:
 
 ```bash
+# macOS / Linux / Git Bash
 git clone https://github.com/czekanskyy/buildr.git && cd buildr
 pnpm install
 SEED_ADMIN_EMAIL=you@example.com SEED_ADMIN_PASSWORD='choose-a-password' pnpm --filter @buildr/example-next-payload seed
 pnpm dev:example    # http://localhost:3000/pl, admin at /admin
 ```
 
-Then open a page in the admin and click **Edit with Visual Builder**. The full walkthrough is in [docs/getting-started.md](docs/getting-started.md).
+```powershell
+# Windows PowerShell (inline VAR=value does not work there)
+git clone https://github.com/czekanskyy/buildr.git; cd buildr
+pnpm install
+$env:SEED_ADMIN_EMAIL = 'you@example.com'; $env:SEED_ADMIN_PASSWORD = 'choose-a-password'
+pnpm --filter '@buildr/example-next-payload' seed
+Remove-Item Env:SEED_ADMIN_EMAIL, Env:SEED_ADMIN_PASSWORD   # they stay set for the session otherwise
+pnpm dev:example    # http://localhost:3000/pl, admin at /admin
+```
+
+Then open a page in the admin and click **Edit with Visual Builder**. The full walkthrough, and how to set environment variables on Windows, is in [docs/getting-started.md](docs/getting-started.md) ([PowerShell section](docs/getting-started.md#environment-variables-on-windows-powershell)).
 
 ## What Buildr is
 
@@ -51,8 +62,16 @@ Then open a page in the admin and click **Edit with Visual Builder**. The full w
 An agent (Claude Code, Claude Desktop, any MCP client) can discover the components, insert, style, translate and validate pages and save them as **drafts**; publishing is off unless you enable it. It uses commands, never raw HTML or JSON, so the result opens in the editor like any other page.
 
 ```bash
+# macOS / Linux / Git Bash
 BUILDR_MCP=1 pnpm dev:example    # then create an agent user with an API key in /admin
 claude mcp add buildr --env BUILDR_API_KEY=<key> -- npx buildr-mcp --url http://localhost:3000
+```
+
+```powershell
+# Windows PowerShell (the variable stays set for the session; remove it when done)
+$env:BUILDR_MCP = '1'; pnpm dev:example    # then create an agent user with an API key in /admin
+claude mcp add buildr --env BUILDR_API_KEY=<key> -- npx buildr-mcp --url http://localhost:3000
+Remove-Item Env:BUILDR_MCP
 ```
 
 Setup, prompts, tool reference and security notes: [docs/mcp.md](docs/mcp.md).
@@ -61,7 +80,9 @@ Setup, prompts, tool reference and security notes: [docs/mcp.md](docs/mcp.md).
 
 - [Architecture overview](docs/architecture.md) — start here
 - [Core concepts](docs/core-concepts.md)
-- [Roadmap and MVP scope](docs/roadmap.md)
+- [Roadmap, release status and known gaps](docs/roadmap.md)
+- [Getting started](docs/getting-started.md) (including environment variables on Windows)
+- [Releasing](docs/releasing.md)
 - [Architecture Decision Records](docs/adr/README.md)
 - [Implementation backlog](docs/backlog/README.md)
 - [Building pages with AI agents (MCP server)](docs/mcp.md)
@@ -73,4 +94,4 @@ The project is built task by task from the [backlog](docs/backlog/README.md). Re
 
 ## License
 
-MIT (see `LICENSE`). The name “Buildr” is subject to a trademark policy that will be published with the first release.
+MIT (see `LICENSE`). The name “Buildr” is subject to a trademark policy; none has been published yet.

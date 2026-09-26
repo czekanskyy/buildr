@@ -28,7 +28,8 @@ The score of a brief is the share of applicable rules passed. Each run writes `e
 
 Nothing runs without `ANTHROPIC_API_KEY`: the command prints that and exits successfully.
 
-```sh
+```bash
+# macOS / Linux / Git Bash
 # 1. The Anthropic SDK is not a dependency of @buildr/mcp (see below): install it locally, do not commit it.
 pnpm add -D @anthropic-ai/sdk --filter @buildr/mcp --ignore-workspace-root-check
 
@@ -39,6 +40,19 @@ ANTHROPIC_API_KEY=... pnpm --filter @buildr/mcp eval
 BUILDR_MCP=1 pnpm dev:example    # seed an agent user with an API key first (docs/mcp.md#quickstart)
 ANTHROPIC_API_KEY=... BUILDR_EVAL_URL=http://localhost:3000 BUILDR_API_KEY=<agent key> \
   pnpm --filter @buildr/mcp eval --brief bakery-landing
+```
+
+Windows PowerShell does not accept inline `VAR=value command`; set the variables first. They stay set for the whole session, so remove them afterwards (see [Environment variables on Windows (PowerShell)](../../../docs/getting-started.md#environment-variables-on-windows-powershell)):
+
+```powershell
+# 2. Against the playground
+$env:ANTHROPIC_API_KEY = '...'
+pnpm --filter '@buildr/mcp' eval
+
+# 3. Against the example app (start it in another window: $env:BUILDR_MCP = '1'; pnpm dev:example)
+$env:BUILDR_EVAL_URL = 'http://localhost:3000'; $env:BUILDR_API_KEY = '<agent key>'
+pnpm --filter '@buildr/mcp' eval --brief bakery-landing
+Remove-Item Env:ANTHROPIC_API_KEY, Env:BUILDR_EVAL_URL, Env:BUILDR_API_KEY
 ```
 
 | Variable | Meaning |

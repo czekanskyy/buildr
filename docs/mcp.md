@@ -15,7 +15,19 @@ A [Model Context Protocol](https://modelcontextprotocol.io) server that lets an 
 
 About ten minutes, using the example app. You need Node >= 22 and pnpm >= 10 and a clone of the repository set up as in [getting-started.md](getting-started.md).
 
-1. **Start the site with agents enabled.** `BUILDR_MCP=1 pnpm dev:example` (the example turns `mcp.enabled` on and gives the `users` collection API keys). Agents are off unless you enable them.
+1. **Start the site with agents enabled.** The example turns `mcp.enabled` on and gives the `users` collection API keys when `BUILDR_MCP=1`. Agents are off unless you enable them.
+
+   ```bash
+   # macOS / Linux / Git Bash
+   BUILDR_MCP=1 pnpm dev:example
+   ```
+
+   ```powershell
+   # Windows PowerShell: inline VAR=value does not work; the variable stays set for the session
+   $env:BUILDR_MCP = '1'; pnpm dev:example
+   Remove-Item Env:BUILDR_MCP   # when you are done (see [Environment variables on Windows (PowerShell)](getting-started.md#environment-variables-on-windows-powershell))
+   ```
+
 2. **Create an agent user.** In the admin (`/admin`) create a user named for the agent with the role `author` (the example app lets only `admin` and `editor` publish), open it, enable **API key** and copy the key. Give an agent its own user, never your own account.
 3. **Connect a client.** With Claude Code:
 
@@ -90,7 +102,7 @@ Mount the HTTP route once (see [Remote server](#remote-server-streamable-http-bu
 
 ## What the agent gets
 
-**The guide.** The resource `buildr://guide` (markdown) is how Buildr thinks: Page > Section > Container > content, templates versus trees, style tokens and mobile overrides, bindings and formulas, localization, accessibility, the validate-then-save workflow and what never to do. Source: `packages/mcp/src/resources/guide.md`. It is compiled into `guide-text.ts` (a test fails when they differ; `UPDATE_MCP_DOCS=1 pnpm test --filter @buildr/mcp` regenerates it), so it ships in the package with no runtime file access. The server's `instructions` string points at it, and every prompt embeds it, for clients that do not read resources on their own.
+**The guide.** The resource `buildr://guide` (markdown) is how Buildr thinks: Page > Section > Container > content, templates versus trees, style tokens and mobile overrides, bindings and formulas, localization, accessibility, the validate-then-save workflow and what never to do. Source: `packages/mcp/src/resources/guide.md`. It is compiled into `guide-text.ts` (a test fails when they differ; regenerate it with `UPDATE_MCP_DOCS=1 pnpm test --filter @buildr/mcp`, in PowerShell `$env:UPDATE_MCP_DOCS = '1'; pnpm test --filter '@buildr/mcp'`, then `Remove-Item Env:UPDATE_MCP_DOCS`), so it ships in the package with no runtime file access. The server's `instructions` string points at it, and every prompt embeds it, for clients that do not read resources on their own.
 
 **Prompts** (`createPrompts()`, served by `createBuildrMcpServerWithTools`; users pick them in their client, usually as slash commands):
 
@@ -107,7 +119,7 @@ Mount the HTTP route once (see [Remote server](#remote-server-streamable-http-bu
 
 ## Tool reference
 
-Generated from the tool definitions; a test fails when it is stale (`UPDATE_MCP_DOCS=1 pnpm test --filter @buildr/mcp` rewrites it). `publish` is listed but only registered when [publishing is enabled](#validate-save-and-publish).
+Generated from the tool definitions; a test fails when it is stale (`UPDATE_MCP_DOCS=1 pnpm test --filter @buildr/mcp` rewrites it; PowerShell: `$env:UPDATE_MCP_DOCS = '1'; pnpm test --filter '@buildr/mcp'`, then `Remove-Item Env:UPDATE_MCP_DOCS`). `publish` is listed but only registered when [publishing is enabled](#validate-save-and-publish).
 
 <!-- tool-reference:start (generated: UPDATE_MCP_DOCS=1 pnpm test --filter @buildr/mcp) -->
 
@@ -660,7 +672,7 @@ Tree input accepts a plain JSON prop value as shorthand for a static `Value` (`{
 
 #### Test fixture
 
-`@buildr/mcp` must not depend on `@buildr/components` (ADR-024), yet the snapshot tests cover every built-in component. The default manifest is committed as `packages/mcp/fixtures/default-manifest.json` and read by the test kit; `packages/components/src/mcp-manifest-fixture.test.ts` fails when it is stale. Regenerate with `UPDATE_MCP_FIXTURE=1 pnpm test --filter @buildr/components`.
+`@buildr/mcp` must not depend on `@buildr/components` (ADR-024), yet the snapshot tests cover every built-in component. The default manifest is committed as `packages/mcp/fixtures/default-manifest.json` and read by the test kit; `packages/components/src/mcp-manifest-fixture.test.ts` fails when it is stale. Regenerate with `UPDATE_MCP_FIXTURE=1 pnpm test --filter @buildr/components` (PowerShell: `$env:UPDATE_MCP_FIXTURE = '1'; pnpm test --filter '@buildr/components'`, then `Remove-Item Env:UPDATE_MCP_FIXTURE`).
 
 ### Discovery tools and resources
 
@@ -682,9 +694,18 @@ Two layers, kept apart on purpose (PB-145).
 
 **Scripted MCP client suite (blocking, in CI).** `apps/example-next-payload/e2e/mcp/scenarios.spec.ts` is an MCP client without a model: it makes the tool calls an agent would make, over Streamable HTTP as a seeded agent user (role `author`, API key), and builds MVP scenarios 1 (landing page from templates), 2 (company page: card grid, list, badge, divider, contact), 4 (blog listing), 6 (contact form) and 7 (a Polish page translated into English through `update_node` with `locale`). For each it asserts zero validation and accessibility errors from `validate`, then opens the saved draft in the visual editor with Playwright (no errors in the Issues panel, every node of the agent's document is a row of the Layers tree) and on the draft preview route (`/buildr/preview`). A draft is not public: a visitor gets `404`. The English address of a page (a localized slug) is a person's step, so scenario 7 sets it through Payload's REST API like the editor tests do.
 
-```sh
+```bash
+# macOS / Linux / Git Bash
 BUILDR_MCP=1 pnpm --filter @buildr/example-next-payload e2e         # everything, agents on (what CI runs)
 BUILDR_MCP=1 pnpm --filter @buildr/example-next-payload e2e e2e/mcp # only the agent suite
+```
+
+```powershell
+# Windows PowerShell (the variable stays set for the session; see [Environment variables on Windows (PowerShell)](getting-started.md#environment-variables-on-windows-powershell))
+$env:BUILDR_MCP = '1'
+pnpm --filter '@buildr/example-next-payload' e2e             # everything, agents on (what CI runs)
+pnpm --filter '@buildr/example-next-payload' e2e e2e/mcp     # only the agent suite
+Remove-Item Env:BUILDR_MCP
 ```
 
 `e2e/serve.mjs` seeds the agent user (`SEED_AGENT_EMAIL`, `SEED_AGENT_API_KEY`, only with `BUILDR_MCP=1`) and lifts the write rate limit (`BUILDR_MCP_RATE_LIMIT`). Without `BUILDR_MCP=1` the suite is skipped and the default e2e run is unchanged.

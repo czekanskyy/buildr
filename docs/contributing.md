@@ -8,7 +8,7 @@ Buildr is built task by task from the [implementation backlog](backlog/README.md
 2. Branch from `main`: `pb-xxx/short-slug`.
 3. Read every document the task card references before writing code.
 4. Implement exactly what the card describes — no scope creep. If you discover the task needs a decision not covered by an existing ADR, stop and open the PR anyway with a `needs-decision` label, describing the open question.
-5. Write the tests the card requires (see [testing.md](testing.md) and [ai/testing-rules.md](ai/testing-rules.md)).
+5. Write the tests the card requires (see [ai/testing-rules.md](ai/testing-rules.md)).
 6. Run `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm check:boundaries` locally.
 7. Add a changeset (`pnpm changeset`) for any change to a published package.
 8. Open a PR titled with [Conventional Commits](https://www.conventionalcommits.org/) syntax and the task ID, e.g. `feat(core): add document index (PB-008)`. Fill in the PR template checklist.
@@ -19,19 +19,19 @@ Buildr is built task by task from the [implementation backlog](backlog/README.md
 - Squash merge. Short-lived branches.
 - Conventional Commits scopes match package names: `core`, `react`, `components`, `editor`, `next`, `payload`, `repo`, `docs`.
 - Versioning uses a **fixed** Changesets group — every `@buildr/*` package is released together, at the same version, the same approach Payload itself uses (see [ADR-001](adr/ADR-001-monorepo.md)).
-- In the 0.x series, any breaking change requires a minor version bump and a migration note. From the very first release, the **document format itself is protected**: no version, including a 0.x one, may break previously-saved documents without a migration.
+- Since 1.0.0 the packages follow semver: a breaking change to a published entry point needs a **major** changeset, and the **document format itself is protected**: no version may break previously-saved documents without a migration. See [releasing.md](releasing.md) for the release flow.
 - `internal/` module exports are not covered by semver guarantees; only the package's declared entry points are.
 
 ## CI
 
-- `quality`: install (frozen lockfile) -> lint -> `check:boundaries` -> typecheck.
-- `test`: affected-aware test run with coverage thresholds (see [testing.md](testing.md)).
-- `build`: package builds plus `publint` plus `@arethetypeswrong/cli` plus `size-limit`.
-- `e2e`: Playwright against `example-next-payload`, sharded, only for affected changes.
-- `visual`: nightly, plus the `visual` PR label.
-- `changeset-check`, `pr-title`.
-- `nightly`: a Node 22/24 x Next 15/16 x SQLite/Postgres matrix, benchmarks, the full E2E suite.
-- `release`: on `main`, via `changesets/action`, with npm provenance.
+What runs today (`.github/workflows`):
+
+- `CI`: `Quality` (install with a frozen lockfile, lint, `check:boundaries`, typecheck), `Test` (turbo, affected-aware on pull requests), `Build` (package builds), `E2E` (Playwright against `example-next-payload`, with `BUILDR_MCP=1` so the MCP suite runs too) and `PR title` (Conventional Commits, a scope from the list above).
+- `Visual`: screenshot comparison of the playground fixtures and the editor states; a pull request labelled `visual` re-takes the baselines.
+- `Release`: `changeset-check` on pull requests; on `main`, `changesets/action` opens the Version PR or publishes to npm with provenance ([releasing.md](releasing.md)).
+- `Nightly`: lint, boundaries, typecheck, test and build on Node 22 and 24. It is a skeleton.
+
+Not in CI (planned, see [roadmap.md](roadmap.md#known-gaps--not-in-100)): `publint`, `@arethetypeswrong/cli`, `size-limit`, sharded E2E, a Next.js/Payload/SQLite/Postgres compatibility matrix and benchmarks.
 
 ## Definition of Done
 
