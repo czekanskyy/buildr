@@ -100,6 +100,13 @@ export const saveResponseSchema = z.object({
 });
 export type SaveResponse = z.infer<typeof saveResponseSchema>;
 
+/** `PATCH /buildr/documents/:collection/:id`: renames the document; the layout is not touched. */
+export const renameRequestSchema = z.object({ title: z.string().trim().min(1).max(200) });
+export type RenameRequest = z.infer<typeof renameRequestSchema>;
+
+export const renameResponseSchema = z.object({ title: z.string() });
+export type RenameResponse = z.infer<typeof renameResponseSchema>;
+
 export const publishRequestSchema = z.object({ baseRevision: z.number().int().nonnegative() });
 export type PublishRequest = z.infer<typeof publishRequestSchema>;
 

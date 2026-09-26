@@ -31,7 +31,7 @@ export interface Reply {
 export interface Http {
   /** `path` is relative to `baseUrl` (`/buildr/session`). Never rejects for an HTTP status, only for the network. */
   send(
-    method: 'GET' | 'POST' | 'PUT',
+    method: 'GET' | 'POST' | 'PUT' | 'PATCH',
     path: string,
     init?: { readonly query?: Record<string, string | undefined>; readonly body?: unknown },
   ): Promise<Reply>;

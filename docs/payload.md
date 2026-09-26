@@ -55,6 +55,7 @@ buildrPlugin({
 | GET | `/api/buildr/documents/:collection/:id` | `?draft=1&locale=` | `{ ref, title, slug, status, updatedAt, revision, document, contextRef, previewPath, readOnly? }` | read + edit |
 | GET | `/api/buildr/documents/:collection/:id/revision` | — | `{ revision, updatedAt, updatedBy? }` (`updatedBy` only with `mcp.enabled`) | edit |
 | PUT | `/api/buildr/documents/:collection/:id` | `{ document, baseRevision, autosave }` | `200 { revision, updatedAt }` / `409 { currentRevision }` / `422 { diagnostics }` | edit |
+| PATCH | `/api/buildr/documents/:collection/:id` | `{ title }` | `200 { title }` (renames; layout and revision untouched) | edit |
 | POST | `/api/buildr/documents/:collection/:id/publish` | `{ baseRevision }` | `200 { status, publishedAt }` / `409` / `422` | publish |
 | GET | `/api/buildr/data-schema/:collection` | — | `DataSchema` | edit |
 | GET | `/api/buildr/data/context` | `?collection&id&draft&locale` | `{ scopes }` | edit |
@@ -175,6 +176,7 @@ The plugin registers the [endpoint contract](#endpoint-contract) as Payload endp
 | `GET /buildr/manifest` | the registry manifest | `401`, `404` without a registry |
 | `GET /buildr/documents/:collection/:id` | latest draft: layout (migrated in memory), title, slug, status, revision, `previewPath`, `readOnly` | `401`, `404` |
 | `PUT /buildr/documents/:collection/:id` | save `{ document, baseRevision, autosave }` | `400`, `401`, `403`, `404`, `409 { currentRevision }`, `422 { diagnostics }` |
+| `PATCH /buildr/documents/:collection/:id` | rename `{ title }` (writes `admin.useAsTitle`, default `title`) | `400`, `401`, `403`, `404` |
 | `POST /buildr/documents/:collection/:id/publish` | publish the latest draft, `{ baseRevision }` | as above; `422` also for a11y errors when `a11y.publish: 'block'` |
 
 - Every call is made with the caller's `req` and `overrideAccess: false`, so Payload's own access control applies; `options.access` may narrow `edit` / `publish` further.
@@ -188,7 +190,7 @@ The plugin registers the [endpoint contract](#endpoint-contract) as Payload endp
 - **Authentication**: every builder endpoint answers `401` without a Payload user.
 - **Permissions** (`plugin/access.ts`): `access.edit`, `access.publish` and `access.unlockTemplates` decide per request; without a function any authenticated user may. Reading a document opens the builder, so it needs `edit` (`403` otherwise); saving needs `edit`; publishing needs `publish`. The session response reports `permissions: { canEdit, canPublish, canUnlockTemplates }` so the UI can hide what the server would refuse.
 - **Collection access**: every Local API call uses the caller's `req` and `overrideAccess: false`, so Payload's own read/update rules (and multi-tenant scoping) apply on top of the plugin's functions.
-- **CSRF** (`endpoints/guards.ts`): `PUT` and `POST` need `Content-Type: application/json` (`415`), and an `Origin` header, when present, must be the server's own origin or in Payload's `csrf` allowlist (`403`). Requests without an `Origin` (scripts) pass; browsers always send it.
+- **CSRF** (`endpoints/guards.ts`): `PUT`, `PATCH` and `POST` need `Content-Type: application/json` (`415`), and an `Origin` header, when present, must be the server's own origin or in Payload's `csrf` allowlist (`403`). Requests without an `Origin` (scripts) pass; browsers always send it.
 
 ## DataSchema and context from Payload (PB-097)
 

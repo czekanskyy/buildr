@@ -113,6 +113,25 @@ describe('GET a document', () => {
   });
 });
 
+describe('PATCH a document (rename)', () => {
+  it('renames without touching the layout or the revision', async () => {
+    const docId = await create();
+    const { status, body } = await h.call('PATCH', path(docId), { body: { title: '  About us ' } });
+    expect(status).toBe(200);
+    expect(body).toEqual({ title: 'About us' });
+    const loaded = documentResponseSchema.parse((await h.call('GET', path(docId), {})).body);
+    expect(loaded.title).toBe('About us');
+    expect(loaded.revision).toBe(0);
+  });
+  it('refuses an empty name and a request without a user', async () => {
+    const docId = await create();
+    expect((await h.call('PATCH', path(docId), { body: { title: '  ' } })).status).toBe(400);
+    expect((await h.call('PATCH', path(docId), { token: null, body: { title: 'x' } })).status).toBe(
+      401,
+    );
+  });
+});
+
 describe('PUT a document (save)', () => {
   it('saves, bumps the revision and stores the layout', async () => {
     const docId = await create();

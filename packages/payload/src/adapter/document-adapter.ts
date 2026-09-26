@@ -24,6 +24,7 @@ import {
   invalidResponseSchema,
   mediaListResponseSchema,
   publishResponseSchema,
+  renameResponseSchema,
   revisionResponseSchema,
   type SessionResponse,
   samplesResponseSchema,
@@ -159,6 +160,11 @@ export function createPayloadAdapter(options: PayloadAdapterOptions): DocumentAd
       if (refused !== undefined) return refused;
       const body = expectBody(reply, saveResponseSchema);
       return { ok: true, revision: body.revision, updatedAt: body.updatedAt };
+    },
+
+    async rename(ref, title) {
+      const reply = await http.send('PATCH', documentPath(ref), { body: { title } });
+      return expectBody(reply, renameResponseSchema);
     },
 
     async publish(ref, request): Promise<PublishResult> {
