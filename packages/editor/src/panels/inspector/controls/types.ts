@@ -1,4 +1,4 @@
-import type { PropDef } from '@buildr/core';
+import type { PropDef } from '@next-buildr/core';
 
 /** What every prop control receives: the definition, the value to show, and how to change it. */
 export interface ControlProps<D extends PropDef = PropDef> {

@@ -4,11 +4,11 @@ import {
   fromManifest,
   type RegistryManifest,
   type RegistryMeta,
-} from '@buildr/core';
+} from '@next-buildr/core';
 
-// The built-in component catalogue for tests. `@buildr/mcp` may not depend on `@buildr/components`
-// (ADR-024), so the manifest is a committed JSON fixture that a test in `@buildr/components`
-// keeps current (`UPDATE_MCP_FIXTURE=1 pnpm test --filter @buildr/components`).
+// The built-in component catalogue for tests. `@next-buildr/mcp` may not depend on `@next-buildr/components`
+// (ADR-024), so the manifest is a committed JSON fixture that a test in `@next-buildr/components`
+// keeps current (`UPDATE_MCP_FIXTURE=1 pnpm test --filter @next-buildr/components`).
 const fixture = new URL('../../fixtures/default-manifest.json', import.meta.url);
 
 export function loadDefaultManifest(): RegistryManifest {

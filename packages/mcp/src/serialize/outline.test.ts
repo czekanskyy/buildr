@@ -1,5 +1,5 @@
-import type { TreeNode, Value } from '@buildr/core';
-import { s } from '@buildr/core';
+import type { TreeNode, Value } from '@next-buildr/core';
+import { s } from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import { loadDefaultRegistry } from './default-manifest.test-kit.ts';
 import { documentFromTree } from './document.test-kit.ts';

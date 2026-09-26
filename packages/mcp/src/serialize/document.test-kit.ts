@@ -1,4 +1,4 @@
-import { type BuilderDocument, fromTree, type PageNode, type TreeNode } from '@buildr/core';
+import { type BuilderDocument, fromTree, type PageNode, type TreeNode } from '@next-buildr/core';
 
 /** A deterministic id generator: n0000001, n0000002, ... (10 characters, like real ids). */
 export function sequentialIds(): () => string {

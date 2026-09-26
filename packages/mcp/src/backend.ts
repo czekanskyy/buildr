@@ -6,16 +6,16 @@ import type {
   RegistryManifest,
   Result,
   Theme,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import { z } from 'zod';
 
 /**
  * The seam every host and backend plugs into (ADR-024, docs/mcp.md#the-backend-interface): the tool
- * layer of `@buildr/mcp` never talks to a CMS, it talks to an `McpBackend`. It plays the role
+ * layer of `@next-buildr/mcp` never talks to a CMS, it talks to an `McpBackend`. It plays the role
  * `DocumentAdapter` plays for the editor. Implementations: `createMemoryBackend` (tests, playground),
- * the HTTP backend and the local backend in `@buildr/payload/mcp`.
+ * the HTTP backend and the local backend in `@next-buildr/payload/mcp`.
  *
- * Contract every implementation honours (checked by `runBackendContract` from `@buildr/mcp/testing`):
+ * Contract every implementation honours (checked by `runBackendContract` from `@next-buildr/mcp/testing`):
  * - Methods never throw for expected failures; they resolve to `{ ok: false, error }` with a typed
  *   `McpError`. A thrown exception is a programmer error.
  * - Documents cross this boundary as `BuilderDocument`s that already passed `parseDocument`.

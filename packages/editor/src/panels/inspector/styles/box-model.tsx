@@ -1,4 +1,4 @@
-import { BOX_SIDES, type EffectiveStyles, type StylePropertyDef } from '@buildr/core';
+import { BOX_SIDES, type EffectiveStyles, type StylePropertyDef } from '@next-buildr/core';
 import { useState } from 'react';
 import { useT } from '../../../messages/index.tsx';
 

@@ -7,7 +7,7 @@ import {
   type Result,
   runA11y,
   validateDocument,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import {
   applyDocumentPatches,
   type Command,
@@ -22,7 +22,7 @@ import {
   type DocumentPatch,
   execute,
   executeBatch,
-} from '@buildr/core/commands';
+} from '@next-buildr/core/commands';
 import { createStore } from 'zustand/vanilla';
 import {
   EMPTY_SELECTION,
@@ -62,7 +62,7 @@ const readOnlyError = (): CommandError =>
 
 /**
  * The editor's store (docs/state-management.md, ADR-013): a vanilla Zustand store whose document
- * changes only through `@buildr/core/commands`. `dispatch` runs `execute`, records the result in
+ * changes only through `@next-buildr/core/commands`. `dispatch` runs `execute`, records the result in
  * the history and swaps in the new document; `undo` and `redo` apply the history's patches with
  * `applyDocumentPatches`; nothing here writes into a document. Every change bumps `docVersion` and
  * is announced to `onChange` (the canvas host turns it into `doc:patch` / `doc:set`), and validation

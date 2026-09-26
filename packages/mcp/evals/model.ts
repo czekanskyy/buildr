@@ -1,5 +1,5 @@
 // The model side of the harness: a tool-use loop over the Anthropic Messages API. The SDK is loaded
-// with a dynamic import so `@buildr/mcp` has no dependency on it (evals/README.md): it is installed
+// with a dynamic import so `@next-buildr/mcp` has no dependency on it (evals/README.md): it is installed
 // only by whoever runs the evals, and only this file ever names it. Types are declared locally for
 // the few fields used, so the package type-checks without the SDK.
 
@@ -52,7 +52,7 @@ export async function createModelClient(apiKey: string): Promise<Anthropic> {
     module = (await import(specifier)) as typeof module;
   } catch {
     throw new Error(
-      'The agent evals need the Anthropic SDK, which @buildr/mcp does not depend on. Install it where you run them: pnpm add -D @anthropic-ai/sdk --filter @buildr/mcp --ignore-workspace-root-check (do not commit the change).',
+      'The agent evals need the Anthropic SDK, which @next-buildr/mcp does not depend on. Install it where you run them: pnpm add -D @anthropic-ai/sdk --filter @next-buildr/mcp --ignore-workspace-root-check (do not commit the change).',
     );
   }
   return new module.default({ apiKey });

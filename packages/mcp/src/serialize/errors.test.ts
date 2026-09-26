@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from 'node:fs';
-import { canInsert, canRemove, createIndex, type Reason } from '@buildr/core';
-import type { Command } from '@buildr/core/commands';
+import { canInsert, canRemove, createIndex, type Reason } from '@next-buildr/core';
+import type { Command } from '@next-buildr/core/commands';
 import { describe, expect, it } from 'vitest';
 import { createEditSession, sessionError } from '../session/index.ts';
 import { loadDefaultManifest, loadDefaultRegistry } from './default-manifest.test-kit.ts';

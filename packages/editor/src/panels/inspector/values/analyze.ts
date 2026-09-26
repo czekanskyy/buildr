@@ -13,7 +13,7 @@ import {
   schemaAtPath,
   typecheck,
   type Value,
-} from '@buildr/core';
+} from '@next-buildr/core';
 
 /** How a formula is read: an expression, or free text with `{{ }}` segments. */
 export type FormulaMode = 'formula' | 'template';

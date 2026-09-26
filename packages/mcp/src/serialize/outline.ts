@@ -1,5 +1,12 @@
-import type { BuilderDocument, NodeId, PageNode, RegistryMeta, Result, Value } from '@buildr/core';
-import { err, ok } from '@buildr/core';
+import type {
+  BuilderDocument,
+  NodeId,
+  PageNode,
+  RegistryMeta,
+  Result,
+  Value,
+} from '@next-buildr/core';
+import { err, ok } from '@next-buildr/core';
 import { quote, truncate } from './text.ts';
 
 export const DEFAULT_OUTLINE_DEPTH = 3;

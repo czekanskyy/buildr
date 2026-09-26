@@ -1,6 +1,6 @@
-import type { PageNode, PropDef, Value } from '@buildr/core';
-import { canEdit, createIndex } from '@buildr/core';
-import type { Command } from '@buildr/core/commands';
+import type { PageNode, PropDef, Value } from '@next-buildr/core';
+import { canEdit, createIndex } from '@next-buildr/core';
+import type { Command } from '@next-buildr/core/commands';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { componentMeta, useManifest } from '../../app/manifest.tsx';

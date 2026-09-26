@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync } from 'node:fs';
-import { defaultTheme, propertiesOfGroup, STYLE_GROUPS } from '@buildr/core';
+import { defaultTheme, propertiesOfGroup, STYLE_GROUPS } from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import { createMemoryBackend } from '../backends/memory.ts';
 import {
@@ -25,7 +25,7 @@ function toModule(markdown: string): string {
   const lines = markdown.replace(/\n$/, '').split('\n');
   const body = lines.map((line) => `  ${quote(line)},`).join('\n');
   const header =
-    '// Generated from guide.md by UPDATE_MCP_DOCS=1 pnpm test --filter @buildr/mcp. Do not edit.';
+    '// Generated from guide.md by UPDATE_MCP_DOCS=1 pnpm test --filter @next-buildr/mcp. Do not edit.';
   return `${header}\nexport const GUIDE_MARKDOWN = [\n${body}\n  '',\n].join('\\n');\n`;
 }
 

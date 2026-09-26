@@ -1,7 +1,7 @@
 import { GUIDE_MARKDOWN } from './guide-text.ts';
 
 // `buildr://guide` (PB-144): how to build good pages with Buildr. The source is `guide.md` (edit
-// that); `guide-text.ts` is generated from it (`UPDATE_MCP_DOCS=1 pnpm test --filter @buildr/mcp`,
+// that); `guide-text.ts` is generated from it (`UPDATE_MCP_DOCS=1 pnpm test --filter @next-buildr/mcp`,
 // a test fails when they differ) so the guide ships inside the compiled JS with no runtime file
 // access, which works in bundlers, serverless functions and `npx` alike.
 

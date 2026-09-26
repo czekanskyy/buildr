@@ -1,4 +1,4 @@
-import { createIndex, type NodeId } from '@buildr/core';
+import { createIndex, type NodeId } from '@next-buildr/core';
 import type { EditorStore } from '../store/index.ts';
 import type { ShortcutRegistry } from './registry.ts';
 

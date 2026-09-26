@@ -4,7 +4,7 @@ import {
   createIndex,
   fromTree,
   type PageNode,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import { describeComponent, formatComponentDescription } from './component.ts';
 import { loadDefaultRegistry } from './default-manifest.test-kit.ts';

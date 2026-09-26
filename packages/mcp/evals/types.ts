@@ -1,5 +1,5 @@
 // The data a scored run consists of. It is exactly what the MCP tools return (`get_outline` with
-// `format: "json"`, `validate`), so the scorer needs neither the model nor `@buildr/core`.
+// `format: "json"`, `validate`), so the scorer needs neither the model nor `@next-buildr/core`.
 
 /** One node of the `get_outline` JSON. */
 export interface OutlineEntry {

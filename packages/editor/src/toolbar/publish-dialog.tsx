@@ -1,4 +1,4 @@
-import type { Diagnostic } from '@buildr/core';
+import type { Diagnostic } from '@next-buildr/core';
 import { useEffect, useState } from 'react';
 import { type MessageKey, useT } from '../messages/index.tsx';
 import {

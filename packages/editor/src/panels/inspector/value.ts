@@ -1,4 +1,4 @@
-import type { PageNode, PropDef, Value } from '@buildr/core';
+import type { PageNode, PropDef, Value } from '@next-buildr/core';
 
 /** What the inspector shows for one prop of one node. */
 export interface PropReading {

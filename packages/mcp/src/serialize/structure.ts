@@ -1,5 +1,5 @@
-import type { ComponentMeta, Matcher, RegistryMeta } from '@buildr/core';
-import { matchesType } from '@buildr/core';
+import type { ComponentMeta, Matcher, RegistryMeta } from '@next-buildr/core';
+import { matchesType } from '@next-buildr/core';
 
 // Answers "what can go where" from the registry, mirroring the placement rules of core's
 // `canInsert` (slot allow/deny, the child's own parent rules, insertable/root). Only used to

@@ -1,4 +1,4 @@
-import type { ComponentMeta, PageNode, PropDef, Value } from '@buildr/core';
+import type { ComponentMeta, PageNode, PropDef, Value } from '@next-buildr/core';
 import { useId, useState } from 'react';
 import { type MessageKey, useT } from '../../messages/index.tsx';
 import { Icon, IconButton } from '../../ui/index.ts';

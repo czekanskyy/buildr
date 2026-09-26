@@ -1,4 +1,4 @@
-import type { LocaleConfig } from '@buildr/core';
+import type { LocaleConfig } from '@next-buildr/core';
 import { createContext, createElement, type ReactNode, useContext } from 'react';
 import { useStore } from 'zustand';
 import { createStore, type StoreApi } from 'zustand/vanilla';

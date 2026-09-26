@@ -1,5 +1,5 @@
-import type { NodeId } from '@buildr/core';
-import type { Command } from '@buildr/core/commands';
+import type { NodeId } from '@next-buildr/core';
+import type { Command } from '@next-buildr/core/commands';
 import {
   type CSSProperties,
   type KeyboardEvent,

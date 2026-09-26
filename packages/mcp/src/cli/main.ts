@@ -23,9 +23,9 @@ interface PayloadMcpModule {
   }): McpBackend;
 }
 
-// The specifier is a variable on purpose: `@buildr/payload` is an optional peer that `@buildr/mcp`
+// The specifier is a variable on purpose: `@next-buildr/payload` is an optional peer that `@next-buildr/mcp`
 // must not depend on at build time (ADR-024, package-boundaries.md), only resolve at run time.
-const PAYLOAD_MCP_SPECIFIER = '@buildr/payload/mcp';
+const PAYLOAD_MCP_SPECIFIER = '@next-buildr/payload/mcp';
 
 async function loadPayloadBackend(): Promise<PayloadMcpModule | undefined> {
   try {
@@ -62,7 +62,7 @@ async function createBackend(
   if (!payload) {
     return {
       error:
-        'Cannot load @buildr/payload/mcp. Install @buildr/payload next to @buildr/mcp (for example: npm i -g @buildr/mcp @buildr/payload), or use --playground <dir>.',
+        'Cannot load @next-buildr/payload/mcp. Install @next-buildr/payload next to @next-buildr/mcp (for example: npm i -g @next-buildr/mcp @next-buildr/payload), or use --playground <dir>.',
     };
   }
   const url = options.url as string;

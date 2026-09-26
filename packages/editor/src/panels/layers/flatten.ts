@@ -1,4 +1,4 @@
-import type { BuilderDocument, NodeId, PageNode } from '@buildr/core';
+import type { BuilderDocument, NodeId, PageNode } from '@next-buildr/core';
 
 /** One line of the layers tree. */
 export interface LayerRow {

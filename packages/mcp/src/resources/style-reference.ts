@@ -6,7 +6,7 @@ import {
   type StylePropertyDef,
   type Theme,
   TOKEN_SCALES,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import { list } from '../serialize/text.ts';
 
 // The style reference an agent reads before styling: how styles are stored, the value grammar of

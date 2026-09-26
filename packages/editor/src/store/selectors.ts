@@ -5,7 +5,7 @@ import {
   type NodeId,
   type PageNode,
   type SlotName,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import { pathTo } from './selection.ts';
 import type { EditorState } from './types.ts';
 

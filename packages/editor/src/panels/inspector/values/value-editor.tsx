@@ -8,7 +8,7 @@ import {
   type PropDef,
   schemaAtPath,
   type Value,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import { type ReactNode, useEffect, useId, useMemo, useState } from 'react';
 import { type MessageKey, useT } from '../../../messages/index.tsx';
 import { Icon, type IconName, Input, SegmentedControl, Select } from '../../../ui/index.ts';

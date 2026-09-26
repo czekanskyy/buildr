@@ -11,7 +11,7 @@ import {
   type StyleGroup,
   type StylePropertyDef,
   type Theme,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import { useId, useState } from 'react';
 import { componentMeta, useManifest } from '../../../app/manifest.tsx';
 import { type MessageKey, useT } from '../../../messages/index.tsx';

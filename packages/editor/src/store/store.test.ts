@@ -6,8 +6,8 @@ import {
   type PageNode,
   p,
   s,
-} from '@buildr/core';
-import type { Command } from '@buildr/core/commands';
+} from '@next-buildr/core';
+import type { Command } from '@next-buildr/core/commands';
 import { describe, expect, it } from 'vitest';
 import { createEditorStore } from './create-store.ts';
 import { selectChildren, selectIndex, selectIsDirty, selectNode } from './selectors.ts';
@@ -234,7 +234,7 @@ describe('transactions', () => {
 
 describe('what the canvas host hears', () => {
   it('a patch per change, from and to consecutive versions, that reproduce the document', async () => {
-    const { applyDocumentPatches } = await import('@buildr/core/commands');
+    const { applyDocumentPatches } = await import('@next-buildr/core/commands');
     const store = create();
     const seen: DocumentChange[] = [];
     store.onChange((change) => seen.push(change));

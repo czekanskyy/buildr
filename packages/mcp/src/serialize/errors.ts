@@ -1,7 +1,7 @@
-import type { BuilderDocument, Reason, ReasonCode, RegistryMeta } from '@buildr/core';
-import { STYLE_GROUPS } from '@buildr/core';
-import type { Command, CommandError } from '@buildr/core/commands';
-import { coreCommandHandlers, createCommandRegistry } from '@buildr/core/commands';
+import type { BuilderDocument, Reason, ReasonCode, RegistryMeta } from '@next-buildr/core';
+import { STYLE_GROUPS } from '@next-buildr/core';
+import type { Command, CommandError } from '@next-buildr/core/commands';
+import { coreCommandHandlers, createCommandRegistry } from '@next-buildr/core/commands';
 import type { SessionError } from '../session/errors.ts';
 import { allowedChildTypes, allowedParents, expandMatchers } from './structure.ts';
 import { list, nearest, quote } from './text.ts';

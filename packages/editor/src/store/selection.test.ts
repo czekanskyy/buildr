@@ -3,7 +3,7 @@ import {
   createRegistryMeta,
   createSeededIdGenerator,
   type PageNode,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import { createEditorStore } from './create-store.ts';
 import { pathTo, relativeNode } from './selection.ts';

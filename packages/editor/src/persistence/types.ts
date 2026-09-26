@@ -5,7 +5,7 @@ import type {
   Diagnostic,
   LocaleConfig,
   MediaAsset,
-} from '@buildr/core';
+} from '@next-buildr/core';
 
 /** Which document the editor opens: a collection and an id in the host's backend. */
 export interface DocumentRef {
@@ -80,7 +80,7 @@ export interface RevisionInfo {
   readonly updatedBy?: string | undefined;
 }
 
-/** What the editor needs from a backend (docs/editor.md#persistence-pb-087); `@buildr/payload` implements it. */
+/** What the editor needs from a backend (docs/editor.md#persistence-pb-087); `@next-buildr/payload` implements it. */
 export interface DocumentAdapter {
   getSession(ref: DocumentRef): Promise<EditorSession>;
   load(ref: DocumentRef): Promise<LoadedDocument>;
