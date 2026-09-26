@@ -1,4 +1,4 @@
-import { p } from '@buildr/core';
+import { p } from '@next-buildr/core';
 
 export const linkProps = {
   label: p.text({ label: 'Text', default: 'Link', bindable: true }),

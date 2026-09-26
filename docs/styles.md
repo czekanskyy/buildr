@@ -68,7 +68,7 @@ Tokens are emitted as `@layer buildr.tokens { :root { --b-color-primary: ...; --
 ## CSS strategy
 
 - **Layer order** (declared once): `@layer buildr.reset, buildr.tokens, buildr.components, buildr.nodes;`
-- **Component CSS**: static files shipped as `@buildr/components/styles.css`, in `@layer buildr.components`. Classes are `.bc-<name>` with variant modifiers, built on tokens — this is the design system.
+- **Component CSS**: static files shipped as `@next-buildr/components/styles.css`, in `@layer buildr.components`. Classes are `.bc-<name>` with variant modifiers, built on tokens — this is the design system.
 - **Node CSS**: a `.b-<nodeId>` class in `@layer buildr.nodes` (wins over the component layer through layer ordering, not specificity). Emission order: document pre-order; all `base` rules first, then `state` (v0.2), then one `@media` block per breakpoint gathering every node's overrides.
 - **Determinism**: the same document plus the same theme always produce the identical CSS string, which is what makes snapshot testing and a content-addressed cache (`hash(styles + theme)`) possible.
 - **Delivery**: in RSC, `<style href={"buildr-" + hash} precedence="buildr">` (React 19 hoists this into `<head>` and deduplicates automatically). In the canvas, a single `<style id="buildr-nodes">` with a per-node rule cache (a `WeakMap` keyed on `node.styles` identity).
@@ -80,7 +80,7 @@ Tokens are emitted as `@layer buildr.tokens { :root { --b-color-primary: ...; --
 
 ## The compiler (`compileStyles`)
 
-`compileStyles(doc, theme)` → `{ css, hash, diagnostics }` (`@buildr/core/styles`). `css` is the layer order, the theme's tokens, then `@layer buildr.nodes { … }`; `hash` is the content hash of `css`.
+`compileStyles(doc, theme)` → `{ css, hash, diagnostics }` (`@next-buildr/core/styles`). `css` is the layer order, the theme's tokens, then `@layer buildr.nodes { … }`; `hash` is the content hash of `css`.
 
 - **Per node**: `compileNodeRules(id, styles, theme)` gives `{ base, state, bp, diagnostics }` with the `.b-<id>` selector — what the canvas uses to keep one `<style>` current node by node. `compileNodeDeclarations` is the same without selectors. Both are memoized on the identity of `styles` and `theme` (`WeakMap`, no shared state), and `compileStyles` is memoized per document, so an edit recompiles only the changed nodes.
 - **Every value is re-parsed** through its property grammar before it is emitted; a value that fails is skipped and reported (`style.invalid-value`), so nothing outside the grammar and no `!important` can reach the output, whatever was validated earlier.

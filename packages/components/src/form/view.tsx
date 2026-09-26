@@ -1,4 +1,4 @@
-import type { BuilderComponentProps } from '@buildr/react';
+import type { BuilderComponentProps } from '@next-buildr/react';
 import { message } from '../messages/index.ts';
 import { FormEnhancer } from './enhancer.client.tsx';
 import type { formProps } from './props.ts';

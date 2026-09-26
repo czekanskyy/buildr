@@ -1,4 +1,4 @@
-import { defineComponent } from '@buildr/react';
+import { defineComponent } from '@next-buildr/react';
 import { formProps } from './props.ts';
 import { FormView } from './view.tsx';
 

@@ -1,4 +1,4 @@
-import { type ComponentType, createMemoryDataSource, s, type TreeNode } from '@buildr/core';
+import { type ComponentType, createMemoryDataSource, s, type TreeNode } from '@next-buildr/core';
 import { accordionFixtures } from './accordion/fixtures.ts';
 import { accordionItemFixtures } from './accordion-item/fixtures.ts';
 import { badgeFixtures } from './badge/fixtures.ts';

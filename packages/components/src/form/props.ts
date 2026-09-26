@@ -1,4 +1,4 @@
-import { p } from '@buildr/core';
+import { p } from '@next-buildr/core';
 
 export const formProps = {
   /** Shown, in a live region, after a successful submission (with JavaScript). Empty uses the built-in text. */

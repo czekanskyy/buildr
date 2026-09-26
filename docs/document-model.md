@@ -14,7 +14,7 @@ export interface BuilderDocument {
   root: 'root';
   nodes: Record<NodeId, PageNode>;               // normalized tree
   components: Record<ComponentType, number>;     // prop-schema versions the document was written with
-  meta?: { createdWith?: string; updatedWith?: string };  // e.g. "@buildr/core@0.1.0" (diagnostics)
+  meta?: { createdWith?: string; updatedWith?: string };  // e.g. "@next-buildr/core@0.1.0" (diagnostics)
 }
 
 export interface PageNode {
@@ -114,7 +114,7 @@ There are **two independent version axes**: `schemaVersion` (the document shape,
 
 ## Validation
 
-`validateDocument(input, { registry, theme?, locales?, dataSchema?, limits? })` (`@buildr/core`) checks a document that came from outside — the database, an import, a migration — and returns `{ ok, issues, doc }`. It never throws.
+`validateDocument(input, { registry, theme?, locales?, dataSchema?, limits? })` (`@next-buildr/core`) checks a document that came from outside — the database, an import, a migration — and returns `{ ok, issues, doc }`. It never throws.
 
 Every issue is a `Diagnostic` with an extra `blocking` flag. `ok` is `false` only when something blocking was found; the rest is reported so the editor can show it and rendering can fall back.
 

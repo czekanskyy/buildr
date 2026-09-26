@@ -82,7 +82,7 @@ A paragraph. Props: `text` (multi-line, bindable, localizable; line breaks are k
 
 ### RichText (`buildr/rich-text`)
 
-Formatted content from a `richText` prop (`content`, bindable, localizable): headings, paragraphs, lists, quotes, links, and bold/italic/strikethrough/underline/code/sub/superscript. Rendered by `renderRichText` from `@buildr/react`, so it is an allowlist walker with sanitized links (through `platform.Link`), never HTML. A bound plain string arrives as one paragraph (core coerces it). Its typography is scoped CSS (`.bc-rich-text :where(h2, p, ul, …)`), all from tokens; it does not affect the rest of the page. This is what the PostContent template uses.
+Formatted content from a `richText` prop (`content`, bindable, localizable): headings, paragraphs, lists, quotes, links, and bold/italic/strikethrough/underline/code/sub/superscript. Rendered by `renderRichText` from `@next-buildr/react`, so it is an allowlist walker with sanitized links (through `platform.Link`), never HTML. A bound plain string arrives as one paragraph (core coerces it). Its typography is scoped CSS (`.bc-rich-text :where(h2, p, ul, …)`), all from tokens; it does not affect the rest of the page. This is what the PostContent template uses.
 
 ### Button (`buildr/button`)
 
@@ -160,8 +160,8 @@ Field ids are derived from the node id, so they are stable between server and cl
 `createDefaultRegistry()` returns a `ReactRegistry` with every component (`defaultComponents`, 26) and every template (`defaultTemplates`, 14) of this package; `defaultTheme` is the theme they are designed against (the core default, re-exported), so an application needs one import. Extend it with `registry.extend({ components, templates })`: each call builds a new registry and nothing is shared or global.
 
 ```ts
-import { createDefaultRegistry, defaultTheme } from '@buildr/components';
-import '@buildr/components/styles.css';
+import { createDefaultRegistry, defaultTheme } from '@next-buildr/components';
+import '@next-buildr/components/styles.css';
 
 const registry = createDefaultRegistry().extend({ components: [MyHero] });
 ```
@@ -172,7 +172,7 @@ The registry's manifest (`toManifest(registry.meta)`, what the editor loads) is 
 
 ## Marketing templates
 
-`marketingTemplates` (in `@buildr/components`) are ordinary `TemplateDefinition`s built only from the components above, with tablet and mobile overrides on the nodes that need them (see [templates.md](templates.md)). Each is a detached, fully editable copy once inserted. Each has an SVG wireframe `thumbnail` (a compact data URI drawn from plain shapes) and a gallery fixture in `marketingTemplateFixtures` (one per template and variant).
+`marketingTemplates` (in `@next-buildr/components`) are ordinary `TemplateDefinition`s built only from the components above, with tablet and mobile overrides on the nodes that need them (see [templates.md](templates.md)). Each is a detached, fully editable copy once inserted. Each has an SVG wireframe `thumbnail` (a compact data URI drawn from plain shapes) and a gallery fixture in `marketingTemplateFixtures` (one per template and variant).
 
 | Template | Id | Made of | Notes |
 |---|---|---|---|
@@ -204,4 +204,4 @@ A binding that finds nothing falls back (the post title to "Untitled") or render
 
 ## Form field derivation
 
-Any component may declare `ComponentMeta.formField` (see [component-registry.md](component-registry.md)) to participate in form schema derivation. `deriveFormSchema(doc, registryMeta, formNodeId)` (in `@buildr/core/forms`) walks a `buildr/form` node's descendants and reads `formField` metadata generically — it never imports specific components — so custom form controls participate automatically. It returns `{ schema: { formId, fields: [{ nodeId, name, valueType, required, maxLength?, options? }] }, diagnostics }`. Only static prop values are read: a dynamic `name` or `options` is reported (`form.name-dynamic`, `form.options-dynamic`) and the field is left out, as are missing, invalid, reserved or duplicate names (`form.name-missing`, `form.name-invalid`, `form.name-duplicate`) and fields beyond the limit (`form.too-many-fields`). This function is the server-side source of truth for what a submitted form is allowed to contain; see [payload.md](payload.md) and [security.md](security.md).
+Any component may declare `ComponentMeta.formField` (see [component-registry.md](component-registry.md)) to participate in form schema derivation. `deriveFormSchema(doc, registryMeta, formNodeId)` (in `@next-buildr/core/forms`) walks a `buildr/form` node's descendants and reads `formField` metadata generically — it never imports specific components — so custom form controls participate automatically. It returns `{ schema: { formId, fields: [{ nodeId, name, valueType, required, maxLength?, options? }] }, diagnostics }`. Only static prop values are read: a dynamic `name` or `options` is reported (`form.name-dynamic`, `form.options-dynamic`) and the field is left out, as are missing, invalid, reserved or duplicate names (`form.name-missing`, `form.name-invalid`, `form.name-duplicate`) and fields beyond the limit (`form.too-many-fields`). This function is the server-side source of truth for what a submitted form is allowed to contain; see [payload.md](payload.md) and [security.md](security.md).

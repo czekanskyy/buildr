@@ -1,5 +1,5 @@
-import type { MediaAsset } from '@buildr/core';
-import type { BuilderComponentProps } from '@buildr/react';
+import type { MediaAsset } from '@next-buildr/core';
+import type { BuilderComponentProps } from '@next-buildr/react';
 import { createElement } from 'react';
 import { IMAGE_FITS, type imageProps } from './props.ts';
 import { buildSrcSet, objectPosition, SIZES_ATTRIBUTE, safeUrl } from './source.ts';

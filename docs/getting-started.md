@@ -20,12 +20,12 @@ Create an administrator and the demo content (a SQLite file, `apps/example-next-
 
 ```bash
 # macOS / Linux / Git Bash
-SEED_ADMIN_EMAIL=you@example.com SEED_ADMIN_PASSWORD='choose-a-password' pnpm --filter @buildr/example-next-payload seed
+SEED_ADMIN_EMAIL=you@example.com SEED_ADMIN_PASSWORD='choose-a-password' pnpm --filter @next-buildr/example-next-payload seed
 ```
 
 ```powershell
 # Windows PowerShell (inline VAR=value does not work there, see the section below)
-$env:SEED_ADMIN_EMAIL = 'you@example.com'; $env:SEED_ADMIN_PASSWORD = 'choose-a-password'; pnpm --filter '@buildr/example-next-payload' seed
+$env:SEED_ADMIN_EMAIL = 'you@example.com'; $env:SEED_ADMIN_PASSWORD = 'choose-a-password'; pnpm --filter '@next-buildr/example-next-payload' seed
 Remove-Item Env:SEED_ADMIN_EMAIL, Env:SEED_ADMIN_PASSWORD   # the variables stay set for the whole session
 ```
 
@@ -57,7 +57,7 @@ pnpm e2e             # Playwright end-to-end tests of the example application
 
 ## Using Buildr in your own Next.js + Payload project
 
-The packages are `@buildr/core @buildr/react @buildr/components @buildr/editor @buildr/next @buildr/payload` (plus `@buildr/mcp` for [AI agents](mcp.md)), versioned together and released as 1.0.0. Install them from npm; the wiring for every step is in `apps/example-next-payload`, which is the reference:
+The packages are `@next-buildr/core @next-buildr/react @next-buildr/components @next-buildr/editor @next-buildr/next @next-buildr/payload` (plus `@next-buildr/mcp` for [AI agents](mcp.md)), versioned together and released as 1.0.0. Install them from npm; the wiring for every step is in `apps/example-next-payload`, which is the reference:
 
 1. Add `buildrPlugin({ ... })` to your Payload config, with drafts enabled on the collections you list (`src/payload.config.ts`, `src/buildr.options.ts`; see [payload.md](payload.md)).
 2. Define the component registry, theme and locales (`src/buildr.registry.ts`) and pass them to `createBuildrConfig` (`src/buildr.server.ts`; see [nextjs.md](nextjs.md)).
@@ -74,14 +74,14 @@ Documentation in this repository writes Unix-style inline variables, `VAR=value 
 | Unix (bash, zsh, Git Bash) | Windows PowerShell |
 |---|---|
 | `BUILDR_MCP=1 pnpm dev:example` | `$env:BUILDR_MCP = '1'; pnpm dev:example` |
-| `BUILDR_MCP=1 pnpm --filter @buildr/example-next-payload e2e` | `$env:BUILDR_MCP = '1'; pnpm --filter '@buildr/example-next-payload' e2e` |
-| `UPDATE_MCP_DOCS=1 pnpm test --filter @buildr/mcp` | `$env:UPDATE_MCP_DOCS = '1'; pnpm test --filter '@buildr/mcp'` |
+| `BUILDR_MCP=1 pnpm --filter @next-buildr/example-next-payload e2e` | `$env:BUILDR_MCP = '1'; pnpm --filter '@next-buildr/example-next-payload' e2e` |
+| `UPDATE_MCP_DOCS=1 pnpm test --filter @next-buildr/mcp` | `$env:UPDATE_MCP_DOCS = '1'; pnpm test --filter '@next-buildr/mcp'` |
 | `DATABASE_URL=postgres://... pnpm dev:example` | `$env:DATABASE_URL = 'postgres://...'; pnpm dev:example` |
 | `unset BUILDR_MCP` | `Remove-Item Env:BUILDR_MCP` |
 
 Notes:
 
 - `$env:NAME = 'value'` lasts for the whole PowerShell session (every later command in that window sees it, and it is not visible to other windows). Unset it with `Remove-Item Env:NAME` when you are done; otherwise, for example, `BUILDR_MCP` keeps agents switched on for the next `pnpm dev:example`.
-- Quote values that contain spaces or special characters with single quotes. Quote `@scope/name` filters (`'@buildr/mcp'`), because `@` is an operator in PowerShell.
+- Quote values that contain spaces or special characters with single quotes. Quote `@scope/name` filters (`'@next-buildr/mcp'`), because `@` is an operator in PowerShell.
 - To make a variable permanent for your user, use `[Environment]::SetEnvironmentVariable('NAME', 'value', 'User')` and open a new terminal (not needed for this repository).
 - Playwright and the example application read these variables from the environment of the process that starts them, so set them in the same window before `pnpm ... e2e`.

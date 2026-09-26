@@ -1,4 +1,4 @@
-import { p } from '@buildr/core';
+import { p } from '@next-buildr/core';
 
 /** How wide the image is displayed, so the browser can pick a source from the `srcset`. */
 export const IMAGE_SIZES = ['full', 'half', 'third', 'quarter'] as const;

@@ -1,4 +1,4 @@
-import { runA11y, s } from '@buildr/core';
+import { runA11y, s } from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import { Form } from '../form/definition.ts';
 import { Page } from '../page/definition.ts';

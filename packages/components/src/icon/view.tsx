@@ -1,4 +1,4 @@
-import type { BuilderComponentProps } from '@buildr/react';
+import type { BuilderComponentProps } from '@next-buildr/react';
 import { hasIcon, Icon } from '../icons/index.ts';
 import { ICON_SIZES, type iconProps } from './props.ts';
 

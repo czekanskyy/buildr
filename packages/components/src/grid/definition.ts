@@ -1,4 +1,4 @@
-import { defineComponent } from '@buildr/react';
+import { defineComponent } from '@next-buildr/react';
 import { gridProps } from './props.ts';
 import { GridView } from './view.tsx';
 

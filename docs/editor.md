@@ -46,7 +46,7 @@ packages/editor/src/
 />
 ```
 
-## The shell (`@buildr/editor`, PB-073)
+## The shell (`@next-buildr/editor`, PB-073)
 
 `<BuilderEditor adapter manifest canvasUrl documentRef config />` fills its container (give it a height) and renders the layout above: a toolbar, the left panel, the canvas and the inspector between two **resizable splitters**, and the collapsible issues bar. The panels are slots (`EditorLayout`'s `toolbar`, `left`, `center`, `right`, `issues`) that the following tasks fill; the props are already the final mount API. In the playground it is mounted at `/editor`.
 
@@ -56,7 +56,7 @@ packages/editor/src/
 - **Status bar** (28px): the issues toggle (`aria-expanded`) with the error and warning counts from the issues store (`EditorLayout`'s `issueCounts`), and on the right the active breakpoint with its width, the canvas zoom and the save state (`status` slot; `StatusInfo` in `EditorApp`). The save state there is plain text; the toolbar's `SaveStatus` stays the live region.
 - **Narrow editor**: below 1100px, measured on the editor root with a `ResizeObserver` (the editor may be embedded, so no media query), the side panels are hidden overlays. The toolbar renders `PanelToggle` buttons (`toolbar/panel-toggles.tsx`, driven by `ShellPanelsContext` from `app/shell-panels.tsx`) that open one at a time; Escape closes the open one.
 - **Interface strings** are never written into components: every one is a key of the catalog in `messages/en.ts`, translated in `messages/pl.ts` (a missing Polish key is a type error), read with `useT()`. `config.uiLocale` picks the language (`en` or `pl`, English for any other); it is the language of the *editor*, not of the content (docs/i18n.md).
-- **Theme**: tokens are CSS variables (`--bd-*`, see [editor-design.md](editor-design.md)) defined in `styles/tokens.css`, light and dark. The scheme follows the system's, or is forced with `data-theme="light" | "dark"` on the editor root (`system` or no attribute follows the system). Import `@buildr/editor/styles.css` once in the host; the published file is `styles/*.css` flattened in order, with Inter shipped in `fonts/` next to it (no external requests).
+- **Theme**: tokens are CSS variables (`--bd-*`, see [editor-design.md](editor-design.md)) defined in `styles/tokens.css`, light and dark. The scheme follows the system's, or is forced with `data-theme="light" | "dark"` on the editor root (`system` or no attribute follows the system). Import `@next-buildr/editor/styles.css` once in the host; the published file is `styles/*.css` flattened in order, with Inter shipped in `fonts/` next to it (no external requests).
 - **UI primitives** (`Button`, `IconButton`, `Input`, `Select`, `Tabs`, `Popover`, `Dialog`, `Tooltip`, `Toggle`) wrap Radix UI: keyboard, focus management and ARIA come from Radix, the looks from the tokens. An `IconButton` requires a `label` (its accessible name and tooltip).
 - Every region is a landmark with a translated name (`role="toolbar"`, `aside`, `main`, `section`); the shell is checked with axe in the tests.
 
@@ -75,7 +75,7 @@ packages/editor/src/
 
 **Decision: iframe.** Fidelity, native media queries and isolation are non-negotiable for a builder targeting production client sites, and they are extremely expensive to fake without one. The protocol/overlay/drag-and-drop cost is one-time and well-testable. Document state lives **only** in the editor; the canvas keeps a read-only replica and every change always goes through a command dispatched in the editor.
 
-## Canvas runtime (inside the iframe, `@buildr/react/canvas`)
+## Canvas runtime (inside the iframe, `@next-buildr/react/canvas`)
 
 - Handshake and document/patch ingestion. A local replica plus a small per-node-subscribable store.
 - Rendering via `renderTree` with instrumentation: `NodeView` (memoized, per-node error boundary, `data-bid`/`data-bi` forwarded through `root`), empty-slot placeholders, unknown-component placeholders.
@@ -119,7 +119,7 @@ A double click on a component whose `editor.inlineProp` names a prop holding a *
 
 ### Drag and drop in the canvas (PB-070)
 
-`createDndController` (`@buildr/react/canvas`) is the canvas half of docs/drag-and-drop.md:
+`createDndController` (`@next-buildr/react/canvas`) is the canvas half of docs/drag-and-drop.md:
 
 - **`buildHitPath(document, point, store)`** finds the nodes under a point with `elementsFromPoint`, follows `data-bid` up to the root and returns one `HitEntry` per node, deepest first: its box, its layout axis (`display`/`flex-direction` from the computed style: a flex row is `x`, a flex column and block flow are `y`, grid is `grid`), the boxes of its children in slot order (a Loop's first repetition only) and the boxes of its empty-slot placeholders. Coordinates are the canvas viewport's.
 - **`dnd:over`** (an item dragged in from the palette or the layers panel) runs `computeDropTarget` and draws the result in the overlay: a 2px line, a highlighted container for an empty slot, or, when nothing accepts the item, a red box on the node under the pointer carrying the refusal's message. It answers `dnd:target { target, reason? }` — once per change, although the editor sends `dnd:over` every frame. `dnd:leave` clears the indicator. Nothing happens in `interact` mode.
@@ -260,7 +260,7 @@ interface Envelope<T extends string, P> {
 | C->E | `diagnostics` | `{ items: Diagnostic[] }` | bindings, per-node render errors |
 | C->E | `canvas:error` | `{ message, nodeId?, fatal }` | fatal shows a "Reload canvas" affordance (lossless) |
 
-### Schemas (`@buildr/core/protocol`)
+### Schemas (`@next-buildr/core/protocol`)
 
 Every message of the table above has a Zod schema (`editorMessageSchema` for what the editor sends, `canvasMessageSchema` for what the canvas sends, `messageSchema` for both), and a test keeps this table and the schemas identical. All schemas are strict (an unknown field refuses the message).
 
@@ -271,9 +271,9 @@ Every message of the table above has a Zod schema (`editorMessageSchema` for wha
 - `doc:patch` carries Immer patches with JSON values only, at most 10 000 patches of at most 24 path segments, and no path segment may be `__proto__`, `constructor` or `prototype`. Its `to` must be later than `from`. `doc:set` and `editor:init` carry a document that must pass `documentSchema` (the canvas still runs the document limits on it).
 - Other limits: 1000 ids in a selection or a move, 500 diagnostics, 20 000 characters of inline text, a viewport width of 240 to 4096, a prop name of letters, digits and `_` (never a prototype key).
 
-### Transports (`@buildr/core/protocol`)
+### Transports (`@next-buildr/core/protocol`)
 
-`createParentTransport({ iframe, canvasOrigin, session, host? })` is the editor's end and `createChildTransport({ allowedOrigins, session, host?, parent? })` the canvas's. Windows are passed in as small interfaces (`WindowLike`, `PostTarget`, `FrameLike`); `host` and `parent` default to `window` and `window.parent`, so `@buildr/core` itself has no DOM types. Both return a `Transport`:
+`createParentTransport({ iframe, canvasOrigin, session, host? })` is the editor's end and `createChildTransport({ allowedOrigins, session, host?, parent? })` the canvas's. Windows are passed in as small interfaces (`WindowLike`, `PostTarget`, `FrameLike`); `host` and `parent` default to `window` and `window.parent`, so `@next-buildr/core` itself has no DOM types. Both return a `Transport`:
 
 - `send(type, payload)` returns `false` when there is no window to send to. `request(type, payload, { timeoutMs })` resolves with the answer (matched by `id` and `replyTo`) or rejects with a `TransportError` (`timeout` after 5 s by default, or `closed`). `reply(message, type, payload)` answers a request. `on(type, handler)` returns the function that removes it. `close()` stops listening and fails pending requests.
 - What each side may send and receive is in the types: the editor sends `EditorMessage`s and receives `CanvasMessage`s.
@@ -290,7 +290,7 @@ See dedicated pages: [drag-and-drop.md](drag-and-drop.md), [state-management.md]
 
 ## Persistence (PB-087)
 
-`packages/editor/src/persistence`. The editor talks to its backend only through a `DocumentAdapter` (`getSession`, `load`, `save`, `publish`, `getDataSchema`, `getContext`, `getRevision?`, `listSamples?`, `media`, `previewUrl`, `cmsUrl?`); `@buildr/payload` implements it over the endpoints of [payload.md](payload.md#endpoints).
+`packages/editor/src/persistence`. The editor talks to its backend only through a `DocumentAdapter` (`getSession`, `load`, `save`, `publish`, `getDataSchema`, `getContext`, `getRevision?`, `listSamples?`, `media`, `previewUrl`, `cmsUrl?`); `@next-buildr/payload` implements it over the endpoints of [payload.md](payload.md#endpoints).
 
 - **Loading.** `loadDocument(adapter, ref)` fetches the session and the document together and validates the reply with a Zod schema and `parseDocument`; a malformed reply throws `LoadError`. A session without edit rights, or `readOnly` in the reply, gives `readOnly: true` (pass it to `replaceDocument` / the store).
 - **Save results are values.** `save` resolves `{ ok: true, revision, updatedAt }`, `{ ok: false, kind: 'conflict', currentRevision }` (HTTP 409) or `{ ok: false, kind: 'invalid', diagnostics }` (422); it rejects only when the adapter could not tell (network, 5xx). Every reply is checked with `saveResultSchema`; a malformed one counts as a failed save.
@@ -377,7 +377,7 @@ A template is edited against a real entry. `<SamplePicker adapter docRef onChang
 
 ## The editor app and the playground (PB-092)
 
-`EditorApp` (`@buildr/editor`) is the whole editor: `<EditorApp adapter manifest registry canvasUrl documentRef locales? config? />`. It loads the document through the adapter (a "Loading" or "could not be opened" screen until it has), creates the store and the autosave, and composes the toolbar, the sample picker, the Insert and Layers tabs, the canvas, the inspector (with the data schema and sample context), the Issues panel, the publish dialog, preview, shortcuts, clipboard and drag and drop (the canvas's `dnd:target` answers go to the drag engine). `registry` is the host's `registry.meta`; `BuilderEditor` remains the bare shell.
+`EditorApp` (`@next-buildr/editor`) is the whole editor: `<EditorApp adapter manifest registry canvasUrl documentRef locales? config? />`. It loads the document through the adapter (a "Loading" or "could not be opened" screen until it has), creates the store and the autosave, and composes the toolbar, the sample picker, the Insert and Layers tabs, the canvas, the inspector (with the data schema and sample context), the Issues panel, the publish dialog, preview, shortcuts, clipboard and drag and drop (the canvas's `dnd:target` answers go to the drag engine). `registry` is the host's `registry.meta`; `BuilderEditor` remains the bare shell.
 
 `apps/playground` proves the editor needs neither Payload nor Next.js:
 
@@ -399,7 +399,7 @@ A template is edited against a real entry. `<SamplePicker adapter docRef onChang
 
 Closes phase 13 (the visual polish). The checks that keep it closed:
 
-- **axe on every baseline state.** `apps/playground/e2e/editor-a11y.spec.ts` runs axe (WCAG 2.0/2.1 A and AA) against the empty document, the Hero on the Content, Style and Advanced tabs, the Layers and Insert tabs (scrolled to templates), the publish dialog, the media picker, the issues panel and the canvas at tablet and mobile width, each in the light and the dark theme. The expected number of violations is zero; `pnpm --filter @buildr/playground e2e` runs it.
+- **axe on every baseline state.** `apps/playground/e2e/editor-a11y.spec.ts` runs axe (WCAG 2.0/2.1 A and AA) against the empty document, the Hero on the Content, Style and Advanced tabs, the Layers and Insert tabs (scrolled to templates), the publish dialog, the media picker, the issues panel and the canvas at tablet and mobile width, each in the light and the dark theme. The expected number of violations is zero; `pnpm --filter @next-buildr/playground e2e` runs it.
 - **Keyboard-only flows.** Walked through with the keyboard alone: Tab order through the toolbar (breakpoints, zoom, language, entry, Preview, Publish, more), the Insert / Layers tabs (arrow keys move, the panel is a tab stop), the search field, view toggle and every palette tile; the layers tree (arrows, Enter to select), the inspector tabs, Publish with Enter and Escape to close. Every stop shows a focus ring. Two defects were found and fixed: a dialog opened from a button, menu item or shortcut dropped focus to `<body>` when it closed (the shared `Dialog` now returns focus to the element that had it when it opened), and the inactive breakpoint icons were unreadable on the dark toolbar in the light theme.
 - **Notices.** The insert panel reports through `useToast()` (id `insert`) instead of a local `role="status"` line, following [Feedback surfaces](editor-design.md#feedback-surfaces-pb-129).
 - **Known follow-ups:** see the PB-131 card in [phase 13](backlog/phase-13-editor-visual-polish.md).

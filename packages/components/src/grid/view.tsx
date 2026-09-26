@@ -1,4 +1,4 @@
-import type { BuilderComponentProps } from '@buildr/react';
+import type { BuilderComponentProps } from '@next-buildr/react';
 import type { gridProps } from './props.ts';
 
 export function GridView({ props, root, children }: BuilderComponentProps<typeof gridProps>) {

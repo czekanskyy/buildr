@@ -1,4 +1,4 @@
-import { defineComponent } from '@buildr/react';
+import { defineComponent } from '@next-buildr/react';
 import { dividerProps } from './props.ts';
 import { DividerView } from './view.tsx';
 

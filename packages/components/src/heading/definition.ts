@@ -1,4 +1,4 @@
-import { defineComponent } from '@buildr/react';
+import { defineComponent } from '@next-buildr/react';
 import { headingProps } from './props.ts';
 import { HeadingView } from './view.tsx';
 
