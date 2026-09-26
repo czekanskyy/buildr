@@ -5,7 +5,7 @@ import {
   createSeededIdGenerator,
   p,
   s,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import {
   type CanvasMessage,
   createChildTransport,
@@ -16,7 +16,7 @@ import {
   type Rejection,
   type Transport,
   type WindowLike,
-} from '@buildr/core/protocol';
+} from '@next-buildr/core/protocol';
 import { describe, expect, it, vi } from 'vitest';
 import { DEFAULT_BREAKPOINTS } from '../app/config.ts';
 import { createEditorStore } from '../store/index.ts';

@@ -1,4 +1,4 @@
-import type { MediaAsset } from '@buildr/core';
+import type { MediaAsset } from '@next-buildr/core';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { type MessageKey, useT } from '../../messages/index.tsx';
 import { Button, Dialog, Input, Select } from '../../ui/index.ts';

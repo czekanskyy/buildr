@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import type { RegistryManifest } from '@buildr/core';
+import type { RegistryManifest } from '@next-buildr/core';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';

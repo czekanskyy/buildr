@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import * as core from './index.ts';
 
-describe('@buildr/core public API', () => {
+describe('@next-buildr/core public API', () => {
   it('exports the PB-006 primitives', () => {
     expect(typeof core.generateId).toBe('function');
     expect(typeof core.createSeededIdGenerator).toBe('function');

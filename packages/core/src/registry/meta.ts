@@ -6,7 +6,7 @@ import type { ContentCategory, Matcher } from './matchers.ts';
 /**
  * The high-level palette grouping shown in the editor's component picker
  * (docs/component-registry.md#metadata-vs-implementation). Deliberately open — application authors
- * register custom components under their own category without touching `@buildr/core`.
+ * register custom components under their own category without touching `@next-buildr/core`.
  */
 export type ComponentCategory =
   | 'layout'
@@ -92,7 +92,7 @@ export interface FormFieldMeta {
  * Payload's document validation — are built from this alone; it reaches the editor as part of a
  * `RegistryManifest` (`toManifest`, PB-015) and carries no functions. The React implementation
  * (`render`, `runtime`, `migrations`) is a separate, non-serializable half defined in
- * `@buildr/react` (`defineComponent`, PB-044).
+ * `@next-buildr/react` (`defineComponent`, PB-044).
  */
 export interface ComponentMeta {
   /** `<namespace>/<name>`, e.g. `"buildr/heading"`, `"acme/pricing-table"`. */

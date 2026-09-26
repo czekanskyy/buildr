@@ -1,4 +1,4 @@
-import type { BuilderComponentProps } from '@buildr/react';
+import type { BuilderComponentProps } from '@next-buildr/react';
 import { controlId, describedBy, Field } from '../field/field.tsx';
 import type { textareaProps } from './props.ts';
 

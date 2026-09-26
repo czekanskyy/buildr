@@ -1,4 +1,4 @@
-import type { DragItem } from '@buildr/core';
+import type { DragItem } from '@next-buildr/core';
 import {
   createContext,
   type ReactNode,

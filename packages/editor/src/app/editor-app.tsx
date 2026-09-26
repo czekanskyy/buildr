@@ -1,4 +1,4 @@
-import type { DataContext, DataSchema, LocaleConfig, RegistryMeta } from '@buildr/core';
+import type { DataContext, DataSchema, LocaleConfig, RegistryMeta } from '@next-buildr/core';
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CanvasFrame, type CanvasHost } from '../canvas-host/index.ts';
 import { ClipboardProvider, useClipboardActions } from '../clipboard/index.ts';

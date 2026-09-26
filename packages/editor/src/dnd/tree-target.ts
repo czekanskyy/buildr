@@ -7,7 +7,7 @@ import {
   type NodeId,
   type Reason,
   type RegistryMeta,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import type { LayerRow } from '../panels/layers/flatten.ts';
 import { moveVerdict } from './check.ts';
 import { fragmentFor } from './fragment.ts';

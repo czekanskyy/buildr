@@ -9,7 +9,7 @@ import type { FormatSpec } from './types.ts';
 /**
  * The prop kinds a resolved binding/expression value can target (docs/dynamic-bindings.md#data-
  * types-and-the-data-schema) — the "Prop kind" column of the coercion table. A deliberately
- * narrower, local union rather than the full `PropDef['kind']` from `@buildr/core/schema`: kinds
+ * narrower, local union rather than the full `PropDef['kind']` from `@next-buildr/core/schema`: kinds
  * with an empty `accepts` (`textarea`, `select`, `icon`, `list`, `object`) are never bindable, so
  * they never reach a coercion.
  */

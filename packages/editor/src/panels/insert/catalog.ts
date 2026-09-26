@@ -1,4 +1,4 @@
-import type { ComponentMeta, RegistryManifest, TemplateDefinition } from '@buildr/core';
+import type { ComponentMeta, RegistryManifest, TemplateDefinition } from '@next-buildr/core';
 
 export interface PaletteItem {
   readonly kind: 'component' | 'template';

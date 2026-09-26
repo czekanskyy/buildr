@@ -1,4 +1,4 @@
-import { type BuilderFragment, fragmentSchema } from '@buildr/core';
+import { type BuilderFragment, fragmentSchema } from '@next-buildr/core';
 
 /** The first line of what the editor puts on the clipboard; it says which format follows. */
 export const CLIPBOARD_MARKER = 'buildr-fragment/1';

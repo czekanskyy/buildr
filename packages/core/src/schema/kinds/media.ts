@@ -17,7 +17,7 @@ export interface MediaOptions extends CommonPropOptions {
 
 /**
  * The concrete `MediaRef`/`MediaAsset` shape is adapter-specific (see docs/payload.md#media);
- * `@buildr/core` cannot depend on it, so this only guarantees JSON until an adapter's own value
+ * `@next-buildr/core` cannot depend on it, so this only guarantees JSON until an adapter's own value
  * lands (PB-013/PB-026).
  */
 export interface MediaPropDef extends PropDefBase<'media'> {

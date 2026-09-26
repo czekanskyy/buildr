@@ -22,7 +22,7 @@ const FORBIDDEN: readonly [string, RegExp][] = [
   ['setTimeout(string)', /\bset(?:Timeout|Interval)\s*\(\s*['"`]/],
 ];
 
-describe('no dynamic code execution in @buildr/core', () => {
+describe('no dynamic code execution in @next-buildr/core', () => {
   const files = sourceFiles(SRC);
 
   it('scans the library sources', () => {

@@ -4,7 +4,7 @@ import {
   createRegistryMeta,
   createSeededIdGenerator,
   type DragItem,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import { describe, expect, it, vi } from 'vitest';
 import { flattenTree } from '../panels/layers/flatten.ts';
 import { createEditorStore } from '../store/index.ts';

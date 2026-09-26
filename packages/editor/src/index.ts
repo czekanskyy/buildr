@@ -1,7 +1,7 @@
-// Public entry point of @buildr/editor: the standalone visual editor application.
-// Depends only on @buildr/core - it drives a canvas (a real Next.js route running the
+// Public entry point of @next-buildr/editor: the standalone visual editor application.
+// Depends only on @next-buildr/core - it drives a canvas (a real Next.js route running the
 // real renderer) through the postMessage protocol; it never renders the document itself.
-// Import '@buildr/editor/styles.css' once in the host.
+// Import '@next-buildr/editor/styles.css' once in the host.
 
 export { BuilderEditor } from './app/builder-editor.tsx';
 export type {

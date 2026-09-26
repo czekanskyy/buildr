@@ -1,5 +1,5 @@
 {
-  "name": "@buildr/core",
+  "name": "@next-buildr/core",
   "version": "0.0.0",
   "private": false,
   "type": "module",
@@ -46,7 +46,7 @@
     "test": "vitest run"
   },
   "devDependencies": {
-    "@buildr/tsconfig": "workspace:*",
+    "@next-buildr/tsconfig": "workspace:*",
     "@types/css-tree": "^3.2.0",
     "css-tree": "^3.2.1",
     "fast-check": "^4.10.2",

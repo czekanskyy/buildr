@@ -1,4 +1,4 @@
-import type { TextPropDef } from '@buildr/core';
+import type { TextPropDef } from '@next-buildr/core';
 import { Input } from '../../../ui/index.ts';
 import type { ControlProps } from './types.ts';
 

@@ -1,4 +1,4 @@
-import type { MediaPropDef } from '@buildr/core';
+import type { MediaPropDef } from '@next-buildr/core';
 import { useState } from 'react';
 import {
   MediaPicker,
