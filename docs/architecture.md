@@ -4,7 +4,7 @@ Buildr is a Visual Page Builder for React/Next.js with a first-class Payload CMS
 
 ## The core rule
 
-**`@buildr/core` depends on neither React, Next.js, nor Payload.** Dependencies only ever point downward:
+**`@next-buildr/core` depends on neither React, Next.js, nor Payload.** Dependencies only ever point downward:
 
 ```
 core
@@ -23,7 +23,7 @@ Payload CMS owns business data and workflow — title, slug, excerpt, SEO, statu
 
 1. An editor works in Payload Admin as usual, filling in `title`, `slug`, `excerpt`, SEO fields, etc.
 2. They click **"Edit with Visual Builder"**, which opens a separate browser tab/window.
-3. The Visual Builder fetches the document through the Payload API (`@buildr/payload`'s HTTP contract).
+3. The Visual Builder fetches the document through the Payload API (`@next-buildr/payload`'s HTTP contract).
 4. The user edits the page layout visually.
 5. The builder saves an AST/JSON document back to Payload (`layout` field).
 6. Preview uses the **exact same renderer** as the production site.
@@ -35,13 +35,13 @@ The builder is never a full-screen field embedded inside Payload's admin dashboa
 
 | Package | Depends on | Role |
 |---|---|---|
-| `@buildr/core` | zod, immer (commands only) | Document model, registry metadata, values/bindings, expressions, styles→CSS, commands, history, migrations, validation, accessibility, drag-and-drop rules, canvas protocol |
-| `@buildr/react` | core, react | `renderTree`, server/client/canvas entry points, component authoring API |
-| `@buildr/components` | core, react | Standard components, templates (composites), default theme |
-| `@buildr/editor` | core, react (peer, deps), zustand, radix, lexical | The standalone visual editor application |
-| `@buildr/next` | core, react, next | `BuildrPage`, platform bindings, draft mode, canvas/editor routes, metadata, cache tags |
-| `@buildr/payload` | core, payload, (`@buildr/next` in the `next` subpath) | Plugin, endpoints, data source, HTTP adapter, admin UI |
-| `@buildr/mcp` | core, `@modelcontextprotocol/sdk`, zod | MCP server for AI agents: tools, edit sessions, stdio CLI (`buildr-mcp`); the HTTP route lives in `@buildr/payload/mcp` ([mcp.md](mcp.md)) |
+| `@next-buildr/core` | zod, immer (commands only) | Document model, registry metadata, values/bindings, expressions, styles→CSS, commands, history, migrations, validation, accessibility, drag-and-drop rules, canvas protocol |
+| `@next-buildr/react` | core, react | `renderTree`, server/client/canvas entry points, component authoring API |
+| `@next-buildr/components` | core, react | Standard components, templates (composites), default theme |
+| `@next-buildr/editor` | core, react (peer, deps), zustand, radix, lexical | The standalone visual editor application |
+| `@next-buildr/next` | core, react, next | `BuildrPage`, platform bindings, draft mode, canvas/editor routes, metadata, cache tags |
+| `@next-buildr/payload` | core, payload, (`@next-buildr/next` in the `next` subpath) | Plugin, endpoints, data source, HTTP adapter, admin UI |
+| `@next-buildr/mcp` | core, `@modelcontextprotocol/sdk`, zod | MCP server for AI agents: tools, edit sessions, stdio CLI (`buildr-mcp`); the HTTP route lives in `@next-buildr/payload/mcp` ([mcp.md](mcp.md)) |
 
 Full package layout, subpath exports and the dependency-cruiser-enforced boundary table are in [`ai/package-boundaries.md`](ai/package-boundaries.md).
 

@@ -9,7 +9,7 @@ import {
   parseDocument,
   type RegistryManifest,
   type Theme,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import {
   baseRevisionSchema,
   type CreateDocumentInput,

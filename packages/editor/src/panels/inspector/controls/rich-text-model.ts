@@ -1,3 +1,6 @@
+import { $createLinkNode } from '@lexical/link';
+import { $createListItemNode, $createListNode } from '@lexical/list';
+import { $createHeadingNode, $createQuoteNode } from '@lexical/rich-text';
 import {
   type JsonValue,
   normalizeRichText,
@@ -5,10 +8,7 @@ import {
   type RichTextInlineNode,
   type RichTextRootNode,
   richTextSchema,
-} from '@buildr/core';
-import { $createLinkNode } from '@lexical/link';
-import { $createListItemNode, $createListNode } from '@lexical/list';
-import { $createHeadingNode, $createQuoteNode } from '@lexical/rich-text';
+} from '@next-buildr/core';
 import {
   $createLineBreakNode,
   $createParagraphNode,

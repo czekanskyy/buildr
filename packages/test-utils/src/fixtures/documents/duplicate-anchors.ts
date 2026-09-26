@@ -1,4 +1,4 @@
-import { type BuilderDocument, createSeededIdGenerator } from '@buildr/core';
+import { type BuilderDocument, createSeededIdGenerator } from '@next-buildr/core';
 import { node } from '../../builders.ts';
 import { baseTree } from './base.ts';
 import type { InvalidDocumentFixture } from './types.ts';

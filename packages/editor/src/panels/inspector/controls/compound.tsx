@@ -1,4 +1,4 @@
-import type { ListPropDef, ObjectPropDef, PropDef } from '@buildr/core';
+import type { ListPropDef, ObjectPropDef, PropDef } from '@next-buildr/core';
 import type { ReactNode } from 'react';
 import { useT } from '../../../messages/index.tsx';
 import { Button, Icon } from '../../../ui/index.ts';

@@ -25,7 +25,7 @@ Please include:
 
 ## Supported Versions
 
-Buildr 1.0.0 is the first stable release (see [the roadmap](docs/roadmap.md)). Only the latest published version of each `@buildr/*` package is supported with
+Buildr 1.0.0 is the first stable release (see [the roadmap](docs/roadmap.md)). Only the latest published version of each `@next-buildr/*` package is supported with
 security fixes.
 
 ## Scope

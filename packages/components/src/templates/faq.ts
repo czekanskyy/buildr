@@ -1,4 +1,4 @@
-import { defineTemplate, s, type TemplateDefinition, type TreeNode } from '@buildr/core';
+import { defineTemplate, s, type TemplateDefinition, type TreeNode } from '@next-buildr/core';
 import { heading, section, stack, text } from './build.ts';
 import { thumbnail } from './thumbnail.ts';
 

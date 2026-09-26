@@ -1,4 +1,4 @@
-import { createLocaleMiddleware } from '@buildr/next';
+import { createLocaleMiddleware } from '@next-buildr/next';
 import { NextResponse } from 'next/server';
 import { DEFAULT_LOCALE, LOCALES } from './buildr.registry.ts';
 

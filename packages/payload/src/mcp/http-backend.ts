@@ -5,7 +5,7 @@ import {
   ok,
   parseDocument,
   type Theme,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import {
   type CreateDocumentInput,
   createDocumentInputSchema,
@@ -21,7 +21,7 @@ import {
   type McpResult,
   mcpFail,
   sessionSchema,
-} from '@buildr/mcp';
+} from '@next-buildr/mcp';
 import type { z } from 'zod';
 import {
   type DocumentSummary as ContractSummary,
@@ -101,7 +101,7 @@ const invalid = (message: string, diagnostics: readonly Diagnostic[] = [diagnost
   mcpFail({ code: 'invalid', message, diagnostics });
 
 /**
- * The `McpBackend` of `@buildr/mcp` over the builder API of a site running the Payload plugin
+ * The `McpBackend` of `@next-buildr/mcp` over the builder API of a site running the Payload plugin
  * (docs/mcp.md#http-backend). Authenticates with a Payload API key; every response is checked
  * against the contract and documents with `parseDocument`. Only GETs are retried. The API key is
  * sent as a header only and is scrubbed from every message this backend produces.

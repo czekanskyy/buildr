@@ -1,4 +1,4 @@
-// `@buildr/mcp/cli`: the pieces of the `buildr-mcp` stdio CLI (docs/mcp.md#stdio-cli).
+// `@next-buildr/mcp/cli`: the pieces of the `buildr-mcp` stdio CLI (docs/mcp.md#stdio-cli).
 export { type CliOptions, type ParsedArgs, parseArgs, USAGE } from './args.ts';
 export {
   createFileBackend,

@@ -1,5 +1,5 @@
 ---
-"@buildr/core": minor
+"@next-buildr/core": minor
 ---
 
 Add URL/string sanitization and the rich text format (PB-020): `sanitizeUrl(url)` validates a URL against the scheme allowlist from `docs/security.md` (`http`, `https`, `mailto`, `tel`, plus relative paths and `#anchor`), rejecting `javascript:`, `data:`, `vbscript:`, and any other unknown scheme — including obfuscated variants hidden behind control characters, HTML entity encoding, percent-encoding, or case variation — without ever throwing, since a URL is document data, not a programmer-controlled literal. `capString(value, maxLength)` truncates a string defensively.

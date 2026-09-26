@@ -1,4 +1,4 @@
-// The parts of a browser window the transports use, as interfaces: `@buildr/core` has no DOM
+// The parts of a browser window the transports use, as interfaces: `@next-buildr/core` has no DOM
 // types and no ambient globals, so a window (or a test double) is handed in. `Window` satisfies
 // all of these structurally.
 

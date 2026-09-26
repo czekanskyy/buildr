@@ -1,5 +1,5 @@
-import type { Diagnostic } from '@buildr/core';
-import type { Command } from '@buildr/core/commands';
+import type { Diagnostic } from '@next-buildr/core';
+import type { Command } from '@next-buildr/core/commands';
 import { useMemo, useState } from 'react';
 import { componentMeta, useManifest } from '../../app/manifest.tsx';
 import { type MessageKey, useT } from '../../messages/index.tsx';

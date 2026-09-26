@@ -10,7 +10,7 @@ interface TextEncoderLike {
 }
 
 // Typed narrowly instead of pulling in the DOM lib or `@types/node` (both forbidden/unavailable
-// for `@buildr/core` — see docs/ai/architecture-rules.md #8); TextEncoder is a global in both
+// for `@next-buildr/core` — see docs/ai/architecture-rules.md #8); TextEncoder is a global in both
 // Node and every modern browser.
 function encodeUtf8(input: string): Uint8Array {
   const TextEncoderCtor = (globalThis as unknown as { TextEncoder: new () => TextEncoderLike })

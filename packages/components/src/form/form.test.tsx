@@ -1,6 +1,6 @@
-import { deriveFormSchema, runA11y, s } from '@buildr/core';
-import type { Platform } from '@buildr/react';
-import { createRegistry as createReactRegistry } from '@buildr/react';
+import { deriveFormSchema, runA11y, s } from '@next-buildr/core';
+import type { Platform } from '@next-buildr/react';
+import { createRegistry as createReactRegistry } from '@next-buildr/react';
 import { describe, expect, it } from 'vitest';
 import { Button } from '../button/definition.ts';
 import { Checkbox } from '../checkbox/definition.ts';

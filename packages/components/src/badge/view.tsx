@@ -1,4 +1,4 @@
-import type { BuilderComponentProps } from '@buildr/react';
+import type { BuilderComponentProps } from '@next-buildr/react';
 import { BADGE_VARIANTS, type badgeProps } from './props.ts';
 
 const VARIANTS: readonly string[] = BADGE_VARIANTS;

@@ -1,5 +1,5 @@
 {
-  "name": "@buildr/repo-smoke",
+  "name": "@next-buildr/repo-smoke",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -7,14 +7,14 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@buildr/components": "workspace:*",
-    "@buildr/core": "workspace:*",
-    "@buildr/editor": "workspace:*",
-    "@buildr/mcp": "workspace:*",
-    "@buildr/next": "workspace:*",
-    "@buildr/payload": "workspace:*",
-    "@buildr/react": "workspace:*",
-    "@buildr/test-utils": "workspace:*"
+    "@next-buildr/components": "workspace:*",
+    "@next-buildr/core": "workspace:*",
+    "@next-buildr/editor": "workspace:*",
+    "@next-buildr/mcp": "workspace:*",
+    "@next-buildr/next": "workspace:*",
+    "@next-buildr/payload": "workspace:*",
+    "@next-buildr/react": "workspace:*",
+    "@next-buildr/test-utils": "workspace:*"
   },
   "devDependencies": {
     "vitest": "5.0.1"

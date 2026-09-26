@@ -1,4 +1,4 @@
-import { defineComponent } from '@buildr/react';
+import { defineComponent } from '@next-buildr/react';
 import { textProps } from './props.ts';
 import { TextView } from './view.tsx';
 

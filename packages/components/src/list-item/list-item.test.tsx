@@ -1,4 +1,4 @@
-import { defaultTheme, s, validateDocument } from '@buildr/core';
+import { defaultTheme, s, validateDocument } from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import { List } from '../list/definition.ts';
 import { Page } from '../page/definition.ts';

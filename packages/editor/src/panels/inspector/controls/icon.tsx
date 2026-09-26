@@ -1,4 +1,4 @@
-import type { IconPropDef } from '@buildr/core';
+import type { IconPropDef } from '@next-buildr/core';
 import { Input } from '../../../ui/index.ts';
 import type { ControlProps } from './types.ts';
 

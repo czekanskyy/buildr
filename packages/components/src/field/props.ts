@@ -1,4 +1,4 @@
-import { p } from '@buildr/core';
+import { p } from '@next-buildr/core';
 
 /** The props every form field has. Its `name` is what the submission is keyed by, so it is not bindable. */
 export const commonFieldProps = {

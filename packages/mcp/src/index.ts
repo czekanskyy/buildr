@@ -1,4 +1,4 @@
-// Public entry point of @buildr/mcp (ADR-024, docs/mcp.md): the McpBackend seam, the memory backend
+// Public entry point of @next-buildr/mcp (ADR-024, docs/mcp.md): the McpBackend seam, the memory backend
 // and the server factory. Sessions, serialization and the tools follow in PB-134 - PB-138.
 
 export * from './backend.ts';

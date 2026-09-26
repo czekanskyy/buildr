@@ -12,11 +12,11 @@ The architecture already has most of what is needed: a serializable component ma
 
 ### 1. Placement
 
-1. **Everything in `@buildr/payload`.** One package, but it ties the tool layer to Payload, pulls the MCP SDK into every site, and makes a non-Payload host impossible.
+1. **Everything in `@next-buildr/payload`.** One package, but it ties the tool layer to Payload, pulls the MCP SDK into every site, and makes a non-Payload host impossible.
 2. **Only the example app.** No new package, but nothing reusable and no public API.
-3. **`@buildr/mcp` (CMS-agnostic tools, sessions, serialization, CLI) plus `@buildr/payload/mcp` (HTTP backend, local backend, route handler).** One more package to version and publish (ADR-021).
+3. **`@next-buildr/mcp` (CMS-agnostic tools, sessions, serialization, CLI) plus `@next-buildr/payload/mcp` (HTTP backend, local backend, route handler).** One more package to version and publish (ADR-021).
 
-**Decision: option 3.** `@buildr/mcp` depends only on `@buildr/core`, `@modelcontextprotocol/sdk` and `zod`; the `McpBackend` interface plays the role `DocumentAdapter` plays for the editor.
+**Decision: option 3.** `@next-buildr/mcp` depends only on `@next-buildr/core`, `@modelcontextprotocol/sdk` and `zod`; the `McpBackend` interface plays the role `DocumentAdapter` plays for the editor.
 
 ### 2. Transport
 
@@ -24,7 +24,7 @@ The architecture already has most of what is needed: a serializable component ma
 2. **Streamable HTTP only.** One remote endpoint for a team, but local trials need a running site.
 3. **Both, over one tool layer.** Two entry points to test; mitigated by one shared test matrix.
 
-**Decision: option 3.** A `buildr-mcp` stdio CLI (`@buildr/mcp/cli`) and a Streamable HTTP route inside the site (`@buildr/payload/mcp`), using the stateless request/response mode so serverless hosting works; session state lives in the edit-session store, not in the connection.
+**Decision: option 3.** A `buildr-mcp` stdio CLI (`@next-buildr/mcp/cli`) and a Streamable HTTP route inside the site (`@next-buildr/payload/mcp`), using the stateless request/response mode so serverless hosting works; session state lives in the edit-session store, not in the connection.
 
 ### 3. Authentication
 
@@ -80,7 +80,7 @@ This ships in **v0.2**, in parallel with phase 13; the ADR goes first because it
 
 ## Consequences
 
-- New package `@buildr/mcp` (with a `./cli` subpath) and a new subpath `@buildr/payload/mcp`, with boundary rules enforced by dependency-cruiser (see `docs/ai/package-boundaries.md`). `@buildr/mcp` must not import `react`, `next`, `payload` or any `@buildr/*` package other than `@buildr/core`; the CLI reaches the HTTP backend through an optional peer dependency.
+- New package `@next-buildr/mcp` (with a `./cli` subpath) and a new subpath `@next-buildr/payload/mcp`, with boundary rules enforced by dependency-cruiser (see `docs/ai/package-boundaries.md`). `@next-buildr/mcp` must not import `react`, `next`, `payload` or any `@next-buildr/*` package other than `@next-buildr/core`; the CLI reaches the HTTP backend through an optional peer dependency.
 - The document model, the command system and the server-side validation are unchanged; an agent cannot do anything the same user cannot do in the editor.
 - Payload gains the plugin option `mcp: { enabled, allowPublish, collections? }` (off by default), document list and create endpoints, and API-key requests attributed to the agent user (PB-139).
 - The editor gains an optional `DocumentAdapter.getRevision` and an external-change banner (PB-143).

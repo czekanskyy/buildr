@@ -8,7 +8,7 @@ import {
   migrateDocument,
   parseDocument,
   type RawDocument,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import type { ReactRegistry } from '../define/registry.ts';
 
 export interface LoadedDocument {

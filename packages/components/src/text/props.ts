@@ -1,4 +1,4 @@
-import { p } from '@buildr/core';
+import { p } from '@next-buildr/core';
 
 /** `p` for a paragraph; `span`, `small` and `div` when a paragraph is not the right meaning. */
 export const TEXT_ELEMENTS = ['p', 'span', 'small', 'div'] as const;

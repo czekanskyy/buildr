@@ -19,7 +19,7 @@ export type ParsedArgs =
 export const USAGE = `buildr-mcp: an MCP server (stdio) for building Buildr pages with AI agents
 
 Usage:
-  buildr-mcp --url <site>            talk to a site running @buildr/payload (API key in BUILDR_API_KEY)
+  buildr-mcp --url <site>            talk to a site running @next-buildr/payload (API key in BUILDR_API_KEY)
   buildr-mcp --playground <dir>      work on JSON files in <dir>, no CMS needed
 
 Options:

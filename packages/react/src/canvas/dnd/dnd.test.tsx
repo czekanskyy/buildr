@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { s } from '@buildr/core';
+import { s } from '@next-buildr/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { doc, node, registry } from '../../render/render.test-kit.tsx';
 import { createOverlay } from '../overlay/overlay.ts';

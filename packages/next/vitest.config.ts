@@ -2,7 +2,7 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    name: '@buildr/next',
+    name: '@next-buildr/next',
     passWithNoTests: true,
   },
 });

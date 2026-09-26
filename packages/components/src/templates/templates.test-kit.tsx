@@ -4,8 +4,8 @@ import {
   type BuilderFragment,
   instantiateTemplate,
   type TemplateDefinition,
-} from '@buildr/core';
-import { doc } from '@buildr/test-utils';
+} from '@next-buildr/core';
+import { doc } from '@next-buildr/test-utils';
 import { Accordion } from '../accordion/definition.ts';
 import { AccordionItem } from '../accordion-item/definition.ts';
 import { Badge } from '../badge/definition.ts';

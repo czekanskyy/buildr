@@ -7,7 +7,7 @@ const noStore = [
 ];
 
 const nextConfig: NextConfig = {
-  // The rules `buildrSecurityHeaders()` (@buildr/next/canvas) returns. They are written out here
+  // The rules `buildrSecurityHeaders()` (@next-buildr/next/canvas) returns. They are written out here
   // because `next.config.ts` is loaded by Node itself, which does not compile the TypeScript
   // sources of a workspace package; an application using the published package imports the function.
   headers: async () => [
@@ -26,12 +26,12 @@ const nextConfig: NextConfig = {
   ],
   // The workspace packages ship TypeScript sources.
   transpilePackages: [
-    '@buildr/components',
-    '@buildr/core',
-    '@buildr/editor',
-    '@buildr/next',
-    '@buildr/payload',
-    '@buildr/react',
+    '@next-buildr/components',
+    '@next-buildr/core',
+    '@next-buildr/editor',
+    '@next-buildr/next',
+    '@next-buildr/payload',
+    '@next-buildr/react',
   ],
   images: {
     // Uploads are served by Payload from this same origin.

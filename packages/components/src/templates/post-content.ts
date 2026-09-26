@@ -1,4 +1,4 @@
-import { defineTemplate, type TemplateDefinition } from '@buildr/core';
+import { defineTemplate, type TemplateDefinition } from '@next-buildr/core';
 import { bind, section } from './build.ts';
 import { thumbnail } from './thumbnail.ts';
 

@@ -1,4 +1,4 @@
-import { createRegistryMeta, type RegistryManifest, toManifest } from '@buildr/core';
+import { createRegistryMeta, type RegistryManifest, toManifest } from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import type { McpBackend } from '../backend.ts';
 import { createTestManifest, createTestMemoryBackend, TEST_COLLECTION } from '../testing/index.ts';

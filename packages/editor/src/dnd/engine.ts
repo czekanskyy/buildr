@@ -1,4 +1,4 @@
-import type { DragItem, DropTarget, Reason } from '@buildr/core';
+import type { DragItem, DropTarget, Reason } from '@next-buildr/core';
 import { createStore, type StoreApi } from 'zustand/vanilla';
 import type { LayerRow } from '../panels/layers/flatten.ts';
 import type { EditorStore } from '../store/index.ts';

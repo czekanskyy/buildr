@@ -1,4 +1,4 @@
-import { type BuilderDocument, createIndex, type NodeId } from '@buildr/core';
+import { type BuilderDocument, createIndex, type NodeId } from '@next-buildr/core';
 
 /** Where the keyboard moves the selection from the node it is on. */
 export type SelectionMove = 'parent' | 'child' | 'next' | 'previous';

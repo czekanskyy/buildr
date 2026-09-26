@@ -5,7 +5,7 @@ import {
   type MediaAsset,
   queryResultSchema,
   type ResolvedQuerySpec,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 
 /** The data a `DataSource` under test must be seeded with (`collections` by alias, `media` by id). */

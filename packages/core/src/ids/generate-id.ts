@@ -7,7 +7,7 @@ interface WebCrypto {
 }
 
 // Typed narrowly instead of pulling in the DOM lib or `@types/node` (both forbidden/unavailable
-// for `@buildr/core` — see docs/ai/architecture-rules.md #8); Web Crypto is a global in both
+// for `@next-buildr/core` — see docs/ai/architecture-rules.md #8); Web Crypto is a global in both
 // Node and every modern browser.
 function randomBytes(size: number): Uint8Array {
   const webCrypto = (globalThis as unknown as { crypto: WebCrypto }).crypto;

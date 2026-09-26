@@ -1,4 +1,4 @@
-import type { BuilderComponentProps } from '@buildr/react';
+import type { BuilderComponentProps } from '@next-buildr/react';
 import type { loopProps } from './props.ts';
 
 /** The renderer produces the entries (`item`), the empty state and `after`; this only lays them out. */

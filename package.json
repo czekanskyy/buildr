@@ -9,8 +9,8 @@
   },
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev --filter=@buildr/playground",
-    "dev:example": "turbo run dev --filter=@buildr/example-next-payload",
+    "dev": "turbo run dev --filter=@next-buildr/playground",
+    "dev:example": "turbo run dev --filter=@next-buildr/example-next-payload",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
     "check:boundaries": "depcruise --config .dependency-cruiser.cjs packages apps tooling/smoke",

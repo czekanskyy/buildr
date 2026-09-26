@@ -9,7 +9,7 @@ interface WebTextEncoder {
   encode(input: string): Uint8Array;
 }
 
-// Typed narrowly instead of pulling in the DOM lib (forbidden for `@buildr/core` — see
+// Typed narrowly instead of pulling in the DOM lib (forbidden for `@next-buildr/core` — see
 // docs/ai/architecture-rules.md #8); TextEncoder is a global in both Node and every modern browser.
 function byteLength(text: string): number {
   const TextEncoderCtor = (globalThis as unknown as { TextEncoder: new () => WebTextEncoder })

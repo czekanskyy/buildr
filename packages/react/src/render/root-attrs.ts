@@ -1,4 +1,4 @@
-import { nodeClassName, type PageNode } from '@buildr/core';
+import { nodeClassName, type PageNode } from '@next-buildr/core';
 import type { NodeRoot } from '../define/types.ts';
 
 /**

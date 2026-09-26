@@ -1,4 +1,4 @@
-import { p } from '@buildr/core';
+import { p } from '@next-buildr/core';
 
 export const accordionProps = {
   /** Off: opening an item closes the others (the items share a `name`; older browsers ignore it). */

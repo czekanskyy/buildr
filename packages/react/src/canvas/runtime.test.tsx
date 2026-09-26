@@ -7,8 +7,8 @@ import {
   type PageNode,
   p,
   s,
-} from '@buildr/core';
-import type { CanvasMessage, EditorMessage } from '@buildr/core/protocol';
+} from '@next-buildr/core';
+import type { CanvasMessage, EditorMessage } from '@next-buildr/core/protocol';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';

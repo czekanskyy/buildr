@@ -1,4 +1,4 @@
-import type { RegistryManifest } from '@buildr/core';
+import type { RegistryManifest } from '@next-buildr/core';
 import type { DocumentAdapter, DocumentRef } from '../persistence/types.ts';
 
 export type { DocumentRef };
@@ -59,7 +59,7 @@ export interface BuilderEditorProps {
   readonly adapter: DocumentAdapter;
   /** What the palette, the inspector and the rules know about the components (`toManifest`). */
   readonly manifest: RegistryManifest;
-  /** The canvas route the iframe loads (`@buildr/react/canvas` runs there). */
+  /** The canvas route the iframe loads (`@next-buildr/react/canvas` runs there). */
   readonly canvasUrl: string;
   readonly documentRef: DocumentRef;
   readonly config?: EditorConfig;

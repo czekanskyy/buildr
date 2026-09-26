@@ -1,1 +1,1 @@
-import '@buildr/react';
+import '@next-buildr/react';

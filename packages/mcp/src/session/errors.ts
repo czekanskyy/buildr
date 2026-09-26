@@ -1,4 +1,4 @@
-import type { CommandError } from '@buildr/core/commands';
+import type { CommandError } from '@next-buildr/core/commands';
 import type { McpError } from '../backend.ts';
 
 export type SessionErrorCode =

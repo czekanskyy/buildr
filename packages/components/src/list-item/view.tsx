@@ -1,4 +1,4 @@
-import type { BuilderComponentProps } from '@buildr/react';
+import type { BuilderComponentProps } from '@next-buildr/react';
 import type { listItemProps } from './props.ts';
 
 export function ListItemView({

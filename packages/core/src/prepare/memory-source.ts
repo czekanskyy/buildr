@@ -95,7 +95,7 @@ function sorted(items: readonly JsonValue[], sort: ResolvedQuerySpec['sort']): J
 /**
  * An in-memory `DataSource` for the playground and tests (ADR-018). It is the reference for the
  * operator semantics every other implementation must match (see the shared contract suite in
- * `@buildr/test-utils`): comparisons are strict and typed, a missing field never satisfies
+ * `@next-buildr/test-utils`): comparisons are strict and typed, a missing field never satisfies
  * `eq`/`in`/`gt..lte`/`contains` but does satisfy `neq`/`nin`, missing values sort last, and text
  * ordering is by UTF-16 code unit.
  */

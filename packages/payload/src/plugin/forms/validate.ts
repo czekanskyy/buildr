@@ -1,4 +1,4 @@
-import type { FormFieldSchema, FormSchema } from '@buildr/core';
+import type { FormFieldSchema, FormSchema } from '@next-buildr/core';
 
 export type SubmissionErrorCode = 'unknown' | 'required' | 'invalid' | 'too-long';
 

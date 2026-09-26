@@ -1,3 +1,3 @@
-import '@buildr/editor';
-import '@buildr/core';
+import '@next-buildr/editor';
+import '@next-buildr/core';
 import 'next';

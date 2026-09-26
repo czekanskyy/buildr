@@ -1,4 +1,4 @@
-import type { TextareaPropDef } from '@buildr/core';
+import type { TextareaPropDef } from '@next-buildr/core';
 import type { ControlProps } from './types.ts';
 
 export function TextareaControl({

@@ -1,5 +1,5 @@
 ---
-'@buildr/next': minor
+'@next-buildr/next': minor
 ---
 
-`@buildr/next/draft`: `createPreviewRoute`, `createExitPreviewRoute`, `safeRedirectPath` (relative redirects only) and `PreviewBanner`.
+`@next-buildr/next/draft`: `createPreviewRoute`, `createExitPreviewRoute`, `safeRedirectPath` (relative redirects only) and `PreviewBanner`.

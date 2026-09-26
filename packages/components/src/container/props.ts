@@ -1,4 +1,4 @@
-import { p } from '@buildr/core';
+import { p } from '@next-buildr/core';
 
 export const CONTAINER_WIDTHS = ['sm', 'md', 'lg', 'xl'] as const;
 

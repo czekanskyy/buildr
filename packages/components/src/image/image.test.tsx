@@ -1,5 +1,5 @@
-import { createMemoryDataSource, runA11y, s } from '@buildr/core';
-import type { Platform } from '@buildr/react';
+import { createMemoryDataSource, runA11y, s } from '@next-buildr/core';
+import type { Platform } from '@next-buildr/react';
 import { describe, expect, it } from 'vitest';
 import { Page } from '../page/definition.ts';
 import { Stack } from '../stack/definition.ts';

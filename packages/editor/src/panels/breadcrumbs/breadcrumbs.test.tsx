@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { type BuilderDocument, createRegistryMeta } from '@buildr/core';
+import { type BuilderDocument, createRegistryMeta } from '@next-buildr/core';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, describe, expect, it } from 'vitest';

@@ -4,7 +4,7 @@ import {
   hash,
   LAYER_ORDER_CSS,
   type Theme,
-} from '@buildr/core';
+} from '@next-buildr/core';
 
 export interface BuildrStylesProps {
   /** The result of `compileStyles(doc, theme)`. */

@@ -4,7 +4,7 @@ import {
   type DataSource,
   type PreparedData,
   s,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import { dataContext, doc, node, registry } from '../render/render.test-kit.tsx';
 import { createDataPreparer, DEFAULT_DATA_DEBOUNCE_MS, dataKey, NO_DATA } from './data.ts';

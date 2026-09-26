@@ -41,7 +41,7 @@ export interface BuilderComponentProps<P> {
 
 ## Production vs. editor renderer
 
-| Aspect | Production (`@buildr/react/server`) | Editor (`@buildr/react/canvas`) |
+| Aspect | Production (`@next-buildr/react/server`) | Editor (`@next-buildr/react/canvas`) |
 |---|---|---|
 | Entry point | RSC `renderDocument` (async pipeline) | `CanvasRuntime` (client) |
 | Render function | `renderTree` | The **same** `renderTree`, plus `instrument` |
@@ -93,8 +93,8 @@ Any component with a `listSource` prop renders as a loop (the `buildr/loop` comp
 
 ## Entry points and styles
 
-- **`@buildr/react/server` — `renderDocument(input, options)`**: the async pipeline of [Pipeline](#pipeline) in one call. `input` is the stored document in any schema version; it is migrated (`migrateDocument`, then `migrateComponents` with the registry's steps), validated (envelope, limits, invariants), prepared through `options.dataSource`, styled (`compileStyles`) and rendered. It returns `{ element, diagnostics, collectionsUsed, readOnlyReasons }`. `element` holds the `<style>` elements and the page; it is `null` — never a throw — when the document cannot be rendered (not an object, a newer schema version, a broken envelope or invariants), with the reasons in `diagnostics` so the caller chooses a 404 or an error page. A component newer than this build is reported in `readOnlyReasons` (unsafe to edit) but the page still renders. `collectionsUsed` is the list of cache tags.
-- **`@buildr/react/client` — `DocumentRenderer`** (`'use client'`): the same pipeline for single-page apps. Give it `document`, `registry`, `theme`, `context`, `platform` and either `data` (`PreparedData` from elsewhere) or `dataSource` (it prepares the data itself and shows `fallback` meanwhile; a late answer for a document that has since changed is ignored). `onDiagnostics` receives what went wrong.
+- **`@next-buildr/react/server` — `renderDocument(input, options)`**: the async pipeline of [Pipeline](#pipeline) in one call. `input` is the stored document in any schema version; it is migrated (`migrateDocument`, then `migrateComponents` with the registry's steps), validated (envelope, limits, invariants), prepared through `options.dataSource`, styled (`compileStyles`) and rendered. It returns `{ element, diagnostics, collectionsUsed, readOnlyReasons }`. `element` holds the `<style>` elements and the page; it is `null` — never a throw — when the document cannot be rendered (not an object, a newer schema version, a broken envelope or invariants), with the reasons in `diagnostics` so the caller chooses a 404 or an error page. A component newer than this build is reported in `readOnlyReasons` (unsafe to edit) but the page still renders. `collectionsUsed` is the list of cache tags.
+- **`@next-buildr/react/client` — `DocumentRenderer`** (`'use client'`): the same pipeline for single-page apps. Give it `document`, `registry`, `theme`, `context`, `platform` and either `data` (`PreparedData` from elsewhere) or `dataSource` (it prepares the data itself and shows `fallback` meanwhile; a late answer for a document that has since changed is ignored). `onDiagnostics` receives what went wrong.
 - **`BuildrStyles`** (shared, no hooks): renders `compileStyles`'s result as `<style href precedence="buildr">`. React 19 hoists them into `<head>` and emits each `href` once per page. The layer order and the theme's tokens are one element (`buildr-theme-<hash>`), the node rules another (`buildr-<hash>`), so several documents on one theme send the shared part once.
 - `./server` never imports `./client` (a dependency-cruiser rule); the only `'use client'` code it can reach is a registry component that declares `runtime: 'client'`.
 
@@ -106,16 +106,16 @@ Any component with a `listSource` prop renders as a loop (the `buildr/loop` comp
 - **Text formats.** The `format` bitmask (1 bold, 2 italic, 4 strikethrough, 8 underline, 16 code, 32 subscript, 64 superscript) becomes nested `strong`, `em`, `s`, `u`, `sup`, `sub`, `code`. Text is a React child, so it is escaped.
 - **Links.** The URL is checked again with `sanitizeUrl` because the value may not have passed core's normalization. An unsafe or missing URL leaves the link text without the link (`url.unsafe-scheme` diagnostic). Safe links render through `platform.Link`, or a plain `<a>` when no platform is given.
 - **Limits.** Nesting deeper than `MAX_RICH_TEXT_DEPTH` and more than `MAX_RICH_TEXT_NODES` nodes are cut and reported.
-- **Extending.** `converters` is merged over the defaults per call (no global registry): e.g. `@buildr/payload` adds `upload`. A converter gets the node, `ctx.children(...)` to render its children, `ctx.report(...)`, and `ctx.platform`.
+- **Extending.** `converters` is merged over the defaults per call (no global registry): e.g. `@next-buildr/payload` adds `upload`. A converter gets the node, `ctx.children(...)` to render its children, `ctx.report(...)`, and `ctx.platform`.
 
 ## Playground and SSR harness
 
 `pnpm dev` starts `apps/playground` (Vite + React 19, no Next.js or Payload) and opens the gallery at `/gallery`.
 
-- `/gallery` lists the fixtures (`galleryFixtures` in `@buildr/test-utils`); `/gallery?fixture=<id>&w=<px>` renders one through `DocumentRenderer` with a `MemoryDataSource`, in a frame of the given width (200–4000 px; anything else is ignored). Diagnostics are shown under the frame.
-- The gallery uses the demo components from `@buildr/test-utils/demo/components` (page, section, heading, text, loop) until `@buildr/components` exists.
-- `renderFixtureToHtml(document, { theme?, dataSource? })` from `@buildr/test-utils/render` renders the same documents to static HTML through the production `renderDocument`, for snapshot tests.
-- `pnpm e2e` runs the Playwright smoke tests (`apps/playground/e2e`); browsers are installed once with `pnpm --filter @buildr/playground exec playwright install chromium`.
+- `/gallery` lists the fixtures (`galleryFixtures` in `@next-buildr/test-utils`); `/gallery?fixture=<id>&w=<px>` renders one through `DocumentRenderer` with a `MemoryDataSource`, in a frame of the given width (200–4000 px; anything else is ignored). Diagnostics are shown under the frame.
+- The gallery uses the demo components from `@next-buildr/test-utils/demo/components` (page, section, heading, text, loop) until `@next-buildr/components` exists.
+- `renderFixtureToHtml(document, { theme?, dataSource? })` from `@next-buildr/test-utils/render` renders the same documents to static HTML through the production `renderDocument`, for snapshot tests.
+- `pnpm e2e` runs the Playwright smoke tests (`apps/playground/e2e`); browsers are installed once with `pnpm --filter @next-buildr/playground exec playwright install chromium`.
 
 ## The layout reference
 

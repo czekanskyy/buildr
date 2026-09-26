@@ -1,4 +1,4 @@
-import type { PropDef } from '@buildr/core';
+import type { PropDef } from '@next-buildr/core';
 
 const titleCase = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 

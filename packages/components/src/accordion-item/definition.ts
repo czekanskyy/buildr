@@ -1,4 +1,4 @@
-import { defineComponent } from '@buildr/react';
+import { defineComponent } from '@next-buildr/react';
 import { accordionItemProps } from './props.ts';
 import { AccordionItemView } from './view.tsx';
 

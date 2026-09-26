@@ -1,4 +1,4 @@
-import { type ComponentMigrationStep, validateComponentMeta } from '@buildr/core';
+import { type ComponentMigrationStep, validateComponentMeta } from '@next-buildr/core';
 import type {
   ComponentDefinition,
   ComponentMigrationMap,

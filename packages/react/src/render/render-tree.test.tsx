@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync } from 'node:fs';
-import { bind, type Diagnostic, expr, type PageNode, s } from '@buildr/core';
+import { bind, type Diagnostic, expr, type PageNode, s } from '@next-buildr/core';
 import { Fragment, isValidElement, type ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';

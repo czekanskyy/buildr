@@ -1,4 +1,4 @@
-import { type BuilderFragment, fromTree, instantiateTemplate } from '@buildr/core';
+import { type BuilderFragment, fromTree, instantiateTemplate } from '@next-buildr/core';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useManifest } from '../../app/manifest.tsx';
 import { useDragPress } from '../../dnd/index.ts';

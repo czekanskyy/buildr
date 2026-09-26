@@ -1,5 +1,5 @@
 {
-  "name": "@buildr/next",
+  "name": "@next-buildr/next",
   "version": "0.0.0",
   "private": false,
   "type": "module",
@@ -54,24 +54,24 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@buildr/core": "workspace:*",
-    "@buildr/react": "workspace:*"
+    "@next-buildr/core": "workspace:*",
+    "@next-buildr/react": "workspace:*"
   },
   "peerDependencies": {
-    "@buildr/editor": "workspace:*",
+    "@next-buildr/editor": "workspace:*",
     "next": "^15.0.0 || ^16.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "peerDependenciesMeta": {
-    "@buildr/editor": {
+    "@next-buildr/editor": {
       "optional": true
     }
   },
   "devDependencies": {
     "next": "16.3.5",
-    "@buildr/editor": "workspace:*",
-    "@buildr/tsconfig": "workspace:*",
+    "@next-buildr/editor": "workspace:*",
+    "@next-buildr/tsconfig": "workspace:*",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "react": "^19.0.0",

@@ -5,7 +5,7 @@ import type {
   Diagnostic,
   NodeId,
   ValidationIssue,
-} from '@buildr/core';
+} from '@next-buildr/core';
 
 export type IssueSeverity = 'error' | 'warning' | 'info';
 export type IssueSource = 'validation' | 'a11y' | 'canvas';

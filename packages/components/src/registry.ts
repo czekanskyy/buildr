@@ -1,5 +1,5 @@
-import type { TemplateDefinition } from '@buildr/core';
-import { type ComponentDefinition, createRegistry, type ReactRegistry } from '@buildr/react';
+import type { TemplateDefinition } from '@next-buildr/core';
+import { type ComponentDefinition, createRegistry, type ReactRegistry } from '@next-buildr/react';
 import { Accordion } from './accordion/definition.ts';
 import { AccordionItem } from './accordion-item/definition.ts';
 import { Badge } from './badge/definition.ts';

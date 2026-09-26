@@ -70,7 +70,7 @@
 - **Acceptance criteria**: the contract is captured in `contract.ts`.
 - **Risks**: hosting-imposed upload size limits (serverless environments) — documented.
 
-## PB-100 - The HTTP adapter (`@buildr/payload/adapter`) - M
+## PB-100 - The HTTP adapter (`@next-buildr/payload/adapter`) - M
 
 - **Purpose**: how the editor and canvas talk to Payload.
 - **Dependencies**: PB-095, PB-097, PB-098, PB-099, PB-087

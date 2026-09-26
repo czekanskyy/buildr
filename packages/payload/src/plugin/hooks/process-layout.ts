@@ -1,4 +1,4 @@
-import type { LocaleConfig } from '@buildr/core';
+import type { LocaleConfig } from '@next-buildr/core';
 import {
   type BuilderDocument,
   createEmptyDocument,
@@ -10,7 +10,7 @@ import {
   parseDocument,
   type RawDocument,
   validateDocument,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import type { BuildrRegistry } from '../options.ts';
 
 export interface ProcessLayoutOptions {

@@ -1,5 +1,5 @@
-import type { BuilderDocument, NodeId } from '@buildr/core';
-import { s } from '@buildr/core';
+import type { BuilderDocument, NodeId } from '@next-buildr/core';
+import { s } from '@next-buildr/core';
 import {
   type CanvasMessage,
   type EditorMessage,
@@ -9,7 +9,7 @@ import {
   PROTOCOL_VERSION,
   type Rejection,
   type Transport,
-} from '@buildr/core/protocol';
+} from '@next-buildr/core/protocol';
 import { createStore, type StoreApi } from 'zustand/vanilla';
 import type { BreakpointConfig } from '../app/config.ts';
 import type { DocumentChange, EditorStore } from '../store/index.ts';

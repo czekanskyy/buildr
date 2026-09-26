@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { revalidateHooks } from '@buildr/payload/next';
-import { buildrPlugin } from '@buildr/payload/plugin';
+import { revalidateHooks } from '@next-buildr/payload/next';
+import { buildrPlugin } from '@next-buildr/payload/plugin';
 import { postgresAdapter } from '@payloadcms/db-postgres';
 import { sqliteAdapter } from '@payloadcms/db-sqlite';
 import { seoPlugin } from '@payloadcms/plugin-seo';
@@ -60,7 +60,7 @@ export default buildConfig({
     withRevalidation(Products),
   ],
   globals: [{ ...SiteSettings, hooks: { afterChange: [...hooks.global.afterChange] } }],
-  // The generated types would narrow `collection: string` inside @buildr/payload's sources, which type-check with this app.
+  // The generated types would narrow `collection: string` inside @next-buildr/payload's sources, which type-check with this app.
   typescript: { autoGenerate: false },
   plugins: [
     seoPlugin({

@@ -1,4 +1,4 @@
-import type { NodeRoot } from '@buildr/react';
+import type { NodeRoot } from '@next-buildr/react';
 import type { ReactNode } from 'react';
 
 export interface FieldProps {

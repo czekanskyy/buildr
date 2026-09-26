@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { type PropDef, p, type RichTextRootNode, richTextSchema } from '@buildr/core';
+import { type PropDef, p, type RichTextRootNode, richTextSchema } from '@next-buildr/core';
 import { $createParagraphNode, $createTextNode, $getRoot, type LexicalEditor } from 'lexical';
 import { act, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';

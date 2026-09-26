@@ -1,4 +1,4 @@
-import { migrateDocument } from '@buildr/core';
+import { migrateDocument } from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import { documentMigrationFixtures } from './index.ts';
 

@@ -1,4 +1,4 @@
-import type { SelectPropDef } from '@buildr/core';
+import type { SelectPropDef } from '@next-buildr/core';
 import { Select } from '../../../ui/index.ts';
 import type { ControlProps } from './types.ts';
 

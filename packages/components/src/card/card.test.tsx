@@ -1,4 +1,10 @@
-import { createMemoryDataSource, defaultTheme, runA11y, s, validateDocument } from '@buildr/core';
+import {
+  createMemoryDataSource,
+  defaultTheme,
+  runA11y,
+  s,
+  validateDocument,
+} from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import { Button } from '../button/definition.ts';
 import { Heading } from '../heading/definition.ts';

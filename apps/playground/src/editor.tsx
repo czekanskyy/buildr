@@ -1,6 +1,6 @@
-import { toManifest } from '@buildr/core';
-import { EditorApp } from '@buildr/editor';
-import '@buildr/editor/styles.css';
+import { toManifest } from '@next-buildr/core';
+import { EditorApp } from '@next-buildr/editor';
+import '@next-buildr/editor/styles.css';
 import { useMemo } from 'react';
 import { parseEditorRoute } from './editor-route.ts';
 import { createMemoryAdapter } from './memory-adapter.ts';

@@ -1,5 +1,5 @@
-import type { BuilderDocument, Diagnostic, NodeId, PageNode, Rect } from '@buildr/core';
-import { applyDocumentPatches } from '@buildr/core/commands';
+import type { BuilderDocument, Diagnostic, NodeId, PageNode, Rect } from '@next-buildr/core';
+import { applyDocumentPatches } from '@next-buildr/core/commands';
 
 /** The locales the editor's project has, as `editor:init` carries them. */
 export interface CanvasLocales {

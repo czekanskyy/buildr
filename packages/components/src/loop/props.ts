@@ -1,4 +1,4 @@
-import { p } from '@buildr/core';
+import { p } from '@next-buildr/core';
 
 export const loopProps = {
   /** A collection query, or a list from the data (`post.related`). */

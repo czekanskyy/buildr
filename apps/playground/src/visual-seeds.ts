@@ -1,5 +1,5 @@
-import { type BuilderDocument, s } from '@buildr/core';
-import { doc } from '@buildr/test-utils';
+import { type BuilderDocument, s } from '@next-buildr/core';
+import { doc } from '@next-buildr/test-utils';
 import type { EditorSeed } from './editor-route.ts';
 
 const heading = (text: string, level: number) => ({

@@ -7,8 +7,8 @@ import {
   runA11y,
   type TemplateDefinition,
   validateDocument,
-} from '@buildr/core';
-import { doc } from '@buildr/test-utils';
+} from '@next-buildr/core';
+import { doc } from '@next-buildr/test-utils';
 import { describe, expect, it } from 'vitest';
 import { render } from '../test-kit.tsx';
 import { contentTemplates, marketingTemplates } from './index.ts';

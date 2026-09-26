@@ -1,4 +1,4 @@
-import { type BuilderDocument, createSeededIdGenerator, type IdGenerator } from '@buildr/core';
+import { type BuilderDocument, createSeededIdGenerator, type IdGenerator } from '@next-buildr/core';
 import { node } from '../../builders.ts';
 
 /** A small, valid document (`root -> section -> [heading, text]`) plus its node IDs, for fixtures to corrupt. */

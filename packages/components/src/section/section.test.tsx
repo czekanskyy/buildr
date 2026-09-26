@@ -1,4 +1,4 @@
-import { createMemoryDataSource, s } from '@buildr/core';
+import { createMemoryDataSource, s } from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import { Container } from '../container/definition.ts';
 import { FIXTURE_WIDTHS } from '../fixtures.ts';

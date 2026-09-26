@@ -74,7 +74,7 @@ claude mcp add buildr-playground -- npx buildr-mcp --playground ./buildr-playgro
 
 **Any other client**: stdio, command `npx buildr-mcp --url <site>` with `BUILDR_API_KEY` in its environment; or Streamable HTTP, URL `<site>/api/buildr/mcp` with the header `Authorization: <auth-collection> API-Key <key>`. If your client can only send a bearer token or use OAuth, it cannot talk to this endpoint yet (OAuth is the planned next step, ADR-024).
 
-Install (stdio only): `npm i -D @buildr/mcp @buildr/payload`. The CLI options, `--playground` and the remote route are described in [the reference](#stdio-cli-buildr-mcp) and [Remote server](#remote-server-streamable-http-buildrpayloadmcproute) below.
+Install (stdio only): `npm i -D @next-buildr/mcp @next-buildr/payload`. The CLI options, `--playground` and the remote route are described in [the reference](#stdio-cli-buildr-mcp) and [Remote server](#remote-server-streamable-http-buildrpayloadmcproute) below.
 
 ## Authentication
 
@@ -98,11 +98,11 @@ Mount the HTTP route once (see [Remote server](#remote-server-streamable-http-bu
 - While `mcp.enabled` is off, an API-key request is refused (`403`) by every builder endpoint; browser sessions are unaffected.
 - `GET /api/buildr/documents?collection&search&page` lists the builder documents the user may read (`documentListResponseSchema`: title, slug, status, `updatedAt`, `revision`, `layoutSource`, `previewPath`; 20 per page, newest first). `POST /api/buildr/documents` (`createDocumentRequestSchema`: `collection`, `title`, optional `slug` and template id) creates a **draft**, subject to collection access; it never publishes. Both exist only when `mcp.enabled`.
 - Every builder write (create, save, publish) records the acting user in the hidden `buildrUpdatedBy` field, which Payload keeps in each version, so history names the agent user. Writes by API-key requests are rate limited (`429` with `Retry-After`).
-- The schemas live in `packages/payload/src/contract.ts` and are shared with the HTTP backend (`@buildr/payload/mcp`).
+- The schemas live in `packages/payload/src/contract.ts` and are shared with the HTTP backend (`@next-buildr/payload/mcp`).
 
 ## What the agent gets
 
-**The guide.** The resource `buildr://guide` (markdown) is how Buildr thinks: Page > Section > Container > content, templates versus trees, style tokens and mobile overrides, bindings and formulas, localization, accessibility, the validate-then-save workflow and what never to do. Source: `packages/mcp/src/resources/guide.md`. It is compiled into `guide-text.ts` (a test fails when they differ; regenerate it with `UPDATE_MCP_DOCS=1 pnpm test --filter @buildr/mcp`, in PowerShell `$env:UPDATE_MCP_DOCS = '1'; pnpm test --filter '@buildr/mcp'`, then `Remove-Item Env:UPDATE_MCP_DOCS`), so it ships in the package with no runtime file access. The server's `instructions` string points at it, and every prompt embeds it, for clients that do not read resources on their own.
+**The guide.** The resource `buildr://guide` (markdown) is how Buildr thinks: Page > Section > Container > content, templates versus trees, style tokens and mobile overrides, bindings and formulas, localization, accessibility, the validate-then-save workflow and what never to do. Source: `packages/mcp/src/resources/guide.md`. It is compiled into `guide-text.ts` (a test fails when they differ; regenerate it with `UPDATE_MCP_DOCS=1 pnpm test --filter @next-buildr/mcp`, in PowerShell `$env:UPDATE_MCP_DOCS = '1'; pnpm test --filter '@next-buildr/mcp'`, then `Remove-Item Env:UPDATE_MCP_DOCS`), so it ships in the package with no runtime file access. The server's `instructions` string points at it, and every prompt embeds it, for clients that do not read resources on their own.
 
 **Prompts** (`createPrompts()`, served by `createBuildrMcpServerWithTools`; users pick them in their client, usually as slash commands):
 
@@ -119,9 +119,9 @@ Mount the HTTP route once (see [Remote server](#remote-server-streamable-http-bu
 
 ## Tool reference
 
-Generated from the tool definitions; a test fails when it is stale (`UPDATE_MCP_DOCS=1 pnpm test --filter @buildr/mcp` rewrites it; PowerShell: `$env:UPDATE_MCP_DOCS = '1'; pnpm test --filter '@buildr/mcp'`, then `Remove-Item Env:UPDATE_MCP_DOCS`). `publish` is listed but only registered when [publishing is enabled](#validate-save-and-publish).
+Generated from the tool definitions; a test fails when it is stale (`UPDATE_MCP_DOCS=1 pnpm test --filter @next-buildr/mcp` rewrites it; PowerShell: `$env:UPDATE_MCP_DOCS = '1'; pnpm test --filter '@next-buildr/mcp'`, then `Remove-Item Env:UPDATE_MCP_DOCS`). `publish` is listed but only registered when [publishing is enabled](#validate-save-and-publish).
 
-<!-- tool-reference:start (generated: UPDATE_MCP_DOCS=1 pnpm test --filter @buildr/mcp) -->
+<!-- tool-reference:start (generated: UPDATE_MCP_DOCS=1 pnpm test --filter @next-buildr/mcp) -->
 
 ### Discovery (read-only)
 
@@ -481,20 +481,20 @@ Everything below describes the packages; you do not need it to connect an agent.
  MCP client (Claude Code / Desktop / other)
         |  stdio                         |  Streamable HTTP (+ API key)
         v                                v
- buildr-mcp CLI (@buildr/mcp/cli)    route handler in the site (@buildr/payload/mcp)
+ buildr-mcp CLI (@next-buildr/mcp/cli)    route handler in the site (@next-buildr/payload/mcp)
         \                                /
-         +---- @buildr/mcp (tools, sessions, serialization) ----+
+         +---- @next-buildr/mcp (tools, sessions, serialization) ----+
                          |  McpBackend
           +--------------+------------------+
           v                                 v
-  HTTP backend (@buildr/payload/mcp)   memory / file backend
+  HTTP backend (@next-buildr/payload/mcp)   memory / file backend
 ```
 
-Packages and boundaries: [ai/package-boundaries.md](ai/package-boundaries.md). `@buildr/mcp` depends only on `@buildr/core`, `@modelcontextprotocol/sdk` and `zod`; all SDK usage is isolated in `src/server.ts`.
+Packages and boundaries: [ai/package-boundaries.md](ai/package-boundaries.md). `@next-buildr/mcp` depends only on `@next-buildr/core`, `@modelcontextprotocol/sdk` and `zod`; all SDK usage is isolated in `src/server.ts`.
 
 ### The backend interface
 
-`McpBackend` (`@buildr/mcp`) is the seam between the tool layer and a CMS, the way `DocumentAdapter` is for the editor. Every method returns a `Promise<McpResult<T>>` (`Result` from core with a typed `McpError`); expected failures never throw.
+`McpBackend` (`@next-buildr/mcp`) is the seam between the tool layer and a CMS, the way `DocumentAdapter` is for the editor. Every method returns a `Promise<McpResult<T>>` (`Result` from core with a typed `McpError`); expected failures never throw.
 
 | Method | Purpose |
 |---|---|
@@ -511,17 +511,17 @@ Packages and boundaries: [ai/package-boundaries.md](ai/package-boundaries.md). `
 
 Errors are one of five codes: `conflict` (carries `currentRevision`), `invalid` (carries core `Diagnostic`s), `forbidden`, `not-found`, `network` (carries `retryable`). Rules for implementations:
 
-- Input and output shapes are Zod schemas exported from `@buildr/mcp` (`documentRefSchema`, `sessionSchema`, `listDocumentsQuerySchema`, `createDocumentInputSchema`, ...); validate at the boundary. Documents pass `parseDocument`.
+- Input and output shapes are Zod schemas exported from `@next-buildr/mcp` (`documentRefSchema`, `sessionSchema`, `listDocumentsQuerySchema`, `createDocumentInputSchema`, ...); validate at the boundary. Documents pass `parseDocument`.
 - The backend is the trust boundary: `save` and `publish` re-validate and check permissions regardless of what the tool layer did.
 - A returned document is a copy; the backend never hands out references into its own store.
 - Secrets (API keys) never appear in an error message.
 
 #### Backend contract tests
 
-`@buildr/mcp/testing` exports `runBackendContract({ name, create })`, the behavioural definition of a valid backend (vitest is an optional peer dependency; import this subpath from test files only). `create()` returns a fresh `BackendContractSubject` per test: the `backend`, an `existing` editable draft, a `missing` ref, a creatable `collection`, an `unknownCollection`, collections with and without a data schema, and optionally a `readOnlyBackend` and a `noPublishBackend` over the same store to enable the `forbidden` cases. The memory backend runs it in this package; the HTTP backend runs the same suite against a live Payload (SQLite) through a `fetch` bridged to Payload's request handler (`packages/payload/src/plugin/endpoints/mcp-http-backend.test.ts`); its retry, error-mapping and secret-hygiene behaviour is covered with a mock `fetch`.
+`@next-buildr/mcp/testing` exports `runBackendContract({ name, create })`, the behavioural definition of a valid backend (vitest is an optional peer dependency; import this subpath from test files only). `create()` returns a fresh `BackendContractSubject` per test: the `backend`, an `existing` editable draft, a `missing` ref, a creatable `collection`, an `unknownCollection`, collections with and without a data schema, and optionally a `readOnlyBackend` and a `noPublishBackend` over the same store to enable the `forbidden` cases. The memory backend runs it in this package; the HTTP backend runs the same suite against a live Payload (SQLite) through a `fetch` bridged to Payload's request handler (`packages/payload/src/plugin/endpoints/mcp-http-backend.test.ts`); its retry, error-mapping and secret-hygiene behaviour is covered with a mock `fetch`.
 
 ```ts
-import { runBackendContract } from '@buildr/mcp/testing';
+import { runBackendContract } from '@next-buildr/mcp/testing';
 
 runBackendContract({
   name: 'my backend',
@@ -533,7 +533,7 @@ runBackendContract({
 
 The same entry point exports `createTestManifest()` (page, section, heading) and `createTestMemoryBackend(overrides)` for tests of the tool layer.
 
-#### HTTP backend (`@buildr/payload/mcp`)
+#### HTTP backend (`@next-buildr/payload/mcp`)
 
 `createPayloadMcpBackend({ baseUrl, apiKey, collection?, collections?, theme?, siteUrl?, timeoutMs?, retries? })` implements `McpBackend` over the builder API (`contract.ts`) of a site whose plugin has `mcp.enabled`. `baseUrl` is Payload's API root (`https://example.com/api`), `apiKey` the key of the dedicated agent user and `collection` its auth collection (default `users`); the key is sent only as `Authorization: <collection> API-Key <key>`.
 
@@ -549,7 +549,7 @@ The same entry point exports `createTestManifest()` (page, section, heading) and
 ### The server
 
 ```ts
-import { createBuildrMcpServer } from '@buildr/mcp';
+import { createBuildrMcpServer } from '@next-buildr/mcp';
 
 const server = createBuildrMcpServer({ backend, options: { allowPublish: false } });
 await server.connect(transport); // stdio, Streamable HTTP, or an in-memory pair in tests
@@ -560,7 +560,7 @@ await server.connect(transport); // stdio, Streamable HTTP, or an in-memory pair
 #### One-liner for hosts
 
 ```ts
-import { createBuildrMcpServerWithTools } from '@buildr/mcp';
+import { createBuildrMcpServerWithTools } from '@next-buildr/mcp';
 
 const { server, store } = await createBuildrMcpServerWithTools({
   backend,
@@ -576,7 +576,7 @@ It creates the session store, the complete tool list (`createBuildrTools`: disco
 An agent never edits the backend's document directly: it edits a **working copy** held in an `EditSession` (ADR-024, decision 5) and saves it explicitly with `baseRevision`. A session is the editor store without React: `load()` + `createRegistryMeta(manifest)` + core's history.
 
 ```ts
-import { createSessionStore } from '@buildr/mcp';
+import { createSessionStore } from '@next-buildr/mcp';
 
 const sessions = createSessionStore({ backend }); // ttlMs, maxSessionsPerUser, manifestCheckIntervalMs, now
 const opened = await sessions.open({ collection: 'pages', id: '1' }, { locale: 'de' }); // or sessions.create({ collection, title, slug? })
@@ -603,13 +603,13 @@ sessions.close(session.id); // refuses a dirty session unless { discard: true }
 
 Errors are the `SessionErrorCode`s in `packages/mcp/src/session/errors.ts`; a backend failure is `backend` with the typed `McpError` attached (`conflict`, `forbidden`, ...). The tools in PB-137/PB-138 are thin wrappers over this API.
 
-### Remote server (Streamable HTTP, `@buildr/payload/mcp/route`)
+### Remote server (Streamable HTTP, `@next-buildr/payload/mcp/route`)
 
 A site serves the same tools to remote clients (PB-142). Mount the route handler in the Next.js app:
 
 ```ts
 // app/(builder)/api/buildr/mcp/route.ts
-import { createBuildrMcpRoute } from '@buildr/payload/mcp/route';
+import { createBuildrMcpRoute } from '@next-buildr/payload/mcp/route';
 import config from '@payload-config';
 import { getPayload } from 'payload';
 import { registry, theme } from '@/buildr.registry';
@@ -621,7 +621,7 @@ export const { POST, GET, DELETE } = createBuildrMcpRoute({
 });
 ```
 
-Point a client at `https://<site>/api/buildr/mcp` with the header `Authorization: users API-Key <key>`. The peers `@buildr/mcp` and `@modelcontextprotocol/sdk` must be installed.
+Point a client at `https://<site>/api/buildr/mcp` with the header `Authorization: users API-Key <key>`. The peers `@next-buildr/mcp` and `@modelcontextprotocol/sdk` must be installed.
 
 - **Disabled by default**: the route answers `404` unless the plugin has `mcp.enabled` (it checks that the agent endpoints are registered). `publish` is offered only with `allowPublish: true` on the route, `mcp.allowPublish` on the plugin and `access.publish` for the user.
 - **Authentication**: only `Authorization: <collection> API-Key <key>`, verified through Payload's API-key strategy. Cookies are never read: a request with only a session cookie (or a `JWT` header) is `401`, so a browser cannot drive the endpoint cross-site. Clients that fail to authenticate 30 times a minute (by `x-forwarded-for`) are answered `429` for the rest of the window.
@@ -632,11 +632,11 @@ Point a client at `https://<site>/api/buildr/mcp` with the header `Authorization
 
 #### One scenario over every transport
 
-`runToolScenario(client, { collection, tree?, expectType?, expectText? })` from `@buildr/mcp/testing` is the shared test matrix: it lists the tools, creates a draft, inserts a tree, checks the outline, validates, saves, closes, reopens the document to prove the save reached the backend and returns `{ ref, revision }`. It takes any connected SDK `Client`, so PB-145 runs it over stdio, and `mcp-route.test.ts` over Streamable HTTP against a live Payload (SQLite). `scenario.test.ts` runs it over the in-memory transport.
+`runToolScenario(client, { collection, tree?, expectType?, expectText? })` from `@next-buildr/mcp/testing` is the shared test matrix: it lists the tools, creates a draft, inserts a tree, checks the outline, validates, saves, closes, reopens the document to prove the save reached the backend and returns `{ ref, revision }`. It takes any connected SDK `Client`, so PB-145 runs it over stdio, and `mcp-route.test.ts` over Streamable HTTP against a live Payload (SQLite). `scenario.test.ts` runs it over the in-memory transport.
 
 ### stdio CLI (`buildr-mcp`)
 
-`@buildr/mcp` ships the `buildr-mcp` binary (`@buildr/mcp/cli`). It serves the full tool suite over stdio and talks to a site through the HTTP backend from `@buildr/payload/mcp`, which is an **optional peer dependency** resolved with a dynamic import when `--url` is used (so `@buildr/mcp` stays CMS-agnostic). Install both next to each other: `npm i -D @buildr/mcp @buildr/payload`.
+`@next-buildr/mcp` ships the `buildr-mcp` binary (`@next-buildr/mcp/cli`). It serves the full tool suite over stdio and talks to a site through the HTTP backend from `@next-buildr/payload/mcp`, which is an **optional peer dependency** resolved with a dynamic import when `--url` is used (so `@next-buildr/mcp` stays CMS-agnostic). Install both next to each other: `npm i -D @next-buildr/mcp @next-buildr/payload`.
 
 ```
 buildr-mcp --url <site> [--allow-publish] [--auth-collection users] [--collections pages,posts]
@@ -656,7 +656,7 @@ Logs go to stderr only (stdout carries the protocol). The process exits cleanly 
 
 ### Serialization (agent-facing)
 
-Everything an agent reads or writes goes through `packages/mcp/src/serialize` (PB-135), exported from `@buildr/mcp`. The tools (PB-136 - PB-138) only compose these functions.
+Everything an agent reads or writes goes through `packages/mcp/src/serialize` (PB-135), exported from `@next-buildr/mcp`. The tools (PB-136 - PB-138) only compose these functions.
 
 | Function | Purpose |
 |---|---|
@@ -672,7 +672,7 @@ Tree input accepts a plain JSON prop value as shorthand for a static `Value` (`{
 
 #### Test fixture
 
-`@buildr/mcp` must not depend on `@buildr/components` (ADR-024), yet the snapshot tests cover every built-in component. The default manifest is committed as `packages/mcp/fixtures/default-manifest.json` and read by the test kit; `packages/components/src/mcp-manifest-fixture.test.ts` fails when it is stale. Regenerate with `UPDATE_MCP_FIXTURE=1 pnpm test --filter @buildr/components` (PowerShell: `$env:UPDATE_MCP_FIXTURE = '1'; pnpm test --filter '@buildr/components'`, then `Remove-Item Env:UPDATE_MCP_FIXTURE`).
+`@next-buildr/mcp` must not depend on `@next-buildr/components` (ADR-024), yet the snapshot tests cover every built-in component. The default manifest is committed as `packages/mcp/fixtures/default-manifest.json` and read by the test kit; `packages/components/src/mcp-manifest-fixture.test.ts` fails when it is stale. Regenerate with `UPDATE_MCP_FIXTURE=1 pnpm test --filter @next-buildr/components` (PowerShell: `$env:UPDATE_MCP_FIXTURE = '1'; pnpm test --filter '@next-buildr/components'`, then `Remove-Item Env:UPDATE_MCP_FIXTURE`).
 
 ### Discovery tools and resources
 
@@ -696,15 +696,15 @@ Two layers, kept apart on purpose (PB-145).
 
 ```bash
 # macOS / Linux / Git Bash
-BUILDR_MCP=1 pnpm --filter @buildr/example-next-payload e2e         # everything, agents on (what CI runs)
-BUILDR_MCP=1 pnpm --filter @buildr/example-next-payload e2e e2e/mcp # only the agent suite
+BUILDR_MCP=1 pnpm --filter @next-buildr/example-next-payload e2e         # everything, agents on (what CI runs)
+BUILDR_MCP=1 pnpm --filter @next-buildr/example-next-payload e2e e2e/mcp # only the agent suite
 ```
 
 ```powershell
 # Windows PowerShell (the variable stays set for the session; see [Environment variables on Windows (PowerShell)](getting-started.md#environment-variables-on-windows-powershell))
 $env:BUILDR_MCP = '1'
-pnpm --filter '@buildr/example-next-payload' e2e             # everything, agents on (what CI runs)
-pnpm --filter '@buildr/example-next-payload' e2e e2e/mcp     # only the agent suite
+pnpm --filter '@next-buildr/example-next-payload' e2e             # everything, agents on (what CI runs)
+pnpm --filter '@next-buildr/example-next-payload' e2e e2e/mcp     # only the agent suite
 Remove-Item Env:BUILDR_MCP
 ```
 

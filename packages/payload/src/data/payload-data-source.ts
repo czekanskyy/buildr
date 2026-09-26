@@ -7,7 +7,7 @@ import {
   type MediaAsset,
   type QueryResult,
   type ResolvedQuerySpec,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import type { Payload, PayloadRequest, Where } from 'payload';
 import { normalizeDoc, normalizeMedia } from './normalize.ts';
 import { type CollectionLike, isExposedCollection } from './schema-from-fields.ts';

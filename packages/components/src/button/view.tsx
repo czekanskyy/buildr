@@ -1,4 +1,4 @@
-import type { BuilderComponentProps } from '@buildr/react';
+import type { BuilderComponentProps } from '@next-buildr/react';
 import { createElement, Fragment, type ReactNode } from 'react';
 import { hasIcon, Icon } from '../icons/index.ts';
 import { linkAttributes, newTabNotice } from '../link-attributes.ts';

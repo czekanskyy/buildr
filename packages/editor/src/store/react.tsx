@@ -1,4 +1,4 @@
-import type { NodeId, PageNode, SlotName } from '@buildr/core';
+import type { NodeId, PageNode, SlotName } from '@next-buildr/core';
 import { createContext, type ReactNode, useContext } from 'react';
 import { useStore } from 'zustand';
 import { selectChildren, selectIsDirty, selectNode, selectSelectedNode } from './selectors.ts';

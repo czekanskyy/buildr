@@ -4,7 +4,7 @@ import {
   type DataContext,
   type DataSource,
   s,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import { doc } from '../builders.ts';
 
 export interface GalleryFixture {

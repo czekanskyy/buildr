@@ -4,7 +4,7 @@ import {
   type DropTarget,
   type NodeId,
   type RegistryMeta,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import { moveVerdict } from './check.ts';
 
 export interface Destination {

@@ -33,7 +33,7 @@ pnpm i                      # install
 pnpm dev                    # playground (editor + canvas + fixture gallery)
 pnpm dev:example            # Next.js + Payload example app
 pnpm test                   # all tests (affected via turbo)
-pnpm test --filter @buildr/core
+pnpm test --filter @next-buildr/core
 pnpm typecheck
 pnpm lint
 pnpm check:boundaries       # architectural import rules (dependency-cruiser)
@@ -45,7 +45,7 @@ pnpm e2e                    # Playwright end-to-end tests
 
 ## MUST
 
-- Mutate documents **only** through commands from `@buildr/core/commands`.
+- Mutate documents **only** through commands from `@next-buildr/core/commands`.
 - Validate external data (database, clipboard, postMessage, HTTP) with a Zod schema at the boundary.
 - A change to the shape of the document or of a component's props requires a migration, a migration fixture and a test.
 - Changing a prop's `default` value is a breaking change and requires a migration that writes the old default.
@@ -56,7 +56,7 @@ pnpm e2e                    # Playwright end-to-end tests
 
 ## MUST NOT
 
-- Import `react`/`next`/`payload` in `@buildr/core`; `next`/`payload` in `@buildr/react` and `@buildr/components`; `@buildr/react` or `@buildr/components` in `@buildr/editor`; `payload` in `@buildr/payload/adapter`.
+- Import `react`/`next`/`payload` in `@next-buildr/core`; `next`/`payload` in `@next-buildr/react` and `@next-buildr/components`; `@next-buildr/react` or `@next-buildr/components` in `@next-buildr/editor`; `payload` in `@next-buildr/payload/adapter`.
 - Create global, mutable registries or singletons.
 - Fetch data inside components (use `DataSource` + `prepareRender`).
 - Use `eval`, `new Function`, `dangerouslySetInnerHTML`, or raw CSS/HTML coming from user data.

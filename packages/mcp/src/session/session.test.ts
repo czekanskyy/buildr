@@ -1,5 +1,5 @@
-import { createEmptyDocument, type NodeId, ok } from '@buildr/core';
-import type { Command } from '@buildr/core/commands';
+import { createEmptyDocument, type NodeId, ok } from '@next-buildr/core';
+import type { Command } from '@next-buildr/core/commands';
 import { describe, expect, it } from 'vitest';
 import { createTestManifest } from '../testing/index.ts';
 import { createEditSession, type EditSession, MAX_COMMANDS_PER_BATCH } from './session.ts';

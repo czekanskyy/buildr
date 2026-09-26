@@ -1,4 +1,12 @@
-import type { ChildRect, HitEntry, LayoutAxis, NodeId, Point, Rect, SlotName } from '@buildr/core';
+import type {
+  ChildRect,
+  HitEntry,
+  LayoutAxis,
+  NodeId,
+  Point,
+  Rect,
+  SlotName,
+} from '@next-buildr/core';
 import type { CanvasStore } from '../store.ts';
 
 const rectOf = (el: Element): Rect => {

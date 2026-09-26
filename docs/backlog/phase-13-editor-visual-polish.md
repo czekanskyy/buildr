@@ -31,7 +31,7 @@ Findings the tasks below are built from. Each finding names the task that fixes 
 |---|---|---|
 | V1 | Visual direction | **A new visual identity** for Buildr, not just a clean-up of the current look. It is designed in PB-147 before PB-119 freezes the tokens. |
 | V2 | Palette | **Inspired by the WordPress block editor's "Modern" scheme**: a blueberry-like accent (around `#3858e9`), neutral greys in the spirit of the block editor (`#1e1e1e`, `#757575`, `#ddd`, `#f0f0f0`), a dark toolbar. Inspiration only: our own token values, no WordPress names, logos or trademarks anywhere in the UI. |
-| V3 | Typography | **Inter, self-hosted**: woff2 files shipped inside `@buildr/editor` (OFL licence file included), no external CDN, so the CSP stays unchanged. Tabular numerals in the inspector. |
+| V3 | Typography | **Inter, self-hosted**: woff2 files shipped inside `@next-buildr/editor` (OFL licence file included), no external CDN, so the CSP stays unchanged. Tabular numerals in the inspector. |
 | V4 | Character | **Dense and precise**: 28px controls, 4–6px radii, thin borders, shadows only on floating layers (menus, popovers, dialogs, toasts). |
 | V5 | Theme | **Follows the system by default, with a light / dark / system switch** in the UI, remembered per user (`localStorage`, try/catch). A host that sets `data-theme` explicitly wins, and the switch is then hidden. |
 | V6 | Component icons | **A curated static lucide map** (~60 names) with a neutral `box` fallback. No `DynamicIcon`, no host-registered icons for now. |
@@ -126,7 +126,7 @@ PB-147 was added after the ID range PB-118 – PB-131 had been assigned; IDs are
 - **Implementation**: one distinct lucide icon per component, for example: Page `file`, Section `rectangle-horizontal`, Container `square-dashed`, Stack `rows-3`, Grid `layout-grid`, Card `panel-top`, Heading `heading`, Text `type`, RichText `pilcrow`, Link `link`, Button `mouse-pointer-click`, Image `image`, Icon `sparkles`, Badge `tag`, Divider `separator-horizontal`, List `list`, ListItem `dot`, Accordion `chevrons-up-down`, AccordionItem `chevron-down`, Loop `repeat`, Pagination `ellipsis`, Form `clipboard-list`, Input `text-cursor-input`, Textarea `align-left`, Checkbox `square-check`, Select `square-chevron-down` (final choice made in a quick design review, recorded in `docs/components.md`). `meta.icon` is presentation metadata: the manifest hash changes, the document shape does not, **no migration**. The component Definition of Done gains "icon is unique within the built-in catalogue".
 - **Tests**: a playground test (the only place that sees both packages) asserting every built-in `meta.icon` is unique and is present in the editor's `ComponentIcon` map.
 - **Acceptance criteria**: no two built-in components share an icon.
-- **Risks**: none (a changeset for `@buildr/components` is required — the manifest changes).
+- **Risks**: none (a changeset for `@next-buildr/components` is required — the manifest changes).
 
 ## PB-122 - Shell layout, panels and splitters - M
 

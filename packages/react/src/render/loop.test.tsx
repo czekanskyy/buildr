@@ -1,4 +1,4 @@
-import { bind, type Diagnostic, expr, type JsonValue, queryKey, s } from '@buildr/core';
+import { bind, type Diagnostic, expr, type JsonValue, queryKey, s } from '@next-buildr/core';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { withNodeIds } from './instrument.ts';

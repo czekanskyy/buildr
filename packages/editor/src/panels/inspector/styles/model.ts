@@ -5,7 +5,7 @@ import {
   resolveTokenRef,
   type StylePropertyDef,
   type Theme,
-} from '@buildr/core';
+} from '@next-buildr/core';
 
 /** What an author typed, checked against the property's grammar and the theme. */
 export type StyleInput =

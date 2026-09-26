@@ -1,4 +1,4 @@
-import type { NodeId } from '@buildr/core';
+import type { NodeId } from '@next-buildr/core';
 import type { CanvasStore } from '../store.ts';
 import { CHIP_HEIGHT, placeChip } from './chip.ts';
 import { OVERLAY_STYLE, PAGE_STYLE } from './palette.ts';

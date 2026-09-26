@@ -1,7 +1,7 @@
 // `LocaleCode`, `FormatSpec`, `StaticValue`, `BindingValue`, `ExpressionValue`, and `Value` are
 // defined in `document/types.ts` (L1), not here (L3) - `PageNode.props` needs the `Value` shape
 // and `document` must stay self-contained (architecture-rules.md). This module re-exports them
-// as part of `@buildr/core/values`'s public surface, alongside the types that belong here.
+// as part of `@next-buildr/core/values`'s public surface, alongside the types that belong here.
 import type { LocaleCode, Value } from '../document/types.ts';
 
 export type {

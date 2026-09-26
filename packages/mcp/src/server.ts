@@ -1,4 +1,4 @@
-// The ONLY module of @buildr/mcp that imports @modelcontextprotocol/sdk (ADR-024, PB-133): the SDK's
+// The ONLY module of @next-buildr/mcp that imports @modelcontextprotocol/sdk (ADR-024, PB-133): the SDK's
 // API moves quickly, so everything that touches it lives here and the rest of the package speaks
 // the small, SDK-free types below.
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';

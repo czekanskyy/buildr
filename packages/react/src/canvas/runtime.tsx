@@ -11,8 +11,12 @@ import {
   type NodeId,
   type PreparedData,
   type Theme,
-} from '@buildr/core';
-import { createChildTransport, MAX_DIAGNOSTICS, PROTOCOL_VERSION } from '@buildr/core/protocol';
+} from '@next-buildr/core';
+import {
+  createChildTransport,
+  MAX_DIAGNOSTICS,
+  PROTOCOL_VERSION,
+} from '@next-buildr/core/protocol';
 import {
   type ReactNode,
   useCallback,

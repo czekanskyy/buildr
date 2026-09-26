@@ -1,4 +1,4 @@
-import { p } from '@buildr/core';
+import { p } from '@next-buildr/core';
 
 export const dividerProps = {
   /** A rule that is only visual: hidden from assistive technology. */

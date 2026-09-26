@@ -19,7 +19,7 @@ See [../testing.md](../testing.md) for the full strategy and tooling matrix. Thi
 ## Rules
 
 - Never update a snapshot without reading the diff first. A snapshot update in a PR description should say what changed and why.
-- Use a seeded ID generator (`createSeededIdGenerator`, from `@buildr/test-utils`) for deterministic fixtures — never rely on real random IDs in a test assertion.
+- Use a seeded ID generator (`createSeededIdGenerator`, from `@next-buildr/test-utils`) for deterministic fixtures — never rely on real random IDs in a test assertion.
 - Use fake timers for anything involving autosave debouncing, coalescing windows, or retry backoff — never a real `sleep`.
 - Payload integration tests run against SQLite in PR CI; the full Postgres matrix runs nightly only.
 - Prefer selecting E2E elements by role/accessible name over CSS classes — this doubles as an accessibility check.

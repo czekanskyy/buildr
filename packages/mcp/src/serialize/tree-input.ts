@@ -1,4 +1,4 @@
-import type { PropDef, RegistryMeta, Result, TreeNode, Value } from '@buildr/core';
+import type { PropDef, RegistryMeta, Result, TreeNode, Value } from '@next-buildr/core';
 import {
   ANCHOR_PATTERN,
   compileExpression,
@@ -9,7 +9,7 @@ import {
   parsePath,
   validatePropValue,
   valueSchema,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import { z } from 'zod';
 import { allowedChildTypes, allowedParents } from './structure.ts';
 import { list, nearest, suggest } from './text.ts';

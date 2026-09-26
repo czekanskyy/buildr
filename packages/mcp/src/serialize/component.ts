@@ -6,8 +6,8 @@ import type {
   RegistryMeta,
   Result,
   TreeNode,
-} from '@buildr/core';
-import { canInsert, createIndex, err, ok } from '@buildr/core';
+} from '@next-buildr/core';
+import { canInsert, createIndex, err, ok } from '@next-buildr/core';
 import { allowedChildTypes, allowedParents, expandMatchers } from './structure.ts';
 import { list, nearest, suggest } from './text.ts';
 

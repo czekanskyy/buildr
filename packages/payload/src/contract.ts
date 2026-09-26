@@ -3,7 +3,7 @@ import {
   mediaAssetSchema,
   queryResultSchema,
   resolvedQuerySpecSchema,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import { z } from 'zod';
 
 /**

@@ -1,7 +1,13 @@
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { type BuilderDocument, type ComponentMeta, createRegistryMeta, p, s } from '@buildr/core';
+import {
+  type BuilderDocument,
+  type ComponentMeta,
+  createRegistryMeta,
+  p,
+  s,
+} from '@next-buildr/core';
 import { sqliteAdapter } from '@payloadcms/db-sqlite';
 import {
   buildConfig,

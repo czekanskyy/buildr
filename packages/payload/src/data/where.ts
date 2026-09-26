@@ -1,4 +1,4 @@
-import type { FilterNode, JsonValue } from '@buildr/core';
+import type { FilterNode, JsonValue } from '@next-buildr/core';
 import type { Where } from 'payload';
 import {
   type CollectionLike,

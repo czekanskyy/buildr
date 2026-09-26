@@ -2,7 +2,7 @@ import type { Field, FieldHook } from 'payload';
 import { TEMPLATES_COLLECTION } from '../data/resolve-layout.ts';
 
 /** The Payload import-map path of the admin field (docs/payload.md). */
-export const LAYOUT_FIELD_COMPONENT = '@buildr/payload/admin#LayoutField';
+export const LAYOUT_FIELD_COMPONENT = '@next-buildr/payload/admin#LayoutField';
 /** The collection the `template` relationship points at. */
 export { TEMPLATES_COLLECTION };
 

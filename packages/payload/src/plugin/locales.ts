@@ -1,4 +1,4 @@
-import type { LocaleConfig } from '@buildr/core';
+import type { LocaleConfig } from '@next-buildr/core';
 import type { PayloadRequest, SanitizedConfig } from 'payload';
 import { fail } from './endpoints/respond.ts';
 

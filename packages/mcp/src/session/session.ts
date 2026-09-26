@@ -1,5 +1,11 @@
-import type { BuilderDocument, NodeId, RegistryManifest, RegistryMeta, Result } from '@buildr/core';
-import { createRegistryMeta, err, generateId, ok } from '@buildr/core';
+import type {
+  BuilderDocument,
+  NodeId,
+  RegistryManifest,
+  RegistryMeta,
+  Result,
+} from '@next-buildr/core';
+import { createRegistryMeta, err, generateId, ok } from '@next-buildr/core';
 import {
   applyDocumentPatches,
   type Command,
@@ -9,7 +15,7 @@ import {
   createHistory,
   executeBatch,
   type HistoryManager,
-} from '@buildr/core/commands';
+} from '@next-buildr/core/commands';
 import type { DocumentRef, LayoutSource, McpSession, SaveResult } from '../backend.ts';
 import { type SessionError, sessionError } from './errors.ts';
 

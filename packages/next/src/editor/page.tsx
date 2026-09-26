@@ -1,5 +1,5 @@
-import type { RegistryManifest } from '@buildr/core';
-import type { DocumentRef, EditorConfig } from '@buildr/editor';
+import type { RegistryManifest } from '@next-buildr/core';
+import type { DocumentRef, EditorConfig } from '@next-buildr/editor';
 import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
@@ -32,7 +32,7 @@ export interface BuildrEditorPageProps {
   readonly config?: EditorConfig;
   /**
    * Renders the application's client file (`'use client'`), which builds the `DocumentAdapter` and
-   * mounts `BuilderEditor`. Only that file imports `@buildr/editor`, so its bundle loads on this route only.
+   * mounts `BuilderEditor`. Only that file imports `@next-buildr/editor`, so its bundle loads on this route only.
    */
   readonly render: (props: EditorClientProps) => ReactNode;
 }

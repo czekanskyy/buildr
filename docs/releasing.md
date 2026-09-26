@@ -4,7 +4,7 @@ Buildr publishes its packages to npm with [Changesets](https://github.com/change
 
 ## The packages and the version
 
-`@buildr/core`, `@buildr/react`, `@buildr/components`, `@buildr/editor`, `@buildr/next`, `@buildr/payload` and `@buildr/mcp` are one **fixed group** (`"fixed": [["@buildr/*"]]` in `.changeset/config.json`, [ADR-001](adr/ADR-001-monorepo.md)): they are always released together, at the same version, even when only one of them changed. Applications and tooling packages (`apps/*`, `tooling/*`, `@buildr/test-utils`) are workspace-internal and follow the same version numbers but are not what you install. Only the entry points a package declares in `exports` are covered by semver; `internal/` modules are not.
+`@next-buildr/core`, `@next-buildr/react`, `@next-buildr/components`, `@next-buildr/editor`, `@next-buildr/next`, `@next-buildr/payload` and `@next-buildr/mcp` are one **fixed group** (`"fixed": [["@next-buildr/*"]]` in `.changeset/config.json`, [ADR-001](adr/ADR-001-monorepo.md)): they are always released together, at the same version, even when only one of them changed. Applications and tooling packages (`apps/*`, `tooling/*`, `@next-buildr/test-utils`) are workspace-internal and follow the same version numbers but are not what you install. Only the entry points a package declares in `exports` are covered by semver; `internal/` modules are not.
 
 ## The flow
 
@@ -16,9 +16,9 @@ Buildr publishes its packages to npm with [Changesets](https://github.com/change
 
 ## What the maintainer must have set up
 
-- The `NPM_TOKEN` repository secret: an npm automation token with publish rights to the `@buildr` scope (the workflow passes it as `NODE_AUTH_TOKEN`). Without it the publish step fails and the Version PR stays merged but unpublished; re-run the workflow after adding the secret.
+- The `NPM_TOKEN` repository secret: an npm automation token with publish rights to the `@next-buildr` scope (the workflow passes it as `NODE_AUTH_TOKEN`). Without it the publish step fails and the Version PR stays merged but unpublished; re-run the workflow after adding the secret.
 - Workflow permissions for `GITHUB_TOKEN` to create pull requests and push tags (`contents: write`, `pull-requests: write`, set in the workflow).
-- The `@buildr` npm scope, owned by the publishing account, with public access (`"access": "public"` in the changeset config).
+- The `@next-buildr` npm scope, owned by the publishing account, with public access (`"access": "public"` in the changeset config).
 
 ## How 1.0.0 was cut
 
@@ -35,13 +35,13 @@ The decisions around it:
 After the publish job finishes:
 
 ```bash
-npm view @buildr/core version dist.attestations   # the version and the provenance attestation
-npm view @buildr/mcp version
+npm view @next-buildr/core version dist.attestations   # the version and the provenance attestation
+npm view @next-buildr/mcp version
 ```
 
 ```powershell
-npm view '@buildr/core' version dist.attestations   # PowerShell: quote the @scope
-npm view '@buildr/mcp' version
+npm view '@next-buildr/core' version dist.attestations   # PowerShell: quote the @scope
+npm view '@next-buildr/mcp' version
 ```
 
 To try the packages in a scratch project, install them from npm as described in [getting-started.md](getting-started.md#using-buildr-in-your-own-nextjs--payload-project).

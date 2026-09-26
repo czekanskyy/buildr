@@ -6,17 +6,17 @@ Mechanically enforced by `pnpm check:boundaries` (dependency-cruiser), not just 
 
 | Package | May import | Must not import |
 |---|---|---|
-| `core` | `zod`, `immer` (only inside `commands/`) | `react`, `react-dom`, `next`, `payload`, ambient `window`/`document` (outside `protocol/`, and only via injected interfaces there), any `@buildr/*` package |
-| `react` | `@buildr/core`, `react`, `react-dom` | `next`, `payload`, `@buildr/editor`, `@buildr/components`, `@buildr/next`, `@buildr/payload` |
-| `components` | `@buildr/core`, `@buildr/react`, `react` | `next`, `payload`, `@buildr/editor`, `@buildr/next`, `@buildr/payload` |
-| `editor` | `@buildr/core`, `react`, `react-dom`, `zustand`, `@radix-ui/*`, `lexical`, `@tanstack/react-virtual`, `lucide-react` | `@buildr/react`, `@buildr/components`, `next`, `payload`, `@buildr/next`, `@buildr/payload` |
-| `next` | `@buildr/core`, `@buildr/react`, `next`, `react`; the `./editor` subpath additionally imports `@buildr/editor` (peer) | `payload`, `@buildr/payload`, `@buildr/components` |
-| `payload` (`./plugin`, `./data`, `./admin`) | `@buildr/core`, `payload`, `@payloadcms/ui` (admin only) | `@buildr/editor`, `@buildr/components`, `@buildr/react` (except where a type-only import is needed from `./data`) |
-| `payload` (`./adapter`) | `@buildr/core` | `payload`, `@payloadcms/*`, `next`, `@buildr/next` |
-| `payload` (`./next`) | `@buildr/core`, `@buildr/next`, `next`, `payload` | `@buildr/editor` |
-| `payload` (`./mcp`, `./mcp/route`) | `@buildr/core`, `@buildr/mcp` (types and backend tests), `./contract`; `mcp/route.ts` (the separate `./mcp/route` entry, so the stdio CLI never loads `payload`) additionally `@modelcontextprotocol/sdk`, `@buildr/next`-free `next` and `payload` (the site route handler) | `payload`, `@payloadcms/*`, `next` (all except `route.ts`), `@buildr/editor`, `@buildr/react`, `@buildr/components` |
-| `mcp` | `@buildr/core`, `@modelcontextprotocol/sdk`, `zod` | `react`, `react-dom`, `next`, `payload`, every other `@buildr/*` package |
-| `mcp` (`./cli`) | as `mcp`, plus `@buildr/payload/mcp` only through an optional peer dependency (dynamic import) | `react`, `next`, `payload` |
+| `core` | `zod`, `immer` (only inside `commands/`) | `react`, `react-dom`, `next`, `payload`, ambient `window`/`document` (outside `protocol/`, and only via injected interfaces there), any `@next-buildr/*` package |
+| `react` | `@next-buildr/core`, `react`, `react-dom` | `next`, `payload`, `@next-buildr/editor`, `@next-buildr/components`, `@next-buildr/next`, `@next-buildr/payload` |
+| `components` | `@next-buildr/core`, `@next-buildr/react`, `react` | `next`, `payload`, `@next-buildr/editor`, `@next-buildr/next`, `@next-buildr/payload` |
+| `editor` | `@next-buildr/core`, `react`, `react-dom`, `zustand`, `@radix-ui/*`, `lexical`, `@tanstack/react-virtual`, `lucide-react` | `@next-buildr/react`, `@next-buildr/components`, `next`, `payload`, `@next-buildr/next`, `@next-buildr/payload` |
+| `next` | `@next-buildr/core`, `@next-buildr/react`, `next`, `react`; the `./editor` subpath additionally imports `@next-buildr/editor` (peer) | `payload`, `@next-buildr/payload`, `@next-buildr/components` |
+| `payload` (`./plugin`, `./data`, `./admin`) | `@next-buildr/core`, `payload`, `@payloadcms/ui` (admin only) | `@next-buildr/editor`, `@next-buildr/components`, `@next-buildr/react` (except where a type-only import is needed from `./data`) |
+| `payload` (`./adapter`) | `@next-buildr/core` | `payload`, `@payloadcms/*`, `next`, `@next-buildr/next` |
+| `payload` (`./next`) | `@next-buildr/core`, `@next-buildr/next`, `next`, `payload` | `@next-buildr/editor` |
+| `payload` (`./mcp`, `./mcp/route`) | `@next-buildr/core`, `@next-buildr/mcp` (types and backend tests), `./contract`; `mcp/route.ts` (the separate `./mcp/route` entry, so the stdio CLI never loads `payload`) additionally `@modelcontextprotocol/sdk`, `@next-buildr/next`-free `next` and `payload` (the site route handler) | `payload`, `@payloadcms/*`, `next` (all except `route.ts`), `@next-buildr/editor`, `@next-buildr/react`, `@next-buildr/components` |
+| `mcp` | `@next-buildr/core`, `@modelcontextprotocol/sdk`, `zod` | `react`, `react-dom`, `next`, `payload`, every other `@next-buildr/*` package |
+| `mcp` (`./cli`) | as `mcp`, plus `@next-buildr/payload/mcp` only through an optional peer dependency (dynamic import) | `react`, `next`, `payload` |
 
 ## Module ownership inside each package
 
@@ -42,7 +42,7 @@ Mechanically enforced by `pnpm check:boundaries` (dependency-cruiser), not just 
 | `payload/plugin` + `data` + `admin` | payload | `buildrPlugin`, `PayloadDataSource`, `LayoutField`, `contract` | Hooks, endpoints | core, payload, `@payloadcms/ui` | `editor`, `components` | Payload integration (SQLite) | Write-guard, access control, 409/422 all covered |
 | `payload/adapter` | payload | `createPayloadAdapter`, `createPayloadCanvasDataSource` | The fetch client | core, `contract` | `payload`, `next` | Unit (mock fetch) | Matches `contract.ts` exactly |
 | `payload/next` | payload | `getBuildrDocument`, `revalidateHooks`, `listPublishedSlugs` | Tag helpers | core, the next adapter, next, payload | `editor` | E2E | Tags follow the documented convention |
-| `mcp` (tools, sessions, serialize) | mcp | `createBuildrMcpServer`, `McpBackend`, `createMemoryBackend` | Tools, edit sessions, serialization | core, `core/commands`, the MCP SDK, zod | React, next, payload, other `@buildr/*` | Unit + integration (in-memory MCP client), backend contract suite | Every mutation is one `executeBatch`; see ADR-024 |
-| `payload/mcp` | payload (`./mcp`) | `createPayloadMcpBackend`, `createBuildrMcpRoute` | The fetch client | core, `@buildr/mcp`, `contract` (route: next, payload) | `editor`, `react`, `components` | Unit (mock fetch), contract suite, example-app integration | The API key never appears in errors or logs |
+| `mcp` (tools, sessions, serialize) | mcp | `createBuildrMcpServer`, `McpBackend`, `createMemoryBackend` | Tools, edit sessions, serialization | core, `core/commands`, the MCP SDK, zod | React, next, payload, other `@next-buildr/*` | Unit + integration (in-memory MCP client), backend contract suite | Every mutation is one `executeBatch`; see ADR-024 |
+| `payload/mcp` | payload (`./mcp`) | `createPayloadMcpBackend`, `createBuildrMcpRoute` | The fetch client | core, `@next-buildr/mcp`, `contract` (route: next, payload) | `editor`, `react`, `components` | Unit (mock fetch), contract suite, example-app integration | The API key never appears in errors or logs |
 
 This table is the basis for how multiple agents can work in different modules concurrently without stepping on each other — see [task-workflow.md](task-workflow.md).

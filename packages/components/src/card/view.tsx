@@ -1,4 +1,4 @@
-import type { BuilderComponentProps } from '@buildr/react';
+import type { BuilderComponentProps } from '@next-buildr/react';
 import { createElement } from 'react';
 import { linkAttributes, newTabNotice } from '../link-attributes.ts';
 import { CARD_ELEMENTS, CARD_VARIANTS, type cardProps } from './props.ts';

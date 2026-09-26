@@ -1,4 +1,4 @@
-import { type BuilderDocument, createEmptyDocument, s } from '@buildr/core';
+import { type BuilderDocument, createEmptyDocument, s } from '@next-buildr/core';
 import { doc } from '../../builders.ts';
 import { baseTree } from './base.ts';
 

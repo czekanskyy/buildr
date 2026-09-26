@@ -1,6 +1,6 @@
 // Universal: imported by the server, the canvas client and the Payload CLI. It imports no CSS.
-import { createDefaultRegistry, defaultComponents } from '@buildr/components';
-import { defaultTheme } from '@buildr/core';
+import { createDefaultRegistry, defaultComponents } from '@next-buildr/components';
+import { defaultTheme } from '@next-buildr/core';
 
 /** The whole component library; add your own with `createRegistry({ components: [...defaultComponents, ...custom] })`. */
 export const registry = createDefaultRegistry();

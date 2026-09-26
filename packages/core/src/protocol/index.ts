@@ -1,4 +1,4 @@
-// @buildr/core/protocol: canvas postMessage protocol - message schemas, createParentTransport,
+// @next-buildr/core/protocol: canvas postMessage protocol - message schemas, createParentTransport,
 // createChildTransport.
 export type { ChildTransportOptions } from './child-transport.ts';
 export { createChildTransport } from './child-transport.ts';

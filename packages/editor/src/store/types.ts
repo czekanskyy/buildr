@@ -7,7 +7,7 @@ import type {
   RegistryMeta,
   Result,
   ValidationIssue,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import type {
   Command,
   CommandEnv,
@@ -17,7 +17,7 @@ import type {
   DocumentPatch,
   HistoryManager,
   HistoryOptions,
-} from '@buildr/core/commands';
+} from '@next-buildr/core/commands';
 import type { StoreApi } from 'zustand/vanilla';
 import type { SelectionMove, SelectMode } from './selection.ts';
 

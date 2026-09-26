@@ -1,4 +1,4 @@
-import { defaultTemplates } from '@buildr/components';
+import { defaultTemplates } from '@next-buildr/components';
 import {
   type BuilderDocument,
   type BuilderFragment,
@@ -8,7 +8,7 @@ import {
   s,
   type TemplateDefinition,
   type Value,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import { COPY } from './copy.ts';
 
 /** A media library entry as a page refers to it. */

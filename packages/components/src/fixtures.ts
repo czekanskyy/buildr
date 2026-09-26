@@ -1,4 +1,4 @@
-import type { TreeNode } from '@buildr/core';
+import type { TreeNode } from '@next-buildr/core';
 
 /**
  * One gallery/test case of a component: a subtree that is placed under the page. Breakpoint

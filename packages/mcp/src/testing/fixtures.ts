@@ -6,7 +6,7 @@ import {
   p,
   type RegistryManifest,
   toManifest,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import type { McpBackend } from '../backend.ts';
 import { createMemoryBackend, type MemoryBackendOptions } from '../backends/memory.ts';
 
@@ -26,7 +26,7 @@ function component(type: string, overrides: Partial<ComponentMeta> = {}): Compon
 
 /**
  * A tiny manifest (page, section, heading) for tests of the tool layer and of backends. The real
- * component catalogue lives in `@buildr/components`, which `@buildr/mcp` must not import.
+ * component catalogue lives in `@next-buildr/components`, which `@next-buildr/mcp` must not import.
  */
 export function createTestManifest(): RegistryManifest {
   return toManifest(

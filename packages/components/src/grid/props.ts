@@ -1,4 +1,4 @@
-import { p } from '@buildr/core';
+import { p } from '@next-buildr/core';
 
 export const gridProps = {
   ariaLabel: p.text({ label: 'Accessible name', localizable: true }),

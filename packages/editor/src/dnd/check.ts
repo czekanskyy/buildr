@@ -7,7 +7,7 @@ import {
   type Reason,
   type RegistryMeta,
   type Result,
-} from '@buildr/core';
+} from '@next-buildr/core';
 
 /**
  * `canMove` for a gap as `node.move` counts it (among the children as they are before the move).

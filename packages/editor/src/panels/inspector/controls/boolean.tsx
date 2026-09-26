@@ -1,4 +1,4 @@
-import type { BooleanPropDef } from '@buildr/core';
+import type { BooleanPropDef } from '@next-buildr/core';
 import type { ControlProps } from './types.ts';
 
 export function BooleanControl({

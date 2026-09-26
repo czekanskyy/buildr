@@ -6,8 +6,8 @@ See also [ADR-003](adr/ADR-003-component-registry.md).
 
 A component definition has two layers:
 
-- **`ComponentMeta`** (in `@buildr/core`, fully JSON-serializable). The editor builds its palette, inspector and drag-and-drop rules from this, and Payload validates documents against it. It reaches the editor through a `RegistryManifest` — the editor never imports component code.
-- **React implementation** (in `@buildr/react`): `render` + `runtime` + `migrations` — functions, not serializable.
+- **`ComponentMeta`** (in `@next-buildr/core`, fully JSON-serializable). The editor builds its palette, inspector and drag-and-drop rules from this, and Payload validates documents against it. It reaches the editor through a `RegistryManifest` — the editor never imports component code.
+- **React implementation** (in `@next-buildr/react`): `render` + `runtime` + `migrations` — functions, not serializable.
 
 ```ts
 export interface ComponentMeta {
@@ -41,7 +41,7 @@ export interface SlotDef {
 ## Props DSL (`p.*`)
 
 ```ts
-import { p } from '@buildr/core';
+import { p } from '@next-buildr/core';
 
 props: {
   text:     p.text({ label: 'Text', default: 'Heading', required: true, bindable: true, maxLength: 300 }),
@@ -88,9 +88,9 @@ export const registry = createRegistry({
 });
 ```
 
-`createRegistry` returns an immutable registry; `registry.extend({...})` produces a new one. There is no global, mutation-based `registerComponent()` call — that pattern breaks under RSC (multiple concurrent requests, multiple module instances) and under test isolation. Registering a custom client component means calling `defineComponent({ ..., runtime: 'client', render: MyClientComponent })` and adding it to the list passed to `createRegistry` in the consuming application. `@buildr/core` is never touched.
+`createRegistry` returns an immutable registry; `registry.extend({...})` produces a new one. There is no global, mutation-based `registerComponent()` call — that pattern breaks under RSC (multiple concurrent requests, multiple module instances) and under test isolation. Registering a custom client component means calling `defineComponent({ ..., runtime: 'client', render: MyClientComponent })` and adding it to the list passed to `createRegistry` in the consuming application. `@next-buildr/core` is never touched.
 
-`createRegistry` (`@buildr/react`) wraps `createRegistryMeta` (`@buildr/core/registry`, PB-015): the metadata-only registry — `get`/`has`/`list`/`byCategory`/`extend` over `ComponentMeta` plus the analogous `getTemplate`/`hasTemplate`/`listTemplates` over `TemplateDefinition` — with the non-serializable implementation map (`render`, `runtime`, `migrations`) `@buildr/core` itself cannot hold (it has no React dependency). `createRegistryMeta` validates at construction time: unique component types and template ids, plus every `ComponentMeta` via `validateComponentMeta`. It throws on failure — an invalid or duplicate registration is an authoring mistake made when the application wires up its registry, not bad end-user data. `createRegistry` additionally checks `runtime` consistency with the file naming convention (dev only). Per-component checks (type-name shape, prop defaults against their own kind's validator, slot consistency, and every `Matcher` — in `parents.*` and `SlotDef.allow`/`deny` — being a well-formed type reference or a recognized content category) live in `validateComponentMeta(meta) -> Diagnostic[]`, so they can also run standalone against one `ComponentMeta` before it reaches a registry.
+`createRegistry` (`@next-buildr/react`) wraps `createRegistryMeta` (`@next-buildr/core/registry`, PB-015): the metadata-only registry — `get`/`has`/`list`/`byCategory`/`extend` over `ComponentMeta` plus the analogous `getTemplate`/`hasTemplate`/`listTemplates` over `TemplateDefinition` — with the non-serializable implementation map (`render`, `runtime`, `migrations`) `@next-buildr/core` itself cannot hold (it has no React dependency). `createRegistryMeta` validates at construction time: unique component types and template ids, plus every `ComponentMeta` via `validateComponentMeta`. It throws on failure — an invalid or duplicate registration is an authoring mistake made when the application wires up its registry, not bad end-user data. `createRegistry` additionally checks `runtime` consistency with the file naming convention (dev only). Per-component checks (type-name shape, prop defaults against their own kind's validator, slot consistency, and every `Matcher` — in `parents.*` and `SlotDef.allow`/`deny` — being a well-formed type reference or a recognized content category) live in `validateComponentMeta(meta) -> Diagnostic[]`, so they can also run standalone against one `ComponentMeta` before it reaches a registry.
 
 Manifest: `toManifest(registry)` (given a `RegistryMeta`) returns `{ hash, components, templates }` with no functions attached — `components`/`templates` are records keyed by `type`/`id`. `manifestHash(registry)` computes just the hash, so the canvas can report its own `canvas:hello { manifestHash }` without materializing a full manifest; a mismatch with the editor's manifest triggers a warning and a reload. `fromManifest(input) -> Result<RegistryManifest, Diagnostic[]>` validates a manifest arriving over an untrusted boundary (postMessage, HTTP) against a Zod schema. A `protocol` version field joins the manifest once the postMessage protocol itself exists (PB-065).
 
@@ -98,7 +98,7 @@ Component look-and-feel (the design system) lives in the component's own CSS, bu
 
 ### Editor icons (`meta.icon`)
 
-`icon` is the kebab-case name of a [lucide](https://lucide.dev) icon (canonical names, for example `text-align-start`, not aliases). The editor draws it in palette tiles (20px) and the layers tree (16px) with `ComponentIcon`, which resolves the name against a **curated static map** in `packages/editor/src/ui/icon.tsx` (about 75 names: every built-in icon listed in [components.md](components.md#editor-icons-metaicon) plus a common vocabulary for layout, text, media, forms and data). Nothing is loaded dynamically, so the editor bundle contains only the mapped icons. A missing name, or one outside the map, shows the neutral `box` icon: the component works and looks consistent, it is just not recognisable by icon. `componentIconNames` (exported from `@buildr/editor`) lists the supported names.
+`icon` is the kebab-case name of a [lucide](https://lucide.dev) icon (canonical names, for example `text-align-start`, not aliases). The editor draws it in palette tiles (20px) and the layers tree (16px) with `ComponentIcon`, which resolves the name against a **curated static map** in `packages/editor/src/ui/icon.tsx` (about 75 names: every built-in icon listed in [components.md](components.md#editor-icons-metaicon) plus a common vocabulary for layout, text, media, forms and data). Nothing is loaded dynamically, so the editor bundle contains only the mapped icons. A missing name, or one outside the map, shows the neutral `box` icon: the component works and looks consistent, it is just not recognisable by icon. `componentIconNames` (exported from `@next-buildr/editor`) lists the supported names.
 
 To request an icon, open an issue or a pull request that adds it to `COMPONENT_ICONS` in `icon.tsx` (one static import by name from `lucide-react` plus one map entry). A unit test checks every name against lucide-react's own export list, so a typo fails. Host-registered icons are not supported for now.
 
@@ -127,7 +127,7 @@ export const Hero = defineTemplate({
 
 See [templates.md](templates.md) for the full model. `instantiateTemplate` assigns fresh IDs, sets `source` and `lock` on the root, and is validated by `canInsert`. Once inserted, a template instance is an ordinary, fully editable subtree — see [ADR-020](adr/ADR-020-composites.md).
 
-## `defineComponent` and `createRegistry` (`@buildr/react`)
+## `defineComponent` and `createRegistry` (`@next-buildr/react`)
 
 `defineComponent({ ...ComponentMeta, runtime, render, migrations? })` takes the metadata fields at the top level next to the implementation and returns `{ meta, render, migrations }`. It validates on the spot (`validateComponentMeta`, a `render` function, the migration map) and throws an `Error` naming the component — an authoring mistake, not user data.
 

@@ -1,5 +1,5 @@
 ---
-'@buildr/next': minor
+'@next-buildr/next': minor
 ---
 
-`@buildr/next/canvas`: `BuildrCanvasPage` (authorized, dynamic, noindex), `canvasMetadata` and `buildrSecurityHeaders()` for `next.config`.
+`@next-buildr/next/canvas`: `BuildrCanvasPage` (authorized, dynamic, noindex), `canvasMetadata` and `buildrSecurityHeaders()` for `next.config`.

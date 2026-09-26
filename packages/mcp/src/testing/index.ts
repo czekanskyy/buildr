@@ -1,4 +1,4 @@
-// `@buildr/mcp/testing`: the reusable backend contract suite and test fixtures. Imports `vitest`
+// `@next-buildr/mcp/testing`: the reusable backend contract suite and test fixtures. Imports `vitest`
 // (an optional peer dependency), so import this subpath from test files only.
 
 export {

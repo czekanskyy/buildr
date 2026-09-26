@@ -5,7 +5,7 @@ import {
   fromManifest,
   parseDocument,
   type RegistryManifest,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import type { McpBackend } from '../backend.ts';
 import { createMemoryBackend, type MemoryDocumentInput } from '../backends/memory.ts';
 

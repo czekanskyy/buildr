@@ -1,4 +1,4 @@
-// @buildr/payload/next: getBuildrDocument, listPublishedSlugs, revalidateHooks, the cache tag
+// @next-buildr/payload/next: getBuildrDocument, listPublishedSlugs, revalidateHooks, the cache tag
 // convention and the SEO mapping. Imports `next/cache`, so use it from server code of a Next.js app.
 export type {
   BuildrDocumentEntry,

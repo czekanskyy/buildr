@@ -1,4 +1,4 @@
-import type { BuildrPluginOptions } from '@buildr/payload/plugin';
+import type { BuildrPluginOptions } from '@next-buildr/payload/plugin';
 import type { PayloadRequest } from 'payload';
 import { canPublish, roleOf } from './access.ts';
 

@@ -1,4 +1,4 @@
-import { defineComponent } from '@buildr/react';
+import { defineComponent } from '@next-buildr/react';
 import { PageView } from './view.tsx';
 
 /** The document root: exactly one per document, never inserted, moved or removed by an editor. */

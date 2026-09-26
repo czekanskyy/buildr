@@ -1,4 +1,4 @@
-import { createParentTransport } from '@buildr/core/protocol';
+import { createParentTransport } from '@next-buildr/core/protocol';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { BreakpointConfig } from '../app/config.ts';
 import { type MessageKey, useT } from '../messages/index.tsx';
@@ -7,7 +7,7 @@ import { Button, Icon } from '../ui/index.ts';
 import { type CanvasHost, type CanvasHostOptions, createCanvasHost } from './host.ts';
 
 export interface CanvasFrameProps {
-  /** The canvas route (`@buildr/react/canvas` runs there). */
+  /** The canvas route (`@next-buildr/react/canvas` runs there). */
   readonly canvasUrl: string;
   /** `RegistryManifest.hash` of the registry the editor knows. */
   readonly manifestHash: string;

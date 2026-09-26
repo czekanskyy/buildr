@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { type MediaAsset, p } from '@buildr/core';
+import { type MediaAsset, p } from '@next-buildr/core';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';

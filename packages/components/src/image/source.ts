@@ -1,4 +1,4 @@
-import { type MediaAsset, sanitizeUrl } from '@buildr/core';
+import { type MediaAsset, sanitizeUrl } from '@next-buildr/core';
 
 /** The safe URL of an asset, or nothing: an unsafe one (`javascript:`, `data:`) is never rendered. */
 export function safeUrl(url: unknown): string | undefined {

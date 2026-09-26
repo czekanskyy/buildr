@@ -1,4 +1,4 @@
-import type { NumberPropDef } from '@buildr/core';
+import type { NumberPropDef } from '@next-buildr/core';
 import { useEffect, useState } from 'react';
 import { Input } from '../../../ui/index.ts';
 import type { ControlProps } from './types.ts';

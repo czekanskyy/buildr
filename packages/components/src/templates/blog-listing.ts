@@ -1,4 +1,4 @@
-import { defineTemplate, s, type TemplateDefinition, type TreeNode } from '@buildr/core';
+import { defineTemplate, s, type TemplateDefinition, type TreeNode } from '@next-buildr/core';
 import { bind, heading, section, stack, text } from './build.ts';
 import { PostCard } from './post-card.ts';
 import { thumbnail } from './thumbnail.ts';

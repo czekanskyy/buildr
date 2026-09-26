@@ -7,7 +7,7 @@ import {
   type DocumentLimits,
   prepareRender,
   type Theme,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import type { ReactNode } from 'react';
 import type { ReactRegistry } from '../define/registry.ts';
 import type { Platform } from '../define/types.ts';

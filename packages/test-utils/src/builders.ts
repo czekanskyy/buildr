@@ -7,7 +7,7 @@ import {
   type PageNode,
   ROOT_COMPONENT_TYPE,
   type SlotName,
-} from '@buildr/core';
+} from '@next-buildr/core';
 
 const DEFAULT_NODE_TYPE: ComponentType = 'buildr/text';
 

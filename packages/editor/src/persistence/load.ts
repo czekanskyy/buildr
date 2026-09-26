@@ -1,4 +1,4 @@
-import { type BuilderDocument, parseDocument } from '@buildr/core';
+import { type BuilderDocument, parseDocument } from '@next-buildr/core';
 import { z } from 'zod';
 import type { DocumentAdapter, DocumentRef, LoadedDocument, SaveResult } from './types.ts';
 

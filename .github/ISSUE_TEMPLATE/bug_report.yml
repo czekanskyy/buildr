@@ -13,8 +13,8 @@ body:
     id: package
     attributes:
       label: Package and version
-      description: Which `@buildr/*` package, and which version?
-      placeholder: '@buildr/core@0.4.0'
+      description: Which `@next-buildr/*` package, and which version?
+      placeholder: '@next-buildr/core@0.4.0'
     validations:
       required: true
 

@@ -7,7 +7,7 @@ import {
   isAncestor,
   type NodeId,
   reId,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import type { EditorStore } from '../store/index.ts';
 import { type ClipboardError, parseClipboardText, serializeFragment } from './format.ts';
 

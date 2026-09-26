@@ -1,4 +1,4 @@
-// Generated from guide.md by UPDATE_MCP_DOCS=1 pnpm test --filter @buildr/mcp. Do not edit.
+// Generated from guide.md by UPDATE_MCP_DOCS=1 pnpm test --filter @next-buildr/mcp. Do not edit.
 export const GUIDE_MARKDOWN = [
   '# Buildr agent guide',
   '',

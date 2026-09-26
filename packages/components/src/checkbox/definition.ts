@@ -1,4 +1,4 @@
-import { defineComponent } from '@buildr/react';
+import { defineComponent } from '@next-buildr/react';
 import { checkboxProps } from './props.ts';
 import { CheckboxView } from './view.tsx';
 

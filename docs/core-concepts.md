@@ -28,7 +28,7 @@ A ready-made section (Hero, CTA, Pricing, …) is a `TemplateDefinition` whose `
 
 ## Renderer
 
-`renderTree` turns a document (after an async `prepareRender` data-fetching pass and a `compileStyles` CSS-generation pass) into React elements. The exact same function renders production pages (in `@buildr/next`'s `BuildrPage`, a Server Component) and the editor's canvas (instrumented with selection/hover/drag affordances). See [`renderer.md`](renderer.md).
+`renderTree` turns a document (after an async `prepareRender` data-fetching pass and a `compileStyles` CSS-generation pass) into React elements. The exact same function renders production pages (in `@next-buildr/next`'s `BuildrPage`, a Server Component) and the editor's canvas (instrumented with selection/hover/drag affordances). See [`renderer.md`](renderer.md).
 
 ## Canvas
 

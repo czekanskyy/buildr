@@ -1,4 +1,4 @@
-import { fromTree } from '@buildr/core';
+import { fromTree } from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import { loadDefaultRegistry } from './default-manifest.test-kit.ts';
 import {

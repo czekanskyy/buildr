@@ -1,4 +1,4 @@
-import { checkInvariants } from '@buildr/core';
+import { checkInvariants } from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import { invalidDocumentFixtures, validDocumentFixtures } from './index.ts';
 

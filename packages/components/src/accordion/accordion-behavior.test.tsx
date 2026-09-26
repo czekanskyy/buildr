@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { s } from '@buildr/core';
+import { s } from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import { AccordionItem } from '../accordion-item/definition.ts';
 import { Page } from '../page/definition.ts';

@@ -1,4 +1,4 @@
-import type { ComponentMeta, RegistryManifest } from '@buildr/core';
+import type { ComponentMeta, RegistryManifest } from '@next-buildr/core';
 import { createContext, type ReactNode, useContext } from 'react';
 
 const ManifestContext = createContext<RegistryManifest | undefined>(undefined);

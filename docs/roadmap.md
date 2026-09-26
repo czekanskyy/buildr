@@ -2,7 +2,7 @@
 
 ## Release status
 
-Buildr is released as **1.0.0**: every `@buildr/*` package is versioned together (a fixed changeset group) and published with npm provenance by the release workflow (see [releasing.md](releasing.md)). Phases 0-14 of the [backlog](backlog/README.md) are implemented: the MVP (phases 0-12), the editor visual polish (phase 13: design tokens, Inter, icons, the light/dark theme switch, narrow-screen panel overlays) and the MCP server for AI agents (phase 14, `@buildr/mcp`). Not everything once planned for 1.0 is done; see [Known gaps](#known-gaps--not-in-100) below, which is the authoritative list.
+Buildr is released as **1.0.0**: every `@next-buildr/*` package is versioned together (a fixed changeset group) and published with npm provenance by the release workflow (see [releasing.md](releasing.md)). Phases 0-14 of the [backlog](backlog/README.md) are implemented: the MVP (phases 0-12), the editor visual polish (phase 13: design tokens, Inter, icons, the light/dark theme switch, narrow-screen panel overlays) and the MCP server for AI agents (phase 14, `@next-buildr/mcp`). Not everything once planned for 1.0 is done; see [Known gaps](#known-gaps--not-in-100) below, which is the authoritative list.
 
 > **Version labels in other documents.** Feature documents still say "v0.2", "v0.3" or "v1.0" next to things that are deferred. Those labels are historical planning buckets, not release numbers: read them as "planned, not in 1.0.0" unless the item is listed as done below. There were no 0.x releases on npm; 1.0.0 is the first published version.
 

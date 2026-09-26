@@ -1,4 +1,4 @@
-import { parseDocument } from '@buildr/core';
+import { parseDocument } from '@next-buildr/core';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { builtinLayout, resolveLayout } from '../../data/index.ts';
 import { boot, type Harness, title, withChild } from './endpoints.test-kit.ts';

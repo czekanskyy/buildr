@@ -44,7 +44,7 @@ buildrPlugin({
 
 `registry` can be a full React registry, or just `registry.meta` plus migrations — the plugin only ever uses metadata and migrations. Component definitions do not import CSS (CSS is imported once, in the application layout), so the registry can also load inside a Payload CLI process.
 
-**What the plugin adds**: to every configured collection — a `layout` field (`json`, with `admin.components.Field` pointing at `@buildr/payload/admin#LayoutField`), a hidden, read-only `buildrRevision` (`number`) field, and, when `templates: true`, a `template` relationship field to `buildr-templates`. The plugin requires `versions.drafts` (validated at startup). It also adds the `buildr-templates` collection (`title`, `targetCollection`, `isDefault`, `layout`, `buildrRevision`, drafts) and `buildr-form-submissions`; write-guard and revalidation hooks; the endpoints listed below; and the "Edit with Visual Builder" button (inactive for an unsaved document), which opens `/buildr/edit/{collection}/{id}` in a named window (`window.open(url, 'buildr-{collection}-{id}')`, reusing the same tab on repeat clicks).
+**What the plugin adds**: to every configured collection — a `layout` field (`json`, with `admin.components.Field` pointing at `@next-buildr/payload/admin#LayoutField`), a hidden, read-only `buildrRevision` (`number`) field, and, when `templates: true`, a `template` relationship field to `buildr-templates`. The plugin requires `versions.drafts` (validated at startup). It also adds the `buildr-templates` collection (`title`, `targetCollection`, `isDefault`, `layout`, `buildrRevision`, drafts) and `buildr-form-submissions`; write-guard and revalidation hooks; the endpoints listed below; and the "Edit with Visual Builder" button (inactive for an unsaved document), which opens `/buildr/edit/{collection}/{id}` in a named window (`window.open(url, 'buildr-{collection}-{id}')`, reusing the same tab on repeat clicks).
 
 ## Endpoint contract
 
@@ -66,7 +66,7 @@ buildrPlugin({
 | POST | `/api/buildr/documents` | `{ collection, title, slug?, template? }` (only with `mcp.enabled`) | `201 DocumentSummary` (a draft) | edit + collection create |
 | POST | `/api/buildr/forms/:collection/:id/:nodeId` | form data / JSON | `{ ok }` / `422` / `429` | public |
 
-Read/data endpoints accept a `locale` parameter (defaulting to the default locale) and pass it through to the Local API's own `locale`/`fallbackLocale`. Every endpoint runs Local API calls with `user: req.user, overrideAccess: false`. Request/response types are defined once (Zod, `@buildr/payload/src/contract.ts`) and shared between the endpoint implementations and the HTTP adapter.
+Read/data endpoints accept a `locale` parameter (defaulting to the default locale) and pass it through to the Local API's own `locale`/`fallbackLocale`. Every endpoint runs Local API calls with `user: req.user, overrideAccess: false`. Request/response types are defined once (Zod, `@next-buildr/payload/src/contract.ts`) and shared between the endpoint implementations and the HTTP adapter.
 
 ## Save, autosave, drafts, publish, versions
 
@@ -137,15 +137,15 @@ export interface MediaAsset { id: string; url: string; alt?: string; width?: num
 
 ## Preview URL and revalidation
 
-- `previewUrl(ref)` returns `/buildr/preview?collection=posts&id=123`. Its route handler (`@buildr/next/draft`) checks the user, enables `draftMode()`, and redirects to `path(doc)` (relative paths only, preventing open redirect).
-- `@buildr/payload/next`'s `revalidateHooks()` wires `afterChange` (on publish, or a change to an already-published document) and `afterDelete` to call `revalidateTag` for `buildr:doc:{collection}:{id}`, `buildr:col:{collection}`; a global change triggers `buildr:global:{slug}`; a template change triggers `buildr:template:{id}` plus `buildr:col:{targetCollection}`.
+- `previewUrl(ref)` returns `/buildr/preview?collection=posts&id=123`. Its route handler (`@next-buildr/next/draft`) checks the user, enables `draftMode()`, and redirects to `path(doc)` (relative paths only, preventing open redirect).
+- `@next-buildr/payload/next`'s `revalidateHooks()` wires `afterChange` (on publish, or a change to an already-published document) and `afterDelete` to call `revalidateTag` for `buildr:doc:{collection}:{id}`, `buildr:col:{collection}`; a global change triggers `buildr:global:{slug}`; a template change triggers `buildr:template:{id}` plus `buildr:col:{targetCollection}`.
 
 ## The plugin scaffold (PB-093)
 
-`buildrPlugin(options)` (`@buildr/payload/plugin`) validates its options with Zod at startup (every problem is listed in one error) and then, for each collection in `options.collections`:
+`buildrPlugin(options)` (`@next-buildr/payload/plugin`) validates its options with Zod at startup (every problem is listed in one error) and then, for each collection in `options.collections`:
 
 - checks that the collection exists, has `versions.drafts` enabled and does not already use the names `layout`, `buildrRevision` or `template`;
-- adds `layout` (`json`, admin component `@buildr/payload/admin#LayoutField`, receiving `editorRoute` as a client prop), the hidden read-only `buildrRevision` (default `0`) and, when `templates: true`, the `template` relationship to `buildr-templates` (the collection is added by the plugin, see "Templates and resolveLayout");
+- adds `layout` (`json`, admin component `@next-buildr/payload/admin#LayoutField`, receiving `editorRoute` as a client prop), the hidden read-only `buildrRevision` (default `0`) and, when `templates: true`, the `template` relationship to `buildr-templates` (the collection is added by the plugin, see "Templates and resolveLayout");
 - guards `layout` and `buildrRevision` with the **write-guard**: on `update`, the incoming value is used only when `req.context.buildrWrite === true` (`BUILDR_WRITE`); otherwise the stored value (`originalDoc`, which Payload sets to the latest draft when drafts are on) is kept. Creating a document accepts the value as sent.
 
 `LayoutField` shows the number of elements in the stored layout and the "Edit with Visual Builder" button. The button is disabled until the document has an id, and opens `{editor route}/{collection}/{id}` with `window.open(url, 'buildr-{collection}-{id}')`, so repeat clicks reuse the same window. The presentational `LayoutFieldView` has no Payload UI import, which keeps it testable; `LayoutField` loads the Payload-UI-connected component lazily, so the entry point still imports in plain Node (the Payload CLI, the smoke test).
@@ -161,7 +161,7 @@ The `layout` field runs one `beforeChange` chain, so the data is protected whate
 3. when the registry carries `migrations`, components are migrated to their current versions (`migrateComponents`); a component written by newer code rejects the write;
 4. when a registry is configured, `validateDocument` runs; issues with severity `error` reject the write, warnings are logged through `payload.logger.warn`.
 
-A rejected write throws Payload's `ValidationError` with one error on the path `layout`; its message lists every problem (`message (path)`), so the admin shows it under the field and REST returns it in `errors[0].data.errors`. The builder endpoints reuse `processLayout` (exported from `@buildr/payload/plugin`) and map its diagnostics to `422`. A layout that the write-guard keeps (an admin save) is not validated again.
+A rejected write throws Payload's `ValidationError` with one error on the path `layout`; its message lists every problem (`message (path)`), so the admin shows it under the field and REST returns it in `errors[0].data.errors`. The builder endpoints reuse `processLayout` (exported from `@next-buildr/payload/plugin`) and map its diagnostics to `422`. A layout that the write-guard keeps (an admin save) is not validated again.
 
 The `registry` option takes `{ meta, migrations? }`: a React registry fits, and so does `{ meta: registry.meta }` alone (then only structure and props are validated).
 
@@ -192,7 +192,7 @@ The plugin registers the [endpoint contract](#endpoint-contract) as Payload endp
 
 ## DataSchema and context from Payload (PB-097)
 
-`@buildr/payload/data` derives the [`DataSchema`](dynamic-bindings.md) and the data context from the Payload config, so bindings are typed without a hand-written schema.
+`@next-buildr/payload/data` derives the [`DataSchema`](dynamic-bindings.md) and the data context from the Payload config, so bindings are typed without a hand-written schema.
 
 - **`schemaFromCollection(source, collection, { contextNames, siteGlobal })`** returns `{ scopes, entities }`: the scopes `site` (the `site-settings` global, when it exists), the collection under its context name (`page`, `post`, ...) and `route` (`path`, `locale`, `params.page`); every relation target becomes an entity (named after its context name, else its slug), transitively, so cycles such as authors <-> posts are fine.
 - **Field mapping** as in [Building context and the data schema](#payload-data-model) above; `hasMany` wraps the type in `list`; `row`/`collapsible`/unnamed tabs are flattened and a named tab is an `object`. Documents also carry `id`, `createdAt`, `updatedAt`.
@@ -202,7 +202,7 @@ The plugin registers the [endpoint contract](#endpoint-contract) as Payload endp
 
 ## PayloadDataSource and data endpoints (PB-098)
 
-`createPayloadDataSource({ payload, req?, queryable, mediaCollection?, contextNames?, depth?, scanLimit? })` (`@buildr/payload/data`) is the server `DataSource` of ADR-018. It passes the same contract suite as `MemoryDataSource` (`@buildr/test-utils/contracts/data-source`).
+`createPayloadDataSource({ payload, req?, queryable, mediaCollection?, contextNames?, depth?, scanLimit? })` (`@next-buildr/payload/data`) is the server `DataSource` of ADR-018. It passes the same contract suite as `MemoryDataSource` (`@next-buildr/test-utils/contracts/data-source`).
 
 - **Allowlist**: only collections in `options.queryable` can be queried, and only by the listed `fields` and `sort` keys (paths such as `author.name` walk groups and single relations). Auth collections, hidden and credential-like fields never resolve, even when listed. Anything else is a `DataQueryError` (`422` over HTTP). `limit` is 1..50, `page` is 1 or more.
 - **Access**: every call runs with `overrideAccess: false` and the given `req`, so the reader's collection access applies. Production reads published documents only; `preview` and `canvas` read drafts.
@@ -220,7 +220,7 @@ Both need `edit`, the `media.collection` option and the caller's own access on t
 
 ## The HTTP adapter (PB-100)
 
-`@buildr/payload/adapter` is the browser-side client of the builder API; it never imports `payload`, `@payloadcms/*` or `next` (dependency-cruiser and a test enforce it) and needs only `fetch`, `FormData` and `File`, so it works in the browser without polyfills.
+`@next-buildr/payload/adapter` is the browser-side client of the builder API; it never imports `payload`, `@payloadcms/*` or `next` (dependency-cruiser and a test enforce it) and needs only `fetch`, `FormData` and `File`, so it works in the browser without polyfills.
 
 - **`createPayloadAdapter({ baseUrl, fetch?, credentials?, locale?, timeZone?, previewRoute?, adminRoute? })`** returns the editor's `DocumentAdapter`. `baseUrl` is Payload's API root (`/api`). Cookies travel with same-origin requests; use `credentials: 'include'` for a cross-origin CMS.
 - **`createPayloadCanvasDataSource({ baseUrl, ... })`** returns a `DataSource` for the canvas: `query` -> `POST /buildr/data/query`, `getMedia` -> `POST /buildr/data/media` (one batch, de-duplicated).
@@ -229,7 +229,7 @@ Both need `edit`, the `media.collection` option and the caller's own access on t
 - **Revision**: `getRevision(ref)` calls `GET /buildr/documents/:collection/:id/revision` (see [above](#revision-query-pb-143)) and returns `{ revision, updatedAt, updatedBy? }`.
 - **Session and locales**: the session is fetched once and cached (until it fails); `GET /buildr/session` now also sends `locales` when Payload localization is configured. `getContext` uses `options.locale()` (else the default language) and `options.timeZone` (else the browser's) to complete the `DataContext`.
 - **Media**: `media.search` maps `mimeTypes` (when all share one type) to `type`, the cursor is the page number; `media.upload(file, alt)` posts multipart and rejects with the server's reason on `422` (no `alt`).
-- `@buildr/editor` is an optional peer used for types only.
+- `@next-buildr/editor` is an optional peer used for types only.
 
 ## Templates and `resolveLayout` (PB-101)
 
@@ -246,7 +246,7 @@ Access: anyone signed in reads templates, visitors read the published ones (a re
 
 ### Resolution order
 
-`resolveLayout({ payload, req?, collection, doc, contextName, draft?, overrideAccess? })` (exported from `@buildr/payload/data`) returns `{ layout, source, layoutRef }`, taking the first that has content (a root with at least one child):
+`resolveLayout({ payload, req?, collection, doc, contextName, draft?, overrideAccess? })` (exported from `@next-buildr/payload/data`) returns `{ layout, source, layoutRef }`, taking the first that has content (a root with at least one child):
 
 1. `document`: the document's own `layout`.
 2. `template`: the template the document points at (`doc.template`). A template of another collection is never used.
@@ -263,7 +263,7 @@ Editing a template in the builder is not part of this task: for now the layout o
 
 ## API keys and agents (PB-139)
 
-With `mcp.enabled`, requests authenticated by a Payload API key (`Authorization: <collection> API-Key <key>`) may use the builder endpoints and the document list/create endpoints; without it they get `403`. `access.unlockTemplates` never applies to API keys, publishing needs `mcp.allowPublish` on top of `access.publish`, and `mcp.collections` narrows the collections. Writes record the user in `buildrUpdatedBy` and are rate limited per API-key user. See [mcp.md](mcp.md#authentication). The `@buildr/payload/mcp` subpath is the client side: `createPayloadMcpBackend` connects `@buildr/mcp` to these endpoints ([mcp.md](mcp.md#http-backend-buildrpayloadmcp)); it imports neither `payload` nor `next`.
+With `mcp.enabled`, requests authenticated by a Payload API key (`Authorization: <collection> API-Key <key>`) may use the builder endpoints and the document list/create endpoints; without it they get `403`. `access.unlockTemplates` never applies to API keys, publishing needs `mcp.allowPublish` on top of `access.publish`, and `mcp.collections` narrows the collections. Writes record the user in `buildrUpdatedBy` and are rate limited per API-key user. See [mcp.md](mcp.md#authentication). The `@next-buildr/payload/mcp` subpath is the client side: `createPayloadMcpBackend` connects `@next-buildr/mcp` to these endpoints ([mcp.md](mcp.md#http-backend-buildrpayloadmcp)); it imports neither `payload` nor `next`.
 
 ### Revision query (PB-143)
 

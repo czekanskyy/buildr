@@ -1,7 +1,7 @@
 // A minimal component set for the playground and for render tests. The real components live in
-// @buildr/components; these exist so the renderer can be exercised without depending on it.
-import { p } from '@buildr/core';
-import { createRegistry, defineComponent, type Platform } from '@buildr/react';
+// @next-buildr/components; these exist so the renderer can be exercised without depending on it.
+import { p } from '@next-buildr/core';
+import { createRegistry, defineComponent, type Platform } from '@next-buildr/react';
 import { createElement } from 'react';
 
 const base = {

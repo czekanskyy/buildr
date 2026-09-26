@@ -7,7 +7,7 @@ import {
   type NodeId,
   type Reason,
   type RegistryMeta,
-} from '@buildr/core';
+} from '@next-buildr/core';
 
 /** Where an insertion goes, or why nowhere works. */
 export type Placement =

@@ -50,7 +50,7 @@ The `/buildr/*` prefix does not collide with Payload's own catch-all `/api/*`, o
 ## Server Components, client boundaries, dynamic routes
 
 - `BuildrPage` is an async Server Component: migrate -> `prepareRender` (Local API) -> `compileStyles` -> `renderTree`. Only the JavaScript for `runtime: 'client'` components actually used on the page reaches the client. **Goal: a page with no interactive components ships zero builder JS.**
-- The canvas and editor pages are server wrappers from `@buildr/next/canvas|editor` (auth, headers, `noindex`, a server-computed manifest) plus a small client file in the consuming application (`'use client'`) that imports the `registry` (canvas) or `@buildr/editor` (editor) — functions cannot cross the server-to-client boundary, which is why the registry import happens in a client module.
+- The canvas and editor pages are server wrappers from `@next-buildr/next/canvas|editor` (auth, headers, `noindex`, a server-computed manifest) plus a small client file in the consuming application (`'use client'`) that imports the `registry` (canvas) or `@next-buildr/editor` (editor) — functions cannot cross the server-to-client boundary, which is why the registry import happens in a client module.
 - Dynamic routes: `generateStaticParams` covers published slugs (per locale); `dynamicParams = true` allows ISR for new ones.
 
 ## generateMetadata, next/image, next/link
@@ -67,10 +67,10 @@ The `/buildr/*` prefix does not collide with Payload's own catch-all `/api/*`, o
 
 ## Implemented API: `BuildrPage` and the Next platform (PB-103)
 
-`@buildr/next` exports:
+`@next-buildr/next` exports:
 
 - `createBuildrConfig({ registry, theme, platform, dataSource, messages?, onError?, cache? })` — a frozen bundle. `dataSource(context)` is called per render, so it can be a per-request Payload source; `messages(locale)` supplies the built-in strings.
-- `BuildrPage({ config, entry, fallback?, sectionBoundaries? })` — an async Server Component. `entry` is `{ document, context, layoutRef?, currentId? }` (the shape `getBuildrDocument` produces in PB-107). It calls `renderDocument` from `@buildr/react/server`. Error-level diagnostics go to `onError`; a document that cannot be rendered throws (for `error.tsx`) unless `fallback` is given. In production every top-level section is wrapped in a `BuildrSectionBoundary` (`sectionBoundaries` overrides this).
+- `BuildrPage({ config, entry, fallback?, sectionBoundaries? })` — an async Server Component. `entry` is `{ document, context, layoutRef?, currentId? }` (the shape `getBuildrDocument` produces in PB-107). It calls `renderDocument` from `@next-buildr/react/server`. Error-level diagnostics go to `onError`; a document that cannot be rendered throws (for `error.tsx`) unless `fallback` is given. In production every top-level section is wrapped in a `BuildrSectionBoundary` (`sectionBoundaries` overrides this).
 - `createNextPlatform({ formAction? })` — internal paths (`/x`, `#x`, `?x`) use `next/link`; everything else is a plain `<a>` (with `noopener noreferrer` added for `target="_blank"`). `Image` uses `next/image` when width and height are known, else a plain `img`. `formAction` defaults to `/api/buildr/forms/:collection/:id/:nodeId` from the `{collection}:{id}` layout reference.
 - `BuildrSectionBoundary` (`'use client'`) — the only client module of the page path; it logs the failure and renders `fallback` (nothing by default).
 - `buildrMetadata(entry, defaults)` — maps SEO fields (`meta.title/description/image/noIndex/canonical`, with the title, excerpt and featured image as fallbacks) and `alternates` (hreflang) onto a `Metadata`-shaped object. `noIndex` and `draft` both give `robots: noindex`.
@@ -79,7 +79,7 @@ The `/buildr/*` prefix does not collide with Payload's own catch-all `/api/*`, o
 
 ## Implemented API: draft mode and preview (PB-104)
 
-`@buildr/next/draft` exports:
+`@next-buildr/next/draft` exports:
 
 - `createPreviewRoute({ authorize, defaultPath? })` — the `GET` of `/buildr/preview`. `authorize(request)` decides (a session check, a shared secret in the query); without a yes the answer is `401` and draft mode stays off. Then it calls `draftMode().enable()` and answers `307` to `?path=`.
 - `createExitPreviewRoute({ defaultPath? })` — the `GET` of `/buildr/preview/exit`: `draftMode().disable()` and the same redirect. It needs no authorization.
@@ -88,7 +88,7 @@ The `/buildr/*` prefix does not collide with Payload's own catch-all `/api/*`, o
 
 ## Implemented API: the canvas route (PB-105)
 
-`@buildr/next/canvas` exports:
+`@next-buildr/next/canvas` exports:
 
 - `BuildrCanvasPage({ authorize, children })` — the server wrapper of `app/(frontend)/buildr/canvas/page.tsx`. It reads request headers (which makes the route dynamic), calls `authorize()` and answers the site's own `notFound()` when it is not a yes, so the route does not reveal itself. `children` is the application's client file, rendered inside the site layout.
 - `canvasMetadata` — export it as `metadata` from the page: `robots: noindex, nofollow`.
@@ -99,8 +99,8 @@ The client file is the application's (functions cannot cross the server-to-clien
 ```tsx
 // app/(frontend)/buildr/canvas/canvas-client.tsx
 'use client';
-import { CanvasRuntime } from '@buildr/react';
-import { createNextPlatform } from '@buildr/next';
+import { CanvasRuntime } from '@next-buildr/react';
+import { createNextPlatform } from '@next-buildr/next';
 import { registry, theme } from '@/buildr.registry';
 
 export function CanvasClient(props: { manifestHash: string; rendererVersion: string }) {
@@ -116,17 +116,17 @@ export default function Page() {
 
 ## Implemented API: the editor route (PB-106)
 
-`@buildr/next/editor` exports:
+`@next-buildr/next/editor` exports:
 
 - `BuildrEditorPage({ collection, id, authorize, loginUrl, returnTo, manifest, canvasUrl?, config?, render })` — the server wrapper of `app/(builder)/buildr/edit/[collection]/[id]/page.tsx`. It makes the route dynamic, then calls `authorize()`: `true` renders, `false` (not signed in) redirects to `loginUrl?redirect=<returnTo>`, `'forbidden'` (signed in without the right) is the site's `notFound()`. Both `loginUrl` and `returnTo` pass through `safeRedirectPath`, so the redirect stays on the site.
-- `render(props)` receives `{ manifest, canvasUrl, documentRef, config? }` — plain, serializable data — and returns the application's client file (`'use client'`), which builds the `DocumentAdapter` (`@buildr/payload/adapter`) and mounts `BuilderEditor`. Only that file imports `@buildr/editor`, so the editor's bundle loads on this route only.
+- `render(props)` receives `{ manifest, canvasUrl, documentRef, config? }` — plain, serializable data — and returns the application's client file (`'use client'`), which builds the `DocumentAdapter` (`@next-buildr/payload/adapter`) and mounts `BuilderEditor`. Only that file imports `@next-buildr/editor`, so the editor's bundle loads on this route only.
 - `editorMetadata` — `robots: noindex, nofollow`.
 
 The manifest is computed on the server (`toManifest(registry.meta)`), so the palette never depends on a client-side import of component code. The `(builder)` route group has its own root layout with no site chrome.
 
 ## Implemented API: `getBuildrDocument`, tags and revalidation (PB-107)
 
-`@buildr/payload/next` (server code of a Next.js app; it imports `next/cache`):
+`@next-buildr/payload/next` (server code of a Next.js app; it imports `next/cache`):
 
 ```ts
 const entry = await getBuildrDocument({
@@ -204,11 +204,11 @@ Verified by hand against a local database: the editor opens, the canvas handshak
 
 ## The MCP route (PB-142)
 
-`apps/example-next-payload/src/app/(builder)/api/buildr/mcp/route.ts` mounts `createBuildrMcpRoute` from `@buildr/payload/mcp/route` at `/api/buildr/mcp` (a static segment, so it wins over Payload's `[...slug]` REST route). The route answers `404` unless the plugin has `mcp.enabled`; the example turns that on with `BUILDR_MCP=1`, which also gives the `users` collection `auth: { useAPIKey: true }` and adds the hidden `buildrUpdatedBy` field (a schema change: run a migration on Postgres). See [mcp.md](mcp.md#remote-server-streamable-http-buildrpayloadmcproute) for authentication, origin and rate-limit rules.
+`apps/example-next-payload/src/app/(builder)/api/buildr/mcp/route.ts` mounts `createBuildrMcpRoute` from `@next-buildr/payload/mcp/route` at `/api/buildr/mcp` (a static segment, so it wins over Payload's `[...slug]` REST route). The route answers `404` unless the plugin has `mcp.enabled`; the example turns that on with `BUILDR_MCP=1`, which also gives the `users` collection `auth: { useAPIKey: true }` and adds the hidden `buildrUpdatedBy` field (a schema change: run a migration on Postgres). See [mcp.md](mcp.md#remote-server-streamable-http-buildrpayloadmcproute) for authentication, origin and rate-limit rules.
 
 ## The example application seeds (PB-111)
 
-`pnpm --filter @buildr/example-next-payload seed` fills the database with the six demo scenarios in Polish (default) and English: a landing page (`home`), a company page (`about`, with pricing and FAQ), the blog listing (`blog`, eight posts so pagination has a second page), a contact page, and the default layout templates for `posts` and `products` (`buildr-templates`), plus authors, categories, media (generated SVG), posts and four products.
+`pnpm --filter @next-buildr/example-next-payload seed` fills the database with the six demo scenarios in Polish (default) and English: a landing page (`home`), a company page (`about`, with pricing and FAQ), the blog listing (`blog`, eight posts so pagination has a second page), a contact page, and the default layout templates for `posts` and `products` (`buildr-templates`), plus authors, categories, media (generated SVG), posts and four products.
 
 - **Idempotent.** Every document is looked up by its natural key (slug, filename) and skipped when present; a second run creates nothing.
 - **Static, deterministic documents.** Page layouts are composed from `defaultTemplates` with a seeded id generator; the Polish text is the stored value and English rides along as `l10n.en`.
@@ -216,13 +216,13 @@ Verified by hand against a local database: the editor opens, the canvas handshak
 
 ## End-to-end tests of the example application (PB-112)
 
-`apps/example-next-payload/e2e` is a Playwright suite (`pnpm --filter @buildr/example-next-payload e2e`; CI job `E2E`). `playwright.config.ts` starts `e2e/serve.mjs`, which recreates a SQLite file (`e2e.db`), runs the seed with an administrator (`e2e@buildr.test`; a test-only account created from `SEED_ADMIN_EMAIL`/`SEED_ADMIN_PASSWORD`), builds the app and serves the production build on port 3100.
+`apps/example-next-payload/e2e` is a Playwright suite (`pnpm --filter @next-buildr/example-next-payload e2e`; CI job `E2E`). `playwright.config.ts` starts `e2e/serve.mjs`, which recreates a SQLite file (`e2e.db`), runs the seed with an administrator (`e2e@buildr.test`; a test-only account created from `SEED_ADMIN_EMAIL`/`SEED_ADMIN_PASSWORD`), builds the app and serves the production build on port 3100.
 
 - `public.spec.ts` — the six scenarios in `pl` and `en` (status, `<html lang>`, the heading), axe (WCAG 2 A/AA) on each, 404s, the redirect from `/`, hreflang + `x-default`, blog pagination, and that a static page loads no editor or canvas script.
 - `editor.spec.ts` — each test edits its own scratch page (a copy of the landing page created through the REST API, so the seed stays untouched): the canvas handshake, insert, undo/redo, autosave and reload, a mobile-only style, a data binding, translating a heading and seeing it on `/en/...`, and publishing to the live page. The tests wait on visible states (the canvas heading, the "Published." status) and poll the server, never on timeouts.
 
-Tests select by role and accessible name. `pnpm --filter @buildr/example-next-payload e2e --repeat-each=4` ran 164 tests with no failure.
+Tests select by role and accessible name. `pnpm --filter @next-buildr/example-next-payload e2e --repeat-each=4` ran 164 tests with no failure.
 
 ### One copy of `@payloadcms/ui`
 
-The admin field of `@buildr/payload` and the Payload admin must load the same copy of `@payloadcms/ui`, or its React contexts do not match (`Cannot destructure property 'config' ... as it is undefined` when the document view opens). pnpm makes one copy per combination of resolved peers, so in this monorepo `packages/payload` pins `next`, `payload` and `@types/node` to the same versions as the example application. An application using the published package has a single peer instance and needs nothing. `e2e/editor.spec.ts` opens the admin document view to catch a regression.
+The admin field of `@next-buildr/payload` and the Payload admin must load the same copy of `@payloadcms/ui`, or its React contexts do not match (`Cannot destructure property 'config' ... as it is undefined` when the document view opens). pnpm makes one copy per combination of resolved peers, so in this monorepo `packages/payload` pins `next`, `payload` and `@types/node` to the same versions as the example application. An application using the published package has a single peer instance and needs nothing. `e2e/editor.spec.ts` opens the admin document view to catch a regression.

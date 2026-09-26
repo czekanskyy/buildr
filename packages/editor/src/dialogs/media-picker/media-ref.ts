@@ -1,4 +1,4 @@
-import type { MediaAsset } from '@buildr/core';
+import type { MediaAsset } from '@next-buildr/core';
 import { z } from 'zod';
 
 /** What a media prop stores (docs/payload.md#media): a reference, plus a snapshot to show while the library is not asked. */

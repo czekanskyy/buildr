@@ -1,4 +1,4 @@
-import type { DataContext } from '@buildr/core';
+import type { DataContext } from '@next-buildr/core';
 
 const text = (value: string) => ({ type: 'text', version: 1, text: value, format: 0 });
 const paragraph = (value: string) => ({

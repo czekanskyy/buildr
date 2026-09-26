@@ -54,8 +54,8 @@
 
 - **Purpose**: readiness to publish and to accept contributions.
 - **Dependencies**: PB-002
-- **Files**: `.changeset/config.json` (a fixed `@buildr/*` group), `.github/workflows/release.yml`, `LICENSE`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, `.github/ISSUE_TEMPLATE/*`, `.github/PULL_REQUEST_TEMPLATE.md`
-- **Implementation**: `changesets/action` (a Version PR, `--provenance` publishing, `access: public`); a `changeset-check` job; files per `docs/contributing.md`. Confirm `@buildr` npm scope availability and the trademark position before the first real publish.
+- **Files**: `.changeset/config.json` (a fixed `@next-buildr/*` group), `.github/workflows/release.yml`, `LICENSE`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, `.github/ISSUE_TEMPLATE/*`, `.github/PULL_REQUEST_TEMPLATE.md`
+- **Implementation**: `changesets/action` (a Version PR, `--provenance` publishing, `access: public`); a `changeset-check` job; files per `docs/contributing.md`. Confirm `@next-buildr` npm scope availability and the trademark position before the first real publish.
 - **Tests**: `changeset version` in dry-run bumps every package together; template YAML is valid.
 - **Acceptance criteria**: the release workflow passes in dry-run mode.
 - **Risks**: needs an npm organization and Trusted Publishing set up (an owner decision, tracked separately from this task).

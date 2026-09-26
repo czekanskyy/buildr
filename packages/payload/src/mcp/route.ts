@@ -1,4 +1,5 @@
-import { ok, type RegistryMeta, type Theme, toManifest } from '@buildr/core';
+import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
+import { ok, type RegistryMeta, type Theme, toManifest } from '@next-buildr/core';
 import {
   createBuildrMcpServer,
   createBuildrTools,
@@ -8,14 +9,13 @@ import {
   type McpBackend,
   type McpTool,
   type SessionStore,
-} from '@buildr/mcp';
-import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
+} from '@next-buildr/mcp';
 import { handleEndpoints, type Payload } from 'payload';
 import { createMemoryRateLimiter, type RateLimiter } from '../plugin/forms/rate-limit.ts';
 import { createPayloadMcpBackend } from './http-backend.ts';
 
 /**
- * `@buildr/payload/mcp/route`: the remote MCP server of a site (ADR-024, docs/mcp.md). A Next.js
+ * `@next-buildr/payload/mcp/route`: the remote MCP server of a site (ADR-024, docs/mcp.md). A Next.js
  * route handler over the SDK's Streamable HTTP transport in its stateless request/response mode.
  * It is the only file of `payload/mcp` that may import `payload`.
  */

@@ -1,4 +1,3 @@
-import { type RichTextPropDef, sanitizeUrl } from '@buildr/core';
 import { $isLinkNode, $toggleLink, LinkNode } from '@lexical/link';
 import {
   $isListNode,
@@ -17,6 +16,7 @@ import {
   registerRichText,
 } from '@lexical/rich-text';
 import { $setBlocksType } from '@lexical/selection';
+import { type RichTextPropDef, sanitizeUrl } from '@next-buildr/core';
 import {
   $createParagraphNode,
   $getSelection,

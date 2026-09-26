@@ -1,4 +1,4 @@
-import { createBuildrMcpRoute } from '@buildr/payload/mcp/route';
+import { createBuildrMcpRoute } from '@next-buildr/payload/mcp/route';
 import config from '@payload-config';
 import { getPayload } from 'payload';
 import { MCP_RATE_LIMIT } from '../../../../../buildr.options.ts';

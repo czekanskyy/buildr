@@ -1,4 +1,4 @@
-import { deriveFormSchema, s } from '@buildr/core';
+import { deriveFormSchema, s } from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import { Form } from '../form/definition.ts';
 import { Page } from '../page/definition.ts';

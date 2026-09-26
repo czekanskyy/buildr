@@ -1,4 +1,4 @@
-import '@buildr/editor/styles.css';
+import '@next-buildr/editor/styles.css';
 import type { ReactNode } from 'react';
 
 // The editor has its own root layout: no site chrome, no site stylesheet.

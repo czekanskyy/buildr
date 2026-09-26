@@ -1,4 +1,4 @@
-import type { NodeId } from '@buildr/core';
+import type { NodeId } from '@next-buildr/core';
 import { useMemo } from 'react';
 import { useT } from '../messages/index.tsx';
 import { useEditor } from '../store/index.ts';

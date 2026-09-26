@@ -2,14 +2,14 @@
 
 A [Model Context Protocol](https://modelcontextprotocol.io) server that lets an AI agent (Claude Code, Claude Desktop, any MCP client) discover the component catalogue, read a page, change it **through the same commands the editor uses**, validate it and save it as a draft — so that a human can open the result in the visual editor and continue.
 
-This moves part of "AI-assisted generation" (listed as post-1.0 in [../roadmap.md](../roadmap.md)) forward. It does so without touching the architecture's invariants: the agent never writes raw JSON into the database, never produces HTML/CSS, and every change goes through `@buildr/core/commands`, the registry rules and the server-side `processLayout` validation.
+This moves part of "AI-assisted generation" (listed as post-1.0 in [../roadmap.md](../roadmap.md)) forward. It does so without touching the architecture's invariants: the agent never writes raw JSON into the database, never produces HTML/CSS, and every change goes through `@next-buildr/core/commands`, the registry rules and the server-side `processLayout` validation.
 
 ## Why this fits the existing architecture
 
 | Need | Already there |
 |---|---|
 | A machine-readable catalogue | `ComponentMeta` is fully serializable (ADR-003); the manifest is served at `GET /api/buildr/manifest` and `createRegistryMeta` rebuilds a `RegistryMeta` from it |
-| Safe mutations | `execute` / `executeBatch` / `canExecute`, `canInsert` / `canMove` / `canRemove` in `@buildr/core` (headless, no React) |
+| Safe mutations | `execute` / `executeBatch` / `canExecute`, `canInsert` / `canMove` / `canRemove` in `@next-buildr/core` (headless, no React) |
 | Building whole sections in one step | `fromTree` (nested `{ type, props, slots }`), `instantiateTemplate` |
 | Quality gates | `validateDocument`, `runA11y`, missing-translation diagnostics |
 | Persistence with conflict detection | `GET/POST /api/buildr/document`, `save` with `baseRevision` (409), `publish`, `422` diagnostics (`packages/payload/src/contract.ts`) |
@@ -26,7 +26,7 @@ These are the decisions ADR-024 (PB-132) records. The ADR still documents the re
 | M1 | Transport | **Both**: a stdio CLI (`buildr-mcp`) and a Streamable HTTP endpoint inside the site, sharing one tool layer | stdio only; HTTP only |
 | M2 | Authentication | **Payload API keys** (`auth.useAPIKey` on the users collection) for a dedicated, low-privilege agent user | OAuth 2.1 now (too large for the first version; may come later with the standalone editor) |
 | M3 | Publishing | **Opt-in plus confirmation**: disabled by default; needs the plugin option `mcp.allowPublish`, the user's `canPublish` and `confirm: true`; `publishPolicy: block` is respected | drafts only, forever; same as the editor |
-| M4 | Placement | **`@buildr/mcp`** (CMS-agnostic tools, sessions, serialization, CLI) plus **`@buildr/payload/mcp`** (HTTP backend, local backend, route handler) | everything in `@buildr/payload`; the example app only |
+| M4 | Placement | **`@next-buildr/mcp`** (CMS-agnostic tools, sessions, serialization, CLI) plus **`@next-buildr/payload/mcp`** (HTTP backend, local backend, route handler) | everything in `@next-buildr/payload`; the example app only |
 | M5 | Editing model | **In-memory working copy plus an explicit `save`** with `baseRevision` | one server write per tool call; working copy with autosave |
 | M6 | An editor open at the same time | **Revision detection plus a banner** in the editor (PB-143) | only the existing 409 at save time; live sync (that belongs to post-1.0 collaboration) |
 | M7 | Visual feedback | **Later and optional**: PB-146 stays opt-in, after the rest of the phase; the first version offers `get_preview_url` | screenshots in the first version; dropping the idea |
@@ -39,19 +39,19 @@ These are the decisions ADR-024 (PB-132) records. The ADR still documents the re
  MCP client (Claude Code / Desktop / other)
         |  stdio                         |  Streamable HTTP (+ Bearer API key)
         v                                v
- buildr-mcp CLI (@buildr/mcp/cli)    route handler in the site (@buildr/payload/mcp)
+ buildr-mcp CLI (@next-buildr/mcp/cli)    route handler in the site (@next-buildr/payload/mcp)
         \                                /
-         +---- @buildr/mcp (tools, sessions, serialization) ----+
+         +---- @next-buildr/mcp (tools, sessions, serialization) ----+
                          |  McpBackend interface
           +--------------+------------------+
           v                                 v
   HTTP backend over contract.ts     memory / file backend
-  (@buildr/payload/mcp)             (tests, playground)
+  (@next-buildr/payload/mcp)             (tests, playground)
           |
    /api/buildr/*  (Payload plugin: processLayout, write-guard, access control)
 ```
 
-- `@buildr/mcp` depends only on `@buildr/core`, `@modelcontextprotocol/sdk` and `zod`; it is CMS-agnostic, exactly like the editor is (the `McpBackend` interface plays the role of `DocumentAdapter`).
+- `@next-buildr/mcp` depends only on `@next-buildr/core`, `@modelcontextprotocol/sdk` and `zod`; it is CMS-agnostic, exactly like the editor is (the `McpBackend` interface plays the role of `DocumentAdapter`).
 - The agent works on an **in-memory working copy** (an edit session): tools apply commands locally, cheaply and atomically, and `save` sends the result with `baseRevision`. The server re-validates everything (`processLayout`), so the MCP layer is a convenience, not a trust boundary.
 - Publishing is off by default and, when enabled, requires both the user's `canPublish` permission and an explicit `confirm: true` argument.
 
@@ -87,7 +87,7 @@ PB-142 -> PB-146 (preview screenshots, optional)
 - **Dependencies**: PB-114
 - **Files**: `docs/adr/ADR-024-mcp-server.md`, `docs/adr/README.md`, `docs/ai/architecture-decisions.md`, `docs/ai/package-boundaries.md` (new rows), `docs/mcp.md` (skeleton)
 - **Implementation**: an ADR in the standard template. Context: why agents, and why tools rather than generation. For every decision M1–M8, the options that were considered, a real trade-off for each, and the chosen one:
-  1. **Placement** (M4): `@buildr/mcp` plus `@buildr/payload/mcp`.
+  1. **Placement** (M4): `@next-buildr/mcp` plus `@next-buildr/payload/mcp`.
   2. **Transport** (M1): stdio and Streamable HTTP, one tool layer.
   3. **Authentication** (M2): Payload API keys sent as `Authorization: <collection> API-Key <key>`; OAuth 2.1 per the MCP authorization spec and the handoff-code flow from ADR-019 are recorded as the likely next step, not as part of this ADR.
   4. **Editing model** (M5): working copy plus `save` with `baseRevision`.
@@ -97,10 +97,10 @@ PB-142 -> PB-146 (preview screenshots, optional)
   8. **Visual feedback** (M7): optional, behind a flag, gated on a later review of PB-146.
   9. **Roadmap**: v0.2. The server never calls an LLM itself: it exposes tools, and the client brings the model.
 - **Tests**: none (documentation).
-- **Acceptance criteria**: the ADR is merged with status `Accepted`; `package-boundaries.md` has the rows for `@buildr/mcp`, `@buildr/mcp/cli` and `@buildr/payload/mcp`, and dependency-cruiser can enforce them.
+- **Acceptance criteria**: the ADR is merged with status `Accepted`; `package-boundaries.md` has the rows for `@next-buildr/mcp`, `@next-buildr/mcp/cli` and `@next-buildr/payload/mcp`, and dependency-cruiser can enforce them.
 - **Risks**: none (the decisions are already agreed).
 
-## PB-133 - `@buildr/mcp` package scaffold and backend interface - M
+## PB-133 - `@next-buildr/mcp` package scaffold and backend interface - M
 
 - **Purpose**: the package, its boundaries and the seam every host and backend plugs into.
 - **Dependencies**: PB-132
@@ -109,7 +109,7 @@ PB-142 -> PB-146 (preview screenshots, optional)
   - `McpBackend` (validated at the boundary with Zod): `getSession()`, `getManifest()`, `getTheme()`, `listDocuments(query)`, `createDocument(input)`, `load(ref, { locale })`, `save(ref, doc, baseRevision)`, `publish(ref, baseRevision)`, `getDataSchema(collection)`, `listMedia(query)`, `previewUrl(ref, locale)`. Error results are typed (`conflict`, `invalid`, `forbidden`, `not-found`, `network`).
   - `createBuildrMcpServer({ backend, options })` returning an MCP `Server` from `@modelcontextprotocol/sdk` with no tools yet (they arrive in PB-136 – PB-138), server info, capabilities and the instructions string.
   - `createMemoryBackend({ manifest, theme, documents })` for tests and the playground.
-  - dependency-cruiser rules: `@buildr/mcp` may import `@buildr/core`, `@modelcontextprotocol/sdk`, `zod`; must not import `react`, `next`, `payload`, any other `@buildr/*` package.
+  - dependency-cruiser rules: `@next-buildr/mcp` may import `@next-buildr/core`, `@modelcontextprotocol/sdk`, `zod`; must not import `react`, `next`, `payload`, any other `@next-buildr/*` package.
 - **Tests**: backend contract tests (a reusable suite run against the memory backend now and the HTTP backend in PB-140); a smoke test connecting an in-memory MCP client to the server.
 - **Acceptance criteria**: `pnpm check:boundaries` enforces the new rules; the package builds and publishes like the others (ADR-021).
 - **Risks**: the MCP SDK's API moves quickly — mitigated by a pinned range and isolating SDK calls in `server.ts`.
@@ -187,10 +187,10 @@ PB-142 -> PB-146 (preview screenshots, optional)
 
 ## PB-140 - HTTP backend over the builder API - M
 
-- **Purpose**: connect `@buildr/mcp` to a real site.
+- **Purpose**: connect `@next-buildr/mcp` to a real site.
 - **Dependencies**: PB-133, PB-139
 - **Files**: `packages/payload/src/mcp/**` (new `./mcp` subpath), `packages/payload/package.json`
-- **Implementation**: `createPayloadMcpBackend({ baseUrl, apiKey, collection = 'users' })` implementing `McpBackend` over `contract.ts` (every response parsed with the contract schemas; documents with `parseDocument`); timeouts, retry with backoff for idempotent requests only; the API key never appears in errors or logs. Boundary: `@buildr/payload/mcp` may import `@buildr/core`, `@buildr/mcp` (types and backend tests) and `./contract`; it must not import `payload` or `next`.
+- **Implementation**: `createPayloadMcpBackend({ baseUrl, apiKey, collection = 'users' })` implementing `McpBackend` over `contract.ts` (every response parsed with the contract schemas; documents with `parseDocument`); timeouts, retry with backoff for idempotent requests only; the API key never appears in errors or logs. Boundary: `@next-buildr/payload/mcp` may import `@next-buildr/core`, `@next-buildr/mcp` (types and backend tests) and `./contract`; it must not import `payload` or `next`.
 - **Tests**: the PB-133 backend contract suite against a mock `fetch`; one integration run against the example app's Payload (SQLite).
 - **Acceptance criteria**: the contract suite passes for both backends.
 - **Risks**: none.
@@ -200,7 +200,7 @@ PB-142 -> PB-146 (preview screenshots, optional)
 - **Purpose**: the zero-infrastructure way to use the server from Claude Code or Claude Desktop.
 - **Dependencies**: PB-138, PB-140
 - **Files**: `packages/mcp/src/cli/**`, `packages/mcp/package.json` (`bin`), `docs/mcp.md`
-- **Implementation**: `buildr-mcp --url <site> ` with the API key from `BUILDR_API_KEY` (never a flag, to keep it out of shell history and process lists); `--playground <dir>` runs against JSON files with the default registry's manifest (a file backend on top of the memory backend) for trying things without a CMS; logs to stderr only; clean shutdown. The CLI resolves the HTTP backend from `@buildr/payload/mcp` through an optional peer dependency, so `@buildr/mcp` itself stays CMS-agnostic.
+- **Implementation**: `buildr-mcp --url <site> ` with the API key from `BUILDR_API_KEY` (never a flag, to keep it out of shell history and process lists); `--playground <dir>` runs against JSON files with the default registry's manifest (a file backend on top of the memory backend) for trying things without a CMS; logs to stderr only; clean shutdown. The CLI resolves the HTTP backend from `@next-buildr/payload/mcp` through an optional peer dependency, so `@next-buildr/mcp` itself stays CMS-agnostic.
 - **Tests**: a spawn test speaking JSON-RPC over stdio (initialize, list tools, call `list_components`) in playground mode.
 - **Acceptance criteria**: `claude mcp add buildr -- npx buildr-mcp --url http://localhost:3000` works against the example app (documented in `docs/mcp.md`).
 - **Risks**: none.

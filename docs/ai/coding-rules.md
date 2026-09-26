@@ -17,7 +17,7 @@
 ## Dependencies
 
 - No new runtime dependency without justification in the PR description.
-- Inside `@buildr/core`, a new runtime dependency additionally requires an ADR (see [architecture-decisions.md](architecture-decisions.md)).
+- Inside `@next-buildr/core`, a new runtime dependency additionally requires an ADR (see [architecture-decisions.md](architecture-decisions.md)).
 
 ## Formatting and linting
 

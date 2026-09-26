@@ -4,7 +4,7 @@ import {
   fromTree,
   instantiateTemplate,
   type RegistryMeta,
-} from '@buildr/core';
+} from '@next-buildr/core';
 
 /** What dropping a palette item inserts: a template's tree, or a component with its defaults. */
 export function fragmentFor(

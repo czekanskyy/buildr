@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { runA11y, type TreeNode, validateDocument } from '@buildr/core';
+import { runA11y, type TreeNode, validateDocument } from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import { axe } from 'vitest-axe';
 import * as axeMatchers from 'vitest-axe/matchers';

@@ -1,7 +1,7 @@
-import { templateSampleScopes } from '@buildr/components';
-import { type BuilderDocument, type DataContext, type LocaleConfig, s } from '@buildr/core';
-import type { DocumentAdapter, DocumentRef } from '@buildr/editor';
-import { doc } from '@buildr/test-utils';
+import { templateSampleScopes } from '@next-buildr/components';
+import { type BuilderDocument, type DataContext, type LocaleConfig, s } from '@next-buildr/core';
+import type { DocumentAdapter, DocumentRef } from '@next-buildr/editor';
+import { doc } from '@next-buildr/test-utils';
 
 export const PLAYGROUND_LOCALES: LocaleConfig = {
   locales: ['en', 'pl'],

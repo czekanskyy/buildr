@@ -37,30 +37,30 @@ importers:
 
   apps/example-next-payload:
     dependencies:
-      '@buildr/components':
-        specifier: workspace:*
-        version: link:../../packages/components
-      '@buildr/core':
-        specifier: workspace:*
-        version: link:../../packages/core
-      '@buildr/editor':
-        specifier: workspace:*
-        version: link:../../packages/editor
-      '@buildr/mcp':
-        specifier: workspace:*
-        version: link:../../packages/mcp
-      '@buildr/next':
-        specifier: workspace:*
-        version: link:../../packages/next
-      '@buildr/payload':
-        specifier: workspace:*
-        version: link:../../packages/payload
-      '@buildr/react':
-        specifier: workspace:*
-        version: link:../../packages/react
       '@modelcontextprotocol/sdk':
         specifier: ^1.30.1
         version: 1.30.1(zod@4.6.5)
+      '@next-buildr/components':
+        specifier: workspace:*
+        version: link:../../packages/components
+      '@next-buildr/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@next-buildr/editor':
+        specifier: workspace:*
+        version: link:../../packages/editor
+      '@next-buildr/mcp':
+        specifier: workspace:*
+        version: link:../../packages/mcp
+      '@next-buildr/next':
+        specifier: workspace:*
+        version: link:../../packages/next
+      '@next-buildr/payload':
+        specifier: workspace:*
+        version: link:../../packages/payload
+      '@next-buildr/react':
+        specifier: workspace:*
+        version: link:../../packages/react
       '@payloadcms/db-postgres':
         specifier: 3.90.1
         version: 3.90.1(@libsql/client@0.14.0)(payload@3.90.1(graphql@16.14.2)(typescript@7.0.2))
@@ -101,7 +101,7 @@ importers:
       '@axe-core/playwright':
         specifier: ^4.13.0
         version: 4.13.0(playwright-core@1.63.0)
-      '@buildr/tsconfig':
+      '@next-buildr/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
       '@playwright/test':
@@ -125,19 +125,19 @@ importers:
 
   apps/playground:
     dependencies:
-      '@buildr/components':
+      '@next-buildr/components':
         specifier: workspace:*
         version: link:../../packages/components
-      '@buildr/core':
+      '@next-buildr/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@buildr/editor':
+      '@next-buildr/editor':
         specifier: workspace:*
         version: link:../../packages/editor
-      '@buildr/react':
+      '@next-buildr/react':
         specifier: workspace:*
         version: link:../../packages/react
-      '@buildr/test-utils':
+      '@next-buildr/test-utils':
         specifier: workspace:*
         version: link:../../packages/test-utils
       react:
@@ -150,7 +150,7 @@ importers:
       '@axe-core/playwright':
         specifier: ^4.13.0
         version: 4.13.0(playwright-core@1.63.0)
-      '@buildr/tsconfig':
+      '@next-buildr/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
       '@playwright/test':
@@ -177,17 +177,17 @@ importers:
 
   packages/components:
     dependencies:
-      '@buildr/core':
+      '@next-buildr/core':
         specifier: workspace:*
         version: link:../core
-      '@buildr/react':
+      '@next-buildr/react':
         specifier: workspace:*
         version: link:../react
     devDependencies:
-      '@buildr/test-utils':
+      '@next-buildr/test-utils':
         specifier: workspace:*
         version: link:../test-utils
-      '@buildr/tsconfig':
+      '@next-buildr/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
       '@types/react':
@@ -227,7 +227,7 @@ importers:
         specifier: ^4.6.5
         version: 4.6.5
     devDependencies:
-      '@buildr/tsconfig':
+      '@next-buildr/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
       '@types/css-tree':
@@ -248,9 +248,6 @@ importers:
 
   packages/editor:
     dependencies:
-      '@buildr/core':
-        specifier: workspace:*
-        version: link:../core
       '@lexical/history':
         specifier: ^0.51.0
         version: 0.51.0(typescript@7.0.2)
@@ -266,6 +263,9 @@ importers:
       '@lexical/selection':
         specifier: ^0.51.0
         version: 0.51.0(typescript@7.0.2)
+      '@next-buildr/core':
+        specifier: workspace:*
+        version: link:../core
       '@radix-ui/react-context-menu':
         specifier: ^2.3.7
         version: 2.3.7(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -300,7 +300,7 @@ importers:
         specifier: ^5.0.15
         version: 5.0.15(@types/react@19.3.0)(immer@11.1.18)(react@19.3.0)
     devDependencies:
-      '@buildr/tsconfig':
+      '@next-buildr/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
       '@types/node':
@@ -336,20 +336,20 @@ importers:
 
   packages/mcp:
     dependencies:
-      '@buildr/core':
-        specifier: workspace:*
-        version: link:../core
-      '@buildr/payload':
-        specifier: workspace:*
-        version: link:../payload
       '@modelcontextprotocol/sdk':
         specifier: ^1.30.1
         version: 1.30.1(zod@4.6.5)
+      '@next-buildr/core':
+        specifier: workspace:*
+        version: link:../core
+      '@next-buildr/payload':
+        specifier: workspace:*
+        version: link:../payload
       zod:
         specifier: ^4.6.5
         version: 4.6.5
     devDependencies:
-      '@buildr/tsconfig':
+      '@next-buildr/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
       '@types/node':
@@ -367,17 +367,17 @@ importers:
 
   packages/next:
     dependencies:
-      '@buildr/core':
+      '@next-buildr/core':
         specifier: workspace:*
         version: link:../core
-      '@buildr/react':
+      '@next-buildr/react':
         specifier: workspace:*
         version: link:../react
     devDependencies:
-      '@buildr/editor':
+      '@next-buildr/editor':
         specifier: workspace:*
         version: link:../editor
-      '@buildr/tsconfig':
+      '@next-buildr/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
       '@types/react':
@@ -404,31 +404,31 @@ importers:
 
   packages/payload:
     dependencies:
-      '@buildr/core':
+      '@next-buildr/core':
         specifier: workspace:*
         version: link:../core
       zod:
         specifier: ^4.6.5
         version: 4.6.5
     devDependencies:
-      '@buildr/editor':
-        specifier: workspace:*
-        version: link:../editor
-      '@buildr/mcp':
-        specifier: workspace:*
-        version: link:../mcp
-      '@buildr/next':
-        specifier: workspace:*
-        version: link:../next
-      '@buildr/test-utils':
-        specifier: workspace:*
-        version: link:../test-utils
-      '@buildr/tsconfig':
-        specifier: workspace:*
-        version: link:../../tooling/tsconfig
       '@modelcontextprotocol/sdk':
         specifier: ^1.30.1
         version: 1.30.1(zod@4.6.5)
+      '@next-buildr/editor':
+        specifier: workspace:*
+        version: link:../editor
+      '@next-buildr/mcp':
+        specifier: workspace:*
+        version: link:../mcp
+      '@next-buildr/next':
+        specifier: workspace:*
+        version: link:../next
+      '@next-buildr/test-utils':
+        specifier: workspace:*
+        version: link:../test-utils
+      '@next-buildr/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/tsconfig
       '@payloadcms/db-sqlite':
         specifier: 3.90.1
         version: 3.90.1(@types/pg@8.20.0)(payload@3.90.1(graphql@16.14.2)(typescript@7.0.2))(pg@8.20.0)
@@ -468,11 +468,11 @@ importers:
 
   packages/react:
     dependencies:
-      '@buildr/core':
+      '@next-buildr/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
-      '@buildr/tsconfig':
+      '@next-buildr/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
       '@types/react':
@@ -499,10 +499,10 @@ importers:
 
   packages/test-utils:
     dependencies:
-      '@buildr/core':
+      '@next-buildr/core':
         specifier: workspace:*
         version: link:../core
-      '@buildr/react':
+      '@next-buildr/react':
         specifier: workspace:*
         version: link:../react
       react:
@@ -512,7 +512,7 @@ importers:
         specifier: ^19.0.0
         version: 19.3.0(react@19.3.0)
     devDependencies:
-      '@buildr/tsconfig':
+      '@next-buildr/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
       '@types/react':
@@ -539,28 +539,28 @@ importers:
 
   tooling/smoke:
     dependencies:
-      '@buildr/components':
+      '@next-buildr/components':
         specifier: workspace:*
         version: link:../../packages/components
-      '@buildr/core':
+      '@next-buildr/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@buildr/editor':
+      '@next-buildr/editor':
         specifier: workspace:*
         version: link:../../packages/editor
-      '@buildr/mcp':
+      '@next-buildr/mcp':
         specifier: workspace:*
         version: link:../../packages/mcp
-      '@buildr/next':
+      '@next-buildr/next':
         specifier: workspace:*
         version: link:../../packages/next
-      '@buildr/payload':
+      '@next-buildr/payload':
         specifier: workspace:*
         version: link:../../packages/payload
-      '@buildr/react':
+      '@next-buildr/react':
         specifier: workspace:*
         version: link:../../packages/react
-      '@buildr/test-utils':
+      '@next-buildr/test-utils':
         specifier: workspace:*
         version: link:../../packages/test-utils
     devDependencies:

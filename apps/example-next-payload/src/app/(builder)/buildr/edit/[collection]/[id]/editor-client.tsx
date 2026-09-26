@@ -1,8 +1,8 @@
 'use client';
 
-import { EditorApp } from '@buildr/editor';
-import type { EditorClientProps } from '@buildr/next/editor';
-import { createPayloadAdapter } from '@buildr/payload/adapter';
+import { EditorApp } from '@next-buildr/editor';
+import type { EditorClientProps } from '@next-buildr/next/editor';
+import { createPayloadAdapter } from '@next-buildr/payload/adapter';
 import { useMemo } from 'react';
 import { registry } from '../../../../../../buildr.registry.ts';
 

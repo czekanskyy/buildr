@@ -1,4 +1,4 @@
-import { defineComponent } from '@buildr/react';
+import { defineComponent } from '@next-buildr/react';
 import { cardProps } from './props.ts';
 import { CardView } from './view.tsx';
 

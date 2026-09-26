@@ -1,4 +1,4 @@
-import type { Diagnostic } from '@buildr/core';
+import type { Diagnostic } from '@next-buildr/core';
 import type { ErrorResponse, InvalidResponse } from '../../contract.ts';
 
 export const json = (body: unknown, status = 200): Response =>

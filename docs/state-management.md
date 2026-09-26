@@ -1,6 +1,6 @@
 # Editor state management
 
-**Technology**: Zustand 5 (a vanilla store plus selectors, using `useSyncExternalStore`). It is small, works outside React (protocol handlers, autosave), ships a devtools middleware, and is a familiar pattern for agents. Document-mutation logic does **not** live in the store — it lives in `@buildr/core/commands`; the store only calls `execute()` and stores the result.
+**Technology**: Zustand 5 (a vanilla store plus selectors, using `useSyncExternalStore`). It is small, works outside React (protocol handlers, autosave), ships a devtools middleware, and is a familiar pattern for agents. Document-mutation logic does **not** live in the store — it lives in `@next-buildr/core/commands`; the store only calls `execute()` and stores the result.
 
 ## Slices
 
@@ -16,7 +16,7 @@
 
 **Dirty state**: `dirty = history.cursorId !== persistence.savedCursorId`. Undoing back to the saved state correctly returns to "clean". Migrating a document on load does not itself set dirty — the save happens on the user's first actual change.
 
-## The store in code (`@buildr/editor`, PB-074)
+## The store in code (`@next-buildr/editor`, PB-074)
 
 `createEditorStore({ doc, registry, ... })` returns a vanilla Zustand store (`getState`, `subscribe`) with these actions; there is no other way to change the document:
 

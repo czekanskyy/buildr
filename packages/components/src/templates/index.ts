@@ -1,4 +1,4 @@
-import type { TemplateDefinition } from '@buildr/core';
+import type { TemplateDefinition } from '@next-buildr/core';
 import { AuthorBox } from './author-box.ts';
 import { BlogListing } from './blog-listing.ts';
 import { Contact } from './contact.ts';

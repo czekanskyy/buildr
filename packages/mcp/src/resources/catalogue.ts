@@ -7,7 +7,7 @@ import {
   type PageNode,
   type RegistryMeta,
   type TemplateDefinition,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import type { McpBackend, McpError } from '../backend.ts';
 import { describeComponent, formatComponentDescription } from '../serialize/component.ts';
 import { renderOutline } from '../serialize/outline.ts';

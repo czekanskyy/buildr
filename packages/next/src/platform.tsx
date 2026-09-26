@@ -1,4 +1,4 @@
-import type { Platform, PlatformImageProps, PlatformLinkProps } from '@buildr/react';
+import type { Platform, PlatformImageProps, PlatformLinkProps } from '@next-buildr/react';
 import Image from 'next/image';
 import Link from 'next/link';
 

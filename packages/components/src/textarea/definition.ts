@@ -1,4 +1,4 @@
-import { defineComponent } from '@buildr/react';
+import { defineComponent } from '@next-buildr/react';
 import { textareaProps } from './props.ts';
 import { TextareaView } from './view.tsx';
 

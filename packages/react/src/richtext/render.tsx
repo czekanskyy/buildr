@@ -1,4 +1,4 @@
-import { type Diagnostic, MAX_RICH_TEXT_DEPTH } from '@buildr/core';
+import { type Diagnostic, MAX_RICH_TEXT_DEPTH } from '@next-buildr/core';
 import { createElement, Fragment, type ReactNode } from 'react';
 import type { Platform } from '../define/types.ts';
 import {

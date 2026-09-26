@@ -4,7 +4,7 @@ import type { NodeStyles } from './style-types.ts';
 /**
  * BCP-47-ish locale identifier, e.g. `"en"`, `"pl"`, `"en-US"` (see docs/i18n.md). Defined here
  * (L1) rather than in `values/` (L3) because `PageNode.props` needs the `Value` shape below and
- * `document` must stay self-contained (architecture-rules.md); `@buildr/core/values` re-exports
+ * `document` must stay self-contained (architecture-rules.md); `@next-buildr/core/values` re-exports
  * it as part of its public surface.
  */
 export type LocaleCode = string;

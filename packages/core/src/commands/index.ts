@@ -1,4 +1,4 @@
-// @buildr/core/commands: the only way to change a document (ADR-013).
+// @next-buildr/core/commands: the only way to change a document (ADR-013).
 export { applyDocumentPatches } from './apply-patches.ts';
 export type { CommandError, CommandErrorCode } from './errors.ts';
 export { atIndex, commandError, fromReason } from './errors.ts';

@@ -3,7 +3,7 @@
 // nightly; never part of the blocking CI. Without ANTHROPIC_API_KEY it does nothing but say so
 // (`--smoke` connects to the server and lists its tools, which needs no key).
 //
-//   pnpm --filter @buildr/mcp eval [--brief <id>]... [--smoke]
+//   pnpm --filter @next-buildr/mcp eval [--brief <id>]... [--smoke]
 import { appendFileSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';

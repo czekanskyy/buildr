@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { createEmptyDocument, type DataSource } from '@buildr/core';
+import { createEmptyDocument, type DataSource } from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import { createPayloadAdapter, createPayloadCanvasDataSource } from './index.ts';
 
@@ -316,7 +316,7 @@ describe('the adapter boundary', () => {
   it('never imports payload, @payloadcms or next', () => {
     const dir = import.meta.dirname;
     const forbidden =
-      /from\s+['"](payload|@payloadcms\/[^'"]*|next|next\/[^'"]*|@buildr\/next)['"]/;
+      /from\s+['"](payload|@payloadcms\/[^'"]*|next|next\/[^'"]*|@next-buildr\/next)['"]/;
     for (const file of readdirSync(dir).filter(
       (name) => name.endsWith('.ts') && !name.endsWith('.test.ts'),
     )) {

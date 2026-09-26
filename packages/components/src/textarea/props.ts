@@ -1,4 +1,4 @@
-import { p } from '@buildr/core';
+import { p } from '@next-buildr/core';
 import { commonFieldProps } from '../field/props.ts';
 
 export const textareaProps = {

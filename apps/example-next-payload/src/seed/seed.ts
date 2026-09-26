@@ -1,4 +1,4 @@
-import { BUILDR_WRITE } from '@buildr/payload/plugin';
+import { BUILDR_WRITE } from '@next-buildr/payload/plugin';
 import type { Payload } from 'payload';
 import {
   AUTHORS,

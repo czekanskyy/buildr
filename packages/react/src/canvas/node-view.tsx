@@ -1,6 +1,6 @@
 'use client';
 
-import type { CompileCache, Diagnostic, NodeId, PageNode, PreparedData } from '@buildr/core';
+import type { CompileCache, Diagnostic, NodeId, PageNode, PreparedData } from '@next-buildr/core';
 import {
   createContext,
   memo,

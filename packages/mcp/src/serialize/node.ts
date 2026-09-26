@@ -6,8 +6,8 @@ import type {
   RegistryMeta,
   Result,
   Value,
-} from '@buildr/core';
-import { createIndex, err, ok } from '@buildr/core';
+} from '@next-buildr/core';
+import { createIndex, err, ok } from '@next-buildr/core';
 import { quote } from './text.ts';
 
 export interface NodeDetail {

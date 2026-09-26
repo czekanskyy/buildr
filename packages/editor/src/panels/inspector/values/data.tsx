@@ -1,4 +1,4 @@
-import type { DataContext, DataSchema } from '@buildr/core';
+import type { DataContext, DataSchema } from '@next-buildr/core';
 import { createContext, type ReactNode, useContext, useMemo } from 'react';
 
 interface InspectorData {

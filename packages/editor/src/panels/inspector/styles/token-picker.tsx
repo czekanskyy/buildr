@@ -1,4 +1,4 @@
-import type { StylePropertyDef, Theme } from '@buildr/core';
+import type { StylePropertyDef, Theme } from '@next-buildr/core';
 import { useState } from 'react';
 import { useT } from '../../../messages/index.tsx';
 import { Button, ColorSwatch, Icon, Popover } from '../../../ui/index.ts';

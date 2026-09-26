@@ -1,12 +1,12 @@
-import { type Diagnostic, defaultTheme } from '@buildr/core';
-import { DocumentRenderer } from '@buildr/react/client';
+import { type Diagnostic, defaultTheme } from '@next-buildr/core';
+import { DocumentRenderer } from '@next-buildr/react/client';
 import {
   createGalleryContext,
   createGalleryDataSource,
   type GalleryFixture,
   galleryFixtures,
-} from '@buildr/test-utils';
-import { demoPlatform, demoRegistry } from '@buildr/test-utils/demo/components';
+} from '@next-buildr/test-utils';
+import { demoPlatform, demoRegistry } from '@next-buildr/test-utils/demo/components';
 import { useMemo, useState } from 'react';
 import { galleryHref, parseGalleryRoute } from './route.ts';
 
