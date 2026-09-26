@@ -31,7 +31,7 @@ These are the decisions ADR-024 (PB-132) records. The ADR still documents the re
 | M6 | An editor open at the same time | **Revision detection plus a banner** in the editor (PB-143) | only the existing 409 at save time; live sync (that belongs to post-1.0 collaboration) |
 | M7 | Visual feedback | **Later and optional**: PB-146 stays opt-in, after the rest of the phase; the first version offers `get_preview_url` | screenshots in the first version; dropping the idea |
 | M8 | Scope of document operations | **Creating drafts** (`create_document`) plus editing | editing only; full CRUD including deletion |
-| M9 | Schedule | Runs **in parallel with phase 13** and ships in **v0.2**; PB-132 goes first because it unblocks the phase | — |
+| M9 | Schedule | Runs **in parallel with phase 13**; it shipped in **1.0.0** with the rest (originally planned for "v0.2"); PB-132 went first because it unblocked the phase | — |
 
 ## Target architecture
 

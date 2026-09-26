@@ -1,6 +1,12 @@
-# MVP scope and roadmap
+# Roadmap, release status and scope
 
-## Scenarios the MVP must support end to end
+## Release status
+
+Buildr is released as **1.0.0**: every `@buildr/*` package is versioned together (a fixed changeset group) and published with npm provenance by the release workflow (see [releasing.md](releasing.md)). Phases 0-14 of the [backlog](backlog/README.md) are implemented: the MVP (phases 0-12), the editor visual polish (phase 13: design tokens, Inter, icons, the light/dark theme switch, narrow-screen panel overlays) and the MCP server for AI agents (phase 14, `@buildr/mcp`). Not everything once planned for 1.0 is done; see [Known gaps](#known-gaps--not-in-100) below, which is the authoritative list.
+
+> **Version labels in other documents.** Feature documents still say "v0.2", "v0.3" or "v1.0" next to things that are deferred. Those labels are historical planning buckets, not release numbers: read them as "planned, not in 1.0.0" unless the item is listed as done below. There were no 0.x releases on npm; 1.0.0 is the first published version.
+
+## Scenarios the MVP covers end to end
 
 | # | Scenario | Built from |
 |---|---|---|
@@ -12,40 +18,49 @@
 | 6 | A page with a form | The Contact template: Form plus Input (name, email), Textarea, Checkbox (consent), a submit Button posting to `buildr-form-submissions` |
 | 7 | Localization (cross-cutting) | Scenarios 1-6 in the example application in `pl` (default) and `en`: translation in the editor, CMS data fetched per locale, `/{locale}/...` routes, hreflang |
 
-## MVP exit criteria
-
-- All six scenarios (plus the localization scenario) pass end-to-end tests on `example-next-payload`, in both locales, including the in-editor translation flow.
-- The performance budgets in [performance.md](performance.md) hold on a 1000-node fixture.
-- Seed content has zero accessibility errors (the static validator and axe both agree).
-- Getting-started works on a clean machine in under 15 minutes.
-- 0.1.0 is published to npm with provenance.
-
-### Status of the exit criteria (PB-114)
+## Exit criteria and where they stand at 1.0.0
 
 | Criterion | Status |
 |---|---|
 | Six scenarios plus localization, end to end, both locales, in-editor translation | Met: `apps/example-next-payload/e2e` (CI job `E2E`) |
-| Performance budgets on a 1000-node fixture | Not yet measured: no benchmark or trace exists; tracked as follow-up work for the release |
-| Seed content without accessibility errors | Met: `documents.test.ts` (static validator) and axe in the e2e suite |
-| Getting-started in under 15 minutes | Met by the steps in [getting-started.md](getting-started.md) (seed, dev server: about 5 minutes); a fresh-machine run by an outside person is still to be done |
-| 0.1.0 published to npm with provenance | Prepared: the changeset `release-0-1-0` and the release workflow; publishing needs the maintainer (npm scope, `NPM_TOKEN`, merging the Version PR) |
+| The same scenarios built by an agent through MCP | Met by a scripted MCP client without a model: `apps/example-next-payload/e2e/mcp`, run in CI with `BUILDR_MCP=1`. Real-model quality (`packages/mcp/evals`) is a manual/nightly harness only, never asserted |
+| Performance budgets on a 1000-node fixture | **Not measured.** The budgets in [performance.md](performance.md) are design targets; there is no benchmark and no CI gate |
+| Seed content without accessibility errors | Met: `documents.test.ts` (static validator) and axe in the e2e suite; axe also runs on every editor baseline state (`apps/playground/e2e/editor-a11y.spec.ts`) |
+| Getting-started in under 15 minutes | The steps in [getting-started.md](getting-started.md) take about 5 minutes; a fresh-machine run by an outside person has not been done |
+| Published to npm with provenance | Done by the release workflow when the Version PR is merged (needs the `NPM_TOKEN` secret); see [releasing.md](releasing.md) |
 
-See [core-concepts.md](core-concepts.md), [components.md](components.md) and [templates.md](templates.md) for what these scenarios are built from, and section B of the project's original planning document for the exhaustive MVP checklist.
+See [core-concepts.md](core-concepts.md), [components.md](components.md) and [templates.md](templates.md) for what the scenarios are built from.
 
-## Roadmap
+## What shipped, by former "version" bucket
 
-```
-MVP 0.1 -> v0.2 "Productivity" -> v0.3 "Extensibility and scale" -> v1.0 "Stability" -> post-1.0
-```
-
-| Version | Scope |
+| Bucket | Done in 1.0.0 |
 |---|---|
-| **0.1 (MVP)** | Everything above. |
-| **0.2** | A new editor visual identity and polish (tokens, Inter, icons, layout, a theme switch — [phase 13](backlog/phase-13-editor-visual-polish.md)); an MCP server for AI agents building pages through the builder's commands (stdio + HTTP, API keys, drafts, opt-in publish — [phase 14](backlog/phase-14-mcp-server.md), ADR-024); multi-select; style presets (global classes in the theme); style states (hover/focus-visible/active); a local IndexedDB safety copy; builder-native version history and restore; saving a section as a reusable template; editing theme tokens from a Payload global; a translation workflow (a dedicated "translate" view, XLIFF/JSON export/import); an editor plugin API (custom controls, panels); a CodeMirror-based formula editor with autocomplete; a `/` quick-insert and command palette; header/footer as global layouts; Tabs, Toggle, Alert, Video, Gallery, Carousel, RadioGroup components; Team, Newsletter, RelatedPosts, ProductCard/Grid/Listing/Showcase templates; the second batch of accessibility rules; axe running inside the canvas; responsive custom-component props via a CSS variable; showing inherited (computed) style values; a documentation site (`apps/docs`); Payload document-locking integration. |
-| **0.3** | Symbols (linked components with overrides); container queries; Embed (an allowlisted provider set) and sandboxed Custom HTML; Filter/Search (client-side, `searchParams`-based); FileUpload; Modal/Drawer/Tooltip; a standalone, cross-origin editor application (`apps/page-builder`) with a handoff auth flow; per-language layouts as an opt-in plugin option; RTL support; a `buildr migrate` CLI for bulk migrations; an "interact" canvas mode; evaluating "server islands"; performance validation at 5000 nodes. |
-| **1.0** | Freezing the public API under semver guarantees; a document-migration LTS policy; a WCAG 2.2 AA audit of the editor; an external security audit; a stable plugin API; a commerce adapter (variants, a cart via an external engine such as Payload's own ecommerce plugin); FormStep; a restricted `calc()`; complete documentation and migration guides; performance budgets enforced in CI. |
-| **post-1.0** | Collaboration (Yjs) plus presence plus comments; AI generation built into the product (the server calling a model itself — the 0.2 MCP server only exposes tools to an external agent); a templates/components marketplace. |
+| MVP | Everything in the scenarios above: core (document, registry, values, expressions, styles, commands, validation, accessibility, drag-and-drop, protocol), renderer, components and templates, editor, Payload plugin, Next.js integration, the example application with end-to-end tests, localization |
+| Formerly "0.2" | The new editor visual identity (phase 13, [editor-design.md](editor-design.md)); the MCP server for AI agents (phase 14, [mcp.md](mcp.md), ADR-024); computed (effective) style values across breakpoints ([styles.md](styles.md)); style-state (`hover` / `focus-visible` / `active`) support in the core style model and compiler (no editor UI for it) |
+| Everything else in the old 0.2, 0.3 and 1.0 lists | Not done, see below |
 
-## Explicitly out of scope for MVP
+## Known gaps / not in 1.0.0
 
-Collaboration, multiplayer, presence, comments (post-1.0) - AI generation - a marketplace - advanced animations, Lottie - full e-commerce (variants, cart, checkout, account) - custom HTML/JS, Embed (v0.3) - linked symbols (v0.3) - container queries (v0.3) - hover/focus style states (v0.2) - style presets / global classes (v0.2) - multi-select (v0.2) - a translation workflow / XLIFF export (v0.2) - per-language layouts and RTL (v0.3) - per-language publish status - Tabs, Toggle, Alert, Video, Gallery, Carousel, RadioGroup (v0.2) - Modal, Drawer, Tooltip, FileUpload, Filter, Search (v0.3) - FormStep (v1.0) - editing theme in the CMS (v0.2) - builder-native version history (v0.2; MVP uses Payload Admin) - a local IndexedDB safety copy (v0.2) - an editor plugin API (v0.2) - a standalone cross-origin editor (v0.3) - server-only components (v1.0+) - a `user`/personalization scope - `searchParams` in bindings - nested Loop queries - `calc()` in styles (v1.0) - a documentation site (v0.2; MVP uses in-repo markdown).
+An honest list. None of these is implemented; do not rely on them. Where an item is listed for a later bucket it is an intention, not a commitment, and nothing is scheduled.
+
+**Editor and product**
+
+- Multi-select, style presets (global classes), an editor UI for style states, an IndexedDB safety copy, builder-native version history and restore, saving a section as a template, editing theme tokens from a Payload global, a translation workflow view with XLIFF/JSON export and import, an editor plugin API (custom controls and panels), a CodeMirror formula editor with autocomplete, a `/` quick-insert and command palette, header/footer as global layouts, Payload document-locking integration, showing style values inherited from an ancestor node.
+- Components: Tabs, Toggle, Alert, Video, Gallery, Carousel, RadioGroup; Modal, Drawer, Tooltip, FileUpload, Filter, Search, Embed, sandboxed Custom HTML; FormStep. Templates: Team, Newsletter, RelatedPosts, ProductCard/Grid/Listing/Showcase.
+- A second batch of accessibility rules (`color-contrast`, `dialog-name`, `tabs-structure`, ...), axe inside the canvas, responsive custom-component props through a CSS variable, a restricted `calc()`.
+- Symbols (linked components), container queries, per-language layouts, RTL, a `buildr migrate` CLI, an "interact" canvas mode, a standalone cross-origin editor application with a handoff flow, a commerce adapter, a documentation site (`apps/docs`; the documentation is in-repo markdown).
+
+**Quality, process and assurance**
+
+- Performance budgets are neither measured nor enforced in CI, and 5000-node behaviour has not been validated.
+- No external security audit and no WCAG 2.2 AA audit of the editor have been done. The editor is checked with axe (WCAG 2.0/2.1 A and AA) on its baseline states and was walked with the keyboard; that is not an audit.
+- No document-migration LTS policy is documented. Migrations are forward-only and released ones are immutable ([migrations.md](migrations.md)), and saved documents have been protected since the first release, but there is no longer-term support promise.
+- The nightly workflow is a skeleton (lint, boundaries, typecheck, test and build on Node 22 and 24). The Next.js/Payload/database compatibility matrix and the benchmarks that earlier planning described do not exist, and CI does not run `publint`, `@arethetypeswrong/cli` or `size-limit`.
+- PB-146 (preview screenshots for agents) is optional and **not implemented**; the MCP server offers `get_preview_url` instead.
+- The agent evals (`packages/mcp/evals`) are a harness only: no published results and no threshold.
+- OAuth for the MCP endpoint: only Payload API keys are supported (ADR-024).
+- A getting-started run on a fresh machine by someone outside the project, and a trademark policy for the name "Buildr".
+
+## Out of scope in 1.0.0
+
+Collaboration, multiplayer, presence, comments; AI generation inside the product (the MCP server only exposes tools to an external agent); a marketplace; advanced animations, Lottie; full e-commerce (variants, cart, checkout, account); custom HTML/JS and Embed; linked symbols; container queries; per-language layouts, RTL and per-language publish status; server-only components; a `user`/personalization scope; `searchParams` in bindings; nested Loop queries; `calc()` in styles. The deferred components, editor features and workflow items are the "Known gaps" above.

@@ -10,23 +10,25 @@
 
 ## Phases
 
-| Phase | File | Tasks | Theme |
-|---|---|---|---|
-| 0 | [phase-00-foundation.md](phase-00-foundation.md) | PB-000 – PB-005 | Repository, tooling, CI, release plumbing |
-| 1 | [phase-01-core-document.md](phase-01-core-document.md) | PB-006 – PB-011 | Core primitives, the document model |
-| 2 | [phase-02-core-registry.md](phase-02-core-registry.md) | PB-012 – PB-018 | Prop schema DSL, component registry, templates |
-| 3 | [phase-03-core-values-data-expressions.md](phase-03-core-values-data-expressions.md) | PB-019 – PB-026 | Values, data, expressions |
-| 4 | [phase-04-core-styles.md](phase-04-core-styles.md) | PB-027 – PB-030 | The style model and CSS compiler |
-| 5 | [phase-05-core-commands.md](phase-05-core-commands.md) | PB-031 – PB-043 | Commands, history, validation, accessibility, drag-and-drop |
-| 6 | [phase-06-react-renderer.md](phase-06-react-renderer.md) | PB-044 – PB-049 | The React renderer |
-| 7 | [phase-07-components.md](phase-07-components.md) | PB-050 – PB-064 | The component and template catalog |
-| 8 | [phase-08-protocol-canvas.md](phase-08-protocol-canvas.md) | PB-065 – PB-072 | The postMessage protocol and canvas runtime |
-| 9 | [phase-09-editor.md](phase-09-editor.md) | PB-073 – PB-092, PB-115 | The editor application |
-| 10 | [phase-10-payload.md](phase-10-payload.md) | PB-093 – PB-102, PB-116 | The Payload plugin and integration |
-| 11 | [phase-11-nextjs.md](phase-11-nextjs.md) | PB-103 – PB-107, PB-117 | The Next.js integration |
-| 12 | [phase-12-example-e2e-release.md](phase-12-example-e2e-release.md) | PB-108 – PB-114 | The example app, end-to-end tests, the 0.1.0 release |
-| 13 | [phase-13-editor-visual-polish.md](phase-13-editor-visual-polish.md) | PB-118 – PB-131, PB-147 | Editor visual polish: a new visual identity, tokens, icons, spacing, layout (post-MVP, no behaviour changes) |
-| 14 | [phase-14-mcp-server.md](phase-14-mcp-server.md) | PB-132 – PB-146 | An MCP server that lets AI agents build pages through the builder's commands |
+All phases are implemented as of 1.0.0, except the task named in the Status column.
+
+| Phase | File | Tasks | Theme | Status |
+|---|---|---|---|---|
+| 0 | [phase-00-foundation.md](phase-00-foundation.md) | PB-000 – PB-005 | Repository, tooling, CI, release plumbing | Done |
+| 1 | [phase-01-core-document.md](phase-01-core-document.md) | PB-006 – PB-011 | Core primitives, the document model | Done |
+| 2 | [phase-02-core-registry.md](phase-02-core-registry.md) | PB-012 – PB-018 | Prop schema DSL, component registry, templates | Done |
+| 3 | [phase-03-core-values-data-expressions.md](phase-03-core-values-data-expressions.md) | PB-019 – PB-026 | Values, data, expressions | Done |
+| 4 | [phase-04-core-styles.md](phase-04-core-styles.md) | PB-027 – PB-030 | The style model and CSS compiler | Done |
+| 5 | [phase-05-core-commands.md](phase-05-core-commands.md) | PB-031 – PB-043 | Commands, history, validation, accessibility, drag-and-drop | Done |
+| 6 | [phase-06-react-renderer.md](phase-06-react-renderer.md) | PB-044 – PB-049 | The React renderer | Done |
+| 7 | [phase-07-components.md](phase-07-components.md) | PB-050 – PB-064 | The component and template catalog | Done |
+| 8 | [phase-08-protocol-canvas.md](phase-08-protocol-canvas.md) | PB-065 – PB-072 | The postMessage protocol and canvas runtime | Done |
+| 9 | [phase-09-editor.md](phase-09-editor.md) | PB-073 – PB-092, PB-115 | The editor application | Done |
+| 10 | [phase-10-payload.md](phase-10-payload.md) | PB-093 – PB-102, PB-116 | The Payload plugin and integration | Done |
+| 11 | [phase-11-nextjs.md](phase-11-nextjs.md) | PB-103 – PB-107, PB-117 | The Next.js integration | Done |
+| 12 | [phase-12-example-e2e-release.md](phase-12-example-e2e-release.md) | PB-108 – PB-114 | The example app, end-to-end tests, the 0.1.0 release | Done. The performance-budget criterion and a fresh-machine run are not met, see [roadmap](../roadmap.md#exit-criteria-and-where-they-stand-at-100) |
+| 13 | [phase-13-editor-visual-polish.md](phase-13-editor-visual-polish.md) | PB-118 – PB-131, PB-147 | Editor visual polish: a new visual identity, tokens, icons, spacing, layout (no behaviour changes) | Done (PB-131 closes it; known follow-ups are in its card) |
+| 14 | [phase-14-mcp-server.md](phase-14-mcp-server.md) | PB-132 – PB-146 | An MCP server that lets AI agents build pages through the builder's commands | Done except PB-146 (preview screenshots), which is optional and not implemented |
 
 See [dependency-graph.md](dependency-graph.md) for the full dependency graph, the critical path, and suggested parallel work tracks for multiple agents.
 
