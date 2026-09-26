@@ -1,5 +1,16 @@
 # @next-buildr/playground
 
+## 2.0.0
+
+### Patch Changes
+
+- Updated dependencies [d6dd7bc]
+  - @next-buildr/editor@2.0.0
+  - @next-buildr/components@2.0.0
+  - @next-buildr/core@2.0.0
+  - @next-buildr/react@2.0.0
+  - @next-buildr/test-utils@2.0.0
+
 ## 1.0.0
 
 ### Patch Changes
