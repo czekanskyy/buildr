@@ -1,4 +1,4 @@
-import { defineComponent } from '@buildr/react';
+import { defineComponent } from '@next-buildr/react';
 import { paginationProps } from './props.ts';
 import { PaginationView } from './view.tsx';
 

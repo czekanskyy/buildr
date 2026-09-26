@@ -1,4 +1,4 @@
-import { p } from '@buildr/core';
+import { p } from '@next-buildr/core';
 
 /** Elements a section may be: the sectioning and landmark elements that take flow content. */
 export const SECTION_ELEMENTS = [

@@ -1,5 +1,5 @@
-import type { BuilderComponentProps } from '@buildr/react';
-import { renderRichText } from '@buildr/react';
+import type { BuilderComponentProps } from '@next-buildr/react';
+import { renderRichText } from '@next-buildr/react';
 import type { richTextProps } from './props.ts';
 
 /**

@@ -1,4 +1,4 @@
-import { createMemoryDataSource, s } from '@buildr/core';
+import { createMemoryDataSource, s } from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import { Heading } from '../heading/definition.ts';
 import { Page } from '../page/definition.ts';

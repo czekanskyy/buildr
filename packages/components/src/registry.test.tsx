@@ -4,7 +4,7 @@ import {
   defaultTheme as coreDefaultTheme,
   type TreeNode,
   toManifest,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import { galleryEntries } from './gallery.ts';
 import { createDefaultRegistry, defaultComponents, defaultTemplates } from './registry.ts';

@@ -10,11 +10,11 @@ import {
   runA11y,
   type TreeNode,
   validateDocument,
-} from '@buildr/core';
-import { createRegistry, defineComponent, type ReactRegistry } from '@buildr/react';
-import { renderDocument } from '@buildr/react/server';
-import { doc } from '@buildr/test-utils';
-import { demoPlatform } from '@buildr/test-utils/demo/components';
+} from '@next-buildr/core';
+import { createRegistry, defineComponent, type ReactRegistry } from '@next-buildr/react';
+import { renderDocument } from '@next-buildr/react/server';
+import { doc } from '@next-buildr/test-utils';
+import { demoPlatform } from '@next-buildr/test-utils/demo/components';
 import { createElement, Fragment, type ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { ComponentFixture } from './fixtures.ts';

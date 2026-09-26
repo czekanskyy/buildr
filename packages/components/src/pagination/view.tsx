@@ -1,5 +1,5 @@
-import { sanitizeUrl } from '@buildr/core';
-import type { BuilderComponentProps } from '@buildr/react';
+import { sanitizeUrl } from '@next-buildr/core';
+import type { BuilderComponentProps } from '@next-buildr/react';
 import { createElement, type ReactNode } from 'react';
 import { message } from '../messages/index.ts';
 import { clampInt, pageItems } from './pages.ts';

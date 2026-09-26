@@ -1,4 +1,4 @@
-import { type FormatSpec, type NodeStyles, s, type TreeNode } from '@buildr/core';
+import { type FormatSpec, type NodeStyles, s, type TreeNode } from '@next-buildr/core';
 
 /** Small builders for template trees, so each template reads as the page it makes. */
 

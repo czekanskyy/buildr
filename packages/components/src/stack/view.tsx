@@ -1,4 +1,4 @@
-import type { BuilderComponentProps } from '@buildr/react';
+import type { BuilderComponentProps } from '@next-buildr/react';
 import type { stackProps } from './props.ts';
 
 export function StackView({ props, root, children }: BuilderComponentProps<typeof stackProps>) {

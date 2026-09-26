@@ -1,4 +1,4 @@
-import { p } from '@buildr/core';
+import { p } from '@next-buildr/core';
 
 /** `none` adds no role; `group` needs an accessible name; `list` needs `buildr/list-item` children. */
 export const STACK_ROLES = ['none', 'group', 'list'] as const;

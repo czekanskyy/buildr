@@ -1,4 +1,4 @@
-import { defineComponent } from '@buildr/react';
+import { defineComponent } from '@next-buildr/react';
 import { sectionProps } from './props.ts';
 import { SectionView } from './view.tsx';
 

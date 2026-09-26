@@ -1,4 +1,4 @@
-import { p } from '@buildr/core';
+import { p } from '@next-buildr/core';
 
 export const listProps = {
   ordered: p.boolean({ label: 'Numbered', default: false }),

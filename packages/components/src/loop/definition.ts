@@ -1,4 +1,4 @@
-import { defineComponent } from '@buildr/react';
+import { defineComponent } from '@next-buildr/react';
 import { loopProps } from './props.ts';
 import { LoopView } from './view.tsx';
 

@@ -1,4 +1,4 @@
-import type { TemplateDefinition } from '@buildr/core';
+import type { TemplateDefinition } from '@next-buildr/core';
 import type { ComponentFixture } from '../fixtures.ts';
 import { contentTemplates, marketingTemplates } from './index.ts';
 

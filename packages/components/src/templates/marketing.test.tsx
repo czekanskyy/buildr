@@ -8,8 +8,8 @@ import {
   runA11y,
   type TemplateDefinition,
   validateDocument,
-} from '@buildr/core';
-import { doc } from '@buildr/test-utils';
+} from '@next-buildr/core';
+import { doc } from '@next-buildr/test-utils';
 import { describe, expect, it } from 'vitest';
 import { problemsOf, render } from '../test-kit.tsx';
 import { marketingTemplateFixtures } from './fixtures.ts';
@@ -218,7 +218,7 @@ describe('marketing templates', () => {
     });
 
     it('build the contact form from fields the server can check', async () => {
-      const { deriveFormSchema } = await import('@buildr/core');
+      const { deriveFormSchema } = await import('@next-buildr/core');
       const { document } = documentOf(byId('buildr/contact'));
       const formId = Object.values(document.nodes).find((n) => n.type === 'buildr/form')?.id ?? '';
       const { schema, diagnostics } = deriveFormSchema(document, registry.meta, formId);

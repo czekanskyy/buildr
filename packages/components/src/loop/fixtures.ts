@@ -1,4 +1,4 @@
-import { s } from '@buildr/core';
+import { s } from '@next-buildr/core';
 import type { ComponentFixture } from '../fixtures.ts';
 
 const postsQuery = (limit: number) =>

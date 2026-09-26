@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { createRegistry } from '@buildr/react';
+import { createRegistry } from '@next-buildr/react';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterAll, describe, expect, it } from 'vitest';

@@ -1,5 +1,5 @@
-import type { MediaAsset } from '@buildr/core';
-import type { BuilderComponentProps } from '@buildr/react';
+import type { MediaAsset } from '@next-buildr/core';
+import type { BuilderComponentProps } from '@next-buildr/react';
 import { createElement } from 'react';
 import { SECTION_ELEMENTS, type sectionProps } from './props.ts';
 

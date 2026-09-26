@@ -1,4 +1,4 @@
-import { p } from '@buildr/core';
+import { p } from '@next-buildr/core';
 
 export const paginationProps = {
   page: p.number({ label: 'Current page', min: 1, default: 1, bindable: true }),
