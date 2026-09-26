@@ -241,6 +241,10 @@ export const en = {
   'preview.unsafe': 'The preview address is not a web address.',
   'app.loading': 'Loading the editor…',
   'app.error': 'The document could not be opened.',
+  'app.smallScreen.title': 'The editor needs a bigger screen',
+  'app.smallScreen.body':
+    'Buildr is designed for editing on a computer. Open this page on a desktop or laptop, or widen the window, to keep editing.',
+  'app.smallScreen.hint': 'The editor opens by itself as soon as the window is wide enough.',
   'locale.label': 'Content language',
   'translation.banner':
     'Texts are translated per language. Structure and style are shared by every language.',

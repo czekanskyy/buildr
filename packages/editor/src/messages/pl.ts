@@ -237,6 +237,10 @@ export const pl: Messages = {
   'preview.unsafe': 'Adres podglądu nie jest adresem internetowym.',
   'app.loading': 'Wczytywanie edytora…',
   'app.error': 'Nie udało się otworzyć dokumentu.',
+  'app.smallScreen.title': 'Edytor wymaga większego ekranu',
+  'app.smallScreen.body':
+    'Buildr jest przeznaczony do edycji na komputerze. Otwórz tę stronę na komputerze stacjonarnym lub laptopie albo powiększ okno, aby kontynuować.',
+  'app.smallScreen.hint': 'Edytor otworzy się sam, gdy tylko okno będzie wystarczająco szerokie.',
   'locale.label': 'Język treści',
   'translation.banner':
     'Teksty tłumaczy się osobno dla każdego języka. Struktura i styl są wspólne dla wszystkich języków.',

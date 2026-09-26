@@ -404,3 +404,8 @@ Closes phase 13 (the visual polish). The checks that keep it closed:
 - **Keyboard-only flows.** Walked through with the keyboard alone: Tab order through the toolbar (breakpoints, zoom, language, entry, Preview, Publish, more), the Insert / Layers tabs (arrow keys move, the panel is a tab stop), the search field, view toggle and every palette tile; the layers tree (arrows, Enter to select), the inspector tabs, Publish with Enter and Escape to close. Every stop shows a focus ring. Two defects were found and fixed: a dialog opened from a button, menu item or shortcut dropped focus to `<body>` when it closed (the shared `Dialog` now returns focus to the element that had it when it opened), and the inactive breakpoint icons were unreadable on the dark toolbar in the light theme.
 - **Notices.** The insert panel reports through `useToast()` (id `insert`) instead of a local `role="status"` line, following [Feedback surfaces](editor-design.md#feedback-surfaces-pb-129).
 - **Known follow-ups:** see the PB-131 card in [phase 13](backlog/phase-13-editor-visual-polish.md).
+
+
+## Small screens
+
+The editor needs room for the panels and the canvas, so it does not open in a window narrower than `config.minViewportWidth` (CSS pixels, default `1024`: phones and tablets held upright). `EditorApp` then loads nothing and shows a notice asking the author to use a computer; the check follows the window (`matchMedia`), so the editor opens by itself once the window is wide enough, for example after rotating a tablet. An editor that is already open stays open when the window shrinks, so no work is torn down. `0` turns the check off. The texts are `app.smallScreen.*` in the `messages` catalog.
