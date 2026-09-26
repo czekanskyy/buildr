@@ -1,5 +1,11 @@
 # Editor
 
+![The editor with a Hero selected on the Style tab, light theme](../apps/playground/e2e/visual/__screenshots__/editor-hero-style-light-1440.png)
+
+![The same view in the dark theme](../apps/playground/e2e/visual/__screenshots__/editor-hero-style-dark-1440.png)
+
+*The screenshots are the visual baseline (`apps/playground/e2e/visual/editor`), regenerated in CI by the `visual` PR label, so they always show the current editor.*
+
 See also [ADR-009](adr/ADR-009-editor-architecture.md) and [ADR-015](adr/ADR-015-iframe-preview.md).
 
 ## Layout and modules
@@ -388,3 +394,13 @@ A template is edited against a real entry. `<SamplePicker adapter docRef onChang
 - **Inspector**: in a non-default language a localizable field without a translation is greyed and says the default-language text is shown, with a **Translate** action (`node.setProp` with `locale`, seeded from the default text); a translated field offers **Remove translation** (`node.unsetProp` with `locale`). Both are ordinary commands, so undo works. A banner (`TranslationBanner`) says texts are per language while structure and style are shared.
 - **Issues**: the store's accessibility check runs against the language configuration (`EditorStoreOptions.locales`), and the Issues panel lists `missing-translation` findings in one group per language.
 - The inspector's sample data context is still the default language; the canvas renders in the chosen one (`loadScopes(contextRef, locale)`).
+
+## Visual QA and accessibility (PB-131)
+
+Closes phase 13 (the visual polish). The checks that keep it closed:
+
+- **axe on every baseline state.** `apps/playground/e2e/editor-a11y.spec.ts` runs axe (WCAG 2.0/2.1 A and AA) against the empty document, the Hero on the Content, Style and Advanced tabs, the Layers and Insert tabs (scrolled to templates), the publish dialog, the media picker, the issues panel and the canvas at tablet and mobile width, each in the light and the dark theme. The expected number of violations is zero; `pnpm --filter @buildr/playground e2e` runs it.
+- **Keyboard-only flows.** Walked through with the keyboard alone: Tab order through the toolbar (breakpoints, zoom, language, entry, Preview, Publish, more), the Insert / Layers tabs (arrow keys move, the panel is a tab stop), the search field, view toggle and every palette tile; the layers tree (arrows, Enter to select), the inspector tabs, Publish with Enter and Escape to close. Every stop shows a focus ring. Two defects were found and fixed: a dialog opened from a button, menu item or shortcut dropped focus to `<body>` when it closed (the shared `Dialog` now returns focus to the element that had it when it opened), and the inactive breakpoint icons were unreadable on the dark toolbar in the light theme.
+- **Notices.** The insert panel reports through `useToast()` (id `insert`) instead of a local `role="status"` line, following [Feedback surfaces](editor-design.md#feedback-surfaces-pb-129).
+- **Known follow-ups:** see the PB-131 card in [phase 13](backlog/phase-13-editor-visual-polish.md).
+

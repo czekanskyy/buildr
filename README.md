@@ -4,6 +4,8 @@
 
 **Status: 0.1 MVP.** The packages, the reference application (`apps/example-next-payload`) and the end-to-end tests are in place; 0.1.0 is prepared for release (see [docs/roadmap.md](docs/roadmap.md)).
 
+![The Buildr editor: insert panel, canvas and inspector](apps/playground/e2e/visual/__screenshots__/editor-hero-content-light-1440.png)
+
 ## Quickstart
 
 Node >= 22 and pnpm >= 10:

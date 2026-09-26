@@ -6,6 +6,7 @@ import * as TabsPrimitive from '@radix-ui/react-tabs';
 import * as TogglePrimitive from '@radix-ui/react-toggle';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, Ref } from 'react';
+import { useRef } from 'react';
 import { useT } from '../messages/index.tsx';
 import { Icon, type IconName } from './icon.tsx';
 import { usePortalContainer } from './portal.tsx';
@@ -215,12 +216,27 @@ export function Dialog({
 }: DialogProps) {
   const t = useT();
   const portal = usePortalContainer();
+  // The dialogs are controlled (opened from a toolbar button, a menu item or a shortcut), so Radix has
+  // no trigger to return focus to: remember the element that had focus when the dialog opened.
+  const opener = useRef<HTMLElement | null>(null);
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal container={portal}>
         <DialogPrimitive.Overlay className="bd-dialog-overlay" />
         <DialogPrimitive.Content
           className="bd-dialog"
+          onOpenAutoFocus={() => {
+            const active = document.activeElement;
+            opener.current = active instanceof HTMLElement ? active : null;
+          }}
+          onCloseAutoFocus={(event) => {
+            const target = opener.current;
+            opener.current = null;
+            if (target?.isConnected === true) {
+              event.preventDefault();
+              target.focus();
+            }
+          }}
           {...(description === undefined ? { 'aria-describedby': undefined } : {})}
         >
           <header className="bd-dialog-header">

@@ -17,6 +17,7 @@ import * as matchers from 'vitest-axe/matchers';
 import { ManifestProvider } from '../../app/manifest.tsx';
 import { MessagesProvider } from '../../messages/index.tsx';
 import { createEditorStore, EditorStoreProvider } from '../../store/index.ts';
+import { ToastProvider } from '../../ui/index.ts';
 import { filterItems, paletteItems, safeThumbnail } from './catalog.ts';
 import { InsertPanel } from './insert-panel.tsx';
 
@@ -116,7 +117,9 @@ async function mount(readOnly = false) {
       <MessagesProvider locale="en">
         <ManifestProvider manifest={manifest}>
           <EditorStoreProvider store={store}>
-            <InsertPanel />
+            <ToastProvider>
+              <InsertPanel />
+            </ToastProvider>
           </EditorStoreProvider>
         </ManifestProvider>
       </MessagesProvider>,
@@ -130,7 +133,7 @@ const button = (label: string) =>
     (b) => b.querySelector('.bd-insert-label')?.textContent === label,
   ) as HTMLElement;
 const click = (label: string) => act(async () => button(label).click());
-const notice = () => container.querySelector('[role=status]')?.textContent;
+const notice = () => container.querySelector('.bd-toast-text')?.textContent;
 const children = (store: Awaited<ReturnType<typeof mount>>, id: string) =>
   store.getState().doc.nodes[id]?.slots?.['default'] ?? [];
 

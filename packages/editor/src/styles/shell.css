@@ -480,6 +480,16 @@
   border-color: var(--bd-toolbar-border);
 }
 
+/* PB-131: inactive segments must be readable on the dark toolbar in both themes. */
+.buildr-editor .bd-toolbar .bd-segmented .bd-segment {
+  color: var(--bd-toolbar-muted);
+}
+
+.buildr-editor .bd-toolbar .bd-segmented .bd-segment:hover:not(:disabled) {
+  background: var(--bd-toolbar-hover);
+  color: var(--bd-toolbar-text);
+}
+
 /* On the dark toolbar the active segment is the inverse of the bar. */
 .buildr-editor .bd-toolbar .bd-segmented .bd-button.bd-segment[aria-pressed="true"],
 .buildr-editor

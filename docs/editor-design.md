@@ -193,7 +193,7 @@ toast.dismiss(id);
 
 - The region holds two always-mounted lists: `role="status"` (polite) for success, info and warning, and `role="alert"` for errors, so screen readers announce what is added.
 - Auto-dismiss after `TOAST_MS` (6s) unless `duration: null`; the timer pauses while the toast is hovered or holds focus. Showing a toast with the `id` of a visible one replaces it and restarts its timer (used by the clipboard, the preview error and the external-changes notice). Each toast has a dismiss button.
-- Wired: the clipboard refusals (`clipboard`), the preview error (`preview`) and the external-changes notice (`external-changes`, persistent, with a "reload" action). PB-125 (insert panel) and PB-127 (inspector) replace their local notice `div`s with `useToast()`.
+- Wired: the clipboard refusals (`clipboard`), the preview error (`preview`) and the external-changes notice (`external-changes`, persistent, with a "reload" action). The insert panel (PB-131) uses it too (id `insert`). The inspector, style inspector and layers panel still keep a local `role="status"` line: they clear it on the next successful edit, which a toast cannot do (follow-up in the PB-131 card).
 - Inside a dialog, messages that belong to the dialog stay inline (`role="alert"` / `role="status"`), because a modal makes the region behind it inert.
 
 **Dialogs.** `<Dialog title description footer hideClose>`: a header (title, description, close icon button), a body that scrolls on its own, and a right-aligned footer for the actions. Use `footer` for buttons; `hideClose` only for a dialog that has to be answered (the save conflict).
@@ -203,3 +203,10 @@ toast.dismiss(id);
 ## Value controls (PB-128)
 
 Controls for entering values live in `ui/primitives.tsx` and `styles/primitives.css`: `SegmentedControl` (a `fieldset` of `aria-pressed` buttons in a pill track; icon-only segments get a tooltip and an `aria-label`), `NumberUnitInput` (tabular numerals, unit menu, arrow-key steps) and `ColorSwatch` (decorative; paints only a colour notation). Use a segmented control for 2 to 5 short, mutually exclusive choices and a select beyond that. The style inspector's origin dot uses `--bd-accent` (set here), `--bd-warning` (inherited) and a hollow ring (default).
+
+## Accessibility checks (PB-131)
+
+- Every editor state of the visual baseline is checked with axe in both themes (`apps/playground/e2e/editor-a11y.spec.ts`); a new panel, dialog or state that joins the baseline joins that spec too.
+- Text contrast is what axe measures, but icon-only controls are not: check them by eye in both themes. On the dark toolbar every control takes its colours from `--bd-toolbar-*` (a segmented control inside the toolbar overrides its inactive and hover colours; the generic segment colours belong on a light surface).
+- A dialog returns focus to the element that had it when it opened (`Dialog` remembers it), so controlled dialogs need no trigger.
+
