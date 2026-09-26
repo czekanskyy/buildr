@@ -1,5 +1,5 @@
 ---
-"@buildr/core": minor
+"@next-buildr/core": minor
 ---
 
 Add the expression lexer, parser and printer (PB-022): `parseExpression(source)` turns Buildr Expressions source into an `ExprNode` AST (`Literal | Path | Array | Unary | Binary | Logical | Conditional | Call`, each with a `[start, end)` span) using a hand-written lexer and a Pratt parser that matches the grammar in `docs/expressions.md`, with no dependencies. `parseTemplate(source)` does the same for `{{ expr }}` template mode, including `\{{` escapes.

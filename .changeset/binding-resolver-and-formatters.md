@@ -1,5 +1,5 @@
 ---
-"@buildr/core": minor
+"@next-buildr/core": minor
 ---
 
 Add the binding resolver and formatters (PB-021): `resolveBinding(binding, ctx)` reads `binding.path` off `DataContext.scopes` via `getPath` (PB-019), applying the binding's own `fallback` and emitting a `binding.missing` diagnostic when the path doesn't resolve.

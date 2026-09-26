@@ -7,6 +7,6 @@ find the full documentation for it [in our repository](https://github.com/change
 We have a quick list of common questions to get you started engaging with this project in
 [our documentation](https://github.com/changesets/changesets/blob/main/docs/common-questions.md)
 
-Buildr publishes every `@buildr/*` package together, at the same version (a fixed group — see
+Buildr publishes every `@next-buildr/*` package together, at the same version (a fixed group — see
 [`config.json`](config.json) and [ADR-001](../docs/adr/ADR-001-monorepo.md)). Run `pnpm changeset` after
 any change to a package's public API, and pick every affected package when prompted.
