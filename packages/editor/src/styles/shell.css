@@ -674,3 +674,55 @@
   min-width: 0;
   margin: 0;
 }
+
+/* Too small a window: the editor does not open (docs/editor.md#small-screens) */
+.buildr-editor .bd-small-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: var(--bd-space-7);
+  box-sizing: border-box;
+  background: var(--bd-surface-2);
+  color: var(--bd-text);
+}
+.buildr-editor .bd-small-screen-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--bd-space-4);
+  max-width: 28rem;
+  padding: var(--bd-space-8) var(--bd-space-7);
+  text-align: center;
+  border: var(--bd-border-width) solid var(--bd-border);
+  border-radius: var(--bd-radius-lg);
+  background: var(--bd-surface);
+}
+.buildr-editor .bd-small-screen-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--bd-space-8) * 2);
+  height: calc(var(--bd-space-8) * 2);
+  border-radius: var(--bd-radius-pill);
+  background: var(--bd-surface-selected);
+  color: var(--bd-accent);
+}
+.buildr-editor .bd-small-screen-title {
+  margin: 0;
+  font-size: var(--bd-text-lg);
+  line-height: var(--bd-leading-lg);
+  font-weight: var(--bd-weight-semibold);
+}
+.buildr-editor .bd-small-screen-body,
+.buildr-editor .bd-small-screen-hint {
+  margin: 0;
+  font-size: var(--bd-text-md);
+  line-height: var(--bd-leading-md);
+  color: var(--bd-text-muted);
+}
+.buildr-editor .bd-small-screen-hint {
+  font-size: var(--bd-text-xs);
+  line-height: var(--bd-leading-xs);
+  color: var(--bd-text-subtle);
+}

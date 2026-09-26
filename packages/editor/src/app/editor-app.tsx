@@ -60,6 +60,7 @@ import { PortalContainerProvider, Tabs, ToastProvider, useToast } from '../ui/in
 import { type BuilderEditorProps, type DocumentRef, resolveConfig } from './config.ts';
 import { EditorLayout } from './layout.tsx';
 import { ManifestProvider } from './manifest.tsx';
+import { SmallScreenNotice, useViewportTooNarrow } from './small-screen.tsx';
 import { StatusInfo } from './status-info.tsx';
 
 export interface EditorAppProps extends BuilderEditorProps {
@@ -104,9 +105,14 @@ export function EditorApp(props: EditorAppProps) {
   // Menus, popovers and dialogs render inside the root, so they inherit its `data-theme`.
   const [root, setRoot] = useState<HTMLElement | null>(null);
   const [phase, setPhase] = useState<Phase>({ kind: 'loading' });
+  // A window too narrow to edit in keeps the editor from opening (nothing is loaded); one that is
+  // already open stays open when the window shrinks, so no work is torn down.
+  const narrow = useViewportTooNarrow(config.minViewportWidth);
+  const blocked = narrow && phase.kind !== 'ready';
   const refKey = `${documentRef.collection}:${documentRef.id}`;
   // biome-ignore lint/correctness/useExhaustiveDependencies: `documentRef` is identified by `refKey`
   useEffect(() => {
+    if (blocked) return;
     let cancelled = false;
     setPhase({ kind: 'loading' });
     void (async () => {
@@ -151,6 +157,7 @@ export function EditorApp(props: EditorAppProps) {
     refKey,
     registry,
     props.locales,
+    blocked,
     config.autosave.debounceMs,
     config.autosave.maxWaitMs,
   ]);
@@ -165,7 +172,9 @@ export function EditorApp(props: EditorAppProps) {
             lang={config.uiLocale}
             {...(theme.attribute !== 'system' ? { 'data-theme': theme.attribute } : {})}
           >
-            {phase.kind === 'ready' ? (
+            {blocked ? (
+              <SmallScreenNotice />
+            ) : phase.kind === 'ready' ? (
               <Session {...props} ready={phase} />
             ) : (
               <Status failed={phase.kind === 'error'} />

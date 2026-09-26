@@ -24,6 +24,11 @@ export interface EditorConfig {
   readonly uiLocale?: string;
   /** Forces a colour scheme; by default it follows the system's. */
   readonly theme?: 'light' | 'dark' | 'system';
+  /**
+   * The narrowest window (in CSS pixels) the editor opens in; below it a notice asks the author to
+   * use a computer. Defaults to 1024 (phones and tablets held upright); `0` turns the check off.
+   */
+  readonly minViewportWidth?: number;
 }
 
 export interface ResolvedEditorConfig {
@@ -32,7 +37,11 @@ export interface ResolvedEditorConfig {
   readonly autosave: { readonly debounceMs: number; readonly maxWaitMs: number };
   readonly uiLocale: string;
   readonly theme: 'light' | 'dark' | 'system';
+  readonly minViewportWidth: number;
 }
+
+/** Below this window width the editor does not open: its panels and the canvas need the room. */
+export const DEFAULT_MIN_VIEWPORT_WIDTH = 1024;
 
 export const DEFAULT_BREAKPOINTS: readonly BreakpointConfig[] = [
   { id: 'desktop', width: 1280 },
@@ -48,6 +57,7 @@ export function resolveConfig(config: EditorConfig = {}): ResolvedEditorConfig {
     autosave: config.autosave ?? { debounceMs: 2000, maxWaitMs: 20_000 },
     uiLocale: config.uiLocale ?? 'en',
     theme: config.theme ?? 'system',
+    minViewportWidth: config.minViewportWidth ?? DEFAULT_MIN_VIEWPORT_WIDTH,
   };
 }
 
