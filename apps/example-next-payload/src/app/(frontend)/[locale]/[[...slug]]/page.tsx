@@ -1,4 +1,4 @@
-import { BuildrPage, generateLocaleStaticParams } from '@buildr/next';
+import { BuildrPage, generateLocaleStaticParams } from '@next-buildr/next';
 import { notFound } from 'next/navigation';
 import { LOCALES } from '../../../../buildr.registry.ts';
 import { buildr } from '../../../../buildr.server.ts';

@@ -1,4 +1,4 @@
-import { createPreviewRoute } from '@buildr/next/draft';
+import { createPreviewRoute } from '@next-buildr/next/draft';
 import { LOCALES } from '../../../../buildr.registry.ts';
 import { isSignedIn } from '../../../../lib/auth.ts';
 

@@ -1,4 +1,4 @@
-import { componentIconNames } from '@buildr/editor';
+import { componentIconNames } from '@next-buildr/editor';
 import { describe, expect, it } from 'vitest';
 import { registry } from './registry.ts';
 

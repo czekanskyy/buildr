@@ -14,7 +14,7 @@ Per the product's core requirement, the editor is a **separate product**, not a 
 
 ## Decision**
 
-`@buildr/editor` is a standalone client package exposing `<BuilderEditor adapter={...} manifest={...} canvasUrl={...} documentRef={...} />`. It uses **Zustand** (vanilla store + selectors) for editor state, but document *mutation* logic never lives in the store — it lives in `@buildr/core/commands`; the store only dispatches commands and reacts to their results (see ADR-013).
+`@next-buildr/editor` is a standalone client package exposing `<BuilderEditor adapter={...} manifest={...} canvasUrl={...} documentRef={...} />`. It uses **Zustand** (vanilla store + selectors) for editor state, but document *mutation* logic never lives in the store — it lives in `@next-buildr/core/commands`; the store only dispatches commands and reacts to their results (see ADR-013).
 
 ## Consequences
 

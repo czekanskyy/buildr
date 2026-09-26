@@ -19,6 +19,6 @@ Every prop declared as `bindable` in its `PropDef` accepts a `Value<T>`: `Static
 ## Consequences
 
 - Any prop can become dynamic if its schema allows it — the editor's Static/Dynamic/Formula switch is generic UI, not per-component code.
-- A single `resolveProps` resolver in `@buildr/core` handles all three kinds for every component; components never see `Value<T>`, only resolved values.
+- A single `resolveProps` resolver in `@next-buildr/core` handles all three kinds for every component; components never see `Value<T>`, only resolved values.
 - Slightly larger storage per prop (~20 bytes overhead for the `kind` wrapper) — accepted as negligible against the clarity gained.
 - There is no separate "UPDATE_BINDING" command — setting a binding is just `node.setProp` with a `BindingValue`.

@@ -16,7 +16,7 @@ Formatted content (paragraphs, headings, lists, inline marks, links) needs a can
 
 ## Decision**
 
-Rich text is stored as a **validated subset of Lexical's JSON node format** (`root, paragraph, heading, list, listitem, quote, link, text (with format bitmask), linebreak` in MVP). Rendering is a JSON→React walker (`richTextConverters`, extensible — `@buildr/payload` adds converters for Payload-specific nodes like `upload`/`relationship`); unknown node types are dropped with a diagnostic, never passed through raw.
+Rich text is stored as a **validated subset of Lexical's JSON node format** (`root, paragraph, heading, list, listitem, quote, link, text (with format bitmask), linebreak` in MVP). Rendering is a JSON→React walker (`richTextConverters`, extensible — `@next-buildr/payload` adds converters for Payload-specific nodes like `upload`/`relationship`); unknown node types are dropped with a diagnostic, never passed through raw.
 
 ## Consequences
 

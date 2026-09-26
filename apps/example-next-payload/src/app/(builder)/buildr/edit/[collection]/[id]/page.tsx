@@ -1,5 +1,5 @@
-import { toManifest } from '@buildr/core';
-import { BuildrEditorPage, editorMetadata } from '@buildr/next/editor';
+import { toManifest } from '@next-buildr/core';
+import { BuildrEditorPage, editorMetadata } from '@next-buildr/next/editor';
 import { registry } from '../../../../../../buildr.registry.ts';
 import { isSignedIn } from '../../../../../../lib/auth.ts';
 import { EditorClient } from './editor-client.tsx';

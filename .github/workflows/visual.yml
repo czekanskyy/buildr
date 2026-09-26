@@ -32,7 +32,7 @@ jobs:
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - uses: ./.github/actions/setup
       - name: Screenshots
-        run: pnpm --filter @buildr/playground e2e:visual
+        run: pnpm --filter @next-buildr/playground e2e:visual
       - name: Upload the differences
         if: failure()
         uses: actions/upload-artifact@v4
@@ -58,9 +58,9 @@ jobs:
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - uses: ./.github/actions/setup
       - name: Take the screenshots
-        run: pnpm --filter @buildr/playground e2e:visual:update
+        run: pnpm --filter @next-buildr/playground e2e:visual:update
       - name: Verify them
-        run: pnpm --filter @buildr/playground e2e:visual
+        run: pnpm --filter @next-buildr/playground e2e:visual
       - name: Commit the baselines
         run: |
           git config user.name "github-actions[bot]"

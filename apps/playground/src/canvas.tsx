@@ -1,8 +1,8 @@
-import { createGalleryDataSource, defaultTheme } from '@buildr/components';
-import '@buildr/components/styles.css';
-import { toManifest } from '@buildr/core';
-import { CanvasRuntime } from '@buildr/react/canvas';
-import { demoPlatform } from '@buildr/test-utils/demo/components';
+import { createGalleryDataSource, defaultTheme } from '@next-buildr/components';
+import '@next-buildr/components/styles.css';
+import { toManifest } from '@next-buildr/core';
+import { CanvasRuntime } from '@next-buildr/react/canvas';
+import { demoPlatform } from '@next-buildr/test-utils/demo/components';
 import { useMemo } from 'react';
 import { sampleScopes } from './memory-adapter.ts';
 import { registry } from './registry.ts';

@@ -9,7 +9,7 @@ Document mutation must be testable, debuggable, loggable and replayable, and mus
 ## Options
 
 1. **Direct store mutations from UI components/reducers** — the common React pattern, but not serializable, not replayable, and makes it easy for UI code to accidentally bypass validation/locks.
-2. **Serializable command objects**, each with a `validate` and an `apply`, dispatched through a single `execute`/`executeBatch` entry point in `@buildr/core/commands`.
+2. **Serializable command objects**, each with a `validate` and an `apply`, dispatched through a single `execute`/`executeBatch` entry point in `@next-buildr/core/commands`.
 
 ## Decision**
 

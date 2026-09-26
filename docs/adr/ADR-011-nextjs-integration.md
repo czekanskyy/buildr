@@ -14,7 +14,7 @@ Production pages must ship zero builder JavaScript when they contain no client c
 
 ## Decision**
 
-`BuildrPage` is an **async Server Component**. A `Platform` object (injected `next/link`, `next/image`, form action wiring) is passed into the renderer so components stay framework-agnostic at the `@buildr/react` layer. Caching uses **tag-based revalidation**: reads are tagged (`buildr:doc:{collection}:{id}`, `buildr:col:{collection}`, …) and Payload's `afterChange`/`afterDelete` hooks call `revalidateTag` on publish.
+`BuildrPage` is an **async Server Component**. A `Platform` object (injected `next/link`, `next/image`, form action wiring) is passed into the renderer so components stay framework-agnostic at the `@next-buildr/react` layer. Caching uses **tag-based revalidation**: reads are tagged (`buildr:doc:{collection}:{id}`, `buildr:col:{collection}`, …) and Payload's `afterChange`/`afterDelete` hooks call `revalidateTag` on publish.
 
 ## Consequences
 

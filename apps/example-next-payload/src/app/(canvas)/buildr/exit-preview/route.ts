@@ -1,3 +1,3 @@
-import { createExitPreviewRoute } from '@buildr/next/draft';
+import { createExitPreviewRoute } from '@next-buildr/next/draft';
 
 export const GET = createExitPreviewRoute({});

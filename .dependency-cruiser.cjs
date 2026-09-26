@@ -24,16 +24,16 @@ function npmPackage(packageName) {
 }
 
 /**
- * Builds a `to` matcher for one or more `@buildr/*` packages. A properly declared dependency
+ * Builds a `to` matcher for one or more `@next-buildr/*` packages. A properly declared dependency
  * resolves to the real `packages/<name>/src/...` file (the `exports` convention from PB-002);
- * one the importing package never declared stays an unresolved `@buildr/<name>` specifier, so
+ * one the importing package never declared stays an unresolved `@next-buildr/<name>` specifier, so
  * both forms need matching (see `npmPackage` above for why).
  * @param {readonly string[]} packageNames
  */
 function buildrPackages(packageNames) {
   return [
     `^packages/(${packageNames.join('|')})/src/`,
-    `^@buildr/(${packageNames.join('|')})($|/)`,
+    `^@next-buildr/(${packageNames.join('|')})($|/)`,
   ].join('|');
 }
 
@@ -69,21 +69,21 @@ module.exports = {
     {
       name: 'core-no-frameworks',
       severity: 'error',
-      comment: '@buildr/core has zero framework dependencies (ADR, architecture-rules.md).',
+      comment: '@next-buildr/core has zero framework dependencies (ADR, architecture-rules.md).',
       from: { path: '^packages/core/src/' },
       to: { path: `(${['react', 'react-dom', 'next', 'payload'].map(npmPackage).join('|')})` },
     },
     {
       name: 'core-no-buildr-packages',
       severity: 'error',
-      comment: '@buildr/core must not depend on any other @buildr/* package.',
+      comment: '@next-buildr/core must not depend on any other @next-buildr/* package.',
       from: { path: '^packages/core/src/' },
       to: { path: buildrPackages(['react', 'components', 'editor', 'next', 'payload']) },
     },
     {
       name: 'core-immer-only-in-commands',
       severity: 'error',
-      comment: 'immer is only allowed inside @buildr/core/commands.',
+      comment: 'immer is only allowed inside @next-buildr/core/commands.',
       from: { path: '^packages/core/src/', pathNot: '^packages/core/src/commands/' },
       to: { path: npmPackage('immer') },
     },
@@ -105,7 +105,7 @@ module.exports = {
     {
       name: 'react-no-downstream-packages',
       severity: 'error',
-      comment: '@buildr/react may only depend on @buildr/core.',
+      comment: '@next-buildr/react may only depend on @next-buildr/core.',
       from: { path: '^packages/react/src/' },
       to: { path: buildrPackages(['editor', 'components', 'next', 'payload']) },
     },
@@ -119,7 +119,8 @@ module.exports = {
     {
       name: 'components-no-downstream-packages',
       severity: 'error',
-      comment: '@buildr/components may only depend on @buildr/core and @buildr/react.',
+      comment:
+        '@next-buildr/components may only depend on @next-buildr/core and @next-buildr/react.',
       from: { path: '^packages/components/src/' },
       to: { path: buildrPackages(['editor', 'next', 'payload']) },
     },
@@ -135,7 +136,8 @@ module.exports = {
     {
       name: 'editor-no-render-packages',
       severity: 'error',
-      comment: '@buildr/editor must not depend on @buildr/react or @buildr/components.',
+      comment:
+        '@next-buildr/editor must not depend on @next-buildr/react or @next-buildr/components.',
       from: { path: '^packages/editor/src/' },
       to: { path: buildrPackages(['react', 'components', 'next', 'payload']) },
     },
@@ -149,7 +151,7 @@ module.exports = {
     {
       name: 'next-no-downstream-packages',
       severity: 'error',
-      comment: '@buildr/next may only depend on @buildr/core and @buildr/react.',
+      comment: '@next-buildr/next may only depend on @next-buildr/core and @next-buildr/react.',
       from: { path: '^packages/next/src/' },
       to: { path: buildrPackages(['components', 'payload']) },
     },
@@ -157,7 +159,7 @@ module.exports = {
       name: 'next-editor-confined-to-its-subpath',
       severity: 'error',
       comment:
-        '@buildr/editor is only a peer of the ./editor subpath of @buildr/next, not the rest of the package.',
+        '@next-buildr/editor is only a peer of the ./editor subpath of @next-buildr/next, not the rest of the package.',
       from: { path: '^packages/next/src/', pathNot: '^packages/next/src/editor/' },
       to: { path: buildrPackages(['editor']) },
     },
@@ -166,21 +168,21 @@ module.exports = {
       name: 'payload-plugin-data-admin-no-render-packages',
       severity: 'error',
       comment:
-        'payload/{plugin,data,admin} must not depend on @buildr/editor or @buildr/components.',
+        'payload/{plugin,data,admin} must not depend on @next-buildr/editor or @next-buildr/components.',
       from: { path: '^packages/payload/src/(plugin|data|admin)/' },
       to: { path: buildrPackages(['editor', 'components']) },
     },
     {
       name: 'payload-plugin-admin-no-react',
       severity: 'error',
-      comment: 'Only payload/data may import @buildr/react, and only as a type-only import.',
+      comment: 'Only payload/data may import @next-buildr/react, and only as a type-only import.',
       from: { path: '^packages/payload/src/(plugin|admin)/' },
       to: { path: buildrPackages(['react']) },
     },
     {
       name: 'payload-data-no-runtime-react',
       severity: 'error',
-      comment: 'payload/data may only import @buildr/react for types, never at runtime.',
+      comment: 'payload/data may only import @next-buildr/react for types, never at runtime.',
       from: { path: '^packages/payload/src/data/' },
       to: { path: buildrPackages(['react']), dependencyTypesNot: ['type-only'] },
     },
@@ -188,7 +190,7 @@ module.exports = {
       name: 'payload-adapter-isolated',
       severity: 'error',
       comment:
-        'payload/adapter is the fetch client used from @buildr/next/editor and must stay usable without the payload package, @payloadcms/*, or next itself.',
+        'payload/adapter is the fetch client used from @next-buildr/next/editor and must stay usable without the payload package, @payloadcms/*, or next itself.',
       from: { path: '^packages/payload/src/adapter/' },
       to: {
         path: `(${['payload', '@payloadcms/.*', 'next'].map(npmPackage).join('|')})`,
@@ -210,7 +212,7 @@ module.exports = {
     {
       name: 'mcp-no-frameworks',
       severity: 'error',
-      comment: '@buildr/mcp is CMS- and framework-agnostic (ADR-024).',
+      comment: '@next-buildr/mcp is CMS- and framework-agnostic (ADR-024).',
       from: { path: '^packages/mcp/src/' },
       to: { path: `(${['react', 'react-dom', 'next', 'payload'].map(npmPackage).join('|')})` },
     },
@@ -218,7 +220,7 @@ module.exports = {
       name: 'mcp-only-core',
       severity: 'error',
       comment:
-        '@buildr/mcp may only depend on @buildr/core among the @buildr/* packages (ADR-024).',
+        '@next-buildr/mcp may only depend on @next-buildr/core among the @next-buildr/* packages (ADR-024).',
       from: { path: '^packages/mcp/src/' },
       to: { path: buildrPackages(['react', 'components', 'editor', 'next', 'payload']) },
     },
@@ -226,7 +228,7 @@ module.exports = {
       name: 'payload-mcp-backend-isolated',
       severity: 'error',
       comment:
-        'payload/mcp (the HTTP backend for @buildr/mcp) must not import payload, @payloadcms/* or next; only mcp/route.ts (the site route handler) may (ADR-024).',
+        'payload/mcp (the HTTP backend for @next-buildr/mcp) must not import payload, @payloadcms/* or next; only mcp/route.ts (the site route handler) may (ADR-024).',
       from: {
         path: '^packages/payload/src/mcp/',
         pathNot: '^packages/payload/src/mcp/route\\.ts$',
@@ -240,7 +242,7 @@ module.exports = {
       to: { path: buildrPackages(['react', 'components', 'editor']) },
     },
 
-    // --- Layers inside @buildr/core (docs/ai/architecture-rules.md, module ownership table) ---
+    // --- Layers inside @next-buildr/core (docs/ai/architecture-rules.md, module ownership table) ---
 
     {
       name: 'core-document-is-self-contained',

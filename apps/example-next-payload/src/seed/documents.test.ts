@@ -1,4 +1,4 @@
-import { type BuilderDocument, runA11y, validateDocument } from '@buildr/core';
+import { type BuilderDocument, runA11y, validateDocument } from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import { registry } from '../buildr.registry.ts';
 import { buildSeedDocuments, type SeedMedia } from './documents.ts';

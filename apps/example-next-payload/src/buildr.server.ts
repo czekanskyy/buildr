@@ -1,6 +1,6 @@
-import { BUILT_IN_MESSAGES } from '@buildr/components';
-import { createBuildrConfig, createNextPlatform } from '@buildr/next';
-import { createPayloadDataSource } from '@buildr/payload/data';
+import { BUILT_IN_MESSAGES } from '@next-buildr/components';
+import { createBuildrConfig, createNextPlatform } from '@next-buildr/next';
+import { createPayloadDataSource } from '@next-buildr/payload/data';
 import config from '@payload-config';
 import { getPayload } from 'payload';
 import { contextNames, pluginCollections, queryable } from './buildr.options.ts';

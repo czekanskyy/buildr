@@ -13,7 +13,7 @@ The canvas must render with full fidelity to production (same renderer, same glo
 
 ## Decision**
 
-The canvas is an **iframe loading a real Next.js route** that renders through the exact same `renderTree`/`renderDocument` pipeline as production, instrumented via `@buildr/react/canvas`. The editor owns document state exclusively; the canvas holds a read-only, patch-synchronized replica. Resizing the iframe to a breakpoint's width makes real CSS media queries fire — no simulation needed. Communication uses a versioned, schema-validated `postMessage` protocol (see `docs/editor.md` and ADR-016).
+The canvas is an **iframe loading a real Next.js route** that renders through the exact same `renderTree`/`renderDocument` pipeline as production, instrumented via `@next-buildr/react/canvas`. The editor owns document state exclusively; the canvas holds a read-only, patch-synchronized replica. Resizing the iframe to a breakpoint's width makes real CSS media queries fire — no simulation needed. Communication uses a versioned, schema-validated `postMessage` protocol (see `docs/editor.md` and ADR-016).
 
 ## Consequences
 

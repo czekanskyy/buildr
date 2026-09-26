@@ -1,10 +1,10 @@
-import { buildrMetadata } from '@buildr/next';
+import { buildrMetadata } from '@next-buildr/next';
 import {
   alternatesOf,
   getBuildrDocument,
   listPublishedSlugs,
   seoFromDocument,
-} from '@buildr/payload/next';
+} from '@next-buildr/payload/next';
 import type { Metadata } from 'next';
 import { draftMode, headers } from 'next/headers';
 import { cache } from 'react';

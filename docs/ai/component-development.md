@@ -1,6 +1,6 @@
 # Component development guide
 
-Step-by-step recipe for adding or changing a component in `@buildr/components`. Read [component-registry.md](../component-registry.md) first for the underlying model.
+Step-by-step recipe for adding or changing a component in `@next-buildr/components`. Read [component-registry.md](../component-registry.md) first for the underlying model.
 
 ## Directory structure
 

@@ -15,7 +15,7 @@ Buildr ships many tightly-coupled packages (`core`, `react`, `components`, `edit
 
 ## Decision
 
-Use **pnpm workspaces + Turborepo**, with `dependency-cruiser` as a dedicated, CI-enforced boundary checker. Package versioning uses the **fixed** Changesets group (all `@buildr/*` packages share one version number, the same approach Payload itself uses), which removes any compatibility matrix between our own packages.
+Use **pnpm workspaces + Turborepo**, with `dependency-cruiser` as a dedicated, CI-enforced boundary checker. Package versioning uses the **fixed** Changesets group (all `@next-buildr/*` packages share one version number, the same approach Payload itself uses), which removes any compatibility matrix between our own packages.
 
 ## Consequences
 

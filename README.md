@@ -2,7 +2,7 @@
 
 > An open-source Visual Page Builder for React and Next.js, with a first-class Payload CMS integration.
 
-**Status: 1.0.** All `@buildr/*` packages are versioned together and released as 1.0.0: the document model, renderer, components, the visual editor (with its visual polish), the Next.js and Payload integrations and the MCP server for AI agents, with a reference application and end-to-end tests. Some things that were planned for 1.0 are not done; the honest list is in [docs/roadmap.md](docs/roadmap.md#known-gaps--not-in-100).
+**Status: 1.0.** All `@next-buildr/*` packages are versioned together and released as 1.0.0: the document model, renderer, components, the visual editor (with its visual polish), the Next.js and Payload integrations and the MCP server for AI agents, with a reference application and end-to-end tests. Some things that were planned for 1.0 are not done; the honest list is in [docs/roadmap.md](docs/roadmap.md#known-gaps--not-in-100).
 
 ![The Buildr editor: insert panel, canvas and inspector](apps/playground/e2e/visual/__screenshots__/editor-hero-content-light-1440.png)
 
@@ -14,7 +14,7 @@ Node >= 22 and pnpm >= 10:
 # macOS / Linux / Git Bash
 git clone https://github.com/czekanskyy/buildr.git && cd buildr
 pnpm install
-SEED_ADMIN_EMAIL=you@example.com SEED_ADMIN_PASSWORD='choose-a-password' pnpm --filter @buildr/example-next-payload seed
+SEED_ADMIN_EMAIL=you@example.com SEED_ADMIN_PASSWORD='choose-a-password' pnpm --filter @next-buildr/example-next-payload seed
 pnpm dev:example    # http://localhost:3000/pl, admin at /admin
 ```
 
@@ -23,7 +23,7 @@ pnpm dev:example    # http://localhost:3000/pl, admin at /admin
 git clone https://github.com/czekanskyy/buildr.git; cd buildr
 pnpm install
 $env:SEED_ADMIN_EMAIL = 'you@example.com'; $env:SEED_ADMIN_PASSWORD = 'choose-a-password'
-pnpm --filter '@buildr/example-next-payload' seed
+pnpm --filter '@next-buildr/example-next-payload' seed
 Remove-Item Env:SEED_ADMIN_EMAIL, Env:SEED_ADMIN_PASSWORD   # they stay set for the session otherwise
 pnpm dev:example    # http://localhost:3000/pl, admin at /admin
 ```
@@ -39,7 +39,7 @@ Then open a page in the admin and click **Edit with Visual Builder**. The full w
 
 ## Core principles
 
-- The core (`@buildr/core`) depends on neither React, Next.js nor Payload. Dependencies only point downward: `core → react → components`, `core → editor`, `core + react → next`, `core (+ next) → payload`.
+- The core (`@next-buildr/core`) depends on neither React, Next.js nor Payload. Dependencies only point downward: `core → react → components`, `core → editor`, `core + react → next`, `core (+ next) → payload`.
 - The document is a normalized JSON AST — never HTML or JSX — with schema versioning and forward-only migrations from day one.
 - Every prop of every component can be static, bound to CMS data, or computed by a small, sandboxed expression language. There are no `Dynamic*` components.
 - Styles are a typed model compiled to deterministic CSS with design tokens, cascade layers and desktop-first responsive overrides.
@@ -49,13 +49,13 @@ Then open a page in the admin and click **Edit with Visual Builder**. The full w
 
 | Package | Purpose |
 |---|---|
-| `@buildr/core` | Document model, component registry metadata, values and bindings, expressions, styles → CSS, commands, history, migrations, validation, accessibility rules, drag-and-drop rules, canvas protocol |
-| `@buildr/react` | Renderer (server, client, canvas runtime) and the component authoring API |
-| `@buildr/components` | Standard components, templates (composites) and the default theme |
-| `@buildr/editor` | The visual editor application (client-only) |
-| `@buildr/next` | Next.js App Router integration: `BuildrPage`, draft mode, canvas/editor routes, metadata, caching |
-| `@buildr/payload` | Payload plugin, data source, HTTP adapter for the editor, admin UI |
-| `@buildr/mcp` | MCP server: lets AI agents build and edit pages through the same commands as the editor (stdio CLI and HTTP, drafts only, publishing opt-in) |
+| `@next-buildr/core` | Document model, component registry metadata, values and bindings, expressions, styles → CSS, commands, history, migrations, validation, accessibility rules, drag-and-drop rules, canvas protocol |
+| `@next-buildr/react` | Renderer (server, client, canvas runtime) and the component authoring API |
+| `@next-buildr/components` | Standard components, templates (composites) and the default theme |
+| `@next-buildr/editor` | The visual editor application (client-only) |
+| `@next-buildr/next` | Next.js App Router integration: `BuildrPage`, draft mode, canvas/editor routes, metadata, caching |
+| `@next-buildr/payload` | Payload plugin, data source, HTTP adapter for the editor, admin UI |
+| `@next-buildr/mcp` | MCP server: lets AI agents build and edit pages through the same commands as the editor (stdio CLI and HTTP, drafts only, publishing opt-in) |
 
 ## Build pages with an AI agent
 

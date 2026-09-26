@@ -1,4 +1,4 @@
-import { BuildrPage } from '@buildr/next';
+import { BuildrPage } from '@next-buildr/next';
 import { notFound } from 'next/navigation';
 import { buildr } from '../../../../../../buildr.server.ts';
 import { load, metadataFor } from '../../../../../../lib/site.ts';

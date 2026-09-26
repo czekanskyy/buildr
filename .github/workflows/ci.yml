@@ -62,9 +62,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
       - name: Install Chromium
-        run: pnpm --filter @buildr/example-next-payload exec playwright install --with-deps chromium
+        run: pnpm --filter @next-buildr/example-next-payload exec playwright install --with-deps chromium
       - name: End-to-end tests
-        run: pnpm --filter @buildr/example-next-payload e2e
+        run: pnpm --filter @next-buildr/example-next-payload e2e
         env:
           CI: 'true'
           # Agents on: the scripted MCP client suite (e2e/mcp) runs with the rest.

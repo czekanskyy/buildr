@@ -14,7 +14,7 @@ The editor's canvas and the production site must render *identically* — same c
 
 ## Decision**
 
-One `renderTree` function, shared by `@buildr/react/server` (production, async pipeline: migrate → `prepareRender` → `compileStyles` → render) and `@buildr/react/canvas` (client, same function plus `instrument`). Components never fetch data themselves; all data is resolved ahead of time by `prepareRender` into `PreparedData`, and delivered to components as already-resolved prop values.
+One `renderTree` function, shared by `@next-buildr/react/server` (production, async pipeline: migrate → `prepareRender` → `compileStyles` → render) and `@next-buildr/react/canvas` (client, same function plus `instrument`). Components never fetch data themselves; all data is resolved ahead of time by `prepareRender` into `PreparedData`, and delivered to components as already-resolved prop values.
 
 ## Consequences
 

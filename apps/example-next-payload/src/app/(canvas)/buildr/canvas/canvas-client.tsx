@@ -1,9 +1,9 @@
 'use client';
 
-import { toManifest } from '@buildr/core';
-import { createPayloadCanvasDataSource } from '@buildr/payload/adapter';
-import type { Platform } from '@buildr/react';
-import { CanvasRuntime } from '@buildr/react/canvas';
+import { toManifest } from '@next-buildr/core';
+import { createPayloadCanvasDataSource } from '@next-buildr/payload/adapter';
+import type { Platform } from '@next-buildr/react';
+import { CanvasRuntime } from '@next-buildr/react/canvas';
 import { createElement, useEffect, useMemo, useState } from 'react';
 import { registry, theme } from '../../../../buildr.registry.ts';
 

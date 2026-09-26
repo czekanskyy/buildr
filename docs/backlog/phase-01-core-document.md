@@ -37,7 +37,7 @@
 - **Files**: `packages/core/src/document/invariants.ts`, `packages/test-utils/src/{builders.ts,fixtures/documents/**}`
 - **Implementation**: `checkInvariants(doc) -> Diagnostic[]`, `assertDocumentInvariants` (dev-only); builders `doc()`, `node()`; at least 20 invalid fixtures (orphans, cycles, double parenting, a mismatched map key, a duplicate anchor).
 - **Tests**: every invalid case yields the expected code; a valid document yields zero diagnostics.
-- **Acceptance criteria**: builders are exported from `@buildr/test-utils`.
+- **Acceptance criteria**: builders are exported from `@next-buildr/test-utils`.
 - **Risks**: none.
 
 ## PB-010 - The authoring format, fragments, `reId` - M

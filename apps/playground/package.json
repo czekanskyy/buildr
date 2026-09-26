@@ -1,5 +1,5 @@
 {
-  "name": "@buildr/playground",
+  "name": "@next-buildr/playground",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -14,17 +14,17 @@
     "e2e:visual:update": "playwright test -c playwright.visual.config.ts --update-snapshots"
   },
   "dependencies": {
-    "@buildr/components": "workspace:*",
-    "@buildr/core": "workspace:*",
-    "@buildr/editor": "workspace:*",
-    "@buildr/react": "workspace:*",
-    "@buildr/test-utils": "workspace:*",
+    "@next-buildr/components": "workspace:*",
+    "@next-buildr/core": "workspace:*",
+    "@next-buildr/editor": "workspace:*",
+    "@next-buildr/react": "workspace:*",
+    "@next-buildr/test-utils": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
-    "@buildr/tsconfig": "workspace:*",
+    "@next-buildr/tsconfig": "workspace:*",
     "@playwright/test": "^1.63.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
