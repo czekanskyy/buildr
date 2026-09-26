@@ -1,5 +1,5 @@
-import { type DataContext, type DataSource, defaultTheme, p, s } from '@buildr/core';
-import { createRegistry, defineComponent } from '@buildr/react';
+import { type DataContext, type DataSource, defaultTheme, p, s } from '@next-buildr/core';
+import { createRegistry, defineComponent } from '@next-buildr/react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { createBuildrConfig } from './config.ts';

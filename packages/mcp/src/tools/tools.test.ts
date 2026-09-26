@@ -1,7 +1,7 @@
-import { assertDocumentInvariants } from '@buildr/core';
-import { coreCommandHandlers, createCommandRegistry } from '@buildr/core/commands';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import { assertDocumentInvariants } from '@next-buildr/core';
+import { coreCommandHandlers, createCommandRegistry } from '@next-buildr/core/commands';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createMemoryBackend } from '../backends/memory.ts';
 import { loadDefaultManifest } from '../serialize/default-manifest.test-kit.ts';

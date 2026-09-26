@@ -1,12 +1,12 @@
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { DataSource, ResolvedQuerySpec } from '@buildr/core';
+import type { DataSource, ResolvedQuerySpec } from '@next-buildr/core';
 import {
   DATA_SOURCE_FIXTURE,
   type DataSourceFixture,
   runDataSourceContract,
-} from '@buildr/test-utils/contracts/data-source';
+} from '@next-buildr/test-utils/contracts/data-source';
 import { sqliteAdapter } from '@payloadcms/db-sqlite';
 import { buildConfig, getPayload, type Payload } from 'payload';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';

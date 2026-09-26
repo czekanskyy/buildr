@@ -1,8 +1,8 @@
 // Editing tools (PB-137, docs/mcp.md#tool-reference). Every tool is one `session.apply`, that is
 // one core `executeBatch`: all or nothing, one undo step, invariants checked after every command.
 // A tool that cannot express something leaves it to `apply_commands`, the escape hatch.
-import { createIndex, fromTree, type Result, type Value } from '@buildr/core';
-import type { Command } from '@buildr/core/commands';
+import { createIndex, fromTree, type Result, type Value } from '@next-buildr/core';
+import type { Command } from '@next-buildr/core/commands';
 import { z } from 'zod';
 import { parseTreeInput, TREE_NODE_REF, treeInputDefs } from '../serialize/index.ts';
 import type { McpTool, McpToolResult } from '../server.ts';

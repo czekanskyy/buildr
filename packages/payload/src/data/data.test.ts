@@ -1,4 +1,4 @@
-import { schemaAtPath } from '@buildr/core';
+import { schemaAtPath } from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import { buildContext } from './build-context.ts';
 import { normalizeDoc, normalizeMedia } from './normalize.ts';

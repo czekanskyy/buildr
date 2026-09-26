@@ -1,6 +1,6 @@
-import { runToolScenario } from '@buildr/mcp/testing';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import { runToolScenario } from '@next-buildr/mcp/testing';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { createBuildrMcpRoute } from '../../mcp/route.ts';
 import { boot, type Harness, meta } from './endpoints.test-kit.ts';

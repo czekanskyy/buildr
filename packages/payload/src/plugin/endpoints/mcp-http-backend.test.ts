@@ -1,4 +1,4 @@
-import { runBackendContract } from '@buildr/mcp/testing';
+import { runBackendContract } from '@next-buildr/mcp/testing';
 import { handleEndpoints } from 'payload';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createPayloadMcpBackend } from '../../mcp/http-backend.ts';

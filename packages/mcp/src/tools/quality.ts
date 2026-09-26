@@ -11,7 +11,7 @@ import {
   type Theme,
   type ValidationIssue,
   validateDocument,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import { z } from 'zod';
 import type { McpBackend } from '../backend.ts';
 import type { McpTool } from '../server.ts';

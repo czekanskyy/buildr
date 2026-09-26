@@ -8,7 +8,7 @@ import { renderToolReference } from './reference.ts';
 
 const DOC = new URL('../../../../docs/mcp.md', import.meta.url);
 const START =
-  '<!-- tool-reference:start (generated: UPDATE_MCP_DOCS=1 pnpm test --filter @buildr/mcp) -->';
+  '<!-- tool-reference:start (generated: UPDATE_MCP_DOCS=1 pnpm test --filter @next-buildr/mcp) -->';
 const END = '<!-- tool-reference:end -->';
 
 async function allTools() {
@@ -41,7 +41,7 @@ describe('docs/mcp.md tool reference', () => {
     }
     expect(
       doc,
-      'the tool reference in docs/mcp.md is stale: run UPDATE_MCP_DOCS=1 pnpm test --filter @buildr/mcp',
+      'the tool reference in docs/mcp.md is stale: run UPDATE_MCP_DOCS=1 pnpm test --filter @next-buildr/mcp',
     ).toBe(next);
   });
 });

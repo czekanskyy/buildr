@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { deriveFormSchema, MAX_FORM_FIELDS } from '@buildr/core';
+import { deriveFormSchema, MAX_FORM_FIELDS } from '@next-buildr/core';
 import type { Endpoint, PayloadRequest } from 'payload';
 import { resolveLayout, TEMPLATES_COLLECTION } from '../../data/resolve-layout.ts';
 import { FORM_SUBMISSIONS_COLLECTION } from '../collections/form-submissions.ts';

@@ -1,4 +1,4 @@
-import { createEmptyDocument, s } from '@buildr/core';
+import { createEmptyDocument, s } from '@next-buildr/core';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   documentResponseSchema,

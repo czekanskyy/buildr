@@ -6,7 +6,7 @@ import {
   type LocaleConfig,
   mediaAssetSchema,
   parseDocument,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import type {
   DocumentAdapter,
   DocumentRef,
@@ -15,7 +15,7 @@ import type {
   PublishResult,
   RevisionInfo,
   SaveResult,
-} from '@buildr/editor';
+} from '@next-buildr/editor';
 import {
   conflictResponseSchema,
   dataContextResponseSchema,

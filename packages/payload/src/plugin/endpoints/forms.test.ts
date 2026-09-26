@@ -1,4 +1,10 @@
-import { type BuilderDocument, type ComponentMeta, createRegistryMeta, p, s } from '@buildr/core';
+import {
+  type BuilderDocument,
+  type ComponentMeta,
+  createRegistryMeta,
+  p,
+  s,
+} from '@next-buildr/core';
 import { handleEndpoints } from 'payload';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildrPlugin } from '../index.ts';

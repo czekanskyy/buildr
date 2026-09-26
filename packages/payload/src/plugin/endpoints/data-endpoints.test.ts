@@ -1,4 +1,4 @@
-import { dataSchemaSchema } from '@buildr/core';
+import { dataSchemaSchema } from '@next-buildr/core';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { dataContextResponseSchema, samplesResponseSchema } from '../../contract.ts';
 import { boot, type Harness } from './endpoints.test-kit.ts';

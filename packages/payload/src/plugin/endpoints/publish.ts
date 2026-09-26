@@ -1,4 +1,4 @@
-import { type Diagnostic, runA11y } from '@buildr/core';
+import { type Diagnostic, runA11y } from '@next-buildr/core';
 import type { Endpoint } from 'payload';
 import { publishRequestSchema, publishResponseSchema } from '../../contract.ts';
 import { processLayout } from '../hooks/process-layout.ts';

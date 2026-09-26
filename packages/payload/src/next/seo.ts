@@ -1,6 +1,6 @@
 import type { Payload } from 'payload';
 
-/** What `buildrMetadata` (`@buildr/next`) takes; declared here so this package needs no runtime import of it. */
+/** What `buildrMetadata` (`@next-buildr/next`) takes; declared here so this package needs no runtime import of it. */
 export interface SeoEntry {
   readonly title?: string | null;
   readonly excerpt?: string | null;

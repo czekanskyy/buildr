@@ -1,4 +1,4 @@
-import type { FormSchema } from '@buildr/core';
+import type { FormSchema } from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import { isAllowedRecipient } from './notify.ts';
 import { createMemoryRateLimiter } from './rate-limit.ts';

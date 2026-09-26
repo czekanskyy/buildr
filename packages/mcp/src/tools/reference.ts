@@ -2,7 +2,7 @@ import type { McpTool } from '../server.ts';
 
 // The tool reference of docs/mcp.md (PB-144) is generated from the registered tool definitions, so
 // it cannot drift: `reference.test.ts` fails when the committed block differs and
-// `UPDATE_MCP_DOCS=1 pnpm test --filter @buildr/mcp` rewrites it.
+// `UPDATE_MCP_DOCS=1 pnpm test --filter @next-buildr/mcp` rewrites it.
 
 const GROUPS: readonly { readonly title: string; readonly tools: readonly string[] }[] = [
   {

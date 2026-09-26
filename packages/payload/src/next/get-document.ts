@@ -1,4 +1,4 @@
-import type { DataContext, JsonValue } from '@buildr/core';
+import type { DataContext, JsonValue } from '@next-buildr/core';
 import type { Payload, Where } from 'payload';
 import type { SchemaOptions, SchemaSource } from '../data/index.ts';
 import { buildContext, resolveLayout } from '../data/index.ts';
@@ -52,7 +52,7 @@ export interface GetBuildrDocumentInput {
   readonly cache?: CacheRead;
 }
 
-/** What `BuildrPage` (`@buildr/next`) renders, plus the document itself and its cache tags. */
+/** What `BuildrPage` (`@next-buildr/next`) renders, plus the document itself and its cache tags. */
 export interface BuildrDocumentEntry {
   /** The resolved layout, as stored: `BuildrPage` migrates and validates it. */
   readonly document: unknown;

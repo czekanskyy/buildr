@@ -1,5 +1,5 @@
-import type { Result } from '@buildr/core';
-import { err, generateId, ok } from '@buildr/core';
+import type { Result } from '@next-buildr/core';
+import { err, generateId, ok } from '@next-buildr/core';
 import type {
   CreateDocumentInput,
   DocumentRef,

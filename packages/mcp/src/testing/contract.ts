@@ -4,7 +4,7 @@ import {
   mediaAssetSchema,
   parseDocument,
   validateTheme,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import {
   type DocumentRef,

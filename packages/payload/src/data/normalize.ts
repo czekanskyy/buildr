@@ -1,4 +1,4 @@
-import type { MediaAsset } from '@buildr/core';
+import type { MediaAsset } from '@next-buildr/core';
 import {
   exposedFields,
   type FieldLike,

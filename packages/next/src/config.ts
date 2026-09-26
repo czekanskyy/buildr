@@ -1,5 +1,5 @@
-import type { CompileCache, DataContext, DataSource, Theme } from '@buildr/core';
-import type { Platform, ReactRegistry } from '@buildr/react';
+import type { CompileCache, DataContext, DataSource, Theme } from '@next-buildr/core';
+import type { Platform, ReactRegistry } from '@next-buildr/react';
 
 export interface BuildrConfigInput {
   readonly registry: ReactRegistry;

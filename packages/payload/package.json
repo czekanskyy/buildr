@@ -1,5 +1,5 @@
 {
-  "name": "@buildr/payload",
+  "name": "@next-buildr/payload",
   "version": "0.0.0",
   "private": false,
   "type": "module",
@@ -78,26 +78,26 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@buildr/core": "workspace:*",
+    "@next-buildr/core": "workspace:*",
     "zod": "^4.6.5"
   },
   "peerDependencies": {
-    "@buildr/editor": "workspace:*",
-    "@buildr/mcp": "workspace:*",
-    "@buildr/next": "workspace:*",
+    "@next-buildr/editor": "workspace:*",
+    "@next-buildr/mcp": "workspace:*",
+    "@next-buildr/next": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.30.1",
     "@payloadcms/ui": "^3.0.0",
     "next": "^15.0.0 || ^16.0.0",
     "payload": "^3.0.0"
   },
   "peerDependenciesMeta": {
-    "@buildr/editor": {
+    "@next-buildr/editor": {
       "optional": true
     },
-    "@buildr/mcp": {
+    "@next-buildr/mcp": {
       "optional": true
     },
-    "@buildr/next": {
+    "@next-buildr/next": {
       "optional": true
     },
     "@modelcontextprotocol/sdk": {
@@ -114,11 +114,11 @@
     }
   },
   "devDependencies": {
-    "@buildr/editor": "workspace:*",
-    "@buildr/mcp": "workspace:*",
-    "@buildr/next": "workspace:*",
-    "@buildr/test-utils": "workspace:*",
-    "@buildr/tsconfig": "workspace:*",
+    "@next-buildr/editor": "workspace:*",
+    "@next-buildr/mcp": "workspace:*",
+    "@next-buildr/next": "workspace:*",
+    "@next-buildr/test-utils": "workspace:*",
+    "@next-buildr/tsconfig": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.30.1",
     "@payloadcms/db-sqlite": "3.90.1",
     "@payloadcms/ui": "3.90.1",

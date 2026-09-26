@@ -1,4 +1,4 @@
-import type { DataSource } from '@buildr/core';
+import type { DataSource } from '@next-buildr/core';
 import {
   type DataMediaRequest,
   type DataQueryRequest,

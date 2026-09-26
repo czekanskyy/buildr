@@ -8,7 +8,7 @@ import {
   instantiateTemplate,
   type RegistryMeta,
   type Result,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import { z } from 'zod';
 import {
   createDocumentInputSchema,

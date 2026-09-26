@@ -6,7 +6,7 @@ import {
   migrateDocument,
   parseDocument,
   type RawDocument,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import type { BuildrRegistry } from '../options.ts';
 import { documentLimits, type ProcessLayoutOptions } from './process-layout.ts';
 

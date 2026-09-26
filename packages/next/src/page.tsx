@@ -1,5 +1,5 @@
-import type { PageNode } from '@buildr/core';
-import { renderDocument } from '@buildr/react/server';
+import type { PageNode } from '@next-buildr/core';
+import { renderDocument } from '@next-buildr/react/server';
 import type { ReactNode } from 'react';
 import type { BuildrConfig, BuildrEntry } from './config.ts';
 import { BuildrSectionBoundary } from './section-boundary.tsx';

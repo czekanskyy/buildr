@@ -2,7 +2,7 @@
 // `get_preview_url`. The rules: a save that conflicts never overwrites (the agent reopens and
 // re-applies); a rejected save maps the server's diagnostics to nodes; publish is opt-in, needs
 // `confirm: true` and respects the site's `publishPolicy`.
-import type { Diagnostic } from '@buildr/core';
+import type { Diagnostic } from '@next-buildr/core';
 import { z } from 'zod';
 import type { McpError } from '../backend.ts';
 import type { McpTool, McpToolResult } from '../server.ts';

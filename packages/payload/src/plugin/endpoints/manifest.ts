@@ -1,4 +1,4 @@
-import { toManifest } from '@buildr/core';
+import { toManifest } from '@next-buildr/core';
 import type { Endpoint } from 'payload';
 import { allowed, type EndpointEnv } from './context.ts';
 import { fail, json, unauthorized } from './respond.ts';

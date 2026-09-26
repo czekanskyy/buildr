@@ -1,6 +1,6 @@
-import { defaultTheme } from '@buildr/core';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import { defaultTheme } from '@next-buildr/core';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createMemoryBackend } from '../backends/memory.ts';
 import { createDiscoveryCache } from '../resources/catalogue.ts';

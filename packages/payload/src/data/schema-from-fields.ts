@@ -1,4 +1,4 @@
-import type { DataField, DataSchema, DataType } from '@buildr/core';
+import type { DataField, DataSchema, DataType } from '@next-buildr/core';
 
 /**
  * The part of a (sanitized) Payload field this module reads. Payload's own `Field` union is large

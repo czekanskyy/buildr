@@ -1,4 +1,4 @@
-import type { ComponentMigrations, RegistryMeta } from '@buildr/core';
+import type { ComponentMigrations, RegistryMeta } from '@next-buildr/core';
 import type { PayloadRequest } from 'payload';
 import { z } from 'zod';
 import type { RateLimiter } from './forms/rate-limit.ts';

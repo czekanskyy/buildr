@@ -1,4 +1,4 @@
-import { createEmptyDocument } from '@buildr/core';
+import { createEmptyDocument } from '@next-buildr/core';
 import { describe, expect, it, vi } from 'vitest';
 import { createPayloadMcpBackend, type PayloadMcpBackendOptions } from './http-backend.ts';
 

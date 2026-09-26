@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { createEmptyDocument } from '@buildr/core';
+import { createEmptyDocument } from '@next-buildr/core';
 import { sqliteAdapter } from '@payloadcms/db-sqlite';
 import { buildConfig, type CollectionConfig, getPayload, type Payload } from 'payload';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -62,7 +62,7 @@ describe('buildrPlugin', () => {
       (field) => (field as { name?: string }).name === 'layout',
     ) as { admin?: { components?: { Field?: { path: string; clientProps: unknown } } } };
     expect(layout.admin?.components?.Field).toEqual({
-      path: '@buildr/payload/admin#LayoutField',
+      path: '@next-buildr/payload/admin#LayoutField',
       clientProps: { editorRoute: '/buildr/edit' },
     });
   });

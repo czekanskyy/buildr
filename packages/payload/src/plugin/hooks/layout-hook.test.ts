@@ -8,7 +8,7 @@ import {
   createRegistryMeta,
   p,
   s,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import { sqliteAdapter } from '@payloadcms/db-sqlite';
 import { buildConfig, getPayload, handleEndpoints, type Payload } from 'payload';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
