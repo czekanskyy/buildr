@@ -395,12 +395,6 @@
   text-align: center;
   color: var(--bd-text-muted);
 }
-.buildr-editor .bd-insert-notice:empty {
-  display: none;
-}
-.buildr-editor .bd-insert-notice[data-ok="false"] {
-  color: var(--bd-danger);
-}
 
 /* --- Inspector (layout: PB-127) ----------------------------------------------------------- */
 .buildr-editor .bd-inspector {

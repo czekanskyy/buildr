@@ -146,6 +146,33 @@ describe('UI primitives', () => {
     expect(document.body.querySelector('[role=dialog]')).toBeNull();
   });
 
+  it('Dialog returns focus to the element that opened it', async () => {
+    function Host() {
+      const [open, setOpen] = useState(false);
+      return (
+        <>
+          <button type="button" id="opener" onClick={() => setOpen(true)}>
+            Open
+          </button>
+          <Dialog open={open} onOpenChange={setOpen} title="Rename">
+            <p>body</p>
+          </Dialog>
+        </>
+      );
+    }
+    await show(<Host />);
+    const opener = container.querySelector<HTMLButtonElement>('#opener');
+    await act(async () => opener?.focus());
+    await act(async () => opener?.click());
+    expect(document.body.querySelector('[role=dialog]')).not.toBeNull();
+    const close = document.body.querySelector<HTMLButtonElement>(
+      'header button[aria-label="Close"]',
+    );
+    await act(async () => close?.click());
+    expect(document.body.querySelector('[role=dialog]')).toBeNull();
+    expect(document.activeElement).toBe(opener);
+  });
+
   it('Dialog has a header, a scrollable body and a footer for actions, and passes axe', async () => {
     await show(
       <Dialog

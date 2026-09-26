@@ -5,7 +5,7 @@ import { useDragPress } from '../../dnd/index.ts';
 import { useT } from '../../messages/index.tsx';
 import { isTypingTarget } from '../../shortcuts/index.ts';
 import { useEditor, useEditorState } from '../../store/index.ts';
-import { ComponentIcon, Icon, IconButton, Input, Tooltip } from '../../ui/index.ts';
+import { ComponentIcon, Icon, IconButton, Input, Tooltip, useToast } from '../../ui/index.ts';
 import {
   filterItems,
   groupByCategory,
@@ -51,7 +51,7 @@ export function InsertPanel() {
   const [view, setView] = useState<View>(readView);
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(() => new Set());
   const searchRef = useRef<HTMLInputElement>(null);
-  const [notice, setNotice] = useState<{ readonly ok: boolean; readonly text: string }>();
+  const toast = useToast();
 
   const sections = useMemo(() => {
     if (manifest === undefined) return [];
@@ -107,7 +107,7 @@ export function InsertPanel() {
 
   const insert = (item: PaletteItem) => {
     if (readOnly) {
-      setNotice({ ok: false, text: t('insert.readOnly') });
+      toast.show({ id: 'insert', variant: 'warning', message: t('insert.readOnly') });
       return;
     }
     const fragment = fragmentOf(item);
@@ -120,9 +120,10 @@ export function InsertPanel() {
       fragment,
     );
     if (!placement.ok) {
-      setNotice({
-        ok: false,
-        text: `${t('insert.impossible')} ${placement.reason?.message ?? ''}`.trim(),
+      toast.show({
+        id: 'insert',
+        variant: 'warning',
+        message: `${t('insert.impossible')} ${placement.reason?.message ?? ''}`.trim(),
       });
       return;
     }
@@ -132,10 +133,10 @@ export function InsertPanel() {
       payload: { parentId, slot, index: at, fragment },
     });
     if (!result.ok) {
-      setNotice({ ok: false, text: result.error.message });
+      toast.show({ id: 'insert', variant: 'error', message: result.error.message });
       return;
     }
-    setNotice({ ok: true, text: `${t('insert.done')}: ${item.label}` });
+    toast.show({ id: 'insert', variant: 'success', message: `${t('insert.done')}: ${item.label}` });
     // The command gives the fragment fresh ids; the new node is the one now at the target position.
     const created = store.getState().doc.nodes[parentId]?.slots?.[slot]?.[at];
     if (created !== undefined) store.select(created);
@@ -286,9 +287,6 @@ export function InsertPanel() {
             </section>
           ),
         )}
-      </div>
-      <div role="status" className="bd-insert-notice" data-ok={notice?.ok ?? true}>
-        {notice?.text ?? ''}
       </div>
     </div>
   );
