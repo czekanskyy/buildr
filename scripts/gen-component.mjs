@@ -47,14 +47,14 @@ export function componentFiles(name, options = {}) {
   const propsType = client ? 'ClientComponentProps' : 'BuilderComponentProps';
 
   return {
-    'props.ts': `import { p } from '@buildr/core';
+    'props.ts': `import { p } from '@next-buildr/core';
 
 /** The prop schema is its own module: the view is typed from it, and importing it from the definition would be a cycle. */
 export const ${c}Props = {
   text: p.text({ default: '', bindable: true }),
 } as const;
 `,
-    'definition.ts': `import { defineComponent } from '@buildr/react';
+    'definition.ts': `import { defineComponent } from '@next-buildr/react';
 import { ${c}Props } from './props.ts';
 import { ${P}View } from '${viewImport}';
 
@@ -74,7 +74,7 @@ export const ${P} = defineComponent({
   render: ${P}View,
 });
 `,
-    [view]: `${client ? "'use client';\n\n" : ''}import type { ${propsType} } from '@buildr/react';
+    [view]: `${client ? "'use client';\n\n" : ''}import type { ${propsType} } from '@next-buildr/react';
 import type { ${c}Props } from './props.ts';
 
 type Props = ${propsType}<typeof ${c}Props>;
@@ -97,7 +97,7 @@ export function ${P}View({ props, root }: Props) {
   }
 }
 `,
-    'fixtures.ts': `import { s } from '@buildr/core';
+    'fixtures.ts': `import { s } from '@next-buildr/core';
 
 /** Documents for the gallery and the tests: the default state, then one per notable prop combination. */
 export const ${c}Fixtures = [

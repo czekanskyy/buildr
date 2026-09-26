@@ -1,2 +1,2 @@
-import '@buildr/core';
+import '@next-buildr/core';
 import 'react';

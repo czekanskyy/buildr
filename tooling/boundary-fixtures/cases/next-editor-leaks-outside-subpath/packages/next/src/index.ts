@@ -1,1 +1,1 @@
-import '@buildr/editor';
+import '@next-buildr/editor';

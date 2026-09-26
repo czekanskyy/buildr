@@ -1,1 +1,1 @@
-import '@buildr/next';
+import '@next-buildr/next';
