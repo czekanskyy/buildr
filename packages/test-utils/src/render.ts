@@ -1,6 +1,6 @@
-import type { DataSource } from '@buildr/core';
-import { defaultTheme, type Theme } from '@buildr/core';
-import { type RenderDocumentResult, renderDocument } from '@buildr/react/server';
+import type { DataSource } from '@next-buildr/core';
+import { defaultTheme, type Theme } from '@next-buildr/core';
+import { type RenderDocumentResult, renderDocument } from '@next-buildr/react/server';
 import { createElement, Fragment } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { demoPlatform, demoRegistry } from './demo/components.ts';

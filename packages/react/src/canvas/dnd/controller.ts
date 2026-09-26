@@ -4,7 +4,7 @@ import {
   type NodeId,
   type Point,
   type RegistryMeta,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import type { CanvasStore, DropView } from '../store.ts';
 import type { CanvasTransport } from '../types.ts';
 import { buildHitPath } from './hit-path.ts';

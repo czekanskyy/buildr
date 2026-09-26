@@ -8,7 +8,7 @@ import {
   resolveProps,
   resolveVisibility,
   type SlotName,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import { createElement, type ReactNode } from 'react';
 import type { BuilderComponentProps, ComponentDefinition, NodeRoot } from '../define/types.ts';
 import { loopSlots } from './loop.ts';

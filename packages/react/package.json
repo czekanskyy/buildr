@@ -1,5 +1,5 @@
 {
-  "name": "@buildr/react",
+  "name": "@next-buildr/react",
   "version": "0.0.0",
   "private": false,
   "type": "module",
@@ -54,14 +54,14 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@buildr/core": "workspace:*"
+    "@next-buildr/core": "workspace:*"
   },
   "peerDependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@buildr/tsconfig": "workspace:*",
+    "@next-buildr/tsconfig": "workspace:*",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "jsdom": "^30.1.1",

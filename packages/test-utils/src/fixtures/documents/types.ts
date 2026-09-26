@@ -1,4 +1,4 @@
-import type { BuilderDocument } from '@buildr/core';
+import type { BuilderDocument } from '@next-buildr/core';
 
 /** One corrupted document plus the single `checkInvariants` diagnostic code it must produce. */
 export interface InvalidDocumentFixture {

@@ -7,7 +7,7 @@ import type {
   PageNode,
   PreparedData,
   SlotName,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import type { FunctionComponent, ReactNode } from 'react';
 import type { ReactRegistry } from '../define/registry.ts';
 import type { ComponentEnv, NodeParent, NodeRoot, Platform } from '../define/types.ts';

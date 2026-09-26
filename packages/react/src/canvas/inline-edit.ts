@@ -1,4 +1,4 @@
-import { MAX_INLINE_TEXT } from '@buildr/core/protocol';
+import { MAX_INLINE_TEXT } from '@next-buildr/core/protocol';
 import { nodeElementOf } from './interactions.ts';
 import type { CanvasStore } from './store.ts';
 import type { CanvasTransport } from './types.ts';

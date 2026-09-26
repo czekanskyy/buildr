@@ -1,4 +1,4 @@
-import type { NodeId } from '@buildr/core';
+import type { NodeId } from '@next-buildr/core';
 import type { CanvasStore } from './store.ts';
 import type { CanvasTransport } from './types.ts';
 

@@ -8,7 +8,7 @@ import {
   type PreparedData,
   prepareRender,
   type RegistryMeta,
-} from '@buildr/core';
+} from '@next-buildr/core';
 
 export const NO_DATA: PreparedData = {
   media: {},

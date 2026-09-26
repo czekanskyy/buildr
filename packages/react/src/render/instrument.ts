@@ -1,4 +1,4 @@
-import type { NodeId } from '@buildr/core';
+import type { NodeId } from '@next-buildr/core';
 import type { CanvasInstrumentation } from './types.ts';
 
 export type { CanvasInstrumentation } from './types.ts';

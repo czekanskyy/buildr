@@ -6,7 +6,7 @@ import {
   defaultTheme,
   p,
   s,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';

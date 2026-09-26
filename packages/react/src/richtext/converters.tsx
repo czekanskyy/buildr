@@ -1,4 +1,4 @@
-import { type Diagnostic, sanitizeUrl } from '@buildr/core';
+import { type Diagnostic, sanitizeUrl } from '@next-buildr/core';
 import { createElement, type ReactNode } from 'react';
 import type { Platform } from '../define/types.ts';
 
@@ -18,7 +18,7 @@ export interface RichTextConverterContext {
 /** Turns one node type into React. Returns `null` to render nothing. Never throws for bad data. */
 export type RichTextConverter = (node: RichTextJson, ctx: RichTextConverterContext) => ReactNode;
 
-/** Node type to converter; `@buildr/payload` adds `upload`, `relationship`, … by passing its own. */
+/** Node type to converter; `@next-buildr/payload` adds `upload`, `relationship`, … by passing its own. */
 export type RichTextConverters = Readonly<Record<string, RichTextConverter>>;
 
 /** Lexical's text format bitmask. */

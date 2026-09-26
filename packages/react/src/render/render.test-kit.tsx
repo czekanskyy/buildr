@@ -6,7 +6,7 @@ import {
   type PageNode,
   type PreparedData,
   p,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import { createElement } from 'react';
 import { defineComponent } from '../define/define-component.ts';
 import { createRegistry } from '../define/registry.ts';

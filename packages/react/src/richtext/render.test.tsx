@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync } from 'node:fs';
-import type { Diagnostic } from '@buildr/core';
+import type { Diagnostic } from '@next-buildr/core';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { platform } from '../render/render.test-kit.tsx';

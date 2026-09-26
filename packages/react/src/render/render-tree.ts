@@ -1,4 +1,4 @@
-import type { BuilderDocument, Diagnostic } from '@buildr/core';
+import type { BuilderDocument, Diagnostic } from '@next-buildr/core';
 import type { ReactNode } from 'react';
 import { renderChild, renderNode } from './render-node.ts';
 import type { RenderRun, RenderTreeOptions, ResumeState } from './types.ts';

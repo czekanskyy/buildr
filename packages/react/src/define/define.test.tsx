@@ -5,7 +5,7 @@ import {
   migrateComponents,
   p,
   toManifest,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import { defineComponent } from './define-component.ts';

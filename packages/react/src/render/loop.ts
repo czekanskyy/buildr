@@ -7,7 +7,7 @@ import {
   queryKey,
   resolveBinding,
   type SlotName,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import type { ReactNode } from 'react';
 import type { ComponentDefinition } from '../define/types.ts';
 import type { RenderRun } from './types.ts';

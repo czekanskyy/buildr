@@ -1,4 +1,4 @@
-// Public entry point of @buildr/react: defineComponent, renderTree, renderDocument,
+// Public entry point of @next-buildr/react: defineComponent, renderTree, renderDocument,
 // DocumentRenderer, BuildrStyles, richTextConverters. Populated by
 // docs/backlog/phase-06-react-renderer.md.
 export * from './define/index.ts';

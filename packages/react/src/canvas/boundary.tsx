@@ -1,6 +1,6 @@
 'use client';
 
-import type { NodeId } from '@buildr/core';
+import type { NodeId } from '@next-buildr/core';
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 
 export interface NodeBoundaryProps {

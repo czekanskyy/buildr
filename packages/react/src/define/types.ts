@@ -11,7 +11,7 @@ import type {
   PropDef,
   ResolvedProps,
   SlotName,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import type { ComponentPropsWithoutRef, FunctionComponent, ReactNode } from 'react';
 
 /** Props of the platform's link primitive: internal paths and external URLs are routed by the adapter. */

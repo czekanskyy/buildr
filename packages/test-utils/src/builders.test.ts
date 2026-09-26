@@ -1,4 +1,9 @@
-import { checkInvariants, createSeededIdGenerator, ROOT_COMPONENT_TYPE, s } from '@buildr/core';
+import {
+  checkInvariants,
+  createSeededIdGenerator,
+  ROOT_COMPONENT_TYPE,
+  s,
+} from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import { doc, node } from './builders.ts';
 

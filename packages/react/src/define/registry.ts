@@ -4,7 +4,7 @@ import {
   createRegistryMeta,
   type RegistryMeta,
   type TemplateDefinition,
-} from '@buildr/core';
+} from '@next-buildr/core';
 import type { ComponentDefinition } from './types.ts';
 
 export interface ReactRegistryInput {
