@@ -1,0 +1,133 @@
+# @next-buildr/payload
+
+## 1.0.0
+
+### Minor Changes
+
+- 1b196ba: `createPayloadDataSource` accepts `itemPath(collection, doc, locale)`; its result is exposed to bindings as `item.path`, so a card in a Loop can link to the queried document.
+- f528850: Add the `@next-buildr/payload/mcp` subpath with `createPayloadMcpBackend` (PB-140): an `McpBackend` for `@next-buildr/mcp` over the builder API, authenticated with a Payload API key (contract-validated responses, timeouts, retries for GETs only, the key never in errors). `@next-buildr/mcp` is a new optional peer dependency.
+- 4cf1226: Add the remote MCP server (PB-142): `createBuildrMcpRoute({ payload, registry })` from `@next-buildr/payload/mcp/route` returns Next.js route handlers for the Streamable HTTP transport (stateless, API-key only, origin validation, rate limiting, disabled unless `mcp.enabled`) that run the `@next-buildr/mcp` tools against a local, in-process backend. `@next-buildr/mcp/testing` exports `runToolScenario`, one scripted scenario for every transport. `@modelcontextprotocol/sdk` is a new optional peer of `@next-buildr/payload`.
+- c552443: Add the validation, save and publish tools (PB-138, ADR-024): `validate` (structure, props, accessibility and missing translations per node, with suggested fixes), `save` (never overwrites on a conflict, maps rejected diagnostics to nodes), `publish` (opt-in, `confirm: true`, `publishPolicy: block` enforced) and `get_preview_url`; `createBuildrTools` and `createBuildrMcpServerWithTools` wire the complete tool set, resources and session store. The backend session gains an optional `publishPolicy`, which `GET /api/buildr/session` now reports from `a11y.publish`.
+- 47f962c: Payload access control and CSRF guards (PB-096): `access.edit` / `access.publish` / `access.unlockTemplates` enforced on the builder endpoints (`403`), `permissions.canUnlockTemplates` in the session response, and `Content-Type` / `Origin` checks on saves and publishes.
+- 0600ad3: DataSchema and data context from Payload (PB-097): `@next-buildr/payload/data` exports `schemaFromCollection`, `buildContext`, `normalizeDoc` and `normalizeMedia`; new endpoints `GET /buildr/data-schema/:collection`, `GET /buildr/data/context` and `GET /buildr/samples/:collection`. Auth collections, hidden and credential-like fields never appear.
+- a459c8e: PayloadDataSource (PB-098): `createPayloadDataSource` and `DataQueryError` in `@next-buildr/payload/data` serve queries and media from Payload's Local API with allowlisted collections, fields and sort keys, the reader's access, and the shared `DataSource` contract semantics; new endpoints `POST /buildr/data/query` and `POST /buildr/data/media`.
+- 0900cbd: Payload document endpoints (PB-095): `GET /buildr/session`, `GET /buildr/manifest`, `GET`/`PUT /buildr/documents/:collection/:id` and `POST .../publish`, with revision conflicts (`409`), diagnostics (`422`), autosave and the a11y publish policy. The Zod contract is in `packages/payload/src/contract.ts`.
+- 8bc176f: Forms (PB-102): `forms.enabled` adds the `buildr-form-submissions` collection and the public `POST /buildr/forms/:collection/:id/:nodeId`. The schema is derived from the published layout (or its template) with `deriveFormSchema`, so the client cannot change what is accepted. Honeypot, rate limiting (`RateLimiter`, `createMemoryRateLimiter`), an email notification to an allowlisted set (`forms.notifyTo`) and a JSON or `303` answer. New options `forms.notifyTo`, `forms.rateLimit`, `forms.rateLimiter`.
+- 95344c1: HTTP adapter (PB-100): `@next-buildr/payload/adapter` exports `createPayloadAdapter` (the editor's `DocumentAdapter` over the builder API), `createPayloadCanvasDataSource` and `AdapterError`. `GET /buildr/session` now reports `locales` when Payload localization is configured. `@next-buildr/editor` becomes an optional peer dependency (types only).
+- 1005ec0: Payload validation and migration hooks (PB-094): every write of `layout` is migrated, limit-checked and validated (`processLayout`, `describeDiagnostics`, `documentLimits`); invalid documents are rejected with a field error on `layout`; new documents start with an empty layout. The `registry` option now takes `{ meta, migrations? }` (`BuildrRegistry`).
+- a470b60: Localization (PB-116): the `locale` parameter of the documents, data (`context`, `query`, `media`), samples, media and forms endpoints is validated against Payload's `localization` (`400` for an unknown code) and mapped to the Local API, including `fallbackLocale: false` when the fallback is off. `route.locale` is the requested (or default) language, form submissions record it, and `l10n` keys outside the site's locales are reported when a layout is saved, published or written. Without localization nothing changes. New `localeConfigOf` and `configuredLocales`.
+- a51a360: Add API-key access for AI agents (PB-139, ADR-024): the plugin option `mcp: { enabled, allowPublish, collections?, rateLimit?, rateLimiter? }` (off by default; needs an auth collection with `auth.useAPIKey`), `GET/POST /api/buildr/documents` (list builder documents, create a draft), the contract schemas `documentListQuerySchema`, `documentListResponseSchema`, `documentSummarySchema`, `createDocumentRequestSchema` and `createDocumentResponseSchema`, a hidden `buildrUpdatedBy` field that records the acting user in the document and its versions, and a write rate limit for API-key requests. API-key requests are refused by the builder endpoints unless `mcp.enabled`, and cannot publish unless `mcp.allowPublish` (and `access.publish`) allow it.
+- 078ce5e: Media endpoints (PB-099): `GET /buildr/media` (search, type filter, paging) and `POST /buildr/media` (multipart upload with a required `alt`), with `mediaListQuerySchema` / `mediaListResponseSchema` in the contract.
+- 3541752: `@next-buildr/payload/next`: `getBuildrDocument` (tagged cache for published reads, uncached drafts), `listPublishedSlugs`, `revalidateHooks`, the cache tag helpers (`tagsFor`, `docTag`, ...) and the SEO mapping (`seoFromDocument`, `alternatesOf`).
+- 5b3a053: Payload plugin scaffold (PB-093): `buildrPlugin` with Zod-validated options, the `layout` / `buildrRevision` / `template` fields, the write-guard (`BUILDR_WRITE`) that keeps the layout safe from non-builder writes, and the `LayoutField` admin component with the "Edit with Visual Builder" button.
+- 9ec3ab4: Add `GET /api/buildr/documents/:collection/:id/revision` (PB-143): the revision, `updatedAt` and, with `mcp.enabled`, the name of the user who saved last (`buildrUpdatedBy`), without loading the document. `createPayloadAdapter` implements the editor's `getRevision` with it.
+- 6fe1551: Templates (PB-101): the plugin adds the `buildr-templates` collection (one `isDefault` per target collection) when a collection takes templates. `resolveLayout` (`@next-buildr/payload/data`) picks the own layout, the chosen template, the default template or a built-in layout. The document response gains required `layoutSource` and `layoutRef`.
+- 9504f2a: The 0.1.0 MVP release: the document model, the renderer, the standard components and templates, the visual editor, and the Next.js and Payload integrations, with the reference application and its end-to-end tests.
+
+### Patch Changes
+
+- 35ed848: The canvas binds against the document's own data by default and against the chosen sample: `LoadedDocument.contextRef` (from the Payload adapter) is the initial canvas context, and `listSamples` ids are `collection:id`.
+- ea65a4f: `getBuildrDocument` accepts `page` and exposes it as `route.params.page` (part of the cache key), so a paginated listing such as `/blog/page/2` loads its own page of results (PB-112).
+- 1ba33ad: Rename the npm scope from @buildr to @next-buildr
+- Updated dependencies [4bdbb99]
+- Updated dependencies [82bdd80]
+- Updated dependencies [037287f]
+- Updated dependencies [35ed848]
+- Updated dependencies [e94d491]
+- Updated dependencies [1190b2c]
+- Updated dependencies [29589ff]
+- Updated dependencies [71575c7]
+- Updated dependencies [d145516]
+- Updated dependencies [db7cd10]
+- Updated dependencies [b15291b]
+- Updated dependencies [96db603]
+- Updated dependencies [e158655]
+- Updated dependencies [89f165d]
+- Updated dependencies [3d6152f]
+- Updated dependencies [b8463b9]
+- Updated dependencies [33933ef]
+- Updated dependencies [9188ffc]
+- Updated dependencies [3c5ab62]
+- Updated dependencies [b0132b7]
+- Updated dependencies [ac97eda]
+- Updated dependencies [9ec3ab4]
+- Updated dependencies [b85ff70]
+- Updated dependencies [b041391]
+- Updated dependencies [4d4c1bf]
+- Updated dependencies [7feebcc]
+- Updated dependencies [c406d58]
+- Updated dependencies [f494abc]
+- Updated dependencies [a226c34]
+- Updated dependencies [83fc6c2]
+- Updated dependencies [28a730a]
+- Updated dependencies [8298be1]
+- Updated dependencies [9c22eb7]
+- Updated dependencies [cfc94d4]
+- Updated dependencies [abb2c48]
+- Updated dependencies [ea65a4f]
+- Updated dependencies [3ba51d0]
+- Updated dependencies [e012592]
+- Updated dependencies [ea65a4f]
+- Updated dependencies [f7b21d9]
+- Updated dependencies [7d668f8]
+- Updated dependencies [94e5fff]
+- Updated dependencies [c10493a]
+- Updated dependencies [d761eef]
+- Updated dependencies [ee256d5]
+- Updated dependencies [037be06]
+- Updated dependencies [c507cb0]
+- Updated dependencies [185e6b6]
+- Updated dependencies [c18c6ad]
+- Updated dependencies [4beb4f2]
+- Updated dependencies [b2bb3ed]
+- Updated dependencies [d5e8202]
+- Updated dependencies [77c77d0]
+- Updated dependencies [da1d67f]
+- Updated dependencies [f04fbee]
+- Updated dependencies [3706537]
+- Updated dependencies [5a91f2f]
+- Updated dependencies [8e6a7e8]
+- Updated dependencies [3c0ec8e]
+- Updated dependencies [ab2e1a8]
+- Updated dependencies [47ce8e9]
+- Updated dependencies [4cf1226]
+- Updated dependencies [2edccac]
+- Updated dependencies [c552443]
+- Updated dependencies [617150c]
+- Updated dependencies [8ab1a1b]
+- Updated dependencies [f238e41]
+- Updated dependencies [ba0a618]
+- Updated dependencies [73a3757]
+- Updated dependencies [7597e43]
+- Updated dependencies [9cdc2ac]
+- Updated dependencies [94fa000]
+- Updated dependencies [1aefd58]
+- Updated dependencies [0533292]
+- Updated dependencies [890b443]
+- Updated dependencies [a573b16]
+- Updated dependencies [0a9cf21]
+- Updated dependencies [9608646]
+- Updated dependencies [a23e2d8]
+- Updated dependencies [180b576]
+- Updated dependencies [7894e77]
+- Updated dependencies [d4b20af]
+- Updated dependencies [9504f2a]
+- Updated dependencies [1ba33ad]
+- Updated dependencies [27a98e1]
+- Updated dependencies [bbd0e13]
+- Updated dependencies [98682f1]
+- Updated dependencies [e5ecd78]
+- Updated dependencies [89cadd5]
+- Updated dependencies [3ec3fce]
+- Updated dependencies [8db32fa]
+- Updated dependencies [6d61340]
+- Updated dependencies [00075b9]
+- Updated dependencies [8927bba]
+- Updated dependencies [2402292]
+- Updated dependencies [b466583]
+- Updated dependencies [d1a8c6f]
+- Updated dependencies [024fc96]
+  - @next-buildr/core@1.0.0
+  - @next-buildr/editor@1.0.0
+  - @next-buildr/mcp@1.0.0
+  - @next-buildr/next@1.0.0

@@ -1,0 +1,93 @@
+# @next-buildr/editor
+
+## 1.0.0
+
+### Minor Changes
+
+- e94d491: Canvas stage (PB-124): the canvas iframe's height compensates for the zoom scale so the page always fills the visible stage, the page sits centred on the stage with padding, a shadow and a width label ("Tablet · 820px"), scale changes animate (not with reduced motion), and the connecting and error screens are cards with an icon and a title. New pure `stageMetrics` helper (exported from `canvas-frame.tsx`).
+- 3d6152f: `EditorApp` (PB-092): the composed editor — loads the document through the adapter, then wires the toolbar, panels, canvas, publish, preview, shortcuts, clipboard and drag and drop. New messages `app.loading` and `app.error`.
+- b8463b9: The canvas host (PB-076): `createCanvasHost` and `<CanvasFrame />` mount the canvas iframe with a nonce, verify `manifestHash` and the protocol version at the handshake, answer every `canvas:hello` with an idempotent `editor:init` (so a reloading canvas loses nothing), batch patches per animation frame, resync with `doc:set`, keep the breakpoint, zoom, locale, context and mode, show status and diagnostic error screens, and map what the canvas reports onto store actions.
+- 33933ef: Clipboard (PB-085): `createClipboard` (copy, cut, paste of fragments as marked text; untrusted reading with `parseClipboardText`; paste through `node.insert` with fresh ids and the first place the rules accept; in-memory fallback), `<ClipboardProvider>` with a live notice, and `useClipboardActions` for the shortcut provider.
+- 9188ffc: Inspector controls for rich text, list and object props (PB-080). The rich text control is a Lexical editor (new dependencies `lexical` and `@lexical/*`, used only by the editor) whose output always passes `richTextSchema`; the list control adds, removes and reorders items within `min`/`max`; the object control edits named fields. Lists and objects nest through the exported `renderControl`.
+- 3c5ab62: Content language (PB-115): a locale store (`createLocaleStore`, `LocaleProvider`, `useLocaleState`) seeded from `EditorSession.locales`, a `LocaleSwitcher`, Translate / Remove translation on localizable inspector fields with a shared-structure banner, and missing translations grouped per language in the Issues panel (`EditorStoreOptions.locales`, `groupMissingTranslations`).
+- b0132b7: Design tokens, base styles and Inter (PB-119): the stylesheet is split into `styles/{tokens,base,shell,primitives,panels}.css` (the public `@next-buildr/editor/styles.css` path is unchanged; the published file is the flattened partials). New identity: spacing, type, radius, control, elevation and motion scales, every colour role in light and dark (including `--bd-accent-soft`, `--bd-surface-hover`, `--bd-warning` and a dark toolbar), `color-scheme` and themed scrollbars, self-hosted Inter 400/500/600 (latin + latin-ext, OFL licence in `dist/fonts/`). `--bd-space-N` is renumbered (2/4/6/8/12/16/20/24/32px). Hosts that overrode `--bd-*` tokens should review them.
+- ac97eda: Drag-and-drop engine (PB-086): `createDragEngine` (idle → pending → dragging with a 4 px threshold, drops through `node.insert` / `node.move`), `<DragProvider>` (shield over the canvas iframe, ghost, Escape, live region), drag sources for the palette and the layers tree (`useDragSource`, `useDragPress`), tree hit-testing (`treeDropTarget`), autoscroll, coordinate translation for the canvas (`toCanvasPoint`), and a keyboard "Move to…" dialog (`MoveToDialog`, `moveDestinations`).
+- 9ec3ab4: Detect saves made elsewhere (PB-143): the optional `DocumentAdapter.getRevision(ref)` is checked every 30 s while the tab is visible and on window focus (`PersistenceController.checkExternal()`, `externalCheckMs`, `isVisible`). With an unchanged document `PersistenceState.external` drives a non-blocking status banner with a "Reload the latest version" button; with unsaved changes the existing conflict dialog opens early. New message keys `external.banner`, `external.banner.by`, `external.reload`.
+- b85ff70: Add the editor icon system (PB-120): `Icon`, `ComponentIcon` and `componentIconNames` are exported from `@next-buildr/editor`, and `IconButton` now takes an icon name (`IconName`) instead of a glyph. Component icons resolve against a curated static map of lucide icons (unknown or missing names show a neutral box); the undo/redo, back, tree, select, layer-badge and list-control glyphs are now icons. New dependency: `lucide-react` (tree-shakeable, ISC; the same icon set the components package draws from). `@next-buildr/components`: the Textarea icon is the canonical lucide name `text-align-start` (was the alias `align-left`).
+- b041391: The insert panel (PB-078): `<InsertPanel />` — a searchable palette of the manifest's components and templates, grouped by category, that inserts with a click or Enter (no drag and drop needed) at the first position `canInsert` allows: inside the selected container, else after the selection (or an ancestor), and says why when nothing fits. `placeInsertion` is exported for reuse (clipboard, shortcuts). `EditorStore` now exposes its `registry`.
+- 4d4c1bf: The inspector (PB-079): `<Inspector />` shows the selected node's component props as controls (text, textarea, number, boolean, select, link, icon), grouped by `group`, with defaults and limits as hints, per-prop reset (`node.unsetProp`), Content / Style / Advanced tabs, and name, anchor and display-condition removal on Advanced. Typing coalesces into one undo step; a translatable prop writes to the language being edited (`locale`, `defaultLocale`). Bound and formula values show as chips (editing them is PB-081), and the Style tab takes a `renderStyle` slot (PB-082).
+- 7feebcc: Issues panel and publish flow (PB-088): `IssuesPanel` merges validation, accessibility and canvas findings into one list with a severity filter, selects the node of a finding and runs the repair a finding offers as a command. `PublishDialog` re-runs the checks, summarises them, applies the publish policy (`publishGate`: a damaged document always blocks, errors block under `publishPolicy: 'block'`) and publishes through the new `PersistenceController.publish()`, which saves first and never rejects (`PublishOutcome`).
+- c406d58: The layers panel (PB-077): `<LayersPanel />` — a virtualized, fully keyboard-operable ARIA tree of the document with expand/collapse, rename, component labels from the manifest (`ManifestProvider`), lock / `visibleIf` / breakpoint / issue badges, a context menu (rename, duplicate, wrap, unwrap, delete) and selection and hover kept in step with the canvas. Adds a `ContextMenu` UI primitive (new dependency `@radix-ui/react-context-menu`, the same family as the other primitives).
+- f494abc: Media picker (PB-089): `MediaPicker` (searchable grid, type filter narrowed by the prop's `accept`, paging, upload that requires alternative text, retryable errors), `MediaLibraryProvider` (the adapter's `media` and the collection a `MediaRef` names), `MediaControl` for `p.media()` props (thumbnail with alt, choose / replace / remove) and `toMediaRef` / `parseMediaRef`. **Breaking for adapters**: `DocumentAdapter.media.upload` now receives the alternative text: `upload(file, alt)`.
+- a226c34: Persistence (PB-087): the `DocumentAdapter` interface, `loadDocument` (validated, read-only aware), `createPersistence` (autosave state machine: debounce, max wait, single-flight saves, retry backoff, conflict handling with reload/overwrite), `<PersistenceProvider>` with a conflict dialog and a `beforeunload` warning, `<SaveStatus />` and `useSaveAction`. `BuilderEditorProps.adapter` is now a `DocumentAdapter`; `EditorStore.markSaved` takes an optional cursor id. Adds `zod` as a dependency of the editor (validation of backend replies at the boundary).
+- 83fc6c2: Preview mode (PB-091): `usePreview` saves the pending changes first (`preparePreview`), then shows the adapter's draft URL in a full-screen `PreviewOverlay` (Escape or a button exits) or in a new tab. A failed save or a non-web address shows a message instead of an out-of-date preview.
+- 28a730a: Sample data for templates (PB-090): `SamplePicker` lists the adapter's `listSamples`, tells the canvas which entry to render with (`CanvasHost.setContextRef`) and remembers the choice per document in `localStorage` (failures ignored). `DocumentAdapter.getContext` takes an optional `{ sampleId }`.
+- 8298be1: The editor shell (PB-073): `<BuilderEditor>` with a three-column layout, resizable and keyboard-accessible splitters, Radix-based UI primitives, light/dark tokens (`@next-buildr/editor/styles.css`) and an `en`/`pl` message catalog. Adds Radix UI and Zustand as dependencies (the editor stack decided in ADR-009).
+- 9c22eb7: Selection, hover and breadcrumbs (PB-075): the store gains `select` (replace, toggle, add), `clearSelection`, `moveSelection` (parent, child, next, previous), an anchor node and the selected Loop instance; a removed node leaves the selection and hover on its own. `<Breadcrumbs />` shows the path from the root to the selection.
+- cfc94d4: Keyboard shortcuts (PB-084): `<ShortcutProvider>` with a scoped registry (`createShortcutRegistry`), the MVP map (undo, redo, duplicate, delete, move, select, clear, and copy/cut/paste/save for other modules), platform-aware Mod key, overrides from `config.shortcuts`, a help dialog, no shortcut while a text field has focus, and `useForwardedKeys` for keys forwarded from the canvas.
+- abb2c48: The editor store (PB-074): `createEditorStore` — a vanilla Zustand store whose document changes only through `@next-buildr/core/commands` (`dispatch`, `dispatchBatch`, `transaction`, `undo`, `redo`), a patch emitter for the canvas host, dirty tracking, debounced validation and memoized selectors with React hooks.
+- 3ba51d0: The style inspector (PB-082): `<StyleInspector />` edits a node's styles per breakpoint from the property registry, refuses values outside the grammar or the theme (`checkStyleInput`), shows values inherited from wider breakpoints and resets one layer at a time.
+- e012592: Toolbar redesign (PB-123): three zones (link back, title and status pill; segmented icon breakpoint control and zoom menu; undo/redo, save status, pickers, Preview, Publish and a more menu). `Toolbar` takes `status`, `zoom`, `onZoomChange` and `pickers`. The more menu holds the theme switch (light / dark / system, remembered in localStorage, hidden when the host sets `config.theme`), the shortcuts help and whatever no longer fits the row (measured with a `ResizeObserver`). Menus, popovers and tooltips render inside the editor root and inherit its theme.
+- f7b21d9: Toolbar (PB-083): `<Toolbar>` with the breakpoint switcher, undo/redo, save status, preview and publish actions and links to the CMS and version history. `IconButton` takes a `hint` for the tooltip (shortcuts); `useShortcutHint` and `useOptionalShortcutRegistry` are new.
+- 7d668f8: Value modes and the binding picker (PB-081): every prop that accepts data gets a Fixed / Data / Formula switch in the inspector. A field picker lists the paths of the data schema that fit the prop, with a format editor and a fallback; the formula editor parses and typechecks as you type, shows diagnostics and saves only valid formulas; a live preview resolves the value against sample data; a wrong path shows a red chip. `<InspectorDataProvider>` supplies the schema and sample context.
+- 94e5fff: Visual QA and accessibility pass (PB-131): the shared `Dialog` returns focus to the element that had it when it opened, the inactive breakpoint buttons are readable on the dark toolbar in the light theme, and the insert panel reports through the toast region (`useToast`) instead of a local status line, so `InsertPanel` must now be rendered inside `ToastProvider` (`EditorApp` already does).
+- 185e6b6: Feedback surfaces (PB-129): one toast region (`ToastProvider`, `useToast`) replaces the separate clipboard, preview and external-changes notices; dialogs get a header with a close icon button, a scrollable body and a right-aligned footer (`Dialog` takes `footer` and `hideClose`); the issues panel groups findings by severity with severity and component icons; the publish dialog shows its counts as icon badges. `ClipboardProvider` and `PersistenceProvider` now need a `ToastProvider` above them.
+- 77c77d0: Insert panel redesign (PB-125): compact 3-column tiles (2 when the panel is narrow, decided by a container query), a list view toggle remembered per user, a search field with icon and clear button (`/` focuses it), collapsible categories with counts, templates with fixed 16:10 thumbnails and a loading skeleton, descriptions in tooltips and an empty state. Adds the `search` and `layout-grid` editor icons and the messages `insert.clear`, `insert.view.grid`, `insert.view.list`.
+- da1d67f: Inspector layout (PB-127): header with the component icon, label, duplicate and delete buttons and the node name; full-width tabs; collapsible prop groups remembered per component type; short controls beside their label, long ones stacked; reset as a hover icon; empty states. New icons `copy`, `rotate-ccw`, `trash-2` and `mouse-pointer-click` in the editor icon set; new messages `inspector.emptyHint`, `inspector.duplicate`, `inspector.delete`, `inspector.nodeName`.
+- f04fbee: Layers panel polish (PB-126): indent guides, a hover "more" button that opens the row's context menu, a muted slot suffix, a row height shared by CSS and the virtualizer, restyled drop indicators, and a rename field that fits the row.
+- 9504f2a: The 0.1.0 MVP release: the document model, the renderer, the standard components and templates, the visual editor, and the Next.js and Payload integrations, with the reference application and its end-to-end tests.
+- e5ecd78: Shell layout (PB-122): flat panel anatomy (`Panel`, `PanelHeader`, `PanelBody`, `PanelFooter`), 1px splitters with a wide hit area that reset on double-click and remember their width in `localStorage`, a 28px status bar (issue counts, breakpoint, zoom, save state; `EditorLayout` gains `issueCounts` and `status`), and toolbar-toggled overlay panels below 1100px. New icons `circle-alert`, `panel-left`, `panel-right`.
+- 8db32fa: Style inspector and value editor controls (PB-128): a box-model widget for margin and padding, `NumberUnitInput` with arrow-key steps and a grammar-limited unit menu, theme token pickers with colour swatches, icon segmented controls for direction, alignment, justify and text-align, an origin dot per style property, and the Fixed / Data / Formula switch as a segmented control with icons. Every control writes the same `node.setStyle` / `node.setProp` commands as before.
+
+### Patch Changes
+
+- 35ed848: The canvas binds against the document's own data by default and against the chosen sample: `LoadedDocument.contextRef` (from the Payload adapter) is the initial canvas context, and `listSamples` ids are `collection:id`.
+- ea65a4f: `EditorApp` passes the screen size chosen in the toolbar to the style inspector, so a style set while editing "Mobile" is written to that breakpoint instead of the base layer (PB-112).
+- ea65a4f: The toolbar controls keep their natural width, so the screen-size buttons are no longer covered by the Preview button at narrow widths (PB-112).
+- 1ba33ad: Rename the npm scope from @buildr to @next-buildr
+- Updated dependencies [4bdbb99]
+- Updated dependencies [82bdd80]
+- Updated dependencies [037287f]
+- Updated dependencies [1190b2c]
+- Updated dependencies [29589ff]
+- Updated dependencies [71575c7]
+- Updated dependencies [d145516]
+- Updated dependencies [db7cd10]
+- Updated dependencies [b15291b]
+- Updated dependencies [96db603]
+- Updated dependencies [e158655]
+- Updated dependencies [89f165d]
+- Updated dependencies [c10493a]
+- Updated dependencies [d761eef]
+- Updated dependencies [ee256d5]
+- Updated dependencies [037be06]
+- Updated dependencies [c507cb0]
+- Updated dependencies [c18c6ad]
+- Updated dependencies [4beb4f2]
+- Updated dependencies [b2bb3ed]
+- Updated dependencies [d5e8202]
+- Updated dependencies [f238e41]
+- Updated dependencies [0533292]
+- Updated dependencies [890b443]
+- Updated dependencies [a573b16]
+- Updated dependencies [0a9cf21]
+- Updated dependencies [9608646]
+- Updated dependencies [a23e2d8]
+- Updated dependencies [180b576]
+- Updated dependencies [7894e77]
+- Updated dependencies [d4b20af]
+- Updated dependencies [9504f2a]
+- Updated dependencies [1ba33ad]
+- Updated dependencies [27a98e1]
+- Updated dependencies [bbd0e13]
+- Updated dependencies [98682f1]
+- Updated dependencies [89cadd5]
+- Updated dependencies [3ec3fce]
+- Updated dependencies [6d61340]
+- Updated dependencies [00075b9]
+- Updated dependencies [8927bba]
+- Updated dependencies [2402292]
+- Updated dependencies [b466583]
+- Updated dependencies [d1a8c6f]
+- Updated dependencies [024fc96]
+  - @next-buildr/core@1.0.0
