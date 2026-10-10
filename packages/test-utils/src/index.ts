@@ -14,5 +14,7 @@ export {
 } from './demo/gallery.ts';
 export type { InvalidDocumentFixture } from './fixtures/documents/index.ts';
 export { invalidDocumentFixtures, validDocumentFixtures } from './fixtures/documents/index.ts';
+export type { LargeDocumentOptions } from './fixtures/large/index.ts';
+export { createLargeDocument } from './fixtures/large/index.ts';
 export type { MigrationFixture } from './fixtures/migrations/index.ts';
 export { documentMigrationFixtures } from './fixtures/migrations/index.ts';

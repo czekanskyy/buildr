@@ -10,7 +10,7 @@
 
 ## Phases
 
-All phases are implemented as of 1.0.0, except the task named in the Status column.
+All phases are implemented as of 1.0.0, except the tasks named in the Status column.
 
 | Phase | File | Tasks | Theme | Status |
 |---|---|---|---|---|
@@ -29,6 +29,7 @@ All phases are implemented as of 1.0.0, except the task named in the Status colu
 | 12 | [phase-12-example-e2e-release.md](phase-12-example-e2e-release.md) | PB-108 – PB-114 | The example app, end-to-end tests, the 0.1.0 release | Done. The performance-budget criterion and a fresh-machine run are not met, see [roadmap](../roadmap.md#exit-criteria-and-where-they-stand-at-100) |
 | 13 | [phase-13-editor-visual-polish.md](phase-13-editor-visual-polish.md) | PB-118 – PB-131, PB-147 | Editor visual polish: a new visual identity, tokens, icons, spacing, layout (no behaviour changes) | Done (PB-131 closes it; known follow-ups are in its card) |
 | 14 | [phase-14-mcp-server.md](phase-14-mcp-server.md) | PB-132 – PB-146 | An MCP server that lets AI agents build pages through the builder's commands | Done except PB-146 (preview screenshots), which is optional and not implemented |
+| 15 | [phase-15-performance.md](phase-15-performance.md) | PB-148 – PB-150 | Performance budgets: a large-document fixture, node-level benchmarks with a nightly gate, browser-level budgets | In progress (PB-148); PB-149 next; PB-150 card only |
 
 See [dependency-graph.md](dependency-graph.md) for the full dependency graph, the critical path, and suggested parallel work tracks for multiple agents.
 
