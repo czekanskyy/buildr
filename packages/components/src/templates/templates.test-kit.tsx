@@ -3,6 +3,7 @@ import {
   type BuilderDocument,
   type BuilderFragment,
   instantiateTemplate,
+  registryVersions,
   type TemplateDefinition,
 } from '@next-buildr/core';
 import { doc } from '@next-buildr/test-utils';
@@ -12,6 +13,7 @@ import { Badge } from '../badge/definition.ts';
 import { Button } from '../button/definition.ts';
 import { Card } from '../card/definition.ts';
 import { Checkbox } from '../checkbox/definition.ts';
+import { Container } from '../container/definition.ts';
 import { Form } from '../form/definition.ts';
 import { Grid } from '../grid/definition.ts';
 import { Heading } from '../heading/definition.ts';
@@ -24,9 +26,7 @@ import { Loop } from '../loop/definition.ts';
 import { Page } from '../page/definition.ts';
 import { Pagination } from '../pagination/definition.ts';
 import { RichText } from '../rich-text/definition.ts';
-import { Section } from '../section/definition.ts';
 import { Select } from '../select/definition.ts';
-import { Stack } from '../stack/definition.ts';
 import { createRegistry } from '../test-kit.tsx';
 import { Text } from '../text/definition.ts';
 import { Textarea } from '../textarea/definition.ts';
@@ -35,9 +35,8 @@ import { contentTemplates, marketingTemplates } from './index.ts';
 export const templateRegistry = createRegistry({
   components: [
     Page,
-    Section,
+    Container,
     Grid,
-    Stack,
     Heading,
     Text,
     Button,
@@ -66,8 +65,13 @@ export function documentOf(
   template: TemplateDefinition,
   variant?: string,
 ): { fragment: BuilderFragment; document: BuilderDocument } {
-  const fragment = instantiateTemplate(template, variant);
-  const page = doc({ type: 'buildr/page' });
+  const fragment = instantiateTemplate(
+    template,
+    variant,
+    undefined,
+    registryVersions(templateRegistry.meta),
+  );
+  const page = doc({ type: 'buildr/page' }, { versions: registryVersions(templateRegistry.meta) });
   const root = fragment.roots[0] as string;
   const nodes = { ...page.nodes, ...fragment.nodes };
   const pageNode = nodes[page.root];

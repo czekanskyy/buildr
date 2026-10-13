@@ -4,8 +4,8 @@
 
 | Area | Mechanism |
 |---|---|
-| Semantic HTML | `a11y.element` in the metadata. The rendered element is driven by a semantic prop: Section's `as` (`section/header/footer/main/aside/nav/article/div`), Heading's `level`, Text's `as` (`p/span/small/strong/em`), List's `ordered`. Semantics is independent of appearance — heading size is a style, not `level`. |
-| Roles | No arbitrary `role` prop. A component either has a fixed role, or an allowlisted set of overrides (Stack: `group`, `list`). |
+| Semantic HTML | `a11y.element` in the metadata. The rendered element is driven by a semantic prop: Container's `as` (`div/section/header/footer/main/aside/nav/article`), Heading's `level`, Text's `as` (`p/span/small/div`), List's `ordered`. Semantics is independent of appearance — heading size is a style, not `level`. |
+| Roles | No arbitrary `role` prop. A component either has a fixed role, or an allowlisted set of overrides (Container: `group`, `list`, on a plain `div` only). |
 | ARIA | Only semantic props under an "Accessibility" group: `ariaLabel`, `ariaDescription` (rendered as `aria-describedby` pointing at a visually-hidden element). An allowlist, never raw `aria-*` passthrough. |
 | Keyboard | Interactive components implement WAI-ARIA APG patterns: Accordion uses native `<details>/<summary>`; Tabs (v0.2) uses roving tabindex with arrow keys; Modal (v0.3) uses native `<dialog>` and `showModal()` (the browser handles focus trapping and inertness). |
 | Focus | A `--b-focus-ring` token. Every interactive component ships a `:focus-visible` style in its own CSS. The style model has no way to remove the outline. |

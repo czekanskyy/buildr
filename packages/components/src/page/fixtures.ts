@@ -6,6 +6,9 @@ export const pageFixtures: readonly ComponentFixture[] = [
   {
     id: 'page-empty',
     title: 'Page: empty',
-    tree: { type: 'buildr/section', props: { ariaLabel: s('Empty page') } },
+    tree: {
+      type: 'buildr/container',
+      props: { as: s('section'), ariaLabel: s('Empty page') },
+    },
   },
 ] as const;

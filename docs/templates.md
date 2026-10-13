@@ -22,7 +22,7 @@ export interface TemplateDefinition {
 }
 ```
 
-`instantiateTemplate(def, variant?, idGen)` returns a `BuilderFragment`: fresh IDs are minted on every call, the fragment root gets a `source: { template: def.id, version: def.version }` marker and, if `lock === 'structure'`, a `lock.structure: true` flag. The result is validated by `canInsert` exactly like any other inserted fragment.
+`instantiateTemplate(def, variant?, idGen?, versions?)` returns a `BuilderFragment`; pass `registryVersions(meta)` as `versions` so the fragment carries the registry's component versions (without it every type is stamped at version 1 and is then migrated or rejected on insert): fresh IDs are minted on every call, the fragment root gets a `source: { template: def.id, version: def.version }` marker and, if `lock === 'structure'`, a `lock.structure: true` flag. The result is validated by `canInsert` exactly like any other inserted fragment.
 
 ## Locks and regions
 
@@ -31,6 +31,8 @@ export interface TemplateDefinition {
 ## What templates are not
 
 There is no "propagate a template change to existing instances" feature. Once inserted, a template instance is an ordinary part of the document — editing the original `TemplateDefinition` in code has no effect on documents that already instantiated it. This is a deliberate MVP trade-off (see ADR-020); linked, synchronized symbols are a v0.3 addition (`buildr/symbol`), built without needing to change this model.
+
+The built-in marketing templates are made of `buildr/container` nodes (a `bleed` container for the band, plain containers for columns and button groups), instantiated with the registry's versions (`registryVersions`).
 
 ## Writing a new template
 

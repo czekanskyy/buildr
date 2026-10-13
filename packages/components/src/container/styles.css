@@ -1,19 +1,84 @@
 @layer buildr.components {
   .bc-container {
+    --bc-container-column: var(--b-container-lg);
     width: 100%;
     margin-inline: auto;
-    max-width: var(--b-container-lg);
+    max-width: var(--bc-container-column);
   }
   .bc-container[data-width="sm"] {
-    max-width: var(--b-container-sm);
+    --bc-container-column: var(--b-container-sm);
   }
   .bc-container[data-width="md"] {
-    max-width: var(--b-container-md);
+    --bc-container-column: var(--b-container-md);
   }
   .bc-container[data-width="lg"] {
-    max-width: var(--b-container-lg);
+    --bc-container-column: var(--b-container-lg);
   }
   .bc-container[data-width="xl"] {
-    max-width: var(--b-container-xl);
+    --bc-container-column: var(--b-container-xl);
+  }
+  /* No limit: sizes like a plain block child, so it also behaves inside a row. */
+  .bc-container[data-width="none"] {
+    width: auto;
+    max-width: none;
+    margin-inline: 0;
+  }
+
+  /* Bleed: the box spans its parent and keeps the content to the column with padding. */
+  .bc-container[data-bleed] {
+    position: relative;
+    isolation: isolate;
+    width: auto;
+    max-width: none;
+    margin-inline: 0;
+    padding-inline: max(var(--b-space-4), calc((100% - var(--bc-container-column)) / 2));
+  }
+  .bc-container[data-bleed][data-width="none"] {
+    padding-inline: 0;
+  }
+
+  .bc-container[data-display="flex"],
+  .bc-container[data-display="inline-flex"] {
+    flex-direction: column;
+    gap: var(--b-space-4);
+  }
+  .bc-container[data-display="flex"] {
+    display: flex;
+  }
+  .bc-container[data-display="inline-flex"] {
+    display: inline-flex;
+  }
+  .bc-container[data-display="grid"] {
+    display: grid;
+    gap: var(--b-space-4);
+  }
+  /*
+   * A stack-like container may shrink inside a row or grid parent. A bleeding one (a migrated
+   * section) keeps the automatic minimum, as the section did.
+   */
+  .bc-container[data-display="flex"]:not([data-bleed]),
+  .bc-container[data-display="inline-flex"]:not([data-bleed]),
+  .bc-container[data-display="grid"]:not([data-bleed]) {
+    min-width: 0;
+  }
+  .bc-container[data-display="block"] {
+    display: block;
+  }
+  .bc-container[data-display="inline-block"] {
+    display: inline-block;
+  }
+
+  .bc-container[data-has-background] {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .bc-container__background {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 }

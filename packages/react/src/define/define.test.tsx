@@ -1,5 +1,6 @@
 import {
   type BuilderDocument,
+  type ComponentReplacement,
   createRegistryMeta,
   fromManifest,
   migrateComponents,
@@ -54,6 +55,7 @@ describe('defineComponent', () => {
     expect(Heading.meta).not.toHaveProperty('migrations');
     expect(typeof Heading.render).toBe('function');
     expect(Heading.migrations).toEqual([]);
+    expect(Heading).not.toHaveProperty('replaces');
     // The metadata survives a JSON round trip, which is what the manifest relies on.
     expect(JSON.parse(JSON.stringify(Heading.meta))).toEqual(Heading.meta);
   });
@@ -116,6 +118,45 @@ describe('defineComponent', () => {
       /acme\/thing/,
     );
     expect(define({ render: undefined })).toThrow(/render/);
+  });
+
+  describe('replacements', () => {
+    const define = (fromVersion: number, toVersion: number) =>
+      defineComponent({
+        ...baseMeta,
+        type: 'acme/current',
+        label: 'Current',
+        version: 3,
+        runtime: 'shared',
+        props: {},
+        render: () => null,
+        replaces: {
+          'acme/retired': { fromVersion, toVersion, migrate: (node) => node },
+        },
+      });
+
+    describe.each(['fromVersion', 'toVersion'] as const)('%s', (key) => {
+      it.each([0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY])(
+        'rejects a non-positive integer version (%s) at define time',
+        (version) => {
+          expect(() =>
+            define(key === 'fromVersion' ? version : 1, key === 'toVersion' ? version : 1),
+          ).toThrow(
+            `defineComponent("acme/current"): replacement of "acme/retired" must have a positive integer ${key}`,
+          );
+        },
+      );
+    });
+
+    it('rejects a target newer than the component at define time', () => {
+      expect(() => define(1, 4)).toThrow(
+        'defineComponent("acme/current"): replacement of "acme/retired" targets version 4, but the component is at version 3',
+      );
+    });
+
+    it.each([1, 3])('accepts a target version within the component version (%s)', (toVersion) => {
+      expect(() => define(4, toVersion)).not.toThrow();
+    });
   });
 
   describe('migrations', () => {
@@ -220,6 +261,105 @@ describe('createRegistry', () => {
 
   it('throws on a duplicate type', () => {
     expect(() => createRegistry({ components: [Heading, Heading] })).toThrow(/buildr\/heading/);
+  });
+
+  describe('replacements', () => {
+    const replacement: ComponentReplacement = {
+      fromVersion: 1,
+      toVersion: 2,
+      migrate: ({ props, styles }, ctx) => {
+        expect(ctx.subtree.has(ctx.nodeId)).toBe(true);
+        return {
+          props: { ...props, size: { kind: 'static', value: 5 } },
+          styles,
+        };
+      },
+    };
+    const define = (type: string, retired = 'acme/retired') =>
+      defineComponent({
+        ...baseMeta,
+        type,
+        label: 'Replacement',
+        version: 3,
+        runtime: 'shared',
+        props: { size: p.number({ default: 1 }) },
+        render: () => null,
+        migrations: {
+          2: () => ({ size: { kind: 'static', value: 0 } }),
+          3: (props) => ({ ...props, current: { kind: 'static', value: true } }),
+        },
+        replaces: { [retired]: replacement },
+      });
+
+    it('feeds replacements into migrations without adding them to metadata', () => {
+      const Current = define('acme/current');
+      const reg = createRegistry({ components: [Current, Heading] });
+      expect(Current.meta).not.toHaveProperty('replaces');
+      expect(toManifest(reg.meta).components['acme/current']).not.toHaveProperty('replaces');
+      expect(reg.migrations['acme/current']).toEqual({
+        currentVersion: 3,
+        steps: Current.migrations,
+        replaces: { 'acme/retired': replacement },
+      });
+      expect(reg.migrations['buildr/heading']).toEqual({ currentVersion: 1, steps: [] });
+
+      const doc: BuilderDocument = {
+        schemaVersion: 1,
+        root: 'root',
+        nodes: {
+          root: {
+            id: 'root',
+            type: 'acme/retired',
+            props: { original: { kind: 'static', value: 'kept' } },
+            styles: { base: { layout: { gap: 0 } } },
+          },
+        },
+        components: { 'acme/retired': 1 },
+      };
+      const migrated = migrateComponents(doc, reg.migrations);
+      expect(migrated.readOnlyReasons).toEqual([]);
+      expect(migrated.doc.components).toEqual({ 'acme/current': 3 });
+      expect(migrated.doc.nodes[doc.root]).toEqual({
+        ...doc.nodes[doc.root],
+        type: 'acme/current',
+        props: {
+          original: { kind: 'static', value: 'kept' },
+          size: { kind: 'static', value: 5 },
+          current: { kind: 'static', value: true },
+        },
+      });
+    });
+
+    it.each([false, true])(
+      'rejects duplicate retired types in either order (reverse: %s)',
+      (reverse) => {
+        const components = [define('acme/first'), define('acme/second')];
+        if (reverse) components.reverse();
+        expect(() => createRegistry({ components })).toThrow(
+          /retired type "acme\/retired" is replaced by both "acme\/(first|second)" and "acme\/(first|second)"/,
+        );
+      },
+    );
+
+    it.each([false, true])(
+      'rejects a registered retired type in either order (reverse: %s)',
+      (reverse) => {
+        const components = [define('acme/current', 'buildr/heading'), Heading];
+        if (reverse) components.reverse();
+        expect(() => createRegistry({ components })).toThrow(
+          /retired type "buildr\/heading" replaced by "acme\/current" is still registered/,
+        );
+      },
+    );
+
+    it('checks replacement conflicts when extending a registry', () => {
+      const reg = createRegistry({ components: [define('acme/first')] });
+      expect(() => reg.extend({ components: [define('acme/second')] })).toThrow(/acme\/retired/);
+      expect(reg.list()).toHaveLength(1);
+      expect(() =>
+        registry.extend({ components: [define('acme/current', 'buildr/heading')] }),
+      ).toThrow(/still registered/);
+    });
   });
 
   it('extend returns a new registry and leaves the original alone', () => {

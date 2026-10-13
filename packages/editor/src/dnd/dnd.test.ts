@@ -16,6 +16,7 @@ import {
   type DragHost,
   type TreeSurface,
 } from './engine.ts';
+import { fragmentFor } from './fragment.ts';
 import { autoscrollDelta, toCanvasPoint } from './geometry.ts';
 import { treeDropTarget } from './tree-target.ts';
 
@@ -65,6 +66,14 @@ const newStore = (doc = fixture()) =>
 
 const ROW = 28;
 const all = (doc: BuilderDocument) => new Set(Object.keys(doc.nodes));
+
+describe('fragmentFor', () => {
+  it('stamps the versions of the registry, not 1', () => {
+    const v2 = createRegistryMeta({ components: [page, { ...box, version: 2 }, base] });
+    const fragment = fragmentFor(v2, { kind: 'component', type: 'buildr/box' });
+    expect(fragment?.components).toEqual({ 'buildr/box': 2 });
+  });
+});
 
 describe('toCanvasPoint', () => {
   it('subtracts the frame offset and divides by the zoom', () => {

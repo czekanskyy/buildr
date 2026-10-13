@@ -21,9 +21,7 @@ import { Loop } from './loop/definition.ts';
 import { Page } from './page/definition.ts';
 import { Pagination } from './pagination/definition.ts';
 import { RichText } from './rich-text/definition.ts';
-import { Section } from './section/definition.ts';
 import { Select } from './select/definition.ts';
-import { Stack } from './stack/definition.ts';
 import { contentTemplates, marketingTemplates } from './templates/index.ts';
 import { Text } from './text/definition.ts';
 import { Textarea } from './textarea/definition.ts';
@@ -31,9 +29,7 @@ import { Textarea } from './textarea/definition.ts';
 /** Every component of the library, layout first, in the order the inserter lists them. */
 export const defaultComponents: readonly ComponentDefinition[] = [
   Page,
-  Section,
   Container,
-  Stack,
   Grid,
   Heading,
   Text,

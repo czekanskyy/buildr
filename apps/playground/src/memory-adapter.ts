@@ -1,7 +1,14 @@
 import { templateSampleScopes } from '@next-buildr/components';
-import { type BuilderDocument, type DataContext, type LocaleConfig, s } from '@next-buildr/core';
+import {
+  type BuilderDocument,
+  type DataContext,
+  type LocaleConfig,
+  registryVersions,
+  s,
+} from '@next-buildr/core';
 import type { DocumentAdapter, DocumentRef } from '@next-buildr/editor';
 import { doc } from '@next-buildr/test-utils';
+import { registry } from './registry.ts';
 
 export const PLAYGROUND_LOCALES: LocaleConfig = {
   locales: ['en', 'pl'],
@@ -31,17 +38,22 @@ export function sampleScopes(sampleId: string | null, locale: string): DataConte
 }
 
 export const initialDocument = (): BuilderDocument =>
-  doc({
-    children: [
-      {
-        type: 'buildr/section',
-        children: [
-          { type: 'buildr/heading', props: { text: s('Welcome to Buildr'), level: s(1) } },
-          { type: 'buildr/text', props: { text: s('Edit this page in the playground.') } },
-        ],
-      },
-    ],
-  });
+  doc(
+    {
+      children: [
+        {
+          type: 'buildr/container',
+          props: { as: s('section'), display: s('flex'), width: s('lg'), bleed: s(true) },
+          styles: { base: { layout: { gap: '0' } } },
+          children: [
+            { type: 'buildr/heading', props: { text: s('Welcome to Buildr'), level: s(1) } },
+            { type: 'buildr/text', props: { text: s('Edit this page in the playground.') } },
+          ],
+        },
+      ],
+    },
+    { versions: registryVersions(registry.meta) },
+  );
 
 interface Stored {
   readonly revision: number;

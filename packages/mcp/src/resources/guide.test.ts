@@ -40,7 +40,7 @@ describe('the agent guide', () => {
 
   it('covers what the card requires', () => {
     for (const topic of [
-      'Page > Section > Container',
+      'Page > Container',
       'Templates or trees',
       'tokens and breakpoints',
       'bindings and formulas',

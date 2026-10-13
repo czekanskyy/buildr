@@ -30,6 +30,7 @@ export function EditorPage() {
         adapter={adapter}
         manifest={manifest}
         registry={registry.meta}
+        migrations={registry.migrations}
         canvasUrl="/canvas"
         documentRef={documentRef}
         {...(route.theme === undefined ? {} : { config: { theme: route.theme } })}

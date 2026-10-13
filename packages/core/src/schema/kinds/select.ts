@@ -9,11 +9,14 @@ const SELECT_ACCEPTS: readonly DataTypeTag[] = [];
 export interface SelectOptions extends CommonPropOptions {
   readonly options: readonly [string | number, ...(string | number)[]];
   readonly default?: string | number;
+  /** Display label per option value (keyed by `String(value)`); a missing key shows the raw value. */
+  readonly optionLabels?: Readonly<Record<string, string>>;
 }
 
 export interface SelectPropDef extends PropDefBase<'select'> {
   readonly options: readonly [string | number, ...(string | number)[]];
   readonly default: string | number;
+  readonly optionLabels?: Readonly<Record<string, string>>;
 }
 
 export function buildSelectPropDef(options: SelectOptions): SelectPropDef {
@@ -24,6 +27,7 @@ export function buildSelectPropDef(options: SelectOptions): SelectPropDef {
     accepts: SELECT_ACCEPTS,
     options: options.options,
     default: options.default ?? options.options[0],
+    ...(options.optionLabels !== undefined ? { optionLabels: options.optionLabels } : {}),
   };
 }
 

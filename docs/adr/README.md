@@ -28,5 +28,6 @@ Each ADR follows the same template: **Status, Context, Options, Decision, Conseq
 | [022](ADR-022-license.md) | License | Accepted |
 | [023](ADR-023-localization.md) | Localization | Accepted |
 | [024](ADR-024-mcp-server.md) | MCP server for AI agents | Accepted |
+| [025](ADR-025-retiring-a-component-type.md) | Retiring a component type | Accepted |
 
 To propose a new ADR, see [`docs/ai/architecture-decisions.md`](../ai/architecture-decisions.md).

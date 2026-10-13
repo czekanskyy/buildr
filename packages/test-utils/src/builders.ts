@@ -73,6 +73,8 @@ export interface DocOptions {
   readonly idGen?: IdGenerator;
   /** Extra entries merged into the derived `components` version map (default version 1 each). */
   readonly components?: Readonly<Record<ComponentType, number>>;
+  /** Version recorded for each encountered type that `components` doesn't pin (default 1). */
+  readonly versions?: Readonly<Record<ComponentType, number>>;
   readonly meta?: BuilderDocument['meta'];
 }
 
@@ -80,7 +82,7 @@ export interface DocOptions {
  * Builds a full `BuilderDocument` from a nested `NodeTree` rooted at the document root (type
  * fixed to `ROOT_COMPONENT_TYPE`, id fixed to `"root"` — see docs/document-model.md). IDs are
  * minted via `idGen` for any node that doesn't pin its own `id`; every component type
- * encountered is added to `components` at version 1 unless overridden.
+ * encountered is added to `components` at `versions[type]` (default 1) unless `components` overrides it.
  */
 export function doc(root: NodeTree = {}, options: DocOptions = {}): BuilderDocument {
   const idGen = options.idGen ?? createSeededIdGenerator('test-utils/doc');
@@ -88,7 +90,7 @@ export function doc(root: NodeTree = {}, options: DocOptions = {}): BuilderDocum
   const components: Record<ComponentType, number> = { ...options.components };
 
   function register(type: ComponentType): void {
-    if (!(type in components)) components[type] = 1;
+    if (!(type in components)) components[type] = options.versions?.[type] ?? 1;
   }
 
   function build(id: NodeId, tree: NodeTree): PageNode {

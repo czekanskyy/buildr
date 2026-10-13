@@ -90,4 +90,16 @@ describe('doc', () => {
     const b = doc({ children: [{ type: 'buildr/section' }] }, { idGen: idGen() });
     expect(a).toEqual(b);
   });
+
+  it('records `versions` for encountered types, and lets `components` win', () => {
+    const d = doc(
+      { children: [{ type: 'buildr/container' }, { type: 'buildr/text' }] },
+      { versions: { 'buildr/container': 2, 'buildr/text': 3 }, components: { 'buildr/text': 5 } },
+    );
+    expect(d.components).toMatchObject({
+      'buildr/container': 2,
+      'buildr/text': 5,
+      'buildr/page': 1,
+    });
+  });
 });

@@ -1,5 +1,6 @@
 import {
   type BuilderDocument,
+  type ComponentMigrations,
   createEmptyDocument,
   type DataSchema,
   DEFAULT_DOCUMENT_LIMITS,
@@ -30,6 +31,8 @@ import {
   mcpFail,
 } from '../backend.ts';
 
+import { loadStoredDocument } from './load-document.ts';
+
 const MEDIA_PAGE_SIZE = 20;
 
 export interface MemoryDocumentInput {
@@ -47,6 +50,8 @@ export interface MemoryDocumentInput {
 
 export interface MemoryBackendOptions {
   readonly manifest: RegistryManifest;
+  /** Executable component migrations run on load; incompatible documents otherwise stay read-only. */
+  readonly migrations?: ComponentMigrations;
   readonly theme?: Theme;
   readonly documents?: readonly MemoryDocumentInput[];
   /** Collections that exist although they hold no document yet (creation needs the collection to exist). */
@@ -90,6 +95,14 @@ function keyOf(ref: DocumentRef): string {
  * so the tool layer can be exercised without a CMS.
  */
 export function createMemoryBackend(options: MemoryBackendOptions): McpBackend {
+  return createMemoryBackendStorage(options).backend;
+}
+
+/** Internal storage access for file persistence; reads a copy without running migrations. */
+export function createMemoryBackendStorage(options: MemoryBackendOptions): {
+  readonly backend: McpBackend;
+  readonly readStored: (ref: DocumentRef) => McpResult<StoredDocument>;
+} {
   const now = options.now ?? (() => new Date());
   const session: McpSession = {
     user: options.session?.user ?? { id: 'memory-agent', email: 'agent@example.test' },
@@ -180,7 +193,7 @@ export function createMemoryBackend(options: MemoryBackendOptions): McpBackend {
     return ok(doc);
   }
 
-  return {
+  const backend: McpBackend = {
     async getSession() {
       return ok(clone(session));
     },
@@ -267,16 +280,25 @@ export function createMemoryBackend(options: MemoryBackendOptions): McpBackend {
       const found = find(ref);
       if (!found.ok) return found;
       const d = found.value;
+      const prepared = loadStoredDocument(clone(d.document), options.manifest, options.migrations);
+      if (!prepared.ok)
+        return mcpFail({
+          code: 'invalid',
+          message: 'The stored document is not valid.',
+          diagnostics: prepared.error,
+        });
+      const { document, readOnlyReasons } = prepared.value;
       const blank = Object.keys(d.document.nodes).length <= 1;
       const layoutSource: LayoutSource = blank ? 'builtin' : 'document';
       const loaded: LoadedDocument = {
         ...summary(d),
-        document: clone(d.document),
+        document,
         contextRef: keyOf(d.ref),
         layoutSource,
         layoutRef: blank ? null : keyOf(d.ref),
         previewPath: d.previewPath,
-        ...(session.permissions.canEdit ? {} : { readOnly: true }),
+        ...(session.permissions.canEdit && readOnlyReasons.length === 0 ? {} : { readOnly: true }),
+        ...(readOnlyReasons.length === 0 ? {} : { readOnlyReasons }),
       };
       return ok(loaded);
     },
@@ -287,6 +309,22 @@ export function createMemoryBackend(options: MemoryBackendOptions): McpBackend {
       if (!session.permissions.canEdit) {
         return mcpFail({ code: 'forbidden', message: 'This user may not edit documents.' });
       }
+      const loaded = loadStoredDocument(
+        clone(found.value.document),
+        options.manifest,
+        options.migrations,
+      );
+      if (!loaded.ok)
+        return mcpFail({
+          code: 'invalid',
+          message: 'The stored document is not valid.',
+          diagnostics: loaded.error,
+        });
+      if (loaded.value.readOnlyReasons.length > 0)
+        return mcpFail({
+          code: 'forbidden',
+          message: 'This document is read-only.',
+        });
       const based = requireBase(found.value, baseRevision, 'save');
       if (!based.ok) return based;
       const parsed = parseDocument(doc, {
@@ -318,6 +356,22 @@ export function createMemoryBackend(options: MemoryBackendOptions): McpBackend {
       if (!session.permissions.canPublish) {
         return mcpFail({ code: 'forbidden', message: 'This user may not publish documents.' });
       }
+      const loaded = loadStoredDocument(
+        clone(found.value.document),
+        options.manifest,
+        options.migrations,
+      );
+      if (!loaded.ok)
+        return mcpFail({
+          code: 'invalid',
+          message: 'The stored document is not valid.',
+          diagnostics: loaded.error,
+        });
+      if (loaded.value.readOnlyReasons.length > 0)
+        return mcpFail({
+          code: 'forbidden',
+          message: 'This document is read-only.',
+        });
       const based = requireBase(found.value, baseRevision, 'publish');
       if (!based.ok) return based;
       const target = found.value;
@@ -378,6 +432,13 @@ export function createMemoryBackend(options: MemoryBackendOptions): McpBackend {
       return ok(
         locale ? `${url}${url.includes('?') ? '&' : '?'}locale=${encodeURIComponent(locale)}` : url,
       );
+    },
+  };
+  return {
+    backend,
+    readStored(ref) {
+      const found = find(ref);
+      return found.ok ? ok(clone(found.value)) : found;
     },
   };
 }

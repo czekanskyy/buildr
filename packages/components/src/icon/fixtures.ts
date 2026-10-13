@@ -6,7 +6,8 @@ export const iconFixtures: readonly ComponentFixture[] = [
     id: 'icon-sizes',
     title: 'Icon: every size',
     tree: {
-      type: 'buildr/stack',
+      type: 'buildr/container',
+      props: { width: s('none') },
       styles: { base: { layout: { direction: 'row', gap: '1rem', align: 'center' } } } as never,
       children: ['sm', 'md', 'lg', 'xl'].map((size) => ({
         type: 'buildr/icon',

@@ -137,6 +137,7 @@ const propDefSchema: z.ZodTypeAny = z.lazy(() =>
       ...commonPropShape,
       options: z.array(z.union([z.string(), z.number()])).min(1),
       default: z.union([z.string(), z.number()]),
+      optionLabels: z.record(z.string(), z.string()).optional(),
     }),
     z.strictObject({ kind: z.literal('link'), ...commonPropShape, default: z.string() }),
     z.strictObject({

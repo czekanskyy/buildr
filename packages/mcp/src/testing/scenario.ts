@@ -45,7 +45,7 @@ async function call(
 }
 
 const DEFAULT_TREE = {
-  type: 'buildr/section',
+  type: 'buildr/container',
   children: [{ type: 'buildr/heading', props: { text: 'Built by an agent' } }],
 };
 

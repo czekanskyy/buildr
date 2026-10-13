@@ -194,9 +194,7 @@ exports[`describeComponent over every built-in component > buildr/accordion-item
   "slots": [
     {
       "allowedChildren": [
-        "buildr/section",
         "buildr/container",
-        "buildr/stack",
         "buildr/grid",
         "buildr/heading",
         "buildr/text",
@@ -242,7 +240,7 @@ Props:
 - summary (text) default "Question" [bindable, localizable]
 - defaultOpen (boolean) default false [bindable]
 Slots:
-- default: buildr/section, buildr/container, buildr/stack, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+- default: buildr/container, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
 Note: It cannot be inserted on its own; include it as a child inside a tree of buildr/accordion, buildr/loop.
 Note: It can only be placed directly inside buildr/accordion, buildr/loop.
 Note: It needs an accessible name (text, label or aria-label).
@@ -659,9 +657,7 @@ exports[`describeComponent over every built-in component > buildr/card: JSON des
     },
     {
       "allowedChildren": [
-        "buildr/section",
         "buildr/container",
-        "buildr/stack",
         "buildr/grid",
         "buildr/heading",
         "buildr/text",
@@ -720,7 +716,7 @@ Props:
 - as (select) default "article" one of "article" | "div"
 Slots:
 - media (max 1): buildr/image, buildr/icon
-- body: buildr/section, buildr/container, buildr/stack, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+- body: buildr/container, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
 - actions: buildr/button, buildr/link
 Style groups: layout, size, spacing, background, border, effects, visibility
 Renders: article
@@ -881,6 +877,7 @@ exports[`describeComponent over every built-in component > buildr/container: JSO
 {
   "a11y": {
     "element": "div",
+    "landmark": true,
   },
   "capabilities": {
     "draggable": true,
@@ -890,7 +887,7 @@ exports[`describeComponent over every built-in component > buildr/container: JSO
     "rootOnly": false,
   },
   "category": "layout",
-  "description": "Keeps its content to a readable width, centred.",
+  "description": "A box for content: a column, row or grid, optionally width-limited, a landmark, or with a background image.",
   "example": {
     "type": "buildr/container",
   },
@@ -899,6 +896,15 @@ exports[`describeComponent over every built-in component > buildr/container: JSO
     "column",
     "centre",
     "max-width",
+    "stack",
+    "flex",
+    "row",
+    "group",
+    "section",
+    "band",
+    "hero",
+    "wrapper",
+    "grid",
   ],
   "label": "Container",
   "notes": [],
@@ -911,12 +917,48 @@ exports[`describeComponent over every built-in component > buildr/container: JSO
   "props": [
     {
       "bindable": false,
+      "default": "flex",
+      "kind": "select",
+      "label": "Display",
+      "localizable": false,
+      "name": "display",
+      "options": [
+        "flex",
+        "block",
+        "grid",
+        "inline-flex",
+        "inline-block",
+      ],
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": "div",
+      "kind": "select",
+      "label": "Element",
+      "localizable": false,
+      "name": "as",
+      "options": [
+        "div",
+        "section",
+        "header",
+        "footer",
+        "main",
+        "aside",
+        "nav",
+        "article",
+      ],
+      "required": false,
+    },
+    {
+      "bindable": false,
       "default": "lg",
       "kind": "select",
       "label": "Max width",
       "localizable": false,
       "name": "width",
       "options": [
+        "none",
         "sm",
         "md",
         "lg",
@@ -924,13 +966,68 @@ exports[`describeComponent over every built-in component > buildr/container: JSO
       ],
       "required": false,
     },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "boolean",
+      ],
+      "default": false,
+      "kind": "boolean",
+      "label": "Full-width background",
+      "localizable": false,
+      "name": "bleed",
+      "required": false,
+    },
+    {
+      "accept": [
+        "image",
+      ],
+      "bindable": true,
+      "bindsTo": [
+        "media",
+      ],
+      "default": null,
+      "kind": "media",
+      "label": "Background image",
+      "localizable": false,
+      "name": "backgroundImage",
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": "none",
+      "kind": "select",
+      "label": "Role (plain div only)",
+      "localizable": false,
+      "name": "role",
+      "options": [
+        "none",
+        "group",
+        "list",
+      ],
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Accessible name",
+      "localizable": true,
+      "name": "ariaLabel",
+      "required": false,
+    },
   ],
   "slots": [
     {
       "allowedChildren": [
-        "buildr/section",
         "buildr/container",
-        "buildr/stack",
         "buildr/grid",
         "buildr/heading",
         "buildr/text",
@@ -958,6 +1055,7 @@ exports[`describeComponent over every built-in component > buildr/container: JSO
   ],
   "styleGroups": [
     "layout",
+    "size",
     "spacing",
     "background",
     "border",
@@ -965,18 +1063,24 @@ exports[`describeComponent over every built-in component > buildr/container: JSO
     "visibility",
   ],
   "type": "buildr/container",
-  "version": 1,
+  "version": 2,
 }
 `;
 
 exports[`describeComponent over every built-in component > buildr/container: text description 1`] = `
-"buildr/container - Container (layout, v1)
-Keeps its content to a readable width, centred.
+"buildr/container - Container (layout, v2)
+A box for content: a column, row or grid, optionally width-limited, a landmark, or with a background image.
 Props:
-- width (select) default "lg" one of "sm" | "md" | "lg" | "xl"
+- display (select) default "flex" one of "flex" | "block" | "grid" | "inline-flex" | "inline-block"
+- as (select) default "div" one of "div" | "section" | "header" | "footer" | "main" | "aside" | "nav" | "article"
+- width (select) default "lg" one of "none" | "sm" | "md" | "lg" | "xl"
+- bleed (boolean) default false [bindable]
+- backgroundImage (media) default null accepts image [bindable]
+- role (select) default "none" one of "none" | "group" | "list"
+- ariaLabel (text) default "" [bindable, localizable]
 Slots:
-- default: buildr/section, buildr/container, buildr/stack, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
-Style groups: layout, spacing, background, border, effects, visibility
+- default: buildr/container, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+Style groups: layout, size, spacing, background, border, effects, visibility
 Renders: div
 Insert into: buildr/page[default]
 Example: {"type":"buildr/container"}"
@@ -1135,9 +1239,7 @@ exports[`describeComponent over every built-in component > buildr/form: JSON des
   "slots": [
     {
       "allowedChildren": [
-        "buildr/section",
         "buildr/container",
-        "buildr/stack",
         "buildr/grid",
         "buildr/heading",
         "buildr/text",
@@ -1185,7 +1287,7 @@ Props:
 - errorMessage (text) default "" [bindable, localizable]
 - ariaLabel (text) default "" [bindable, localizable]
 Slots:
-- default: buildr/section, buildr/container, buildr/stack, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+- default: buildr/container, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
 Style groups: layout, size, spacing, background, border, effects, visibility
 Renders: form
 Insert into: buildr/page[default]
@@ -1244,9 +1346,7 @@ exports[`describeComponent over every built-in component > buildr/grid: JSON des
   "slots": [
     {
       "allowedChildren": [
-        "buildr/section",
         "buildr/container",
-        "buildr/stack",
         "buildr/grid",
         "buildr/heading",
         "buildr/text",
@@ -1292,7 +1392,7 @@ Lays its children out in columns.
 Props:
 - ariaLabel (text) default "" [bindable, localizable]
 Slots:
-- default: buildr/section, buildr/container, buildr/stack, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+- default: buildr/container, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
 Style groups: layout, size, spacing, background, border, effects, visibility
 Renders: div
 Insert into: buildr/page[default]
@@ -2171,9 +2271,7 @@ exports[`describeComponent over every built-in component > buildr/list-item: JSO
   "slots": [
     {
       "allowedChildren": [
-        "buildr/section",
         "buildr/container",
-        "buildr/stack",
         "buildr/grid",
         "buildr/heading",
         "buildr/text",
@@ -2218,7 +2316,7 @@ One entry of a list.
 Props:
 - text (text) default "Item" [bindable, localizable]
 Slots:
-- default: buildr/section, buildr/container, buildr/stack, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+- default: buildr/container, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
 Note: It cannot be inserted on its own; include it as a child inside a tree of buildr/list, buildr/loop.
 Note: It can only be placed directly inside buildr/list, buildr/loop.
 Style groups: typography, spacing, background, border, effects, visibility
@@ -2365,9 +2463,7 @@ exports[`describeComponent over every built-in component > buildr/page: JSON des
   "slots": [
     {
       "allowedChildren": [
-        "buildr/section",
         "buildr/container",
-        "buildr/stack",
         "buildr/grid",
         "buildr/heading",
         "buildr/text",
@@ -2408,7 +2504,7 @@ exports[`describeComponent over every built-in component > buildr/page: text des
 The root of a document. Everything else lives inside it.
 Props: none
 Slots:
-- default: buildr/section, buildr/container, buildr/stack, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+- default: buildr/container, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
 Note: This is the document root; it exists once and cannot be inserted.
 Note: It cannot be removed.
 Note: It cannot be moved.
@@ -2607,167 +2703,6 @@ Style groups: typography, spacing, background, border, size, effects, visibility
 Renders: div
 Insert into: buildr/page[default]
 Example: {"type":"buildr/rich-text"}"
-`;
-
-exports[`describeComponent over every built-in component > buildr/section: JSON description 1`] = `
-{
-  "a11y": {
-    "element": "section",
-    "landmark": true,
-  },
-  "capabilities": {
-    "draggable": true,
-    "duplicable": true,
-    "insertable": true,
-    "removable": true,
-    "rootOnly": false,
-  },
-  "category": "layout",
-  "description": "A band of the page: a landmark or a plain wrapper, with an optional background image.",
-  "example": {
-    "type": "buildr/section",
-  },
-  "keywords": [
-    "band",
-    "region",
-    "hero",
-    "wrapper",
-  ],
-  "label": "Section",
-  "notes": [],
-  "placement": [
-    {
-      "slot": "default",
-      "type": "buildr/page",
-    },
-  ],
-  "props": [
-    {
-      "bindable": false,
-      "default": "section",
-      "kind": "select",
-      "label": "Element",
-      "localizable": false,
-      "name": "as",
-      "options": [
-        "section",
-        "div",
-        "header",
-        "footer",
-        "main",
-        "aside",
-        "nav",
-        "article",
-      ],
-      "required": false,
-    },
-    {
-      "bindable": false,
-      "default": "lg",
-      "kind": "select",
-      "label": "Content width",
-      "localizable": false,
-      "name": "container",
-      "options": [
-        "full",
-        "sm",
-        "md",
-        "lg",
-        "xl",
-      ],
-      "required": false,
-    },
-    {
-      "accept": [
-        "image",
-      ],
-      "bindable": true,
-      "bindsTo": [
-        "media",
-      ],
-      "default": null,
-      "kind": "media",
-      "label": "Background image",
-      "localizable": false,
-      "name": "backgroundImage",
-      "required": false,
-    },
-    {
-      "bindable": true,
-      "bindsTo": [
-        "string",
-        "number",
-        "date",
-        "enum",
-        "url",
-      ],
-      "default": "",
-      "kind": "text",
-      "label": "Accessible name",
-      "localizable": true,
-      "name": "ariaLabel",
-      "required": false,
-    },
-  ],
-  "slots": [
-    {
-      "allowedChildren": [
-        "buildr/section",
-        "buildr/container",
-        "buildr/stack",
-        "buildr/grid",
-        "buildr/heading",
-        "buildr/text",
-        "buildr/rich-text",
-        "buildr/button",
-        "buildr/link",
-        "buildr/image",
-        "buildr/icon",
-        "buildr/list",
-        "buildr/divider",
-        "buildr/badge",
-        "buildr/card",
-        "buildr/accordion",
-        "buildr/loop",
-        "buildr/pagination",
-        "buildr/form",
-        "buildr/input",
-        "buildr/textarea",
-        "buildr/select",
-        "buildr/checkbox",
-      ],
-      "label": "Content",
-      "name": "default",
-    },
-  ],
-  "styleGroups": [
-    "layout",
-    "size",
-    "spacing",
-    "background",
-    "border",
-    "effects",
-    "visibility",
-  ],
-  "type": "buildr/section",
-  "version": 1,
-}
-`;
-
-exports[`describeComponent over every built-in component > buildr/section: text description 1`] = `
-"buildr/section - Section (layout, v1)
-A band of the page: a landmark or a plain wrapper, with an optional background image.
-Props:
-- as (select) default "section" one of "section" | "div" | "header" | "footer" | "main" | "aside" | "nav" | "article"
-- container (select) default "lg" one of "full" | "sm" | "md" | "lg" | "xl"
-- backgroundImage (media) default null accepts image [bindable]
-- ariaLabel (text) default "" [bindable, localizable]
-Slots:
-- default: buildr/section, buildr/container, buildr/stack, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
-Style groups: layout, size, spacing, background, border, effects, visibility
-Renders: section
-Insert into: buildr/page[default]
-Example: {"type":"buildr/section"}"
 `;
 
 exports[`describeComponent over every built-in component > buildr/select: JSON description 1`] = `
@@ -2990,129 +2925,6 @@ Style groups: size, spacing, typography, background, border, effects, visibility
 Renders: select
 Insert into: buildr/page[default] > buildr/form[default]
 Example: {"type":"buildr/select","props":{"label":"Label"}}"
-`;
-
-exports[`describeComponent over every built-in component > buildr/stack: JSON description 1`] = `
-{
-  "a11y": {
-    "element": "div",
-  },
-  "capabilities": {
-    "draggable": true,
-    "duplicable": true,
-    "insertable": true,
-    "removable": true,
-    "rootOnly": false,
-  },
-  "category": "layout",
-  "description": "Lays its children out in a row or a column.",
-  "example": {
-    "type": "buildr/stack",
-  },
-  "keywords": [
-    "flex",
-    "row",
-    "column",
-    "group",
-    "flexbox",
-  ],
-  "label": "Stack",
-  "notes": [],
-  "placement": [
-    {
-      "slot": "default",
-      "type": "buildr/page",
-    },
-  ],
-  "props": [
-    {
-      "bindable": false,
-      "default": "none",
-      "kind": "select",
-      "label": "Role",
-      "localizable": false,
-      "name": "role",
-      "options": [
-        "none",
-        "group",
-        "list",
-      ],
-      "required": false,
-    },
-    {
-      "bindable": true,
-      "bindsTo": [
-        "string",
-        "number",
-        "date",
-        "enum",
-        "url",
-      ],
-      "default": "",
-      "kind": "text",
-      "label": "Accessible name",
-      "localizable": true,
-      "name": "ariaLabel",
-      "required": false,
-    },
-  ],
-  "slots": [
-    {
-      "allowedChildren": [
-        "buildr/section",
-        "buildr/container",
-        "buildr/stack",
-        "buildr/grid",
-        "buildr/heading",
-        "buildr/text",
-        "buildr/rich-text",
-        "buildr/button",
-        "buildr/link",
-        "buildr/image",
-        "buildr/icon",
-        "buildr/list",
-        "buildr/divider",
-        "buildr/badge",
-        "buildr/card",
-        "buildr/accordion",
-        "buildr/loop",
-        "buildr/pagination",
-        "buildr/form",
-        "buildr/input",
-        "buildr/textarea",
-        "buildr/select",
-        "buildr/checkbox",
-      ],
-      "label": "Content",
-      "name": "default",
-    },
-  ],
-  "styleGroups": [
-    "layout",
-    "size",
-    "spacing",
-    "background",
-    "border",
-    "effects",
-    "visibility",
-  ],
-  "type": "buildr/stack",
-  "version": 1,
-}
-`;
-
-exports[`describeComponent over every built-in component > buildr/stack: text description 1`] = `
-"buildr/stack - Stack (layout, v1)
-Lays its children out in a row or a column.
-Props:
-- role (select) default "none" one of "none" | "group" | "list"
-- ariaLabel (text) default "" [bindable, localizable]
-Slots:
-- default: buildr/section, buildr/container, buildr/stack, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
-Style groups: layout, size, spacing, background, border, effects, visibility
-Renders: div
-Insert into: buildr/page[default]
-Example: {"type":"buildr/stack"}"
 `;
 
 exports[`describeComponent over every built-in component > buildr/text: JSON description 1`] = `

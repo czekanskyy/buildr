@@ -36,6 +36,12 @@ describe('fromTree', () => {
     expect(root?.slots?.default).toHaveLength(2);
   });
 
+  it('stamps versions[type] when given and falls back to 1 for other types', () => {
+    const tree: TreeNode = { type: 'buildr/section', children: [{ type: 'buildr/text' }] };
+    const fragment = fromTree(tree, createSeededIdGenerator('versions'), { 'buildr/section': 2 });
+    expect(fragment.components).toEqual({ 'buildr/section': 2, 'buildr/text': 1 });
+  });
+
   it('treats children as sugar for slots.default', () => {
     const viaChildren = fromTree(
       { type: 'buildr/section', children: [{ type: 'buildr/heading' }] },

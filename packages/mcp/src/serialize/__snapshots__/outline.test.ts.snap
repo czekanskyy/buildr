@@ -47,7 +47,7 @@ exports[`outlineToJson > has the same content as the text, as data 1`] = `
               },
             ],
           },
-          "type": "buildr/section",
+          "type": "buildr/container",
         },
         {
           "hidden": true,
@@ -64,13 +64,13 @@ exports[`outlineToJson > has the same content as the text, as data 1`] = `
 
 exports[`renderOutline > limits depth and reports what it left out 1`] = `
 "root buildr/page
-  n000000002 buildr/section "Hero" (+4 more)
+  n000000002 buildr/container "Hero" (+4 more)
   n000000007 buildr/divider [hidden]"
 `;
 
 exports[`renderOutline > shows ids, types, names, the primary prop and markers 1`] = `
 "root buildr/page
-  n000000002 buildr/section "Hero"
+  n000000002 buildr/container "Hero"
     n000000003 buildr/heading "Welcome" [l10n:pl]
     n000000004 buildr/text text=@post.summary
     n000000005 buildr/card [locked:structure]

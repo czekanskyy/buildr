@@ -182,10 +182,12 @@ test('scenario 2: a company page with a card grid, a list and a contact section'
     await insertTemplates({ id: 'buildr/hero', variant: 'centered' })(agent, sessionId);
     await insertTrees(
       {
-        type: 'buildr/section',
+        type: 'buildr/container',
+        props: { as: 'section', bleed: true },
         children: [
           {
-            type: 'buildr/stack',
+            type: 'buildr/container',
+            props: { width: 'none' },
             children: [
               { type: 'buildr/badge', props: { text: 'Since 2009', variant: 'primary' } },
               { type: 'buildr/heading', props: { text: 'Our story', level: 2 } },
@@ -207,7 +209,8 @@ test('scenario 2: a company page with a card grid, a list and a contact section'
         ],
       },
       {
-        type: 'buildr/section',
+        type: 'buildr/container',
+        props: { as: 'section', bleed: true },
         children: [{ type: 'buildr/grid', children: [1, 2, 3].map(card) }],
       },
     )(agent, sessionId);
@@ -228,7 +231,8 @@ test('scenario 4: a post listing from the blog template', async ({ builder, page
 test('scenario 6: a page with a contact form', async ({ builder, page }) => {
   const built = await builder.build('Agent contact page', async (agent, sessionId) => {
     await insertTrees({
-      type: 'buildr/section',
+      type: 'buildr/container',
+      props: { as: 'section', bleed: true },
       children: [{ type: 'buildr/heading', props: { text: 'Write to us', level: 1 } }],
     })(agent, sessionId);
     await insertTemplates({ id: 'buildr/contact' })(agent, sessionId);
@@ -265,10 +269,12 @@ test('scenario 7: one page translated into English, structure untouched', async 
   };
   const built = await builder.build('Agent page to translate', async (agent, sessionId) => {
     await insertTrees({
-      type: 'buildr/section',
+      type: 'buildr/container',
+      props: { as: 'section', bleed: true },
       children: [
         {
-          type: 'buildr/stack',
+          type: 'buildr/container',
+          props: { width: 'none' },
           children: [
             { type: 'buildr/heading', props: { text: 'Chleb prosto z pieca', level: 1 } },
             { type: 'buildr/text', props: { text: 'Pieczemy codziennie od piątej rano.' } },

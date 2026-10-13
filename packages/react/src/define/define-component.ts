@@ -62,14 +62,14 @@ function toSteps(
 
 /**
  * Defines a component: its serializable metadata (docs/component-registry.md) together with the
- * React implementation (`render`, `runtime`, `migrations`). Validates on the spot and throws on a
- * mistake — an authoring error made while wiring up the application, not bad end-user data. The
- * result goes into `createRegistry`.
+ * React implementation (`render`, `runtime`, `migrations`, `replaces`). Validates on the spot and
+ * throws on a mistake — an authoring error made while wiring up the application, not bad end-user
+ * data. The result goes into `createRegistry`.
  */
 export function defineComponent<const P extends PropSchema>(
   input: DefineComponentInput<P>,
 ): ComponentDefinition {
-  const { render, migrations, ...meta } = input;
+  const { render, migrations, replaces, ...meta } = input;
   if (typeof render !== 'function') throw invalid(meta.type, '`render` must be a function');
 
   const diagnostics = validateComponentMeta(meta);
@@ -78,11 +78,29 @@ export function defineComponent<const P extends PropSchema>(
     throw invalid(meta.type, summary);
   }
 
+  for (const [retiredType, replacement] of Object.entries(replaces ?? {})) {
+    for (const key of ['fromVersion', 'toVersion'] as const) {
+      if (!Number.isInteger(replacement[key]) || replacement[key] < 1) {
+        throw invalid(
+          meta.type,
+          `replacement of "${retiredType}" must have a positive integer ${key}`,
+        );
+      }
+    }
+    if (replacement.toVersion > meta.version) {
+      throw invalid(
+        meta.type,
+        `replacement of "${retiredType}" targets version ${replacement.toVersion}, but the component is at version ${meta.version}`,
+      );
+    }
+  }
+
   return Object.freeze({
     meta,
     // Props are resolved against this component's own metadata before `render` is called, so the
     // narrower `ResolvedProps<P>` the author wrote against is what actually arrives.
     render: render as unknown as ErasedRender,
     migrations: Object.freeze(toSteps(meta.type, meta.version, migrations ?? {})),
+    ...(replaces !== undefined ? { replaces: Object.freeze({ ...replaces }) } : {}),
   });
 }

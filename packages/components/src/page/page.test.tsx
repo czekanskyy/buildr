@@ -1,10 +1,10 @@
+import { s } from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import { Container } from '../container/definition.ts';
-import { Section } from '../section/definition.ts';
 import { createRegistry, Probe, pageWith, render } from '../test-kit.tsx';
 import { Page } from './definition.ts';
 
-const registry = createRegistry({ components: [Page, Section, Container, Probe] });
+const registry = createRegistry({ components: [Page, Container, Probe] });
 
 describe('buildr/page', () => {
   it('is the document root and cannot be inserted, moved, removed or duplicated', () => {
@@ -24,7 +24,11 @@ describe('buildr/page', () => {
   it('renders one div with the root attributes and no wrapper', async () => {
     const { html, diagnostics } = await render(
       registry,
-      pageWith({ type: 'buildr/section', children: [{ type: 'test/probe' }] }),
+      pageWith({
+        type: 'buildr/container',
+        props: { as: s('section') } as never,
+        children: [{ type: 'test/probe' }],
+      }),
     );
     expect(diagnostics).toEqual([]);
     expect(html).toMatch(/<div class="bc-page b-root"><section [^>]*>.*<\/section><\/div>/);

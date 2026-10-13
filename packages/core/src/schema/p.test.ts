@@ -43,6 +43,11 @@ describe('p.*', () => {
     expect(p.number({ localizable: true }).localizable).toBe(true);
   });
 
+  it('select: carries optionLabels only when given', () => {
+    expect(p.select({ options: ['a'] })).not.toHaveProperty('optionLabels');
+    expect(p.select({ options: ['a'], optionLabels: { a: 'A' } }).optionLabels).toEqual({ a: 'A' });
+  });
+
   it('select: falls back to the first option as the default', () => {
     expect(p.select({ options: [1, 2, 3] }).default).toBe(1);
     expect(p.select({ options: [1, 2, 3], default: 3 }).default).toBe(3);

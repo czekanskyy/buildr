@@ -104,18 +104,18 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
-async function mount(readOnly = false) {
+async function mount(readOnly = false, locale = 'en', reg = registry, man = manifest) {
   const store = createEditorStore({
     doc: fixture(),
-    registry,
+    registry: reg,
     generateId: createSeededIdGenerator(5),
     validationDelayMs: null,
     readOnly,
   });
   await act(async () =>
     root.render(
-      <MessagesProvider locale="en">
-        <ManifestProvider manifest={manifest}>
+      <MessagesProvider locale={locale}>
+        <ManifestProvider manifest={man}>
           <EditorStoreProvider store={store}>
             <ToastProvider>
               <InsertPanel />
@@ -173,6 +173,34 @@ describe('catalog', () => {
     expect(safeThumbnail('//evil.example.com/a.png')).toBeUndefined();
     expect(safeThumbnail('data:text/html,<script>')).toBeUndefined();
     expect(safeThumbnail(undefined)).toBeUndefined();
+  });
+});
+
+describe('category headings', () => {
+  const custom = createRegistryMeta({
+    components: [
+      meta('buildr/page', { capabilities: { root: true }, slots: { default: {} } }),
+      meta('buildr/button', { label: 'Button', category: 'ui' }),
+      meta('buildr/list', { label: 'List', category: 'cms' }),
+      meta('buildr/quote', { label: 'Quote', category: 'blog' }),
+    ],
+    templates: [],
+  });
+  const customManifest = toManifest(custom);
+  const headings = () =>
+    [...container.querySelectorAll('[role=group]')].map((g) => g.getAttribute('aria-label'));
+
+  it('names ui and cms in capitals and title-cases a custom category', async () => {
+    await mount(false, 'en', custom, customManifest);
+    expect(headings()).toEqual(['UI', 'CMS', 'Blog']);
+    expect(container.querySelector('.bd-insert-category-name')?.textContent).toBe('UI');
+  });
+
+  it('uses the Polish catalog', async () => {
+    await mount(false, 'pl', custom, customManifest);
+    expect(headings()).toEqual(['UI', 'CMS', 'Blog']);
+    await mount(false, 'pl');
+    expect(headings()).toEqual(['Układ', 'Treść', 'Sections']);
   });
 });
 
@@ -335,5 +363,26 @@ describe('InsertPanel (PB-125)', () => {
     await act(async () => named('Clear search').click());
     expect(input.value).toBe('');
     expect(container.querySelector('.bd-insert-empty')).toBeNull();
+  });
+});
+
+describe('versions', () => {
+  it('stamps what it inserts with the versions of the registry', async () => {
+    const v2 = createRegistryMeta({
+      components: [
+        meta('buildr/page', { capabilities: { root: true }, slots: { default: {} } }),
+        meta('buildr/box', {
+          label: 'Box',
+          category: 'layout',
+          version: 2,
+          slots: { default: {} },
+        }),
+      ],
+      templates: [],
+    });
+    const store = await mount(false, 'en', v2, toManifest(v2));
+    await click('Box');
+    expect(store.getState().doc.components['buildr/box']).toBe(2);
+    expect(children(store, 'root')).toHaveLength(3);
   });
 });

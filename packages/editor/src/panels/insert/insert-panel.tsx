@@ -1,4 +1,9 @@
-import { type BuilderFragment, fromTree, instantiateTemplate } from '@next-buildr/core';
+import {
+  type BuilderFragment,
+  fromTree,
+  instantiateTemplate,
+  registryVersions,
+} from '@next-buildr/core';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useManifest } from '../../app/manifest.tsx';
 import { useDragPress } from '../../dnd/index.ts';
@@ -13,6 +18,7 @@ import {
   paletteItems,
   safeThumbnail,
 } from './catalog.ts';
+import { categoryName } from './category-name.ts';
 import { placeInsertion } from './target.ts';
 
 type View = 'grid' | 'list';
@@ -34,8 +40,6 @@ function writeView(view: View): void {
     // Storage can be blocked; the choice then only lasts for this session.
   }
 }
-
-const titleCase = (category: string) => category.charAt(0).toUpperCase() + category.slice(1);
 
 /**
  * The component and template palette (docs/editor.md#insert): search, categories, and a click (or
@@ -93,16 +97,23 @@ export function InsertPanel() {
     });
 
   const fragmentOf = (item: PaletteItem): BuilderFragment | undefined => {
+    const versions = registryVersions(store.registry);
     if (item.kind === 'template') {
       const definition = manifest?.templates[item.id];
-      return definition === undefined ? undefined : instantiateTemplate(definition);
+      return definition === undefined
+        ? undefined
+        : instantiateTemplate(definition, undefined, undefined, versions);
     }
     const meta = manifest?.components[item.id];
     if (meta === undefined) return undefined;
-    return fromTree({
-      type: meta.type,
-      ...(meta.defaults?.slots !== undefined ? { slots: meta.defaults.slots } : {}),
-    });
+    return fromTree(
+      {
+        type: meta.type,
+        ...(meta.defaults?.slots !== undefined ? { slots: meta.defaults.slots } : {}),
+      },
+      undefined,
+      versions,
+    );
   };
 
   const insert = (item: PaletteItem) => {
@@ -255,7 +266,7 @@ export function InsertPanel() {
               {section.groups.map((group) => {
                 const key = `${section.id}:${group.category}`;
                 const open = searching || !collapsed.has(key);
-                const name = titleCase(group.category);
+                const name = categoryName(t, group.category);
                 const listId = `bd-insert-${section.id}-${group.category}`;
                 return (
                   // biome-ignore lint/a11y/useSemanticElements: a fieldset is for form controls; this only names a group of buttons

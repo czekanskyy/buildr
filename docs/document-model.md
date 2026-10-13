@@ -58,12 +58,12 @@ export interface PageNode {
 {
   "schemaVersion": 1,
   "root": "root",
-  "components": { "buildr/page": 1, "buildr/section": 1, "buildr/heading": 1, "buildr/text": 1, "buildr/button": 1 },
+  "components": { "buildr/page": 1, "buildr/container": 2, "buildr/heading": 1, "buildr/text": 1, "buildr/button": 1 },
   "nodes": {
     "root": { "id": "root", "type": "buildr/page", "slots": { "default": ["S7fK2a9Qxp"] } },
     "S7fK2a9Qxp": {
-      "id": "S7fK2a9Qxp", "type": "buildr/section", "name": "Hero",
-      "props": { "as": { "kind": "static", "value": "section" }, "container": { "kind": "static", "value": "lg" } },
+      "id": "S7fK2a9Qxp", "type": "buildr/container", "name": "Hero",
+      "props": { "as": { "kind": "static", "value": "section" }, "width": { "kind": "static", "value": "lg" }, "bleed": { "kind": "static", "value": true } },
       "slots": { "default": ["H1a2b3c4d5", "T9z8y7x6w5", "B0q1w2e3r4"] },
       "styles": {
         "base": { "spacing": { "padding": { "top": "$space.24", "bottom": "$space.24" } } },
@@ -103,8 +103,10 @@ export interface TreeNode {
   slots?: Record<SlotName, TreeNode[]>;
   name?: string; anchor?: string; lock?: PageNode['lock']; region?: string;
 }
-// fromTree(tree, idGen) → BuilderFragment;  toTree(doc, nodeId) → TreeNode;  reId(fragment, idGen) → BuilderFragment
+// fromTree(tree, idGen, versions?) → BuilderFragment;  toTree(doc, nodeId) → TreeNode;  reId(fragment, idGen) → BuilderFragment
 ```
+
+A fragment's `components` map records the version each type was written with, and `insert` rejects a fragment whose versions differ from the document's. `fromTree` and `instantiateTemplate` therefore take the registry's versions (`registryVersions(meta)`, type -> version, `1` for a type not in it); `withRegistryVersions(fragment, registry)` re-stamps an existing fragment. Fragments from older versions or retired types go through `migrateFragment` first ([migrations.md](migrations.md#replacement-migrations)).
 
 ## Serialization and versioning
 

@@ -29,8 +29,24 @@ const Section = defineComponent({
   runtime: 'shared',
   props: {},
   slots: { default: {}, aside: {} },
+  // What `.bc-section` of the retired components Section gave it (the playground gallery's baselines
+  // depend on it): a flex column with the theme's inline padding.
   render: ({ root, slots }) =>
-    createElement('section', root, slots['default'], createElement('aside', null, slots['aside'])),
+    createElement(
+      'section',
+      {
+        ...root,
+        style: {
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
+          isolation: 'isolate',
+          paddingInline: 'var(--b-space-4)',
+        },
+      },
+      slots['default'],
+      createElement('aside', null, slots['aside']),
+    ),
 });
 
 const Heading = defineComponent({

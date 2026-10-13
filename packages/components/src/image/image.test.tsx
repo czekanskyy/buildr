@@ -1,15 +1,15 @@
 import { createMemoryDataSource, runA11y, s } from '@next-buildr/core';
 import type { Platform } from '@next-buildr/react';
 import { describe, expect, it } from 'vitest';
+import { Container } from '../container/definition.ts';
 import { Page } from '../page/definition.ts';
-import { Stack } from '../stack/definition.ts';
 import { createRegistry, pageWith, problemsOf, render } from '../test-kit.tsx';
 import { Image } from './definition.ts';
 import { imageFixtureMedia, imageFixtures } from './fixtures.ts';
 import { buildSrcSet, objectPosition, safeUrl } from './source.ts';
 import { ImageView } from './view.tsx';
 
-const registry = createRegistry({ components: [Page, Stack, Image] });
+const registry = createRegistry({ components: [Page, Container, Image] });
 const data = createMemoryDataSource({ media: imageFixtureMedia });
 const ref = (id = 'm1') => s({ source: 'fixtures', collection: 'media', id }) as never;
 const image = (props: Record<string, unknown> = {}) =>

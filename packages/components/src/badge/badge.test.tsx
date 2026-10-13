@@ -1,12 +1,12 @@
 import { s } from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
+import { Container } from '../container/definition.ts';
 import { Page } from '../page/definition.ts';
-import { Stack } from '../stack/definition.ts';
 import { createRegistry, pageWith, problemsOf, render } from '../test-kit.tsx';
 import { BADGE_VARIANTS, Badge } from './definition.ts';
 import { badgeFixtures } from './fixtures.ts';
 
-const registry = createRegistry({ components: [Page, Stack, Badge] });
+const registry = createRegistry({ components: [Page, Container, Badge] });
 const badge = (props: Record<string, unknown> = {}) =>
   pageWith({ type: 'buildr/badge', props: props as never });
 

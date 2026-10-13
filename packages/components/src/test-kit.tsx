@@ -7,6 +7,7 @@ import {
   type Diagnostic,
   defaultTheme,
   fromTree,
+  registryVersions,
   runA11y,
   type TreeNode,
   validateDocument,
@@ -18,6 +19,7 @@ import { demoPlatform } from '@next-buildr/test-utils/demo/components';
 import { createElement, Fragment, type ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { ComponentFixture } from './fixtures.ts';
+import { createDefaultRegistry } from './registry.ts';
 
 export const context: DataContext = {
   scopes: {},
@@ -40,9 +42,15 @@ export const Probe = defineComponent({
   render: ({ root }) => createElement('p', root, 'probe'),
 });
 
-/** A document whose page holds `tree`. */
+/** The versions the default registry serves, so fixtures are stored at the current version of each type. */
+export const registryVersionsOfLibrary = registryVersions(createDefaultRegistry().meta);
+
+/** A document whose page holds `tree`, every type stamped with the library's current version. */
 export function pageWith(tree: TreeNode): BuilderDocument {
-  return doc({ type: 'buildr/page', children: [tree as never] });
+  return doc(
+    { type: 'buildr/page', children: [tree as never] },
+    { versions: registryVersionsOfLibrary },
+  );
 }
 
 export interface Rendered {

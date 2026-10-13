@@ -6,7 +6,8 @@ export const headingFixtures: readonly ComponentFixture[] = [
     id: 'heading-levels',
     title: 'Heading: every level, in order',
     tree: {
-      type: 'buildr/stack',
+      type: 'buildr/container',
+      props: { width: s('none') },
       children: [1, 2, 3, 4, 5, 6].map((level) => ({
         type: 'buildr/heading',
         props: { text: s(`Level ${level}`), level: s(level) },

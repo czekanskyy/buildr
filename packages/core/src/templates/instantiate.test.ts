@@ -67,6 +67,13 @@ describe('instantiateTemplate', () => {
     expect(new Set([...Object.keys(first.nodes), ...Object.keys(second.nodes)]).size).toBe(4);
   });
 
+  it('stamps component versions from the versions argument', () => {
+    const fragment = instantiateTemplate(hero(), undefined, createSeededIdGenerator('versions'), {
+      'buildr/section': 2,
+    });
+    expect(fragment.components).toEqual({ 'buildr/section': 2, 'buildr/heading': 1 });
+  });
+
   it('sets source and no lock on the root when lock is "none"', () => {
     const fragment = instantiateTemplate(hero(), undefined, createSeededIdGenerator('pb-018/none'));
     const rootId = fragment.roots[0];

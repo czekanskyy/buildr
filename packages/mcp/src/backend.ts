@@ -156,6 +156,8 @@ export interface LoadedDocument extends DocumentSummary {
   /** The public path of the document, when the collection defines one. */
   readonly previewPath: string | null;
   readonly readOnly?: boolean;
+  /** Migration or manifest compatibility failures that prevent editing. */
+  readonly readOnlyReasons?: readonly Diagnostic[];
 }
 
 export const saveResultSchema = z.object({ revision: revisionSchema, updatedAt: z.string() });

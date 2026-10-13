@@ -4,9 +4,7 @@
 @layer buildr.components;
 @import "./styles/base.css";
 @import "./page/styles.css";
-@import "./section/styles.css";
 @import "./container/styles.css";
-@import "./stack/styles.css";
 @import "./grid/styles.css";
 @import "./heading/styles.css";
 @import "./text/styles.css";

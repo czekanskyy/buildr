@@ -8,7 +8,8 @@ export const buttonFixtures: readonly ComponentFixture[] = [
     id: 'button-variants',
     title: 'Button: every variant',
     tree: {
-      type: 'buildr/stack',
+      type: 'buildr/container',
+      props: { width: s('none') },
       styles: {
         base: { layout: { direction: 'row', gap: '1rem', wrap: 'wrap' } },
         bp: { mobile: { layout: { direction: 'column' } } },
@@ -31,7 +32,8 @@ export const buttonFixtures: readonly ComponentFixture[] = [
     id: 'button-icon',
     title: 'Button: with an icon, and icon-only',
     tree: {
-      type: 'buildr/stack',
+      type: 'buildr/container',
+      props: { width: s('none') },
       styles: { base: { layout: { direction: 'row', gap: '1rem' } } } as never,
       children: [
         {

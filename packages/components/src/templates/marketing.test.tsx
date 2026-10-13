@@ -16,6 +16,10 @@ import { marketingTemplateFixtures } from './fixtures.ts';
 import { marketingTemplates } from './index.ts';
 import { documentOf, templateRegistry } from './templates.test-kit.tsx';
 
+/** A band: the full-width container a section became. */
+const isBand = (n: { type: string; props?: Record<string, unknown> }) =>
+  n.type === 'buildr/container' && n.props?.['bleed'] !== undefined;
+
 const registry = templateRegistry;
 
 /** Every (template, variant) pair: `undefined` is the template's own tree. */
@@ -144,7 +148,7 @@ describe('marketing templates', () => {
   it('give every band the theme rhythm, tighter on a phone', async () => {
     for (const template of marketingTemplates) {
       const { document } = documentOf(template);
-      const bands = Object.values(document.nodes).filter((n) => n.type === 'buildr/section');
+      const bands = Object.values(document.nodes).filter(isBand);
       expect(bands, template.id).toHaveLength(1);
       const styles = bands[0]?.styles as { base: object; bp: { mobile: object } };
       expect(styles.bp.mobile).toBeDefined();
@@ -165,8 +169,8 @@ describe('marketing templates', () => {
         const grid = Object.values(document.nodes).find((n) => n.type === 'buildr/grid');
         return (grid?.slots?.['default'] ?? []).map((id) => document.nodes[id]?.type);
       };
-      expect(order()).toEqual(['buildr/image', 'buildr/stack']);
-      expect(order('imageRight')).toEqual(['buildr/stack', 'buildr/image']);
+      expect(order()).toEqual(['buildr/image', 'buildr/container']);
+      expect(order('imageRight')).toEqual(['buildr/container', 'buildr/image']);
     });
 
     it('has no picture, and centred text, in centered', () => {
@@ -233,7 +237,7 @@ describe('marketing templates', () => {
 
     it('keeps the call to action on the brand colour, with light text', () => {
       const { document } = documentOf(byId('buildr/cta'));
-      const band = Object.values(document.nodes).find((n) => n.type === 'buildr/section');
+      const band = Object.values(document.nodes).find(isBand);
       expect(band?.styles).toMatchObject({
         base: {
           background: { color: '$color.primary' },

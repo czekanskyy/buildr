@@ -60,6 +60,32 @@ describe('toManifest', () => {
   });
 });
 
+describe('select optionLabels', () => {
+  const labelled = (labels: Record<string, string>) =>
+    meta({
+      props: { display: p.select({ options: ['flex', 'block'], optionLabels: labels }) },
+    });
+
+  it('carries optionLabels into the manifest and round-trips through fromManifest', () => {
+    const registry = createRegistryMeta({ components: [labelled({ flex: 'Flex', block: 'Box' })] });
+    const manifest = toManifest(registry);
+    expect(manifest.components['buildr/heading']?.props.display).toMatchObject({
+      optionLabels: { flex: 'Flex', block: 'Box' },
+    });
+
+    const result = fromManifest(JSON.parse(JSON.stringify(manifest)));
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value).toEqual(manifest);
+  });
+
+  it('hashes deterministically regardless of label key order, and changes with the labels', () => {
+    const hashOf = (labels: Record<string, string>) =>
+      manifestHash(createRegistryMeta({ components: [labelled(labels)] }));
+    expect(hashOf({ flex: 'Flex', block: 'Box' })).toBe(hashOf({ block: 'Box', flex: 'Flex' }));
+    expect(hashOf({ flex: 'Flex' })).not.toBe(hashOf({ flex: 'Other' }));
+  });
+});
+
 describe('manifestHash', () => {
   it('is deterministic', () => {
     const registryA = createRegistryMeta({ components: [meta()], templates: [template()] });

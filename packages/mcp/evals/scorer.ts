@@ -6,9 +6,7 @@ import type { OutlineEntry, RuleResult, RunRecord, Score } from './types.ts';
 
 /** Components that only make sense with content inside. */
 const CONTAINERS: ReadonlySet<string> = new Set([
-  'buildr/section',
   'buildr/container',
-  'buildr/stack',
   'buildr/grid',
   'buildr/list',
   'buildr/accordion',
