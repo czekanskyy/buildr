@@ -5,7 +5,7 @@ Verified end to end (PB-114): a clean clone, the seed and the production build a
 ## Prerequisites
 
 - Node.js >= 22 LTS
-- pnpm >= 10
+- pnpm >= 12
 - Git
 
 ## Try the reference application (about 5 minutes)
