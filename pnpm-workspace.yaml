@@ -3,6 +3,13 @@ packages:
   - "tooling/*"
   - "apps/*"
 
+# Dependencies allowed to run install scripts (pnpm 11+ fails install on unlisted ones).
+# Neither needs its script: esbuild ships its binary as an optional platform package,
+# and git hooks are installed by the root `prepare` script (`lefthook install`).
+allowBuilds:
+  esbuild: false
+  lefthook: false
+
 # dependency-cruiser doesn't declare `typescript` as its own dependency (it does an
 # optional dynamic import), so without this it resolves the workspace's typescript@7,
 # which is outside dependency-cruiser's supported `<7.0.0` range and silently disables

@@ -13,7 +13,7 @@ A [Model Context Protocol](https://modelcontextprotocol.io) server that lets an 
 
 ## Quickstart
 
-About ten minutes, using the example app. You need Node >= 22 and pnpm >= 10 and a clone of the repository set up as in [getting-started.md](getting-started.md).
+About ten minutes, using the example app. You need Node >= 22 and pnpm >= 12 and a clone of the repository set up as in [getting-started.md](getting-started.md).
 
 1. **Start the site with agents enabled.** The example turns `mcp.enabled` on and gives the `users` collection API keys when `BUILDR_MCP=1`. Agents are off unless you enable them.
 

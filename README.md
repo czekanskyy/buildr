@@ -8,7 +8,7 @@
 
 ## Quickstart
 
-Node >= 22 and pnpm >= 10:
+Node >= 22 and pnpm >= 12:
 
 ```bash
 # macOS / Linux / Git Bash

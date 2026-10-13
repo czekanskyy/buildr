@@ -21,6 +21,6 @@ See also [ADR-016](adr/ADR-016-security-model.md).
 | CSRF | Payload's own `csrf` origin allowlist. Mutating requests require `Content-Type: application/json` and an `Origin` check. |
 | Denial of service | Document limits, `limit <= 50` on queries, no nested Loop queries, expression evaluation budgets, form submission rate limiting. |
 | Forms | The field schema is derived server-side from the **published** document (never trusted from the client), with type/length validation, a honeypot field, IP-hash rate limiting, and an allowlisted notification-recipient set. |
-| Supply chain | pnpm lockfile, `onlyBuiltDependencies`, Renovate, npm publish with provenance (OIDC), 2FA/Trusted Publishing, CodeQL. |
+| Supply chain | pnpm lockfile, `allowBuilds`, Renovate, npm publish with provenance (OIDC), 2FA/Trusted Publishing, CodeQL. |
 
 See also [payload.md](payload.md#authentication-and-authorization) for the concrete access-control implementation, and [editor.md](editor.md#the-postmessage-protocol) for the protocol's own security details.
