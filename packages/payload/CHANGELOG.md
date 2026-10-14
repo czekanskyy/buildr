@@ -1,5 +1,26 @@
 # @next-buildr/payload
 
+## 2.0.0
+
+### Minor Changes
+
+- d6dd7bc: Editor: a visual style inspector (nested margin/padding rings with linked sides, one-row inset, border width and radius, side-by-side size/gap/typography fields, icon segments for display, alignment and text style, colour picker, opacity slider) and a unit menu on every length field instead of typing units. Insert panel categories are ordered Layout, Content, Media, Forms, UI, CMS. The toolbar shows the Buildr mark and an editable page name; the breadcrumbs no longer show the `buildr/` prefix.
+
+  `DocumentAdapter` gets an optional `rename(ref, title)`; the Payload plugin adds `PATCH /buildr/documents/:collection/:id` (renames without touching the layout or its revision) and the adapter implements `rename`.
+
+### Patch Changes
+
+- Updated dependencies [aaa5701]
+- Updated dependencies [aaa5701]
+- Updated dependencies [70f50a5]
+- Updated dependencies [aaa5701]
+- Updated dependencies [aaa5701]
+- Updated dependencies [d6dd7bc]
+  - @next-buildr/core@2.0.0
+  - @next-buildr/editor@2.0.0
+  - @next-buildr/mcp@2.0.0
+  - @next-buildr/next@2.0.0
+
 ## 1.0.0
 
 ### Minor Changes
