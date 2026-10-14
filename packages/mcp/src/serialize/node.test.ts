@@ -9,7 +9,7 @@ const doc = documentFromTree({
   type: 'buildr/page',
   children: [
     {
-      type: 'buildr/section',
+      type: 'buildr/container',
       anchor: 'hero',
       styles: {
         base: { spacing: { padding: { top: '$space.8' } } },
@@ -64,7 +64,7 @@ describe('describeNode', () => {
   });
 
   it('renders text with bindings, expressions, translations and styles', () => {
-    const [section] = ids('buildr/section');
+    const [section] = ids('buildr/container');
     const [heading] = ids('buildr/heading');
     const [binding, expression] = ids('buildr/text');
     expect(render(section)).toMatchSnapshot();

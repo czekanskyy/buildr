@@ -1,4 +1,5 @@
 import { type FormatSpec, type NodeStyles, s, type TreeNode } from '@next-buildr/core';
+import { containerReplaces } from '../container/replacements.ts';
 
 /** Small builders for template trees, so each template reads as the page it makes. */
 
@@ -62,17 +63,41 @@ export const icon = (name: string, size = 'lg'): TreeNode => ({
   props: { name: s(name), size: s(size) } as never,
 });
 
-/** A vertical stack; `styles` may add alignment, gap and responsive overrides. */
+const noContext = { nodeId: '', subtree: new Map() };
+
+/**
+ * The migrated props without the ones that equal the container's defaults, which every template
+ * would otherwise repeat (the manifest has a size budget).
+ */
+function withoutDefaults(props: Record<string, unknown>): never {
+  const defaults: Record<string, unknown> = { as: 'div', display: 'flex', width: 'lg' };
+  return Object.fromEntries(
+    Object.entries(props).filter(([key, value]) => {
+      const fixed = value as { kind?: string; value?: unknown };
+      return !(fixed.kind === 'static' && fixed.value === defaults[key]);
+    }),
+  ) as never;
+}
+
+/** A vertical stack (a flex container with no width limit); `styles` may add alignment, gap and responsive overrides. */
 export const stack = (
   children: readonly TreeNode[],
   styles?: unknown,
   extra: Partial<TreeNode> = {},
-): TreeNode => ({
-  type: 'buildr/stack',
-  children,
-  ...(styles === undefined ? {} : styled(styles)),
-  ...extra,
-});
+): TreeNode => {
+  // The props are the ones the stored-document migration writes, so both stay in step.
+  const migrated = containerReplaces['buildr/stack'].migrate(
+    { props: {}, styles: styles as NodeStyles | undefined },
+    noContext,
+  );
+  return {
+    type: 'buildr/container',
+    props: withoutDefaults(migrated.props ?? {}),
+    children,
+    ...(migrated.styles === undefined ? {} : { styles: migrated.styles }),
+    ...extra,
+  };
+};
 
 /** A grid of `columns` equal columns, `tablet` on tablets and one on phones unless told otherwise. */
 export const grid = (
@@ -98,24 +123,34 @@ export const section = (
   children: readonly TreeNode[],
   props: { container?: string; ariaLabel?: string; as?: string } = {},
   extraStyles: { base?: Record<string, unknown>; bp?: Record<string, unknown> } = {},
-): TreeNode => ({
-  type: 'buildr/section',
-  props: {
-    container: s(props.container ?? 'lg'),
-    ...(props.as === undefined ? {} : { as: s(props.as) }),
-    ...(props.ariaLabel === undefined ? {} : { ariaLabel: s(props.ariaLabel) }),
-  } as never,
-  children,
-  ...styled({
-    base: {
-      spacing: { padding: { top: '$space.16', bottom: '$space.16' } },
-      ...extraStyles.base,
+): TreeNode => {
+  // Written as the section it replaces and migrated with the same code stored documents go through.
+  const migrated = containerReplaces['buildr/section'].migrate(
+    {
+      props: {
+        container: s(props.container ?? 'lg'),
+        ...(props.as === undefined ? {} : { as: s(props.as) }),
+        ...(props.ariaLabel === undefined ? {} : { ariaLabel: s(props.ariaLabel) }),
+      } as never,
+      styles: {
+        base: {
+          spacing: { padding: { top: '$space.16', bottom: '$space.16' } },
+          ...extraStyles.base,
+        },
+        bp: {
+          mobile: { spacing: { padding: { top: '$space.8', bottom: '$space.8' } } },
+          ...extraStyles.bp,
+        },
+      } as NodeStyles,
     },
-    bp: {
-      mobile: { spacing: { padding: { top: '$space.8', bottom: '$space.8' } } },
-      ...extraStyles.bp,
-    },
-  }),
-});
+    noContext,
+  );
+  return {
+    type: 'buildr/container',
+    props: withoutDefaults(migrated.props ?? {}),
+    children,
+    ...(migrated.styles === undefined ? {} : { styles: migrated.styles }),
+  };
+};
 
 export const centered = { layout: { align: 'center' }, typography: { textAlign: 'center' } };

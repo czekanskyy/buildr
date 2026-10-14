@@ -21,9 +21,7 @@ import { loopFixtures } from './loop/fixtures.ts';
 import { pageFixtures } from './page/fixtures.ts';
 import { paginationFixtures } from './pagination/fixtures.ts';
 import { richTextFixtures } from './rich-text/fixtures.ts';
-import { sectionFixtures } from './section/fixtures.ts';
 import { selectFixtures } from './select/fixtures.ts';
-import { stackFixtures } from './stack/fixtures.ts';
 import { contentTemplateFixtures, marketingTemplateFixtures } from './templates/fixtures.ts';
 import { templateSampleCollections, templateSampleScopes } from './templates/sample-data.ts';
 import { textFixtures } from './text/fixtures.ts';
@@ -55,9 +53,7 @@ function withoutProbes(node: TreeNode): TreeNode {
 
 const componentFixtures: readonly (readonly [ComponentType, readonly ComponentFixture[]])[] = [
   ['buildr/page', pageFixtures],
-  ['buildr/section', sectionFixtures],
   ['buildr/container', containerFixtures],
-  ['buildr/stack', stackFixtures],
   ['buildr/grid', gridFixtures],
   ['buildr/heading', headingFixtures],
   ['buildr/text', textFixtures],

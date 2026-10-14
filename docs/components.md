@@ -6,8 +6,8 @@ The catalog is deliberately not a copy of Elementor or Divi. It is built from a 
 
 | Group | MVP | v0.2 | v0.3 | v1.0+ | Merged / replaced by |
 |---|---|---|---|---|---|
-| Layout | Section, Container, Stack, Grid | — | — | — | Flex and Group become **Stack** (`role=group`); a dedicated Slot component becomes **slots + regions** |
-| Content | Heading, Text, RichText, Link, Button, Icon, List (+ListItem), Badge, Divider | — | — | — | ButtonGroup becomes a **Stack preset** |
+| Layout | Container, Grid | — | — | — | Section, Stack, Flex and Group become **Container** (`display`, `as`, `width`, `bleed`, `role`); a dedicated Slot component becomes **slots + regions** |
+| Content | Heading, Text, RichText, Link, Button, Icon, List (+ListItem), Badge, Divider | — | — | — | ButtonGroup becomes a **Container preset** |
 | Media | Image | Video, Gallery, Carousel | Embed | Lottie (plugin) | — |
 | UI | Card, Accordion (+Item) | Tabs, Toggle, Alert | Modal, Drawer, Tooltip | — | — |
 | Forms | Form, Input, Textarea, Select, Checkbox | RadioGroup | FileUpload | FormStep | — |
@@ -20,7 +20,7 @@ The catalog is deliberately not a copy of Elementor or Divi. It is built from a 
 
 Each entry below is expanded with full detail once its implementation task lands (see [ai/component-development.md](ai/component-development.md) for the required content and the [backlog](backlog/README.md) for build order). This file is the living catalog referenced by AGENTS.md and updated by every component task's Definition of Done.
 
-- **Layout**: Page, Section, Container, Stack, Grid
+- **Layout**: Page, Container, Grid
 - **Content**: Heading, Text, RichText, Link, Button, Icon, List, ListItem, Divider, Badge
 - **Media**: Image
 - **UI**: Card, Accordion, AccordionItem
@@ -34,37 +34,37 @@ Each built-in component has a distinct [lucide](https://lucide.dev) icon (kebab-
 
 | Component | Icon | Component | Icon |
 |---|---|---|---|
-| Page | `file` | Badge | `tag` |
-| Section | `rectangle-horizontal` | Divider | `separator-horizontal` |
-| Container | `square-dashed` | List | `list` |
-| Stack | `rows-3` | ListItem | `dot` |
-| Grid | `layout-grid` | Accordion | `chevrons-up-down` |
-| Card | `panel-top` | AccordionItem | `chevron-down` |
-| Heading | `heading` | Loop | `repeat` |
-| Text | `type` | Pagination | `ellipsis` |
-| RichText | `pilcrow` | Form | `clipboard-list` |
-| Link | `link` | Input | `text-cursor-input` |
-| Button | `mouse-pointer-click` | Textarea | `text-align-start` |
-| Image | `image` | Checkbox | `square-check` |
-| Icon | `sparkles` | Select | `square-chevron-down` |
+| Page | `file` | Image | `image` |
+| Container | `square-dashed` | Icon | `sparkles` |
+| Grid | `layout-grid` | Badge | `tag` |
+| Card | `panel-top` | Divider | `separator-horizontal` |
+| Heading | `heading` | List | `list` |
+| Text | `type` | ListItem | `dot` |
+| RichText | `pilcrow` | Accordion | `chevrons-up-down` |
+| Link | `link` | AccordionItem | `chevron-down` |
+| Button | `mouse-pointer-click` | Loop | `repeat` |
+| Input | `text-cursor-input` | Pagination | `ellipsis` |
+| Textarea | `text-align-start` | Form | `clipboard-list` |
+| Checkbox | `square-check` | Select | `square-chevron-down` |
 
 ## Layout components
 
 ### Page (`buildr/page`)
 
-The document root: one per document, never inserted, moved, removed or duplicated (`capabilities.root`). A plain `div` with a `default` slot; landmarks are Sections, so a page can have several. Its CSS sets the base text colour, surface and body font from tokens.
+The document root: one per document, never inserted, moved, removed or duplicated (`capabilities.root`). A plain `div` with a `default` slot; landmarks are Containers (`as`), so a page can have several. Its CSS sets the base text colour, surface and body font from tokens.
 
-### Section (`buildr/section`)
+### Container (`buildr/container`, version 2)
 
-A band of the page. Props: `as` (`section`, `div`, `header`, `footer`, `main`, `aside`, `nav`, `article`; anything else renders `section`), `container` (`full`, `sm`, `md`, `lg`, `xl`: the content column, taken from the theme's `container` tokens and done with padding, so there is no wrapper element), `backgroundImage` (bindable media, drawn as a decorative `<img>` behind the content, through `platform.Image`), `ariaLabel` (localizable). A landmark element (`section`, `aside`, `nav`, `header`, `footer`) should be named with `ariaLabel`; the a11y rules check one `main` and named navigations.
+The one box that lays out children; it replaces the former Section and Stack ([ADR-025](adr/ADR-025-retiring-a-component-type.md)). Props:
 
-### Container (`buildr/container`)
+- `display`: `flex` (default, a column with a `space-4` gap), `block` (shown as "Box"), `grid`, `inline-flex`, `inline-block`. Direction, wrap, gap and alignment are the `layout.*` styles and can change per breakpoint; the slot axis follows the computed layout, so drag-and-drop knows the direction. A `layout.display` style on the node wins over the `display` prop (node CSS is in `@layer buildr.nodes`), see [styles.md](styles.md).
+- `as`: the element, `div` by default, or `section`, `header`, `footer`, `main`, `aside`, `nav`, `article`. A landmark should be named with `ariaLabel`; the a11y rules check one `main` and named navigations.
+- `width`: the content column (`sm`, `md`, `lg`, `xl`, from the theme's `container` tokens; default `lg`), or `none` ("No limit").
+- `bleed`: the box spans its parent (a full-width background) and keeps the content to the column with padding.
+- `backgroundImage`: bindable media, drawn as a decorative `<img>` behind the content, through `platform.Image`.
+- `role` (`none`, `group`, `list`, plain `div` only: a landmark element keeps its own role; use `group` with an `ariaLabel`, and `list` only with ListItem children) and `ariaLabel` (localizable).
 
-Centres its content in a column no wider than `width` (`sm`, `md`, `lg`, `xl`, from the `container` tokens). One `div`, `default` slot.
-
-### Stack (`buildr/stack`)
-
-A flex container with a `default` slot (`axis: 'auto'`, so drag-and-drop follows the computed direction). Direction, wrap, gap and alignment are the `layout.*` style properties and can change per breakpoint; the component CSS only defaults to a column with a `space-4` gap. Props: `role` (`none`, `group`, `list`; use `group` with an `ariaLabel`, and `list` only with ListItem children) and `ariaLabel`.
+The options reach the CSS as data attributes (`data-display`, `data-width`, `data-bleed`, `data-has-background`). It has the `size` style group, and its content category includes `landmark`. Stored version 1 containers become `display: 'block'`, so they look as before; stored `buildr/section` and `buildr/stack` nodes are rewritten into containers on load (a stack: flex column, no width limit; a section: `bleed` flex column keeping its element, width, image and name).
 
 ### Grid (`buildr/grid`)
 
@@ -176,13 +176,13 @@ The registry's manifest (`toManifest(registry.meta)`, what the editor loads) is 
 
 | Template | Id | Made of | Notes |
 |---|---|---|---|
-| Hero | `buildr/hero` | Section, Grid, Stack, Heading (H1), Text, Buttons, Image | `lock: structure`; the buttons are the editable `actions` region. Variants: default (picture first), `imageRight`, `centered` (no picture). Two columns, one on a phone. |
-| Feature grid | `buildr/feature-grid` | Section, Stack, Grid, Icon, Heading, Text | Six features; three columns, two on tablet, one on mobile. |
-| Call to action | `buildr/cta` | Section, Stack, Heading, Text, Button | On `$color.primary` with `$color.on-primary` text; `lock: structure` with an `actions` region. |
-| Testimonial | `buildr/testimonial` | Section, Stack, Text | A quote and its author. |
-| Pricing | `buildr/pricing` | Section, Grid, Card, Badge, List, Button | Three plans, one highlighted; stacked on tablet and mobile. |
-| FAQ | `buildr/faq` | Section, Accordion | Four questions, the first open. |
-| Contact | `buildr/contact` | Section, Grid, Form, Input, Textarea, Checkbox, Button | Name, email, message and a copy checkbox; the fields have static names so the server can derive the schema. |
+| Hero | `buildr/hero` | Container, Grid, Heading (H1), Text, Buttons, Image | `lock: structure`; the buttons are the editable `actions` region. Variants: default (picture first), `imageRight`, `centered` (no picture). Two columns, one on a phone. |
+| Feature grid | `buildr/feature-grid` | Container, Grid, Icon, Heading, Text | Six features; three columns, two on tablet, one on mobile. |
+| Call to action | `buildr/cta` | Container, Heading, Text, Button | On `$color.primary` with `$color.on-primary` text; `lock: structure` with an `actions` region. |
+| Testimonial | `buildr/testimonial` | Container, Text | A quote and its author. |
+| Pricing | `buildr/pricing` | Container, Grid, Card, Badge, List, Button | Three plans, one highlighted; stacked on tablet and mobile. |
+| FAQ | `buildr/faq` | Container, Accordion | Four questions, the first open. |
+| Contact | `buildr/contact` | Container, Grid, Form, Input, Textarea, Checkbox, Button | Name, email, message and a copy checkbox; the fields have static names so the server can derive the schema. |
 
 Headings start at level 2 (the layout renders the page's H1); only the Hero uses level 1, so a page using it should not also have a layout H1 (`expectH1: 'document'`). The Image in a Hero has no media until the author chooses one: it renders nothing on a published page and a marked empty state in the editor's canvas. Copy is placeholder text meant to be replaced.
 

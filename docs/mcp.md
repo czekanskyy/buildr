@@ -102,7 +102,7 @@ Mount the HTTP route once (see [Remote server](#remote-server-streamable-http-bu
 
 ## What the agent gets
 
-**The guide.** The resource `buildr://guide` (markdown) is how Buildr thinks: Page > Section > Container > content, templates versus trees, style tokens and mobile overrides, bindings and formulas, localization, accessibility, the validate-then-save workflow and what never to do. Source: `packages/mcp/src/resources/guide.md`. It is compiled into `guide-text.ts` (a test fails when they differ; regenerate it with `UPDATE_MCP_DOCS=1 pnpm test --filter @next-buildr/mcp`, in PowerShell `$env:UPDATE_MCP_DOCS = '1'; pnpm test --filter '@next-buildr/mcp'`, then `Remove-Item Env:UPDATE_MCP_DOCS`), so it ships in the package with no runtime file access. The server's `instructions` string points at it, and every prompt embeds it, for clients that do not read resources on their own.
+**The guide.** The resource `buildr://guide` (markdown) is how Buildr thinks: Page > Container > content, templates versus trees, style tokens and mobile overrides, bindings and formulas, localization, accessibility, the validate-then-save workflow and what never to do. Source: `packages/mcp/src/resources/guide.md`. It is compiled into `guide-text.ts` (a test fails when they differ; regenerate it with `UPDATE_MCP_DOCS=1 pnpm test --filter @next-buildr/mcp`, in PowerShell `$env:UPDATE_MCP_DOCS = '1'; pnpm test --filter '@next-buildr/mcp'`, then `Remove-Item Env:UPDATE_MCP_DOCS`), so it ships in the package with no runtime file access. The server's `instructions` string points at it, and every prompt embeds it, for clients that do not read resources on their own.
 
 **Prompts** (`createPrompts()`, served by `createBuildrMcpServerWithTools`; users pick them in their client, usually as slash commands):
 
@@ -332,7 +332,7 @@ Duplicates nodes (with everything inside them) right after the originals, with n
 
 #### `wrap_nodes`
 
-Wraps contiguous sibling nodes in a new container, for example a stack around a heading and a paragraph. The wrapper takes their place and they become its children.
+Wraps contiguous sibling nodes in a new container, for example a `buildr/container` v2 with `display: "flex"` around a heading and a paragraph. The wrapper takes their place and they become its children.
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
@@ -531,7 +531,7 @@ runBackendContract({
 });
 ```
 
-The same entry point exports `createTestManifest()` (page, section, heading) and `createTestMemoryBackend(overrides)` for tests of the tool layer.
+The same entry point exports `createTestManifest()` (page, container v2, heading) and `createTestMemoryBackend(overrides)` for tests of the tool layer.
 
 #### HTTP backend (`@next-buildr/payload/mcp`)
 
@@ -544,7 +544,17 @@ The same entry point exports `createTestManifest()` (page, section, heading) and
 
 #### Memory backend
 
-`createMemoryBackend({ manifest, theme?, documents?, collections?, session?, dataSchemas?, media?, previewBaseUrl?, now? })` implements the whole contract in memory (revisions, conflicts, permissions, `parseDocument` with the session limits). The default session may edit and publish; override `session.permissions`. Used for tests and the `--playground` mode of the CLI (PB-141). `now` is injectable for deterministic timestamps.
+`createMemoryBackend({ manifest, migrations?, theme?, documents?, collections?, session?, dataSchemas?, media?, previewBaseUrl?, now? })` implements the whole contract in memory (revisions, conflicts, permissions, `parseDocument` with the session limits). The default session may edit and publish; override `session.permissions`. Used for tests and the `--playground` mode of the CLI (PB-141). `now` is injectable for deterministic timestamps.
+
+#### Stored document migrations
+
+`createMemoryBackend` and `createFileBackend({ dir, manifest?, migrations?, warn? })` accept optional `migrations: ComponentMigrations` from `@next-buildr/core`. Supply executable migrations from the same registry as the manifest. Stored documents pass through document-schema migration and parsing, then component migration when supplied. The file backend accepts both bare documents and metadata wrappers.
+
+Reads return migrated content without writing it back. Only an explicit save persists edited content; publishing updates status and revision while preserving the stored document content. New inserted trees and templates carry the current registry versions, including `buildr/container` v2.
+
+The backend checks component versions and node types against the manifest after migration. An incompatible or missing version, an unknown type or a failed migration makes the document read-only. `LoadedDocument.readOnlyReasons` contains the diagnostics; `get_document` includes those reasons, and `open_document` also displays their messages. Editing returns the read-only error, and backend saves and publishes are refused. Without migrations, even an unused stale entry in the document's `components` map makes the document read-only.
+
+The stdio playground CLI supplies only a manifest, so documents with outdated versions or unknown component types are served read-only. A host must supply executable migrations through `createMemoryBackend` or `createFileBackend` to migrate legacy content.
 
 ### The server
 

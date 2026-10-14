@@ -14,6 +14,7 @@ export function EditorClient(props: EditorClientProps) {
         adapter={adapter}
         manifest={props.manifest}
         registry={registry.meta}
+        migrations={registry.migrations}
         canvasUrl={props.canvasUrl}
         documentRef={props.documentRef}
         {...(props.config === undefined ? {} : { config: props.config })}

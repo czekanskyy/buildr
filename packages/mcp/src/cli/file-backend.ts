@@ -2,12 +2,13 @@ import { mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from 
 import { basename, extname, join, resolve } from 'node:path';
 import {
   type BuilderDocument,
+  type ComponentMigrations,
   fromManifest,
-  parseDocument,
   type RegistryManifest,
 } from '@next-buildr/core';
 import type { McpBackend } from '../backend.ts';
-import { createMemoryBackend, type MemoryDocumentInput } from '../backends/memory.ts';
+import { parseStoredDocument } from '../backends/load-document.ts';
+import { createMemoryBackendStorage, type MemoryDocumentInput } from '../backends/memory.ts';
 
 const DEFAULT_COLLECTION = 'pages';
 const SAFE_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
@@ -37,7 +38,7 @@ function readDocuments(dir: string, warn: (message: string) => void): MemoryDocu
       const raw = JSON.parse(readFileSync(file, 'utf8')) as StoredFile;
       // Either a wrapper `{ title, slug, status, revision, document }` or a bare document.
       const wrapped = raw !== null && typeof raw === 'object' && 'document' in raw;
-      const parsed = parseDocument(wrapped ? raw.document : raw);
+      const parsed = parseStoredDocument(wrapped ? raw.document : raw);
       if (!parsed.ok) throw new Error(parsed.error[0]?.message ?? 'not a valid document');
       const document: BuilderDocument = parsed.value;
       out.push({
@@ -69,6 +70,8 @@ function readDocuments(dir: string, warn: (message: string) => void): MemoryDocu
 export interface FileBackendOptions {
   readonly dir: string;
   readonly manifest?: RegistryManifest;
+  /** Optional executable migrations; the manifest alone can only detect incompatible versions. */
+  readonly migrations?: ComponentMigrations;
   readonly warn?: (message: string) => void;
 }
 
@@ -81,12 +84,17 @@ export function createFileBackend(options: FileBackendOptions): McpBackend {
   const dir = resolve(options.dir);
   const manifest = options.manifest ?? loadDefaultManifest();
   const documents = readDocuments(dir, options.warn ?? (() => {}));
-  const inner = createMemoryBackend({ manifest, documents, collections: [DEFAULT_COLLECTION] });
+  const { backend: inner, readStored } = createMemoryBackendStorage({
+    manifest,
+    documents,
+    ...(options.migrations ? { migrations: options.migrations } : {}),
+    collections: [DEFAULT_COLLECTION],
+  });
 
   async function persist(collection: string, id: string | number): Promise<void> {
     const name = String(id);
     if (!SAFE_NAME.test(collection) || !SAFE_NAME.test(name)) return;
-    const loaded = await inner.load({ collection, id });
+    const loaded = readStored({ collection, id });
     if (!loaded.ok) return;
     const target = collection === DEFAULT_COLLECTION ? dir : join(dir, collection);
     mkdirSync(target, { recursive: true });

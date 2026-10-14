@@ -25,7 +25,7 @@ function component(type: string, overrides: Partial<ComponentMeta> = {}): Compon
 }
 
 /**
- * A tiny manifest (page, section, heading) for tests of the tool layer and of backends. The real
+ * A tiny manifest (page, container, heading) for tests of the tool layer and of backends. The real
  * component catalogue lives in `@next-buildr/components`, which `@next-buildr/mcp` must not import.
  */
 export function createTestManifest(): RegistryManifest {
@@ -33,7 +33,7 @@ export function createTestManifest(): RegistryManifest {
     createRegistryMeta({
       components: [
         component('buildr/page', { capabilities: { root: true }, slots: { default: {} } }),
-        component('buildr/section', { slots: { default: {} } }),
+        component('buildr/container', { version: 2, slots: { default: {} } }),
         component('buildr/heading', { props: { text: p.text({ default: 'Heading' }) } }),
       ],
     }),

@@ -5,10 +5,12 @@ import {
   createSeededIdGenerator,
   instantiateTemplate,
   type PageNode,
+  registryVersions,
   s,
   type TemplateDefinition,
   type Value,
 } from '@next-buildr/core';
+import { registry } from '../buildr.registry.ts';
 import { COPY } from './copy.ts';
 
 /** A media library entry as a page refers to it. */
@@ -66,9 +68,15 @@ function compose(input: PageInput): BuilderDocument {
   const components: Record<string, number> = { 'buildr/page': 1 };
   const roots: string[] = [];
   const pictures = [...(input.pictures ?? [])];
+  const versions = registryVersions(registry.meta);
 
   for (const part of input.parts) {
-    const fragment: BuilderFragment = instantiateTemplate(template(part.id), part.variant, idGen);
+    const fragment: BuilderFragment = instantiateTemplate(
+      template(part.id),
+      part.variant,
+      idGen,
+      versions,
+    );
     roots.push(...fragment.roots);
     Object.assign(components, fragment.components);
     for (const [id, node] of Object.entries(fragment.nodes)) {

@@ -16,7 +16,7 @@ See also [ADR-007](adr/ADR-007-responsive-model.md) and [styles.md](styles.md).
 ```
 
 - **Layout parameters that change per breakpoint (columns, direction, gap, visibility) are styles, not props.** This is what makes responsiveness work with zero JavaScript and with no separate per-device components. Props themselves are never responsive. The one exception, added in v0.2, is a custom component declaring a `responsive` prop that compiles to a per-breakpoint CSS custom property, for cases a style group cannot express.
-- **Container queries (v0.3)**: `styles.cq: [{ container?: 'card', minWidth?: 400, maxWidth?: ..., style: StyleDecl }]` compiles to `@container card (min-width: 400px) { ... }`. Section/Container components gain a `containerName` prop. Cascade order becomes `base -> bp -> cq`.
+- **Container queries (v0.3)**: `styles.cq: [{ container?: 'card', minWidth?: 400, maxWidth?: ..., style: StyleDecl }]` compiles to `@container card (min-width: 400px) { ... }`. Container components gain a `containerName` prop. Cascade order becomes `base -> bp -> cq`.
 - **Editor behavior**: switching breakpoints resizes the canvas **iframe** itself (desktop: the panel's own width, minimum 1280px; tablet 768px; mobile 375px), so real media queries fire natively — no simulation. The inspector writes to the active layer, shows a value's source ("from Desktop"), and offers "Reset to Desktop" to remove an override. The layers panel marks nodes that have overrides at the current breakpoint.
 
 ## Effective styles (for the inspector and layers panel)

@@ -55,9 +55,7 @@ exports[`the tree JSON Schema > is described, ready for a tool definition 1`] = 
         "type": {
           "description": "Component type as "<namespace>/<name>", for example "buildr/heading". Use list_components for the valid types.",
           "enum": [
-            "buildr/section",
             "buildr/container",
-            "buildr/stack",
             "buildr/grid",
             "buildr/heading",
             "buildr/text",
@@ -140,9 +138,7 @@ exports[`the tree JSON Schema > is described, ready for a tool definition 1`] = 
     "type": {
       "description": "Component type as "<namespace>/<name>", for example "buildr/heading". Use list_components for the valid types.",
       "enum": [
-        "buildr/section",
         "buildr/container",
-        "buildr/stack",
         "buildr/grid",
         "buildr/heading",
         "buildr/text",

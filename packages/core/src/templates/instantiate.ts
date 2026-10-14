@@ -1,5 +1,6 @@
 import type { BuilderFragment } from '../document/fragment.ts';
 import { fromTree, type TreeNode } from '../document/tree.ts';
+import type { ComponentType } from '../document/types.ts';
 import { generateId, type IdGenerator } from '../ids/index.ts';
 import type { TemplateDefinition } from '../registry/registry.ts';
 
@@ -26,9 +27,10 @@ export function instantiateTemplate(
   def: TemplateDefinition,
   variant?: string,
   idGen: IdGenerator = generateId,
+  versions?: Readonly<Record<ComponentType, number>>,
 ): BuilderFragment {
   const tree = resolveTree(def, variant);
-  const fragment = fromTree(tree, idGen);
+  const fragment = fromTree(tree, idGen, versions);
 
   const rootId = fragment.roots[0];
   const rootNode = rootId !== undefined ? fragment.nodes[rootId] : undefined;

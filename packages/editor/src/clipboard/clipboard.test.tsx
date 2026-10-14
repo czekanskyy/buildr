@@ -3,8 +3,11 @@ import {
   assertDocumentInvariants,
   type BuilderDocument,
   type ComponentMeta,
+  type ComponentMigrations,
   createRegistryMeta,
   createSeededIdGenerator,
+  p,
+  s,
 } from '@next-buildr/core';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -296,13 +299,25 @@ describe('hostile clipboard content', () => {
     expect(code(await pasteText(serializeFragment(fragment as never)))).toBe('invalid');
   });
 
-  it('rejects unknown components and prop injection through the command checks', async () => {
+  it('refuses an unknown component type as incompatible', async () => {
     const fragment = {
       format: 'buildr/fragment',
       schemaVersion: 1,
       components: { 'evil/script': 1 },
       roots: ['evilAAAAA1'],
       nodes: { evilAAAAA1: { id: 'evilAAAAA1', type: 'evil/script', props: { html: '<script>' } } },
+    };
+    // Unknown to the registry and with nothing to migrate it: refused before any command runs.
+    expect(code(await pasteText(serializeFragment(fragment as never)))).toBe('outdated');
+  });
+
+  it('rejects a known type that breaks the rules of the target through the command checks', async () => {
+    const fragment = {
+      format: 'buildr/fragment',
+      schemaVersion: 1,
+      components: { 'buildr/leaf': 1, 'buildr/page': 1 },
+      roots: ['pageEVIL01'],
+      nodes: { pageEVIL01: { id: 'pageEVIL01', type: 'buildr/page' } },
     };
     expect(code(await pasteText(serializeFragment(fragment as never)))).toBe('rejected');
   });
@@ -335,6 +350,110 @@ describe('hostile clipboard content', () => {
       const result = await pasteText(marked(JSON.stringify(variant)));
       expect(result.ok).toBe(false);
     }
+  });
+});
+
+describe('paste of an outdated fragment', () => {
+  const textProps = { text: s('old') };
+  const fragmentOfLeaf = (type: string, version: number) =>
+    serializeFragment({
+      schemaVersion: 1,
+      format: 'buildr/fragment',
+      roots: ['leafOld001'],
+      nodes: { leafOld001: { id: 'leafOld001', type, props: textProps } },
+      components: { [type]: version },
+    });
+  const migrations: ComponentMigrations = {
+    'buildr/leaf': {
+      currentVersion: 2,
+      steps: [
+        {
+          from: 1,
+          to: 2,
+          migrate: (props) => ({ ...props, migrated: { kind: 'static', value: true } }) as never,
+        },
+      ],
+      replaces: {
+        'buildr/retired': {
+          fromVersion: 1,
+          toVersion: 1,
+          migrate: (node) => ({ ...node, props: { ...node.props } as never }),
+        },
+      },
+    },
+  };
+  const setup = (text: string, withMigrations?: ComponentMigrations) => {
+    const store = createEditorStore({
+      doc: { ...fixture(), components: { ...fixture().components, 'buildr/leaf': 2 } },
+      registry: createRegistryMeta({
+        components: [
+          page(),
+          box,
+          {
+            ...base,
+            version: 2,
+            props: { text: p.text({ default: '' }), migrated: p.boolean({ default: false }) },
+          },
+        ],
+      }),
+      generateId: createSeededIdGenerator(11),
+      validationDelayMs: null,
+    });
+    const clipboard = createClipboard({
+      store,
+      io: { writeText: async () => undefined, readText: async () => text },
+      generateId: createSeededIdGenerator(31),
+      migrations: withMigrations,
+    });
+    return { store, clipboard };
+  };
+  const pastedNode = (store: ReturnType<typeof newStore>) => {
+    const id = rootOrder(store).at(-1) as string;
+    return store.getState().doc.nodes[id];
+  };
+
+  it('migrates a fragment copied under an older version before inserting it', async () => {
+    const { store, clipboard } = setup(fragmentOfLeaf('buildr/leaf', 1), migrations);
+    expect(await clipboard.paste()).toEqual({ ok: true });
+    expect(pastedNode(store)?.props).toMatchObject({ migrated: { value: true } });
+    expect(store.getState().doc.components['buildr/leaf']).toBe(2);
+  });
+
+  it('migrates a fragment of a retired type into the type that replaces it', async () => {
+    const { store, clipboard } = setup(fragmentOfLeaf('buildr/retired', 1), migrations);
+    expect(await clipboard.paste()).toEqual({ ok: true });
+    expect(pastedNode(store)?.type).toBe('buildr/leaf');
+    expect(pastedNode(store)?.props).toMatchObject({ migrated: { value: true } });
+  });
+
+  it('migrates a retired node whose type is missing from the components map', async () => {
+    const { store, clipboard } = setup(
+      fragmentOfLeaf('buildr/retired', 1).replace('{"buildr/retired":1}', '{}'),
+      migrations,
+    );
+    expect(await clipboard.paste()).toEqual({ ok: true });
+    expect(pastedNode(store)?.type).toBe('buildr/leaf');
+  });
+
+  it('refuses it without migrations and leaves the document as it was', async () => {
+    const { store, clipboard } = setup(fragmentOfLeaf('buildr/leaf', 1));
+    const before = store.getState().doc;
+    expect(await clipboard.paste()).toEqual({ ok: false, error: { code: 'outdated' } });
+    expect(store.getState().doc).toBe(before);
+  });
+
+  it('refuses it when the migration cannot be applied', async () => {
+    const { store, clipboard } = setup(fragmentOfLeaf('buildr/leaf', 3), migrations);
+    const before = store.getState().doc;
+    expect(await clipboard.paste()).toEqual({ ok: false, error: { code: 'outdated' } });
+    expect(store.getState().doc).toBe(before);
+  });
+
+  it('refuses a type the registry does not know without migrations', async () => {
+    const { store, clipboard } = setup(fragmentOfLeaf('buildr/unknown', 1), {});
+    const before = store.getState().doc;
+    expect(await clipboard.paste()).toEqual({ ok: false, error: { code: 'outdated' } });
+    expect(store.getState().doc).toBe(before);
   });
 });
 

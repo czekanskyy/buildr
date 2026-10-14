@@ -67,6 +67,16 @@ describe('node.insert', () => {
     expect(run(doc, { fragment: one }).doc.components['buildr/text']).toBe(1);
   });
 
+  it('accepts a v2-stamped fragment into a doc at v2, and records 2 in an empty doc', () => {
+    const frag = { ...one, components: { 'buildr/text': 2 } };
+    expect(run(buildDoc([], []), { fragment: frag }).doc.components['buildr/text']).toBe(2);
+
+    const base = buildDoc([text(B)], [B]);
+    const doc = { ...base, components: { ...base.components, 'buildr/text': 2 } };
+    const { doc: next } = run(doc, { fragment: frag });
+    expect(next.components['buildr/text']).toBe(2);
+  });
+
   it('gives fresh ids to a fragment that collides with the document (a second paste)', () => {
     const doc = baseDoc();
     const frag = fragment([text(B)], [B]);

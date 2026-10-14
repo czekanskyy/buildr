@@ -166,7 +166,7 @@ describe('scenario 1: a landing page built purely through tools', () => {
     expect(detail.text).toContain('Main headline');
 
     const sections = (await call('get_outline', { sessionId, depth: 1 })).text;
-    expect(sections.match(/buildr\/section/g)?.length).toBe(3);
+    expect(sections.match(/buildr\/container/g)?.length).toBe(3);
     expect(sessions(store)).toBe(1);
   });
 });
@@ -185,7 +185,7 @@ describe('rejections leave the document untouched', () => {
     });
     const sessionId = created.data['sessionId'] as string;
     const outline = (await call('get_outline', { sessionId, depth: 6 })).text;
-    const stack = idOf(outline, 'buildr/stack');
+    const stack = idOf(outline, 'buildr/container');
     const live = await store.get(sessionId);
     if (!live.ok) throw new Error('no session');
     const before = live.value.doc;
@@ -263,12 +263,12 @@ describe('undo, redo, close', () => {
     const sessionId = data['sessionId'] as string;
     await call('insert_nodes', {
       sessionId,
-      tree: { type: 'buildr/section', children: [{ type: 'buildr/heading' }] },
+      tree: { type: 'buildr/container', children: [{ type: 'buildr/heading' }] },
     });
     expect((await call('undo', { sessionId })).isError).toBe(false);
-    expect((await call('get_outline', { sessionId })).text).not.toContain('buildr/section');
+    expect((await call('get_outline', { sessionId })).text).not.toContain('buildr/container');
     expect((await call('redo', { sessionId })).isError).toBe(false);
-    expect((await call('get_outline', { sessionId })).text).toContain('buildr/section');
+    expect((await call('get_outline', { sessionId })).text).toContain('buildr/container');
     expect((await call('redo', { sessionId })).isError).toBe(true);
 
     const refused = await call('close_document', { sessionId });
@@ -300,7 +300,7 @@ describe('every command type is reachable', () => {
     const fragment = (id: string, type: string, extra: Record<string, unknown> = {}) => ({
       format: 'buildr/fragment',
       schemaVersion: 1,
-      components: { [type]: 1 },
+      components: { [type]: session.registry.get(type)?.version ?? 1 },
       roots: [id],
       nodes: { [id]: { id, type, ...extra } },
     });
@@ -323,7 +323,7 @@ describe('every command type is reachable', () => {
           parentId: root,
           slot: 'default',
           index: 1,
-          fragment: fragment('aaaaaaaa02', 'buildr/stack'),
+          fragment: fragment('aaaaaaaa02', 'buildr/container'),
         },
       },
     ]);
@@ -385,7 +385,10 @@ describe('every command type is reachable', () => {
     ]);
     await run([{ type: 'node.duplicate', payload: { ids: ['aaaaaaaa01'] } }]);
     await run([
-      { type: 'node.wrap', payload: { ids: ['aaaaaaaa02'], wrapper: { type: 'buildr/section' } } },
+      {
+        type: 'node.wrap',
+        payload: { ids: ['aaaaaaaa02'], wrapper: { type: 'buildr/container' } },
+      },
     ]);
     const wrapper = session.doc.nodes[session.doc.root]?.slots?.['default']?.[0] as string;
     await run([{ type: 'node.unwrap', payload: { id: wrapper } }]);
@@ -441,8 +444,7 @@ describe('no tool can produce an invalid document', () => {
     const pick = <T>(items: readonly T[]): T => items[Math.floor(random() * items.length)] as T;
 
     const types = [
-      'buildr/section',
-      'buildr/stack',
+      'buildr/container',
       'buildr/grid',
       'buildr/heading',
       'buildr/text',
@@ -501,9 +503,12 @@ describe('no tool can produce an invalid document', () => {
     await call('insert_nodes', {
       sessionId,
       tree: {
-        type: 'buildr/section',
+        type: 'buildr/container',
         children: [
-          { type: 'buildr/stack', children: [{ type: 'buildr/heading' }, { type: 'buildr/text' }] },
+          {
+            type: 'buildr/container',
+            children: [{ type: 'buildr/heading' }, { type: 'buildr/text' }],
+          },
         ],
       },
     });

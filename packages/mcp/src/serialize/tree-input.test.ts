@@ -23,7 +23,7 @@ function failure(input: unknown) {
 describe('parseTreeInput', () => {
   it('turns plain values into static values and keeps full Values', () => {
     const result = parse({
-      type: 'buildr/section',
+      type: 'buildr/container',
       children: [
         { type: 'buildr/heading', props: { text: 'Hello', level: 1 } },
         {
@@ -51,7 +51,7 @@ describe('parseTreeInput', () => {
   it('rejects an unknown type with no close match by listing valid types', () => {
     const error = failure({ type: 'acme/zzzzzzzzzz' });
     expect(error.issues[0]?.message).toContain('Valid component types');
-    expect(error.issues[0]?.validOptions).toContain('buildr/section');
+    expect(error.issues[0]?.validOptions).toContain('buildr/container');
   });
 
   it('rejects an unknown prop with the valid props', () => {
@@ -102,16 +102,17 @@ describe('parseTreeInput', () => {
   it('rejects the root component, both children and slots, and bad styles', () => {
     expect(failure({ type: 'buildr/page' }).issues[0]?.message).toContain('document root');
     expect(
-      failure({ type: 'buildr/section', children: [], slots: { default: [] } }).issues[0]?.message,
+      failure({ type: 'buildr/container', children: [], slots: { default: [] } }).issues[0]
+        ?.message,
     ).toContain('either');
     expect(
-      failure({ type: 'buildr/section', styles: { base: { nope: 1 } } }).issues[0]?.message,
+      failure({ type: 'buildr/container', styles: { base: { nope: 1 } } }).issues[0]?.message,
     ).toContain('invalid styles');
   });
 
   it('reports every problem at once', () => {
     const error = failure({
-      type: 'buildr/section',
+      type: 'buildr/container',
       children: [{ type: 'buildr/nope' }, { type: 'buildr/heading', props: { txt: 1 } }],
     });
     expect(error.issues).toHaveLength(2);
@@ -127,7 +128,7 @@ describe('parseTreeInput', () => {
 
   it('limits the size of a tree', () => {
     const wide = {
-      type: 'buildr/section',
+      type: 'buildr/container',
       children: Array.from({ length: MAX_TREE_NODES + 5 }, () => ({ type: 'buildr/divider' })),
     };
     expect(failure(wide).message).toContain('more than');

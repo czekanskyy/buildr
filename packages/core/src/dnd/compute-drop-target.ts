@@ -4,6 +4,7 @@ import { fromTree } from '../document/tree.ts';
 import type { NodeId, SlotName } from '../document/types.ts';
 import { createSeededIdGenerator } from '../ids/seeded-id-generator.ts';
 import type { RegistryMeta } from '../registry/registry.ts';
+import { registryVersions } from '../registry/versions.ts';
 import { err, ok, type Result } from '../result/index.ts';
 import { canInsert } from '../rules/can-insert.ts';
 import { canMove } from '../rules/can-move.ts';
@@ -221,7 +222,7 @@ function templateFragment(
       ? def.variants[item.variant]
       : def.tree;
   // Only the shape is checked, so throwaway ids are enough (and keep the result deterministic).
-  return ok(fromTree(tree ?? def.tree, createSeededIdGenerator(1)));
+  return ok(fromTree(tree ?? def.tree, createSeededIdGenerator(1), registryVersions(registry)));
 }
 
 /** Whether the dragged item may land at `target`; the first refusal otherwise. */

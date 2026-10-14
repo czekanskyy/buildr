@@ -27,7 +27,7 @@ function goodOutline(): OutlineEntry {
       default: [
         {
           id: 'hero',
-          type: 'buildr/section',
+          type: 'buildr/container',
           template: 'buildr/hero',
           slots: {
             default: [
@@ -38,13 +38,13 @@ function goodOutline(): OutlineEntry {
         },
         {
           id: 'features',
-          type: 'buildr/section',
+          type: 'buildr/container',
           template: 'buildr/feature-grid',
           slots: { default: [text('f1', 'buildr/heading', 'Swieze', ['en'])] },
         },
         {
           id: 'contact',
-          type: 'buildr/section',
+          type: 'buildr/container',
           template: 'buildr/contact',
           slots: { default: [text('c1', 'buildr/heading', 'Napisz', ['en'])] },
         },
@@ -134,7 +134,7 @@ describe('scoreRun', () => {
         default: [
           {
             id: 's',
-            type: 'buildr/section',
+            type: 'buildr/container',
             slots: { default: [text('h', 'buildr/heading', 'Hej', ['en'])] },
           },
         ],
@@ -172,10 +172,10 @@ describe('scoreRun', () => {
       type: 'buildr/page',
       slots: {
         default: [
-          { id: 'empty', type: 'buildr/section' },
+          { id: 'empty', type: 'buildr/container' },
           {
             id: 'full',
-            type: 'buildr/section',
+            type: 'buildr/container',
             slots: {
               default: [
                 text('blank', 'buildr/text', '  ', ['en']),
@@ -196,7 +196,7 @@ describe('scoreRun', () => {
     const truncated: OutlineEntry = {
       id: 'root',
       type: 'buildr/page',
-      slots: { default: [{ id: 's', type: 'buildr/section', hiddenDescendants: 5 }] },
+      slots: { default: [{ id: 's', type: 'buildr/container', hiddenDescendants: 5 }] },
     };
     expect(result(run({ outline: truncated }), 'no-empty-slots').passed).toBe(true);
     expect(

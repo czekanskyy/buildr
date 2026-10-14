@@ -1,12 +1,12 @@
 import { runA11y, s } from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
+import { Container } from '../container/definition.ts';
 import { Page } from '../page/definition.ts';
-import { Stack } from '../stack/definition.ts';
 import { createRegistry, pageWith, problemsOf, render } from '../test-kit.tsx';
 import { BUTTON_SIZES, BUTTON_VARIANTS, Button } from './definition.ts';
 import { buttonFixtures } from './fixtures.ts';
 
-const registry = createRegistry({ components: [Page, Stack, Button] });
+const registry = createRegistry({ components: [Page, Container, Button] });
 const button = (props: Record<string, unknown> = {}) =>
   pageWith({ type: 'buildr/button', props: props as never });
 const body = (html: string) => html.slice(html.indexOf('<div class="bc-page'));

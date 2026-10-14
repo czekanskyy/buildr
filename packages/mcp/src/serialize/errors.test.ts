@@ -71,7 +71,7 @@ describe('explainReason', () => {
   const doc = documentFromTree({
     type: 'buildr/page',
     children: [
-      { type: 'buildr/section', children: [{ type: 'buildr/heading' }] },
+      { type: 'buildr/container', children: [{ type: 'buildr/heading' }] },
       { type: 'buildr/list', children: [{ type: 'buildr/list-item' }] },
     ],
   });

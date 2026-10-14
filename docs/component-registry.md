@@ -110,13 +110,14 @@ export const Hero = defineTemplate({
   lock: 'none',
   variants: { imageRight: heroImageRight, centered: heroCentered },
   tree: {
-    type: 'buildr/section', name: 'Hero', props: { as: s('section'), container: s('lg') },
+    type: 'buildr/container', name: 'Hero',
+    props: { as: s('section'), width: s('lg'), bleed: s(true), ariaLabel: s('Hero') },
     children: [{ type: 'buildr/grid',
       children: [
-        { type: 'buildr/stack', children: [
+        { type: 'buildr/container', children: [
           { type: 'buildr/heading', props: { text: s('Build pages faster'), level: s(1) } },
           { type: 'buildr/text', props: { text: s('Short supporting copy.') } },
-          { type: 'buildr/stack', name: 'Actions', region: 'actions', props: { role: s('group') },
+          { type: 'buildr/container', name: 'Actions', region: 'actions', props: { role: s('group'), ariaLabel: s('Actions') },
             children: [{ type: 'buildr/button', props: { label: s('Get started'), href: s('#') } }] },
         ]},
         { type: 'buildr/image', props: { image: s(null), alt: s('') } },
@@ -133,5 +134,7 @@ See [templates.md](templates.md) for the full model. `instantiateTemplate` assig
 
 - **Typing.** `props` is captured as a const type, so `render` receives `BuilderComponentProps<P>` with `props: ResolvedProps<P>` (`p.text` gives `string`, `p.number` gives `number`, …). With `runtime: 'shared'` it also receives an optional `platform`; with `runtime: 'client'` it receives `ClientComponentProps<P>`, which has no `platform` — a client component only gets serializable values.
 - **Migrations.** Keyed by the version they migrate *to*: `{ 2: (props) => ..., 3: (props) => ... }` upgrades 1 to 2 to 3. Keys must be integers of at least 2, none above `version`, the newest equal to `version`, and contiguous. They become the `from -> to` steps `migrateComponents` runs.
+- **Replacing a retired type.** `replaces: { 'buildr/stack': { fromVersion, toVersion, migrate({ props, styles }, ctx) } }` declares that this component absorbs a type that is no longer registered: its stored nodes are rewritten into this type (written at `toVersion`, then the normal steps run). `createRegistry` merges the declarations into the registry's migrations and throws when two components retire the same type or a retired type is still registered. See [migrations.md](migrations.md#replacement-migrations) and [ADR-025](adr/ADR-025-retiring-a-component-type.md).
+- **Versions for new fragments.** `registryVersions(meta)` gives the registry's component versions; pass them to `fromTree` and `instantiateTemplate` (and use `withRegistryVersions(fragment, registry.meta)`) so new fragments carry them instead of version 1. `p.select` takes an optional `optionLabels` (a label per option value), carried through the manifest.
 - **Registry.** `createRegistry({ components, templates? })` returns an immutable `ReactRegistry`: `meta` (a core `RegistryMeta`), `get`/`has`/`list` over the definitions, `migrations` (each type's `currentVersion` and steps, ready for `migrateComponents`) and `extend({ components?, templates? })`, which builds a new registry and throws on a duplicate type. Pass `registry.meta` wherever core wants a `RegistryMeta`, including `toManifest`.
 - **`Platform`** is `{ Link, Image, formAction(ref, nodeId) }`, injected by the adapter; see [renderer.md](renderer.md).

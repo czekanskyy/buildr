@@ -3,6 +3,7 @@ import type {
   ComponentMeta,
   ComponentMigrationContext,
   ComponentMigrationStep,
+  ComponentReplacement,
   DataContext,
   JsonValue,
   LocaleCode,
@@ -109,6 +110,8 @@ interface DefineComponentBase<P extends PropSchema>
   extends Omit<ComponentMeta, 'props' | 'runtime'> {
   readonly props: P;
   readonly migrations?: ComponentMigrationMap;
+  /** Retired types rewritten into this component before its own migration steps (ADR-025). */
+  readonly replaces?: Readonly<Record<BuilderComponentType, ComponentReplacement>>;
 }
 
 export interface DefineSharedComponent<P extends PropSchema> extends DefineComponentBase<P> {
@@ -135,4 +138,6 @@ export interface ComponentDefinition {
   readonly render: ErasedRender;
   /** The steps that bring stored props to `meta.version`, in order. */
   readonly migrations: readonly ComponentMigrationStep[];
+  /** Retired types this component replaces, including their prop and style transformations. */
+  readonly replaces?: Readonly<Record<BuilderComponentType, ComponentReplacement>>;
 }

@@ -8,6 +8,7 @@ import {
   instantiateTemplate,
   type RegistryMeta,
   type Result,
+  withRegistryVersions,
 } from '@next-buildr/core';
 import { z } from 'zod';
 import {
@@ -133,6 +134,7 @@ export function sessionSummary(session: EditSession): Record<string, unknown> {
     layoutRef: session.layoutRef,
     locale: session.locale ?? null,
     readOnly: session.readOnly,
+    readOnlyReasons: session.readOnlyReasons ?? [],
     dirty: session.dirty,
     canUndo: session.canUndo,
     canRedo: session.canRedo,
@@ -323,22 +325,6 @@ export function templateFragment(
   return { ok: true, value: withRegistryVersions(fragment, registry) };
 }
 
-/** Components in a fragment built by `fromTree` are version 1; pin them to what the registry serves. */
-export function withRegistryVersions(
-  fragment: BuilderFragment,
-  registry: RegistryMeta,
-): BuilderFragment {
-  return {
-    ...fragment,
-    components: Object.fromEntries(
-      Object.entries(fragment.components).map(([type, version]) => [
-        type,
-        registry.get(type)?.version ?? version,
-      ]),
-    ),
-  };
-}
-
 /** Inserts a template at the end of the page's content; returns a sentence when it fails. */
 function insertTemplateAtEnd(
   session: EditSession,
@@ -426,6 +412,8 @@ function openDocument({ store }: ToolFactoryOptions): McpTool {
       const notes: string[] = [];
       if (session.readOnly)
         notes.push('This document is read-only: editing tools will be refused.');
+      for (const reason of session.readOnlyReasons ?? [])
+        notes.push(`${reason.code}: ${reason.message}`);
       if (session.layoutSource === 'builtin') notes.push('The layout is still blank.');
       if (session.layoutSource === 'template' || session.layoutSource === 'default-template') {
         notes.push(

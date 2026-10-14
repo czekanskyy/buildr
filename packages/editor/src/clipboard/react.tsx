@@ -1,3 +1,4 @@
+import type { ComponentMigrations } from '@next-buildr/core';
 import { createContext, type ReactNode, useContext, useMemo } from 'react';
 import { type MessageKey, useT } from '../messages/index.tsx';
 import type { ExternalActions } from '../shortcuts/index.ts';
@@ -25,6 +26,7 @@ const MESSAGES: Readonly<Record<ClipboardError['code'], MessageKey>> = {
   unsupported: 'clipboard.error.unsupported',
   invalid: 'clipboard.error.invalid',
   rejected: 'clipboard.error.rejected',
+  outdated: 'clipboard.outdated',
 };
 
 export function useClipboard(): Clipboard {
@@ -60,13 +62,17 @@ const ReportContext = createContext<(result: ClipboardResult) => void>(() => und
  */
 export function ClipboardProvider(props: {
   readonly io?: ClipboardIO | undefined;
+  readonly migrations?: ComponentMigrations | undefined;
   readonly children: ReactNode;
 }) {
   const store = useEditor();
   const t = useT();
   const toast = useToast();
   const io = props.io ?? browserClipboard();
-  const clipboard = useMemo(() => createClipboard({ store, io }), [store, io]);
+  const clipboard = useMemo(
+    () => createClipboard({ store, io, migrations: props.migrations }),
+    [store, io, props.migrations],
+  );
 
   const report = useMemo(
     () => (result: ClipboardResult) => {
@@ -77,7 +83,10 @@ export function ClipboardProvider(props: {
       const { error } = result;
       toast.show({
         id: 'clipboard',
-        variant: error.code === 'invalid' || error.code === 'rejected' ? 'error' : 'warning',
+        variant:
+          error.code === 'invalid' || error.code === 'rejected' || error.code === 'outdated'
+            ? 'error'
+            : 'warning',
         message: t(MESSAGES[error.code]),
         detail: error.detail,
         duration: NOTICE_MS,

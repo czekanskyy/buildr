@@ -18,7 +18,10 @@ export function SelectControl({
       label={label}
       value={String(current)}
       disabled={disabled}
-      options={def.options.map((option) => ({ value: String(option), label: String(option) }))}
+      options={def.options.map((option) => ({
+        value: String(option),
+        label: def.optionLabels?.[String(option)] ?? String(option),
+      }))}
       onValueChange={(chosen) => {
         const option = def.options.find((candidate) => String(candidate) === chosen);
         if (option !== undefined) onChange(option);

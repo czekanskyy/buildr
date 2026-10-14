@@ -10,7 +10,7 @@ Buildr is released as **1.0.0**: every `@next-buildr/*` package is versioned tog
 
 | # | Scenario | Built from |
 |---|---|---|
-| 1 | A simple landing page | Section, Container, Stack, Grid, Heading, Text, Button, Image, Icon, Card, Accordion, plus the Hero, FeatureGrid, Testimonial, Pricing, FAQ, CTA templates |
+| 1 | A simple landing page | Container, Grid, Heading, Text, Button, Image, Icon, Card, Accordion, plus the Hero, FeatureGrid, Testimonial, Pricing, FAQ, CTA templates |
 | 2 | A company/marketing page | Plus RichText, List, Divider, Badge, a Card grid, Contact |
 | 3 | A blog post | The `posts` collection template: PostHeader (Heading bound to `post.title`, a formatted date, Image bound to `post.featuredImage`), AuthorBox (bound to `post.author`), PostContent (RichText bound to `post.content`) |
 | 4 | A post listing | A "blog" page: Loop (`query posts`, `page` bound to `route.params.page`) plus PostCard plus Pagination (bound to `loop.page`/`loop.totalPages`) |

@@ -1,7 +1,13 @@
 // Editing tools (PB-137, docs/mcp.md#tool-reference). Every tool is one `session.apply`, that is
 // one core `executeBatch`: all or nothing, one undo step, invariants checked after every command.
 // A tool that cannot express something leaves it to `apply_commands`, the escape hatch.
-import { createIndex, fromTree, type Result, type Value } from '@next-buildr/core';
+import {
+  createIndex,
+  fromTree,
+  type Result,
+  type Value,
+  withRegistryVersions,
+} from '@next-buildr/core';
 import type { Command } from '@next-buildr/core/commands';
 import { z } from 'zod';
 import { parseTreeInput, TREE_NODE_REF, treeInputDefs } from '../serialize/index.ts';
@@ -19,7 +25,6 @@ import {
   type ToolFactoryOptions,
   templateFragment,
   textResult,
-  withRegistryVersions,
 } from './documents.ts';
 
 const MAX_LISTED_CHANGES = 15;
@@ -652,7 +657,7 @@ function wrapNodes({ store }: ToolFactoryOptions): McpTool {
   return {
     name: 'wrap_nodes',
     description:
-      'Wraps contiguous sibling nodes in a new container, for example a stack around a heading and a paragraph. The wrapper takes their place and they become its children.',
+      'Wraps contiguous sibling nodes in a new container, for example a `buildr/container` v2 with `display: "flex"` around a heading and a paragraph. The wrapper takes their place and they become its children.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -666,7 +671,7 @@ function wrapNodes({ store }: ToolFactoryOptions): McpTool {
         wrapper: {
           type: 'object',
           properties: {
-            type: { type: 'string', description: 'Container component, e.g. "buildr/stack".' },
+            type: { type: 'string', description: 'Container component, e.g. "buildr/container".' },
             props: {
               type: 'object',
               additionalProperties: true,

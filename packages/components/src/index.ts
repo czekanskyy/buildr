@@ -19,7 +19,13 @@ export { CARD_ELEMENTS, CARD_VARIANTS, Card } from './card/definition.ts';
 export { cardFixtures } from './card/fixtures.ts';
 export { Checkbox } from './checkbox/definition.ts';
 export { checkboxFixtures } from './checkbox/fixtures.ts';
-export { CONTAINER_WIDTHS, Container } from './container/definition.ts';
+export {
+  CONTAINER_DISPLAYS,
+  CONTAINER_ELEMENTS,
+  CONTAINER_ROLES,
+  CONTAINER_WIDTHS,
+  Container,
+} from './container/definition.ts';
 export { containerFixtures } from './container/fixtures.ts';
 export { Divider } from './divider/definition.ts';
 export { dividerFixtures } from './divider/fixtures.ts';
@@ -60,12 +66,8 @@ export { pageItems } from './pagination/pages.ts';
 export { createDefaultRegistry, defaultComponents, defaultTemplates } from './registry.ts';
 export { RichText } from './rich-text/definition.ts';
 export { richTextFixtures } from './rich-text/fixtures.ts';
-export { SECTION_CONTAINERS, SECTION_ELEMENTS, Section } from './section/definition.ts';
-export { sectionFixtures } from './section/fixtures.ts';
 export { Select } from './select/definition.ts';
 export { selectFixtures } from './select/fixtures.ts';
-export { STACK_ROLES, Stack } from './stack/definition.ts';
-export { stackFixtures } from './stack/fixtures.ts';
 export { contentTemplateFixtures, marketingTemplateFixtures } from './templates/fixtures.ts';
 export {
   AuthorBox,

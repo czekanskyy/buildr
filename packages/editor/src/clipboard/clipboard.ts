@@ -1,11 +1,14 @@
 import {
   type BuilderFragment,
+  type ComponentMigrations,
   createIndex,
   extractFragment,
   generateId,
   type IdGenerator,
   isAncestor,
+  migrateFragment,
   type NodeId,
+  registryVersions,
   reId,
 } from '@next-buildr/core';
 import type { EditorStore } from '../store/index.ts';
@@ -36,6 +39,8 @@ export interface ClipboardOptions {
   /** The system clipboard; the editor works without it, within this window only. */
   readonly io?: ClipboardIO | undefined;
   readonly generateId?: IdGenerator;
+  /** What brings a fragment copied under older component versions up to the registry; without it such a paste is refused. */
+  readonly migrations?: ComponentMigrations | undefined;
 }
 
 export interface Clipboard {
@@ -133,7 +138,31 @@ export function createClipboard(options: ClipboardOptions): Clipboard {
     }
   }
 
-  function insert(fragment: BuilderFragment): ClipboardResult {
+  /** The fragment as the running registry knows it, or `undefined` when it is outdated and cannot be migrated. */
+  function current(fragment: BuilderFragment): BuilderFragment | undefined {
+    const versions = registryVersions(store.registry);
+    // The nodes count too: a type left out of `components` must not slip past the check.
+    const outdated = (candidate: BuilderFragment) =>
+      Object.entries(candidate.components).some(([type, version]) => versions[type] !== version) ||
+      Object.values(candidate.nodes).some(
+        ({ type }) => versions[type] === undefined || candidate.components[type] !== versions[type],
+      );
+    if (!outdated(fragment)) return fragment;
+    if (options.migrations === undefined) return undefined;
+    try {
+      const migrated = migrateFragment(fragment, options.migrations);
+      // Still not what the registry serves (a type nothing migrates): refuse rather than guess.
+      return migrated.readOnlyReasons.length === 0 && !outdated(migrated.fragment)
+        ? migrated.fragment
+        : undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
+  function insert(source: BuilderFragment): ClipboardResult {
+    const fragment = current(source);
+    if (fragment === undefined) return fail({ code: 'outdated' });
     let fresh: BuilderFragment;
     try {
       fresh = reId(fragment, idGenerator);

@@ -1,4 +1,12 @@
-import { type BuilderDocument, fromTree, type PageNode, type TreeNode } from '@next-buildr/core';
+import {
+  type BuilderDocument,
+  fromTree,
+  type PageNode,
+  registryVersions,
+  type TreeNode,
+} from '@next-buildr/core';
+
+import { loadDefaultRegistry } from './default-manifest.test-kit.ts';
 
 /** A deterministic id generator: n0000001, n0000002, ... (10 characters, like real ids). */
 export function sequentialIds(): () => string {
@@ -8,7 +16,7 @@ export function sequentialIds(): () => string {
 
 /** A document whose root is `tree` (a `buildr/page`), with sequential node ids. */
 export function documentFromTree(tree: TreeNode): BuilderDocument {
-  const fragment = fromTree(tree, sequentialIds());
+  const fragment = fromTree(tree, sequentialIds(), registryVersions(loadDefaultRegistry()));
   const rootId = fragment.roots[0] as string;
   const rename = (id: string): string => (id === rootId ? 'root' : id);
   const nodes: Record<string, PageNode> = {};

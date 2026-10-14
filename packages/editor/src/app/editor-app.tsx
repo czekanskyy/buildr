@@ -1,4 +1,10 @@
-import type { DataContext, DataSchema, LocaleConfig, RegistryMeta } from '@next-buildr/core';
+import type {
+  ComponentMigrations,
+  DataContext,
+  DataSchema,
+  LocaleConfig,
+  RegistryMeta,
+} from '@next-buildr/core';
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CanvasFrame, type CanvasHost } from '../canvas-host/index.ts';
 import { ClipboardProvider, useClipboardActions } from '../clipboard/index.ts';
@@ -61,6 +67,8 @@ export interface EditorAppProps extends BuilderEditorProps {
   readonly registry: RegistryMeta;
   /** The languages the content can be written in; the session's (`getSession().locales`), else one language (`en`), when left out. */
   readonly locales?: LocaleConfig;
+  /** `registry.migrations` of the host's registry: lets a paste of content copied under older component versions (or retired types) migrate instead of being refused. */
+  readonly migrations?: ComponentMigrations;
 }
 
 const SINGLE_LOCALE: LocaleConfig = {
@@ -189,7 +197,7 @@ function Session(props: EditorAppProps & { readonly ready: Ready }) {
             <PersistenceProvider controller={ready.persistence}>
               <MediaLibraryProvider media={adapter.media}>
                 <DragProvider>
-                  <ClipboardProvider>
+                  <ClipboardProvider migrations={props.migrations}>
                     <Keys overrides={config.shortcuts}>
                       <Shell {...props} />
                     </Keys>

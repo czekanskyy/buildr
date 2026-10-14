@@ -1,5 +1,6 @@
 import type {
   BuilderDocument,
+  Diagnostic,
   NodeId,
   RegistryManifest,
   RegistryMeta,
@@ -34,6 +35,7 @@ export interface EditSessionInit {
   readonly previewPath: string | null;
   readonly document: BuilderDocument;
   readonly readOnly: boolean;
+  readonly readOnlyReasons?: readonly Diagnostic[];
   readonly manifest: RegistryManifest;
   readonly limits: McpSession['limits'];
   readonly canUnlockTemplates: boolean;
@@ -70,6 +72,7 @@ export interface EditSession {
   readonly contextRef: string;
   readonly previewPath: string | null;
   readonly readOnly: boolean;
+  readonly readOnlyReasons?: readonly Diagnostic[];
   readonly doc: BuilderDocument;
   readonly registry: RegistryMeta;
   /** The manifest hash the session is pinned to. */
@@ -175,6 +178,7 @@ export function createEditSession(init: EditSessionInit): Result<EditSession, Se
     contextRef: init.contextRef,
     previewPath: init.previewPath,
     readOnly: init.readOnly,
+    readOnlyReasons: init.readOnlyReasons ?? [],
     registry,
     manifestHash: init.manifest.hash,
     history,

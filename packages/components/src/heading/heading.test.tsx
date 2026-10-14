@@ -1,12 +1,12 @@
 import { runA11y, s } from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
+import { Container } from '../container/definition.ts';
 import { Page } from '../page/definition.ts';
-import { Stack } from '../stack/definition.ts';
 import { createRegistry, pageWith, problemsOf, render } from '../test-kit.tsx';
 import { HEADING_LEVELS, Heading } from './definition.ts';
 import { headingFixtures } from './fixtures.ts';
 
-const registry = createRegistry({ components: [Page, Stack, Heading] });
+const registry = createRegistry({ components: [Page, Container, Heading] });
 const heading = (props: Record<string, unknown>) =>
   pageWith({ type: 'buildr/heading', props: props as never });
 

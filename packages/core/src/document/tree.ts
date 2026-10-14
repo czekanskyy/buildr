@@ -22,17 +22,22 @@ export interface TreeNode {
 
 /**
  * Builds a `BuilderFragment` from a nested `TreeNode`, minting a fresh ID (via `idGen`) for every
- * node and registering each component type encountered in `components` at version 1 (see
+ * node and registering each component type encountered in `components` at `versions[type]` (default 1 — pass
+ * the registry's versions, see `registryVersions`, so the fragment matches what the registry serves; see
  * docs/document-model.md#fragment-and-authoring-formats). The fragment has a single root — use
  * `reId` afterward to duplicate it without ID collisions.
  */
-export function fromTree(tree: TreeNode, idGen: IdGenerator = generateId): BuilderFragment {
+export function fromTree(
+  tree: TreeNode,
+  idGen: IdGenerator = generateId,
+  versions?: Readonly<Record<ComponentType, number>>,
+): BuilderFragment {
   const nodes: Record<NodeId, PageNode> = {};
   const components: Record<ComponentType, number> = {};
 
   function build(treeNode: TreeNode): NodeId {
     const id = idGen();
-    if (!(treeNode.type in components)) components[treeNode.type] = 1;
+    if (!(treeNode.type in components)) components[treeNode.type] = versions?.[treeNode.type] ?? 1;
 
     const slotsSpec =
       treeNode.slots ?? (treeNode.children ? { default: treeNode.children } : undefined);

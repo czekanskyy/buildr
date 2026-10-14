@@ -14,7 +14,8 @@ export type ClipboardErrorCode =
   | 'tooLarge'
   | 'unsupported'
   | 'invalid'
-  | 'rejected';
+  | 'rejected'
+  | 'outdated';
 
 export interface ClipboardError {
   readonly code: ClipboardErrorCode;

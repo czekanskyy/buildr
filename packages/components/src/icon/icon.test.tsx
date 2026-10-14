@@ -1,12 +1,12 @@
 import { s } from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
+import { Container } from '../container/definition.ts';
 import { Page } from '../page/definition.ts';
-import { Stack } from '../stack/definition.ts';
 import { createRegistry, pageWith, problemsOf, render } from '../test-kit.tsx';
 import { ICON_SIZES, IconComponent } from './definition.ts';
 import { iconFixtures } from './fixtures.ts';
 
-const registry = createRegistry({ components: [Page, Stack, IconComponent] });
+const registry = createRegistry({ components: [Page, Container, IconComponent] });
 const icon = (props: Record<string, unknown> = {}) =>
   pageWith({ type: 'buildr/icon', props: props as never });
 const svg = (html: string) => /<svg [^>]*>/.exec(html)?.[0] ?? '';

@@ -6,7 +6,8 @@ export const badgeFixtures: readonly ComponentFixture[] = [
     id: 'badge-variants',
     title: 'Badge: every variant',
     tree: {
-      type: 'buildr/stack',
+      type: 'buildr/container',
+      props: { width: s('none') },
       styles: { base: { layout: { direction: 'row', gap: '0.5rem', wrap: 'wrap' } } } as never,
       children: ['neutral', 'primary', 'success', 'warning', 'danger'].map((variant) => ({
         type: 'buildr/badge',

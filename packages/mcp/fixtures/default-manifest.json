@@ -1,5 +1,5 @@
 {
-  "hash": "12vxfyi94j7zq",
+  "hash": "2bxfcdv2zp2ci",
   "components": {
     "buildr/page": {
       "type": "buildr/page",
@@ -36,31 +36,70 @@
       },
       "runtime": "shared"
     },
-    "buildr/section": {
-      "type": "buildr/section",
-      "version": 1,
-      "label": "Section",
-      "description": "A band of the page: a landmark or a plain wrapper, with an optional background image.",
-      "keywords": ["band", "region", "hero", "wrapper"],
+    "buildr/container": {
+      "type": "buildr/container",
+      "version": 2,
+      "label": "Container",
+      "description": "A box for content: a column, row or grid, optionally width-limited, a landmark, or with a background image.",
+      "keywords": [
+        "width",
+        "column",
+        "centre",
+        "max-width",
+        "stack",
+        "flex",
+        "row",
+        "group",
+        "section",
+        "band",
+        "hero",
+        "wrapper",
+        "grid"
+      ],
       "category": "layout",
-      "icon": "rectangle-horizontal",
+      "icon": "square-dashed",
       "contentCategories": ["flow", "landmark"],
       "props": {
+        "display": {
+          "kind": "select",
+          "label": "Display",
+          "localizable": false,
+          "accepts": [],
+          "options": ["flex", "block", "grid", "inline-flex", "inline-block"],
+          "default": "flex",
+          "optionLabels": {
+            "flex": "Flex",
+            "block": "Box",
+            "grid": "Grid",
+            "inline-flex": "Inline flex",
+            "inline-block": "Inline box"
+          }
+        },
         "as": {
           "kind": "select",
           "label": "Element",
           "localizable": false,
           "accepts": [],
-          "options": ["section", "div", "header", "footer", "main", "aside", "nav", "article"],
-          "default": "section"
+          "options": ["div", "section", "header", "footer", "main", "aside", "nav", "article"],
+          "default": "div"
         },
-        "container": {
+        "width": {
           "kind": "select",
-          "label": "Content width",
+          "label": "Max width",
           "localizable": false,
           "accepts": [],
-          "options": ["full", "sm", "md", "lg", "xl"],
-          "default": "lg"
+          "options": ["none", "sm", "md", "lg", "xl"],
+          "default": "lg",
+          "optionLabels": {
+            "none": "No limit"
+          }
+        },
+        "bleed": {
+          "kind": "boolean",
+          "label": "Full-width background",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": false
         },
         "backgroundImage": {
           "kind": "media",
@@ -71,85 +110,9 @@
           "default": null,
           "accept": ["image"]
         },
-        "ariaLabel": {
-          "kind": "text",
-          "label": "Accessible name",
-          "localizable": true,
-          "accepts": ["string", "number", "date", "enum", "url"],
-          "default": ""
-        }
-      },
-      "slots": {
-        "default": {
-          "label": "Content",
-          "axis": "vertical"
-        }
-      },
-      "styles": {
-        "groups": ["layout", "size", "spacing", "background", "border", "effects", "visibility"]
-      },
-      "a11y": {
-        "element": "section",
-        "landmark": true
-      },
-      "editor": {
-        "emptySlotText": {
-          "default": "Drop content here"
-        }
-      },
-      "runtime": "shared"
-    },
-    "buildr/container": {
-      "type": "buildr/container",
-      "version": 1,
-      "label": "Container",
-      "description": "Keeps its content to a readable width, centred.",
-      "keywords": ["width", "column", "centre", "max-width"],
-      "category": "layout",
-      "icon": "square-dashed",
-      "contentCategories": ["flow"],
-      "props": {
-        "width": {
-          "kind": "select",
-          "label": "Max width",
-          "localizable": false,
-          "accepts": [],
-          "options": ["sm", "md", "lg", "xl"],
-          "default": "lg"
-        }
-      },
-      "slots": {
-        "default": {
-          "label": "Content",
-          "axis": "vertical"
-        }
-      },
-      "styles": {
-        "groups": ["layout", "spacing", "background", "border", "effects", "visibility"]
-      },
-      "a11y": {
-        "element": "div"
-      },
-      "editor": {
-        "emptySlotText": {
-          "default": "Drop content here"
-        }
-      },
-      "runtime": "shared"
-    },
-    "buildr/stack": {
-      "type": "buildr/stack",
-      "version": 1,
-      "label": "Stack",
-      "description": "Lays its children out in a row or a column.",
-      "keywords": ["flex", "row", "column", "group", "flexbox"],
-      "category": "layout",
-      "icon": "rows-3",
-      "contentCategories": ["flow"],
-      "props": {
         "role": {
           "kind": "select",
-          "label": "Role",
+          "label": "Role (plain div only)",
           "localizable": false,
           "accepts": [],
           "options": ["none", "group", "list"],
@@ -173,7 +136,8 @@
         "groups": ["layout", "size", "spacing", "background", "border", "effects", "visibility"]
       },
       "a11y": {
-        "element": "div"
+        "element": "div",
+        "landmark": true
       },
       "editor": {
         "emptySlotText": {
@@ -1521,11 +1485,15 @@
       "thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'%3E%3Cpath fill='%23d1d5db' d='M10 30h60v8h-60zM10 44h50v4h-50zM10 52h44v4h-44z'/%3E%3Cpath fill='%239ca3af' d='M86 18h64v62h-64z'/%3E%3Cpath fill='%232563eb' d='M10 66h22v9h-22z'/%3E%3C/svg%3E",
       "lock": "structure",
       "tree": {
-        "type": "buildr/section",
+        "type": "buildr/container",
         "props": {
-          "container": {
+          "as": {
             "kind": "static",
-            "value": "lg"
+            "value": "section"
+          },
+          "bleed": {
+            "kind": "static",
+            "value": true
           }
         },
         "children": [
@@ -1543,7 +1511,13 @@
                 "name": "Image"
               },
               {
-                "type": "buildr/stack",
+                "type": "buildr/container",
+                "props": {
+                  "width": {
+                    "kind": "static",
+                    "value": "none"
+                  }
+                },
                 "children": [
                   {
                     "type": "buildr/heading",
@@ -1582,7 +1556,13 @@
                     }
                   },
                   {
-                    "type": "buildr/stack",
+                    "type": "buildr/container",
+                    "props": {
+                      "width": {
+                        "kind": "static",
+                        "value": "none"
+                      }
+                    },
                     "children": [
                       {
                         "type": "buildr/button",
@@ -1665,6 +1645,9 @@
                 "top": "$space.16",
                 "bottom": "$space.16"
               }
+            },
+            "layout": {
+              "gap": "0"
             }
           },
           "bp": {
@@ -1681,11 +1664,15 @@
       },
       "variants": {
         "imageRight": {
-          "type": "buildr/section",
+          "type": "buildr/container",
           "props": {
-            "container": {
+            "as": {
               "kind": "static",
-              "value": "lg"
+              "value": "section"
+            },
+            "bleed": {
+              "kind": "static",
+              "value": true
             }
           },
           "children": [
@@ -1693,7 +1680,13 @@
               "type": "buildr/grid",
               "children": [
                 {
-                  "type": "buildr/stack",
+                  "type": "buildr/container",
+                  "props": {
+                    "width": {
+                      "kind": "static",
+                      "value": "none"
+                    }
+                  },
                   "children": [
                     {
                       "type": "buildr/heading",
@@ -1732,7 +1725,13 @@
                       }
                     },
                     {
-                      "type": "buildr/stack",
+                      "type": "buildr/container",
+                      "props": {
+                        "width": {
+                          "kind": "static",
+                          "value": "none"
+                        }
+                      },
                       "children": [
                         {
                           "type": "buildr/button",
@@ -1825,6 +1824,9 @@
                   "top": "$space.16",
                   "bottom": "$space.16"
                 }
+              },
+              "layout": {
+                "gap": "0"
               }
             },
             "bp": {
@@ -1840,16 +1842,30 @@
           }
         },
         "centered": {
-          "type": "buildr/section",
+          "type": "buildr/container",
           "props": {
-            "container": {
+            "as": {
+              "kind": "static",
+              "value": "section"
+            },
+            "width": {
               "kind": "static",
               "value": "md"
+            },
+            "bleed": {
+              "kind": "static",
+              "value": true
             }
           },
           "children": [
             {
-              "type": "buildr/stack",
+              "type": "buildr/container",
+              "props": {
+                "width": {
+                  "kind": "static",
+                  "value": "none"
+                }
+              },
               "children": [
                 {
                   "type": "buildr/heading",
@@ -1888,7 +1904,13 @@
                   }
                 },
                 {
-                  "type": "buildr/stack",
+                  "type": "buildr/container",
+                  "props": {
+                    "width": {
+                      "kind": "static",
+                      "value": "none"
+                    }
+                  },
                   "children": [
                     {
                       "type": "buildr/button",
@@ -1953,6 +1975,9 @@
                   "top": "$space.16",
                   "bottom": "$space.16"
                 }
+              },
+              "layout": {
+                "gap": "0"
               }
             },
             "bp": {
@@ -1977,16 +2002,26 @@
       "thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'%3E%3Cpath fill='%23d1d5db' d='M50 8h60v7h-60zM12 44h34v4h-34zM12 52h28v3h-28zM62 44h34v4h-34zM62 52h28v3h-28zM112 44h34v4h-34zM112 52h28v3h-28zM12 78h34v4h-34zM12 86h28v3h-28zM62 78h34v4h-34zM62 86h28v3h-28zM112 78h34v4h-34zM112 86h28v3h-28z'/%3E%3Cpath fill='%239ca3af' d='M12 28h10v10h-10zM62 28h10v10h-10zM112 28h10v10h-10zM12 62h10v10h-10zM62 62h10v10h-10zM112 62h10v10h-10z'/%3E%3C/svg%3E",
       "lock": "none",
       "tree": {
-        "type": "buildr/section",
+        "type": "buildr/container",
         "props": {
-          "container": {
+          "as": {
             "kind": "static",
-            "value": "lg"
+            "value": "section"
+          },
+          "bleed": {
+            "kind": "static",
+            "value": true
           }
         },
         "children": [
           {
-            "type": "buildr/stack",
+            "type": "buildr/container",
+            "props": {
+              "width": {
+                "kind": "static",
+                "value": "none"
+              }
+            },
             "children": [
               {
                 "type": "buildr/heading",
@@ -2014,7 +2049,13 @@
                 "type": "buildr/grid",
                 "children": [
                   {
-                    "type": "buildr/stack",
+                    "type": "buildr/container",
+                    "props": {
+                      "width": {
+                        "kind": "static",
+                        "value": "none"
+                      }
+                    },
                     "children": [
                       {
                         "type": "buildr/icon",
@@ -2062,7 +2103,13 @@
                     "name": "Feature"
                   },
                   {
-                    "type": "buildr/stack",
+                    "type": "buildr/container",
+                    "props": {
+                      "width": {
+                        "kind": "static",
+                        "value": "none"
+                      }
+                    },
                     "children": [
                       {
                         "type": "buildr/icon",
@@ -2110,7 +2157,13 @@
                     "name": "Feature"
                   },
                   {
-                    "type": "buildr/stack",
+                    "type": "buildr/container",
+                    "props": {
+                      "width": {
+                        "kind": "static",
+                        "value": "none"
+                      }
+                    },
                     "children": [
                       {
                         "type": "buildr/icon",
@@ -2158,7 +2211,13 @@
                     "name": "Feature"
                   },
                   {
-                    "type": "buildr/stack",
+                    "type": "buildr/container",
+                    "props": {
+                      "width": {
+                        "kind": "static",
+                        "value": "none"
+                      }
+                    },
                     "children": [
                       {
                         "type": "buildr/icon",
@@ -2206,7 +2265,13 @@
                     "name": "Feature"
                   },
                   {
-                    "type": "buildr/stack",
+                    "type": "buildr/container",
+                    "props": {
+                      "width": {
+                        "kind": "static",
+                        "value": "none"
+                      }
+                    },
                     "children": [
                       {
                         "type": "buildr/icon",
@@ -2254,7 +2319,13 @@
                     "name": "Feature"
                   },
                   {
-                    "type": "buildr/stack",
+                    "type": "buildr/container",
+                    "props": {
+                      "width": {
+                        "kind": "static",
+                        "value": "none"
+                      }
+                    },
                     "children": [
                       {
                         "type": "buildr/icon",
@@ -2340,6 +2411,9 @@
                 "top": "$space.16",
                 "bottom": "$space.16"
               }
+            },
+            "layout": {
+              "gap": "0"
             }
           },
           "bp": {
@@ -2363,16 +2437,30 @@
       "thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'%3E%3Cpath fill='%23d1d5db' d='M50 34h60v7h-60zM40 47h80v4h-80zM66 60h28v9h-28z'/%3E%3Cpath fill='%232563eb' d='M0 20h160v60h-160z'/%3E%3C/svg%3E",
       "lock": "structure",
       "tree": {
-        "type": "buildr/section",
+        "type": "buildr/container",
         "props": {
-          "container": {
+          "as": {
+            "kind": "static",
+            "value": "section"
+          },
+          "width": {
             "kind": "static",
             "value": "md"
+          },
+          "bleed": {
+            "kind": "static",
+            "value": true
           }
         },
         "children": [
           {
-            "type": "buildr/stack",
+            "type": "buildr/container",
+            "props": {
+              "width": {
+                "kind": "static",
+                "value": "none"
+              }
+            },
             "children": [
               {
                 "type": "buildr/heading",
@@ -2397,7 +2485,13 @@
                 }
               },
               {
-                "type": "buildr/stack",
+                "type": "buildr/container",
+                "props": {
+                  "width": {
+                    "kind": "static",
+                    "value": "none"
+                  }
+                },
                 "children": [
                   {
                     "type": "buildr/button",
@@ -2461,6 +2555,9 @@
             },
             "typography": {
               "color": "$color.on-primary"
+            },
+            "layout": {
+              "gap": "0"
             }
           },
           "bp": {
@@ -2484,16 +2581,30 @@
       "thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'%3E%3Cpath fill='%23d1d5db' d='M30 26h100v6h-100zM24 38h112v6h-112zM40 50h80v6h-80zM68 76h24v3h-24z'/%3E%3Cpath fill='%239ca3af' d='M62 68h36v4h-36z'/%3E%3C/svg%3E",
       "lock": "none",
       "tree": {
-        "type": "buildr/section",
+        "type": "buildr/container",
         "props": {
-          "container": {
+          "as": {
+            "kind": "static",
+            "value": "section"
+          },
+          "width": {
             "kind": "static",
             "value": "md"
+          },
+          "bleed": {
+            "kind": "static",
+            "value": true
           }
         },
         "children": [
           {
-            "type": "buildr/stack",
+            "type": "buildr/container",
+            "props": {
+              "width": {
+                "kind": "static",
+                "value": "none"
+              }
+            },
             "children": [
               {
                 "type": "buildr/text",
@@ -2513,7 +2624,13 @@
                 }
               },
               {
-                "type": "buildr/stack",
+                "type": "buildr/container",
+                "props": {
+                  "width": {
+                    "kind": "static",
+                    "value": "none"
+                  }
+                },
                 "children": [
                   {
                     "type": "buildr/text",
@@ -2580,6 +2697,9 @@
                 "top": "$space.16",
                 "bottom": "$space.16"
               }
+            },
+            "layout": {
+              "gap": "0"
             }
           },
           "bp": {
@@ -2603,16 +2723,26 @@
       "thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'%3E%3Cpath fill='%23d1d5db' d='M50 8h60v7h-60zM10 26h42v62h-42zM58 26h42v62h-42zM106 26h42v62h-42z'/%3E%3Cpath fill='%239ca3af' d='M16 34h30v6h-30zM16 46h20v8h-20zM16 62h30v3h-30zM64 34h30v6h-30zM64 46h20v8h-20zM64 62h30v3h-30zM112 34h30v6h-30zM112 46h20v8h-20zM112 62h30v3h-30z'/%3E%3Cpath fill='%232563eb' d='M16 76h30v7h-30zM64 76h30v7h-30zM112 76h30v7h-30z'/%3E%3C/svg%3E",
       "lock": "none",
       "tree": {
-        "type": "buildr/section",
+        "type": "buildr/container",
         "props": {
-          "container": {
+          "as": {
             "kind": "static",
-            "value": "lg"
+            "value": "section"
+          },
+          "bleed": {
+            "kind": "static",
+            "value": true
           }
         },
         "children": [
           {
-            "type": "buildr/stack",
+            "type": "buildr/container",
+            "props": {
+              "width": {
+                "kind": "static",
+                "value": "none"
+              }
+            },
             "children": [
               {
                 "type": "buildr/heading",
@@ -2664,7 +2794,13 @@
                           }
                         },
                         {
-                          "type": "buildr/stack",
+                          "type": "buildr/container",
+                          "props": {
+                            "width": {
+                              "kind": "static",
+                              "value": "none"
+                            }
+                          },
                           "children": [
                             {
                               "type": "buildr/text",
@@ -2803,7 +2939,13 @@
                           }
                         },
                         {
-                          "type": "buildr/stack",
+                          "type": "buildr/container",
+                          "props": {
+                            "width": {
+                              "kind": "static",
+                              "value": "none"
+                            }
+                          },
                           "children": [
                             {
                               "type": "buildr/text",
@@ -2929,7 +3071,13 @@
                           }
                         },
                         {
-                          "type": "buildr/stack",
+                          "type": "buildr/container",
+                          "props": {
+                            "width": {
+                              "kind": "static",
+                              "value": "none"
+                            }
+                          },
                           "children": [
                             {
                               "type": "buildr/text",
@@ -3069,6 +3217,9 @@
                 "top": "$space.16",
                 "bottom": "$space.16"
               }
+            },
+            "layout": {
+              "gap": "0"
             }
           },
           "bp": {
@@ -3092,16 +3243,30 @@
       "thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'%3E%3Cpath fill='%23d1d5db' d='M50 8h60v7h-60zM24 26h112v11h-112zM24 42h112v11h-112zM24 58h112v11h-112zM24 74h112v11h-112zM30 30h50v3h-50z'/%3E%3C/svg%3E",
       "lock": "none",
       "tree": {
-        "type": "buildr/section",
+        "type": "buildr/container",
         "props": {
-          "container": {
+          "as": {
+            "kind": "static",
+            "value": "section"
+          },
+          "width": {
             "kind": "static",
             "value": "md"
+          },
+          "bleed": {
+            "kind": "static",
+            "value": true
           }
         },
         "children": [
           {
-            "type": "buildr/stack",
+            "type": "buildr/container",
+            "props": {
+              "width": {
+                "kind": "static",
+                "value": "none"
+              }
+            },
             "children": [
               {
                 "type": "buildr/heading",
@@ -3234,6 +3399,9 @@
                 "top": "$space.16",
                 "bottom": "$space.16"
               }
+            },
+            "layout": {
+              "gap": "0"
             }
           },
           "bp": {
@@ -3257,11 +3425,15 @@
       "thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'%3E%3Cpath fill='%23d1d5db' d='M10 22h56v8h-56zM10 38h50v4h-50zM10 46h44v4h-44z'/%3E%3Cpath fill='%239ca3af' d='M84 18h66v10h-66zM84 34h66v10h-66zM84 50h66v22h-66z'/%3E%3Cpath fill='%232563eb' d='M84 78h26v9h-26z'/%3E%3C/svg%3E",
       "lock": "none",
       "tree": {
-        "type": "buildr/section",
+        "type": "buildr/container",
         "props": {
-          "container": {
+          "as": {
             "kind": "static",
-            "value": "lg"
+            "value": "section"
+          },
+          "bleed": {
+            "kind": "static",
+            "value": true
           }
         },
         "children": [
@@ -3269,7 +3441,13 @@
             "type": "buildr/grid",
             "children": [
               {
-                "type": "buildr/stack",
+                "type": "buildr/container",
+                "props": {
+                  "width": {
+                    "kind": "static",
+                    "value": "none"
+                  }
+                },
                 "children": [
                   {
                     "type": "buildr/heading",
@@ -3437,6 +3615,9 @@
                 "top": "$space.16",
                 "bottom": "$space.16"
               }
+            },
+            "layout": {
+              "gap": "0"
             }
           },
           "bp": {
@@ -3460,16 +3641,30 @@
       "thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'%3E%3Cpath fill='%23d1d5db' d='M30 12h100v9h-100zM56 28h48v4h-48z'/%3E%3Cpath fill='%239ca3af' d='M20 40h120v48h-120z'/%3E%3C/svg%3E",
       "lock": "none",
       "tree": {
-        "type": "buildr/section",
+        "type": "buildr/container",
         "props": {
-          "container": {
+          "as": {
+            "kind": "static",
+            "value": "section"
+          },
+          "width": {
             "kind": "static",
             "value": "md"
+          },
+          "bleed": {
+            "kind": "static",
+            "value": true
           }
         },
         "children": [
           {
-            "type": "buildr/stack",
+            "type": "buildr/container",
+            "props": {
+              "width": {
+                "kind": "static",
+                "value": "none"
+              }
+            },
             "children": [
               {
                 "type": "buildr/heading",
@@ -3565,6 +3760,9 @@
                 "top": "$space.16",
                 "bottom": "$space.16"
               }
+            },
+            "layout": {
+              "gap": "0"
             }
           },
           "bp": {
@@ -3588,11 +3786,19 @@
       "thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'%3E%3Cpath fill='%23d1d5db' d='M30 14h60v7h-60zM30 30h100v4h-100zM30 40h100v4h-100zM30 50h92v4h-92zM30 66h100v4h-100zM30 76h70v4h-70z'/%3E%3C/svg%3E",
       "lock": "none",
       "tree": {
-        "type": "buildr/section",
+        "type": "buildr/container",
         "props": {
-          "container": {
+          "as": {
+            "kind": "static",
+            "value": "section"
+          },
+          "width": {
             "kind": "static",
             "value": "sm"
+          },
+          "bleed": {
+            "kind": "static",
+            "value": true
           }
         },
         "children": [
@@ -3614,6 +3820,9 @@
                 "top": "$space.16",
                 "bottom": "$space.16"
               }
+            },
+            "layout": {
+              "gap": "0"
             }
           },
           "bp": {
@@ -3637,12 +3846,8 @@
       "thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'%3E%3Cpath fill='%23d1d5db' d='M20 26h120v48h-120zM64 36h46v5h-46zM64 47h34v4h-34zM64 56h66v4h-66z'/%3E%3Cpath fill='%239ca3af' d='M28 34h26v26h-26z'/%3E%3C/svg%3E",
       "lock": "none",
       "tree": {
-        "type": "buildr/section",
+        "type": "buildr/container",
         "props": {
-          "container": {
-            "kind": "static",
-            "value": "md"
-          },
           "as": {
             "kind": "static",
             "value": "aside"
@@ -3650,6 +3855,14 @@
           "ariaLabel": {
             "kind": "static",
             "value": "About the author"
+          },
+          "width": {
+            "kind": "static",
+            "value": "md"
+          },
+          "bleed": {
+            "kind": "static",
+            "value": true
           }
         },
         "children": [
@@ -3700,7 +3913,13 @@
               ],
               "body": [
                 {
-                  "type": "buildr/stack",
+                  "type": "buildr/container",
+                  "props": {
+                    "width": {
+                      "kind": "static",
+                      "value": "none"
+                    }
+                  },
                   "children": [
                     {
                       "type": "buildr/text",
@@ -3765,6 +3984,9 @@
                 "top": "$space.16",
                 "bottom": "$space.16"
               }
+            },
+            "layout": {
+              "gap": "0"
             }
           },
           "bp": {
@@ -3876,16 +4098,26 @@
       "thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'%3E%3Cpath fill='%23d1d5db' d='M10 8h40v8h-40zM10 26h44v52h-44zM60 26h44v52h-44zM110 26h44v52h-44zM62 86h36v6h-36z'/%3E%3Cpath fill='%239ca3af' d='M13 29h38v22h-38zM63 29h38v22h-38zM113 29h38v22h-38z'/%3E%3C/svg%3E",
       "lock": "none",
       "tree": {
-        "type": "buildr/section",
+        "type": "buildr/container",
         "props": {
-          "container": {
+          "as": {
             "kind": "static",
-            "value": "lg"
+            "value": "section"
+          },
+          "bleed": {
+            "kind": "static",
+            "value": true
           }
         },
         "children": [
           {
-            "type": "buildr/stack",
+            "type": "buildr/container",
+            "props": {
+              "width": {
+                "kind": "static",
+                "value": "none"
+              }
+            },
             "children": [
               {
                 "type": "buildr/heading",
@@ -4075,6 +4307,9 @@
                 "top": "$space.16",
                 "bottom": "$space.16"
               }
+            },
+            "layout": {
+              "gap": "0"
             }
           },
           "bp": {
@@ -4098,11 +4333,15 @@
       "thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'%3E%3Cpath fill='%23d1d5db' d='M88 16h56v8h-56zM88 32h30v7h-30zM88 48h56v4h-56zM88 56h48v4h-48z'/%3E%3Cpath fill='%239ca3af' d='M10 12h66v76h-66z'/%3E%3Cpath fill='%232563eb' d='M88 72h32v9h-32z'/%3E%3C/svg%3E",
       "lock": "none",
       "tree": {
-        "type": "buildr/section",
+        "type": "buildr/container",
         "props": {
-          "container": {
+          "as": {
             "kind": "static",
-            "value": "lg"
+            "value": "section"
+          },
+          "bleed": {
+            "kind": "static",
+            "value": true
           }
         },
         "children": [
@@ -4163,7 +4402,13 @@
                 }
               },
               {
-                "type": "buildr/stack",
+                "type": "buildr/container",
+                "props": {
+                  "width": {
+                    "kind": "static",
+                    "value": "none"
+                  }
+                },
                 "children": [
                   {
                     "type": "buildr/heading",
@@ -4221,7 +4466,13 @@
                     }
                   },
                   {
-                    "type": "buildr/stack",
+                    "type": "buildr/container",
+                    "props": {
+                      "width": {
+                        "kind": "static",
+                        "value": "none"
+                      }
+                    },
                     "children": [
                       {
                         "type": "buildr/button",
@@ -4293,6 +4544,9 @@
                 "top": "$space.16",
                 "bottom": "$space.16"
               }
+            },
+            "layout": {
+              "gap": "0"
             }
           },
           "bp": {
@@ -4316,16 +4570,30 @@
       "thumbnail": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'%3E%3Cpath fill='%23d1d5db' d='M30 12h100v4h-100zM30 22h100v4h-100zM30 32h76v4h-76zM80 52h40v4h-40zM80 64h40v4h-40zM80 76h40v4h-40z'/%3E%3Cpath fill='%239ca3af' d='M30 52h30v4h-30zM30 64h30v4h-30zM30 76h30v4h-30z'/%3E%3C/svg%3E",
       "lock": "none",
       "tree": {
-        "type": "buildr/section",
+        "type": "buildr/container",
         "props": {
-          "container": {
+          "as": {
+            "kind": "static",
+            "value": "section"
+          },
+          "width": {
             "kind": "static",
             "value": "md"
+          },
+          "bleed": {
+            "kind": "static",
+            "value": true
           }
         },
         "children": [
           {
-            "type": "buildr/stack",
+            "type": "buildr/container",
+            "props": {
+              "width": {
+                "kind": "static",
+                "value": "none"
+              }
+            },
             "children": [
               {
                 "type": "buildr/rich-text",
@@ -4373,7 +4641,13 @@
                 "slots": {
                   "item": [
                     {
-                      "type": "buildr/stack",
+                      "type": "buildr/container",
+                      "props": {
+                        "width": {
+                          "kind": "static",
+                          "value": "none"
+                        }
+                      },
                       "children": [
                         {
                           "type": "buildr/text",
@@ -4444,6 +4718,9 @@
                 "top": "$space.16",
                 "bottom": "$space.16"
               }
+            },
+            "layout": {
+              "gap": "0"
             }
           },
           "bp": {

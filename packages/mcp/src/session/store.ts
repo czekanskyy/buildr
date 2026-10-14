@@ -149,6 +149,7 @@ export function createSessionStore(options: SessionStoreOptions): SessionStore {
       previewPath: loaded.value.previewPath,
       document: loaded.value.document,
       readOnly: loaded.value.readOnly === true || !session.value.permissions.canEdit,
+      readOnlyReasons: loaded.value.readOnlyReasons ?? [],
       manifest: manifest.value,
       limits: session.value.limits,
       canUnlockTemplates: session.value.permissions.canUnlockTemplates,

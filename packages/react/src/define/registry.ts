@@ -22,7 +22,7 @@ export interface ReactRegistry {
   get(type: ComponentType): ComponentDefinition | undefined;
   has(type: ComponentType): boolean;
   list(): readonly ComponentDefinition[];
-  /** What `migrateComponents` needs: every type's current version and its steps. */
+  /** What `migrateComponents` needs: every type's current version, steps and replacements. */
   readonly migrations: ComponentMigrations;
   extend(addition: Partial<ReactRegistryInput>): ReactRegistry;
 }
@@ -39,10 +39,31 @@ export function createRegistry(input: ReactRegistryInput): ReactRegistry {
   });
   const definitions = [...input.components];
   const byType = new Map(definitions.map((definition) => [definition.meta.type, definition]));
+  const replacedBy = new Map<ComponentType, ComponentType>();
+  for (const definition of definitions) {
+    for (const retired of Object.keys(definition.replaces ?? {})) {
+      if (byType.has(retired)) {
+        throw new Error(
+          `createRegistry: retired type "${retired}" replaced by "${definition.meta.type}" is still registered`,
+        );
+      }
+      const previous = replacedBy.get(retired);
+      if (previous !== undefined) {
+        throw new Error(
+          `createRegistry: retired type "${retired}" is replaced by both "${previous}" and "${definition.meta.type}"`,
+        );
+      }
+      replacedBy.set(retired, definition.meta.type);
+    }
+  }
   const migrations: ComponentMigrations = Object.fromEntries(
     definitions.map((definition) => [
       definition.meta.type,
-      { currentVersion: definition.meta.version, steps: definition.migrations },
+      {
+        currentVersion: definition.meta.version,
+        steps: definition.migrations,
+        ...(definition.replaces !== undefined ? { replaces: definition.replaces } : {}),
+      },
     ]),
   );
 

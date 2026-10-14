@@ -22,3 +22,4 @@ export type {
 export type { RegistryMeta, RegistryMetaInput, TemplateDefinition } from './registry.ts';
 export { createRegistryMeta } from './registry.ts';
 export { validateComponentMeta } from './validate-meta.ts';
+export { registryVersions, withRegistryVersions } from './versions.ts';

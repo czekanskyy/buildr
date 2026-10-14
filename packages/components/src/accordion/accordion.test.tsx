@@ -42,7 +42,7 @@ describe('buildr/accordion', () => {
 
   it('gives two accordions different group names', async () => {
     const doc = pageWith({
-      type: 'buildr/stack',
+      type: 'buildr/container',
       children: [
         {
           type: 'buildr/accordion',
@@ -56,10 +56,15 @@ describe('buildr/accordion', () => {
         },
       ],
     });
-    const stackRegistry = createRegistry({
-      components: [Page, Accordion, AccordionItem, (await import('../stack/definition.ts')).Stack],
+    const containerRegistry = createRegistry({
+      components: [
+        Page,
+        Accordion,
+        AccordionItem,
+        (await import('../container/definition.ts')).Container,
+      ],
     });
-    const { html } = await render(stackRegistry, doc);
+    const { html } = await render(containerRegistry, doc);
     const names = [...html.matchAll(/<details [^>]*\bname="([^"]+)"/g)].map((m) => m[1]);
     expect(new Set(names).size).toBe(2);
   });

@@ -17,7 +17,7 @@ const page: TreeNode = {
   slots: {
     default: [
       {
-        type: 'buildr/section',
+        type: 'buildr/container',
         name: 'Hero',
         children: [
           heading(s('Welcome', { l10n: { pl: 'Witamy' } })),
@@ -59,9 +59,9 @@ describe('renderOutline', () => {
   });
 
   it('zooms into a subtree by node id', () => {
-    const section = Object.values(doc.nodes).find((n) => n.type === 'buildr/section');
+    const section = Object.values(doc.nodes).find((n) => n.type === 'buildr/container');
     const zoomed = text({ nodeId: section?.id });
-    expect(zoomed.split('\n')[0]).toMatch(/^n\d+ buildr\/section "Hero"/);
+    expect(zoomed.split('\n')[0]).toMatch(/^n\d+ buildr\/container "Hero"/);
     expect(zoomed).not.toContain('buildr/divider');
   });
 
@@ -95,15 +95,15 @@ describe('outlineToJson', () => {
 });
 
 describe('a 1000-node document', () => {
-  // 1 page, 50 sections, each with 1 stack holding 18 headings: 1 + 50 + 50 + 900 = 1001 nodes.
+  // 1 page, 50 containers, each with 1 container holding 18 headings: 1 + 50 + 50 + 900 = 1001 nodes.
   const big = documentFromTree({
     type: 'buildr/page',
     children: Array.from({ length: 50 }, (_, s1) => ({
-      type: 'buildr/section',
+      type: 'buildr/container',
       name: `Section ${s1}`,
       children: [
         {
-          type: 'buildr/stack',
+          type: 'buildr/container',
           children: Array.from({ length: 18 }, (_, i) => heading(`Heading ${s1}.${i}`)),
         },
       ],
@@ -120,7 +120,7 @@ describe('a 1000-node document', () => {
     expect(result.value.length).toBeLessThan(40_000);
   });
 
-  it('is complete at depth 2 (sections and stacks) and small', () => {
+  it('is complete at depth 2 (outer and inner containers) and small', () => {
     const result = renderOutline(big, registry, { depth: 2 });
     if (!result.ok) throw new Error(result.error.message);
     expect(result.value.length).toBeLessThan(10_000);

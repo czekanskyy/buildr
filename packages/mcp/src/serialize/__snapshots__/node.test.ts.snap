@@ -30,11 +30,11 @@ exports[`describeNode > gives every prop as a Value, styles per layer and the pl
 `;
 
 exports[`describeNode > renders text with bindings, expressions, translations and styles 1`] = `
-"n000000002 buildr/section (Section)
+"n000000002 buildr/container (Container)
 anchor: hero
 parent: root slot "default" index 0
 props: (all defaults)
-defaults: as="section", container="lg", backgroundImage=null, ariaLabel=""
+defaults: display="flex", as="div", width="lg", bleed=false, backgroundImage=null, role="none", ariaLabel=""
 styles: {"base":{"spacing":{"padding":{"top":"$space.8"}}},"bp":{"md":{"layout":{"gap":8}}}}
 slot default: n000000003(buildr/heading), n000000004(buildr/text), n000000005(buildr/text)"
 `;
