@@ -75,10 +75,16 @@ flowchart LR
     P143 --> P145
     P142 -.-> P146[PB-146 screenshots, optional]
   end
+  subgraph F15[Phase 15: performance budgets]
+    P148[PB-148 large fixture] --> P149[PB-149 node benchmarks + nightly gate] --> P150[PB-150 browser budgets, card only]
+  end
   P113[PB-113] --> P118
   P064[PB-064] --> P121
   P114[PB-114] --> P132
+  P009[PB-009] --> P148
 ```
+
+Phase 15 (performance budgets) is a short chain of its own: PB-148 and PB-149 are scheduled, PB-150 is a card only. It depends only on the finished fixture corpus (PB-009) and does not touch the tracks of phases 13 and 14.
 
 ## Critical path
 
