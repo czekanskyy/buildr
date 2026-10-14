@@ -108,11 +108,13 @@ export function EditorApp(props: EditorAppProps) {
   // A window too narrow to edit in keeps the editor from opening (nothing is loaded); one that is
   // already open stays open when the window shrinks, so no work is torn down.
   const narrow = useViewportTooNarrow(config.minViewportWidth);
-  const blocked = narrow && phase.kind !== 'ready';
+  // `undefined`: not measured yet (server render, hydration) - show the loading state, load nothing.
+  const blocked = narrow === true && phase.kind !== 'ready';
+  const waiting = narrow === undefined && phase.kind !== 'ready';
   const refKey = `${documentRef.collection}:${documentRef.id}`;
   // biome-ignore lint/correctness/useExhaustiveDependencies: `documentRef` is identified by `refKey`
   useEffect(() => {
-    if (blocked) return;
+    if (blocked || waiting) return;
     let cancelled = false;
     setPhase({ kind: 'loading' });
     void (async () => {
@@ -158,6 +160,7 @@ export function EditorApp(props: EditorAppProps) {
     registry,
     props.locales,
     blocked,
+    waiting,
     config.autosave.debounceMs,
     config.autosave.maxWaitMs,
   ]);
@@ -177,7 +180,7 @@ export function EditorApp(props: EditorAppProps) {
             ) : phase.kind === 'ready' ? (
               <Session {...props} ready={phase} />
             ) : (
-              <Status failed={phase.kind === 'error'} />
+              <Status failed={!waiting && phase.kind === 'error'} />
             )}
           </div>
         </PortalContainerProvider>

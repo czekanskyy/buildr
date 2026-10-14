@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { act } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
+import { createRoot, hydrateRoot, type Root } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MessagesProvider } from '../messages/index.tsx';
 import { SmallScreenNotice, useViewportTooNarrow } from './small-screen.tsx';
@@ -34,7 +35,8 @@ function stubWindow(initial: number) {
 }
 
 function Probe({ min }: { readonly min: number }) {
-  return <p>{useViewportTooNarrow(min) ? 'narrow' : 'wide'}</p>;
+  const narrow = useViewportTooNarrow(min);
+  return <p>{narrow === undefined ? 'unknown' : narrow ? 'narrow' : 'wide'}</p>;
 }
 const mount = async (node: React.ReactNode) => {
   const container = document.createElement('div');
@@ -66,6 +68,47 @@ describe('useViewportTooNarrow', () => {
   it('is false where matchMedia does not exist', async () => {
     vi.stubGlobal('matchMedia', undefined);
     expect((await mount(<Probe min={1024} />)).textContent).toBe('wide');
+  });
+});
+
+/** What `EditorApp` shows: loading while unknown, the notice when narrow, else the editor. */
+function Gate({ min }: { readonly min: number }) {
+  const narrow = useViewportTooNarrow(min);
+  if (narrow === undefined) return <p role="status">loading</p>;
+  return narrow ? (
+    <MessagesProvider locale="en">
+      <SmallScreenNotice />
+    </MessagesProvider>
+  ) : (
+    <p>editor</p>
+  );
+}
+
+describe('useViewportTooNarrow on the server and while hydrating', () => {
+  it('is unknown on the server, whatever the window would say', () => {
+    stubWindow(700);
+    const html = renderToString(<Gate min={1024} />);
+    expect(html).toContain('loading');
+    expect(html).not.toContain('role="alert"');
+  });
+
+  it('hydrates a narrow window without a mismatch, then shows the notice', async () => {
+    stubWindow(700);
+    const html = renderToString(<Gate min={1024} />);
+    const container = document.createElement('div');
+    document.body.append(container);
+    container.innerHTML = html;
+    const errors: unknown[] = [];
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    await act(async () => {
+      root = hydrateRoot(container, <Gate min={1024} />, {
+        onRecoverableError: (error) => errors.push(error),
+      });
+    });
+    expect(errors).toEqual([]);
+    expect(consoleError).not.toHaveBeenCalled();
+    consoleError.mockRestore();
+    expect(container.querySelector('[role="alert"]')).not.toBeNull();
   });
 });
 
