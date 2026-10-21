@@ -1,5 +1,19 @@
 # @next-buildr/next
 
+## 2.0.0
+
+### Patch Changes
+
+- Updated dependencies [aaa5701]
+- Updated dependencies [aaa5701]
+- Updated dependencies [70f50a5]
+- Updated dependencies [aaa5701]
+- Updated dependencies [aaa5701]
+- Updated dependencies [d6dd7bc]
+  - @next-buildr/core@2.0.0
+  - @next-buildr/editor@2.0.0
+  - @next-buildr/react@2.0.0
+
 ## 1.0.0
 
 ### Minor Changes
