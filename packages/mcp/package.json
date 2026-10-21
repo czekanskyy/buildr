@@ -76,5 +76,10 @@
     "tsx": "4.22.4",
     "typescript": "7.0.2",
     "vitest": "5.0.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/czekanskyy/buildr.git",
+    "directory": "packages/mcp"
   }
 }
