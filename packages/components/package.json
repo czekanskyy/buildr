@@ -54,5 +54,10 @@
     "typescript": "7.0.2",
     "vitest": "5.0.1",
     "vitest-axe": "^0.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/czekanskyy/buildr.git",
+    "directory": "packages/components"
   }
 }

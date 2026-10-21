@@ -56,5 +56,10 @@
   "dependencies": {
     "immer": "^11.1.18",
     "zod": "^4.6.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/czekanskyy/buildr.git",
+    "directory": "packages/core"
   }
 }

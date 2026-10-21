@@ -132,5 +132,10 @@
     "react-dom": "^19.0.0",
     "typescript": "7.0.2",
     "vitest": "5.0.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/czekanskyy/buildr.git",
+    "directory": "packages/payload"
   }
 }
