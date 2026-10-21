@@ -1,5 +1,16 @@
 # @next-buildr/react
 
+## 2.0.0
+
+### Minor Changes
+
+- aaa5701: Allow component definitions to declare retired types through `replaces` and include their replacements in registry migrations. Reject two components replacing the same retired type and retired types that are still registered.
+
+### Patch Changes
+
+- Updated dependencies [aaa5701]
+  - @next-buildr/core@2.0.0
+
 ## 1.0.0
 
 ### Minor Changes

@@ -1,5 +1,21 @@
 # @next-buildr/editor
 
+## 2.0.0
+
+### Minor Changes
+
+- aaa5701: `EditorApp` takes an optional `migrations` prop (`registry.migrations`). A paste of content copied under older component versions, or of a retired type, is migrated first; without it, or if the migration fails, the paste is refused (`clipboard.outdated`) and nothing is inserted. Components inserted from the panel or by drag are stamped with the registry's versions, and select props show their `optionLabels`.
+- 70f50a5: The editor no longer opens in a window narrower than `config.minViewportWidth` (default 1024, `0` turns it off): a notice asks the author to use a computer, and the editor opens by itself once the window is wide enough.
+- d6dd7bc: Editor: a visual style inspector (nested margin/padding rings with linked sides, one-row inset, border width and radius, side-by-side size/gap/typography fields, icon segments for display, alignment and text style, colour picker, opacity slider) and a unit menu on every length field instead of typing units. Insert panel categories are ordered Layout, Content, Media, Forms, UI, CMS. The toolbar shows the Buildr mark and an editable page name; the breadcrumbs no longer show the `buildr/` prefix.
+
+  `DocumentAdapter` gets an optional `rename(ref, title)`; the Payload plugin adds `PATCH /buildr/documents/:collection/:id` (renames without touching the layout or its revision) and the adapter implements `rename`.
+
+### Patch Changes
+
+- aaa5701: The Insert panel now names the `ui` and `cms` categories "UI" and "CMS" and translates the built-in category headings.
+- Updated dependencies [aaa5701]
+  - @next-buildr/core@2.0.0
+
 ## 1.0.0
 
 ### Minor Changes

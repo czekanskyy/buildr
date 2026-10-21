@@ -1,5 +1,15 @@
 # @next-buildr/test-utils
 
+## 2.0.0
+
+### Patch Changes
+
+- aaa5701: The `doc()` builder takes a `versions` option: the component version recorded for each encountered type (default 1; an explicit `components` entry still wins).
+- Updated dependencies [aaa5701]
+- Updated dependencies [aaa5701]
+  - @next-buildr/core@2.0.0
+  - @next-buildr/react@2.0.0
+
 ## 1.0.0
 
 ### Patch Changes
