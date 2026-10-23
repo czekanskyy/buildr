@@ -6,6 +6,8 @@ Buildr publishes its packages to npm with [Changesets](https://github.com/change
 
 `@next-buildr/core`, `@next-buildr/react`, `@next-buildr/components`, `@next-buildr/editor`, `@next-buildr/next`, `@next-buildr/payload` and `@next-buildr/mcp` are one **fixed group** (`"fixed": [["@next-buildr/*"]]` in `.changeset/config.json`, [ADR-001](adr/ADR-001-monorepo.md)): they are always released together, at the same version, even when only one of them changed. Applications and tooling packages (`apps/*`, `tooling/*`, `@next-buildr/test-utils`) are workspace-internal and follow the same version numbers but are not what you install. Only the entry points a package declares in `exports` are covered by semver; `internal/` modules are not.
 
+Every public package manifest declares `license: "MIT"` and each package has its own README for npm's package page. Keep those metadata files alongside the package when adding a public package.
+
 ## The flow
 
 1. **A change to a package's public API adds a changeset.** Run `pnpm changeset`, pick every affected package and the bump type (patch, minor, major) and write a sentence for the changelog. The file lands in `.changeset/`. The `changeset-check` job of the `Release` workflow fails a pull request without one (`pnpm changeset status --since=origin/main`), and AGENTS.md requires it. A change that only touches documentation or tests inside a package directory still needs the check to pass: add an empty changeset with `pnpm changeset --empty`, which bumps nothing.
