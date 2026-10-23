@@ -1,5 +1,13 @@
 # @next-buildr/test-utils
 
+## 2.0.1
+
+### Patch Changes
+
+- Updated dependencies [bf086e5]
+  - @next-buildr/core@2.0.1
+  - @next-buildr/react@2.0.1
+
 ## 2.0.0
 
 ### Patch Changes

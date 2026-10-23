@@ -1,5 +1,15 @@
 # @next-buildr/next
 
+## 2.0.1
+
+### Patch Changes
+
+- bf086e5: Add package license metadata and npm landing-page READMEs.
+- Updated dependencies [bf086e5]
+  - @next-buildr/core@2.0.1
+  - @next-buildr/react@2.0.1
+  - @next-buildr/editor@2.0.1
+
 ## 2.0.0
 
 ### Patch Changes
