@@ -1,5 +1,11 @@
 # @next-buildr/core
 
+## 2.0.1
+
+### Patch Changes
+
+- bf086e5: Add package license metadata and npm landing-page READMEs.
+
 ## 2.0.0
 
 ### Minor Changes
