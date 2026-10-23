@@ -2,6 +2,7 @@
   "name": "@next-buildr/mcp",
   "version": "2.0.0",
   "private": false,
+  "license": "MIT",
   "type": "module",
   "bin": {
     "buildr-mcp": "./src/cli/bin.ts"
