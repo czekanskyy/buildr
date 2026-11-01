@@ -1,0 +1,22 @@
+/* Buildr Editor – base: box model, type, icons, focus, utilities. Tokens only (see tokens.css). */
+
+html, body { margin: 0; }
+[hidden] { display: none !important; }
+
+.buildr-editor, .buildr-editor * { box-sizing: border-box; }
+.buildr-editor {
+  font-family: var(--font-sans);
+  font-size: var(--bd-text-md);
+  line-height: var(--bd-leading-md);
+  color: var(--bd-text);
+  background: var(--bd-bg);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "cv11", "ss01";
+}
+.buildr-editor button { font: inherit; color: inherit; margin: 0; }
+.buildr-editor svg.i { width: var(--bd-icon-sm); height: var(--bd-icon-sm); flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.buildr-editor svg.i-20 { width: var(--bd-control-xs); height: var(--bd-control-xs); }
+.buildr-editor :focus-visible { outline: var(--bd-focus-width) solid var(--bd-focus); outline-offset: var(--bd-focus-width); }
+.bd-tabular { font-variant-numeric: tabular-nums; }
+.bd-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+

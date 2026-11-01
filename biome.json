@@ -19,7 +19,8 @@
       "!**/.next",
       "!**/payload-types.ts",
       "!**/importMap.js",
-      "!**/next-env.d.ts"
+      "!**/next-env.d.ts",
+      "!docs/design/template"
     ]
   },
   "formatter": {
