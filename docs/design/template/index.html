@@ -244,8 +244,8 @@
             <div class="blk blk-c site-hero {{c.heroCols}}" data-blk="heroCols" style="{{st.heroCols}}" aria-label="{{al.heroCols}}" tabindex="0" onClick="{{p.heroCols}}">
               <div class="blk blk-c {{c.heroCol1}}" data-blk="heroCol1" style="{{st.heroCol1}}" aria-label="{{al.heroCol1}}" tabindex="0" onClick="{{p.heroCol1}}">
                 <div class="site-eyebrow">Projektowanie wnętrz</div>
-                <div class="blk {{c.heroH}}" data-blk="heroH" style="{{st.heroH}}" aria-label="{{al.heroH}}" tabindex="0" onClick="{{p.heroH}}"><h1>{{tx.heroH}}</h1></div>
-                <div class="blk {{c.heroP}}" data-blk="heroP" style="{{st.heroP}}" aria-label="{{al.heroP}}" tabindex="0" onClick="{{p.heroP}}"><p class="site-lead">Projektujemy mieszkania i małe biura od pierwszego szkicu po odbiór. Spokojnie, z jasnym planem i budżetem.</p></div>
+                <div class="blk {{c.heroH}}" data-blk="heroH" data-html="{{hx.heroH}}" style="{{st.heroH}}" aria-label="{{al.heroH}}" tabindex="0" onClick="{{p.heroH}}"><h1 class="site-h">{{tx.heroH}}</h1></div>
+                <div class="blk {{c.heroP}}" data-blk="heroP" data-html="{{hx.heroP}}" style="{{st.heroP}}" aria-label="{{al.heroP}}" tabindex="0" onClick="{{p.heroP}}"><p class="site-lead">{{tx.heroP}}</p></div>
                 <div class="site-actions">
                   <div class="blk blk--inline {{c.heroBtn}}" data-blk="heroBtn" style="{{st.heroBtn}}" aria-label="{{al.heroBtn}}" tabindex="0" onClick="{{p.heroBtn}}"><span class="site-btn o-skin">{{tx.heroBtn}}</span></div>
                   <div class="blk blk--inline {{c.heroBtn2}}" data-blk="heroBtn2" style="{{st.heroBtn2}}" aria-label="{{al.heroBtn2}}" tabindex="0" onClick="{{p.heroBtn2}}"><span class="site-btn site-btn--ghost o-skin">{{tx.heroBtn2}}</span></div>
@@ -263,9 +263,9 @@
 
           <!-- Offer: three cards -->
           <div class="blk blk-c {{c.offer}}" data-blk="offer" style="{{st.offer}}" aria-label="{{al.offer}}" tabindex="0" onClick="{{p.offer}}">
-            <div class="site-sec">
-              <div class="blk {{c.offerH}}" data-blk="offerH" style="{{st.offerH}}" aria-label="{{al.offerH}}" tabindex="0" onClick="{{p.offerH}}">
-                <div class="site-sec__head"><h2>{{tx.offerH}}</h2><p>Możesz zamówić cały proces albo tylko wybrany etap.</p></div>
+            <div class="site-sec" style="{{lay.offer}}">
+              <div class="blk {{c.offerH}}" data-blk="offerH" data-html="{{hx.offerH}}" style="{{st.offerH}}" aria-label="{{al.offerH}}" tabindex="0" onClick="{{p.offerH}}">
+                <div class="site-sec__head"><h2 class="site-h">{{tx.offerH}}</h2><p>Możesz zamówić cały proces albo tylko wybrany etap.</p></div>
               </div>
               <div class="blk blk-c site-cards {{c.offerCols}}" data-blk="offerCols" style="{{st.offerCols}}" aria-label="{{al.offerCols}}" tabindex="0" onClick="{{p.offerCols}}">
                 <div class="blk blk-c site-card {{c.card1}}" data-blk="card1" style="{{st.card1}}" aria-label="{{al.card1}}" tabindex="0" onClick="{{p.card1}}">
@@ -288,14 +288,13 @@
 
           <!-- About: text + quote -->
           <div class="blk blk-c {{c.about}}" data-blk="about" style="{{st.about}}" aria-label="{{al.about}}" tabindex="0" onClick="{{p.about}}">
-            <div class="site-text">
-              <div class="blk {{c.aboutText}}" data-blk="aboutText" style="{{st.aboutText}}" aria-label="{{al.aboutText}}" tabindex="0" onClick="{{p.aboutText}}">
+            <div class="site-text" style="{{lay.about}}">
+              <div class="blk {{c.aboutText}}" data-blk="aboutText" data-html="{{hx.aboutText}}" style="{{st.aboutText}}" aria-label="{{al.aboutText}}" tabindex="0" onClick="{{p.aboutText}}">
                 <h2>Jak pracujemy</h2>
-                <p style="margin-top: 16px">Zaczynamy od rozmowy o tym, jak mieszkasz na co dzień. Dopiero potem rysujemy. Każdą decyzję pokazujemy na wizualizacji, zanim trafi do wykonawcy.</p>
-                <p>Na każdym etapie wiesz, ile wydałeś i co zostało do zrobienia.</p>
+                <div class="site-rt"><p>{{tx.aboutText}}</p></div>
               </div>
-              <div class="blk {{c.quote}}" data-blk="quote" style="{{st.quote}}" aria-label="{{al.quote}}" tabindex="0" onClick="{{p.quote}}">
-                <blockquote class="site-quote o-skin">„Pierwszy raz remont nie zjadł nam nerwów. Wiedzieliśmy, co się dzieje, nawet gdy byliśmy w pracy.”<cite>Klientka, mieszkanie na Mokotowie</cite></blockquote>
+              <div class="blk {{c.quote}}" data-blk="quote" data-html="{{hx.quote}}" style="{{st.quote}}" aria-label="{{al.quote}}" tabindex="0" onClick="{{p.quote}}">
+                <blockquote class="site-quote o-skin">„{{tx.quote}}”<cite>Klientka, mieszkanie na Mokotowie</cite></blockquote>
               </div>
             </div>
           </div>
@@ -304,8 +303,8 @@
 
           <!-- CTA -->
           <div class="blk blk-c {{c.cta}}" data-blk="cta" style="{{st.cta}}" aria-label="{{al.cta}}" tabindex="0" onClick="{{p.cta}}">
-            <div class="site-cta">
-              <div class="blk {{c.ctaH}}" data-blk="ctaH" style="{{st.ctaH}}" aria-label="{{al.ctaH}}" tabindex="0" onClick="{{p.ctaH}}"><h2>{{tx.ctaH}}</h2><p>Pierwsza konsultacja online jest bezpłatna.</p></div>
+            <div class="site-cta" style="{{lay.cta}}">
+              <div class="blk {{c.ctaH}}" data-blk="ctaH" data-html="{{hx.ctaH}}" style="{{st.ctaH}}" aria-label="{{al.ctaH}}" tabindex="0" onClick="{{p.ctaH}}"><h2 class="site-h">{{tx.ctaH}}</h2><p>Pierwsza konsultacja online jest bezpłatna.</p></div>
               <div class="blk blk--inline {{c.ctaBtn}}" data-blk="ctaBtn" style="{{st.ctaBtn}}" aria-label="{{al.ctaBtn}}" tabindex="0" onClick="{{p.ctaBtn}}"><span class="site-btn o-skin">{{tx.ctaBtn}}</span></div>
             </div>
           </div>
@@ -714,6 +713,30 @@
                   </sc-if>
 
                   <sc-if value="{{f.isNote}}" hint-placeholder-val="{{false}}"><p class="bd-hint">{{f.label}}</p></sc-if>
+                  <sc-if value="{{f.isWys}}" hint-placeholder-val="{{false}}">
+                    <div class="bd-wys">
+                      <div class="bd-boxbar"><span class="bd-flabel" id="{{f.areaId}}-l">{{f.lpre}}<mark>{{f.lmid}}</mark>{{f.lpost}}</span>
+                        <sc-if value="{{f.changed}}" hint-placeholder-val="{{false}}"><button class="bd-reset" type="button" aria-label="Przywróć domyślne: {{f.label}}" data-tip="Przywróć domyślne" data-tip-pos="end" onClick="{{f.reset}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path></svg></button></sc-if>
+                      </div>
+                      <div class="bd-wys__box">
+                        <div class="bd-wys__bar" role="toolbar" aria-label="Formatowanie: {{f.label}}">
+                          <sc-for list="{{f.tools}}" as="tl" hint-placeholder-count="8">
+                            <sc-if value="{{tl.sep}}" hint-placeholder-val="{{false}}"><span class="bd-wys__sep" aria-hidden="true"></span></sc-if>
+                            <sc-if value="{{tl.tool}}" hint-placeholder-val="{{true}}"><button class="bd-iconbtn bd-iconbtn--sm" type="button" aria-label="{{tl.tip}}" aria-pressed="{{tl.on}}" data-tip="{{tl.tip}}" data-tip-pos="{{tl.tipPos}}" onPointerDown="{{tl.down}}" onClick="{{tl.run}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="{{tl.d1}}"></path><path d="{{tl.d2}}"></path><path d="{{tl.d3}}"></path></svg></button></sc-if>
+                          </sc-for>
+                        </div>
+                        <div class="bd-wys__area" id="{{f.areaId}}" data-key="{{f.wkey}}" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="{{f.areaId}}-l" data-html="{{f.html}}" onInput="{{f.onInput}}" onKeyUp="{{f.sync}}" onMouseUp="{{f.sync}}" onKeyDown="{{f.onKey}}">{{f.plain}}</div>
+                        <sc-if value="{{f.linkOpen}}" hint-placeholder-val="{{false}}">
+                          <div class="bd-wys__link">
+                            <span class="bd-input mono"><input type="url" placeholder="https:// albo /podstrona" aria-label="Adres linku" value="{{f.wysUrl}}" onChange="{{f.onUrl}}" onKeyDown="{{f.urlKey}}" autofocus></span>
+                            <button class="bd-btn bd-btn--primary" type="button" onClick="{{f.applyLink}}">Wstaw</button>
+                            <button class="bd-iconbtn bd-iconbtn--sm" type="button" aria-label="Anuluj" data-tip="Anuluj" data-tip-pos="end" onClick="{{f.cancelLink}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+                          </div>
+                        </sc-if>
+                      </div>
+                      <p class="bd-hint">{{f.hint}}</p>
+                    </div>
+                  </sc-if>
                 </sc-for>
                 <sc-if value="{{sec.mod}}" hint-placeholder-val="{{false}}">
                   <div class="bd-sec__foot"><button class="bd-textbtn" type="button" onClick="{{sec.reset}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path></svg>Resetuj sekcję</button></div>
@@ -812,6 +835,7 @@
 </div>
 </script>
 <script src="js/runtime.js"></script>
+<script src="js/tooltips.js"></script>
 <script src="js/editor.js"></script>
 </body>
 </html>

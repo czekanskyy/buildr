@@ -201,13 +201,13 @@
 /* ============ Sample site (user content – not editor tokens) ============ */
 .site { --s-ink: #15201d; --s-muted: #4a5753; --s-brand: #1f6f5c; --s-brand-dark: #17574a; --s-tint: #eef4f1; --s-line: #d9e3df; --s-sand: #f6f3ee;
   font-family: "Manrope", system-ui, sans-serif; color: var(--s-ink); font-size: 16px; line-height: 1.6; background: #ffffff; }
-.site h1, .site h2, .site h3 { margin: 0; letter-spacing: -0.02em; line-height: 1.15; font-weight: 700; }
+.site h1, .site h2, .site h3, .site h4, .site h5, .site h6, .site .site-h { margin: 0; letter-spacing: -0.02em; line-height: 1.15; font-weight: 700; }
 .site p { margin: 0; }
 .site-nav { display: flex; align-items: center; justify-content: space-between; padding: 20px 48px; border-bottom: 1px solid var(--s-line); }
 .site-nav b { font-size: 18px; letter-spacing: -0.02em; }
 .site-nav nav { display: flex; gap: 28px; font-size: 14px; color: var(--s-muted); }
 .site-hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 48px; align-items: center; padding: 72px 48px; background: var(--s-sand); }
-.site-hero h1 { font-size: 48px; }
+.site-hero h1, .site-hero .site-h { font-size: 48px; }
 .site-eyebrow { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--s-brand); margin-bottom: 16px; }
 .site-lead { font-size: 18px; color: var(--s-muted); margin-top: 20px; max-width: 46ch; }
 .site-actions { display: flex; gap: 12px; margin-top: 32px; flex-wrap: wrap; }
@@ -219,7 +219,7 @@
 .site-img__cap { position: absolute; left: 12px; bottom: 12px; z-index: 1; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: rgba(255, 255, 255, 0.85); color: var(--s-muted); font-size: 12px; }
 .site-sec { padding: 72px 48px; }
 .site-sec__head { max-width: 560px; margin-bottom: 40px; }
-.site-sec__head h2 { font-size: 34px; }
+.site-sec__head h2, .site-sec__head .site-h { font-size: 34px; }
 .site-sec__head p { color: var(--s-muted); margin-top: 12px; }
 .site-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
 .site-card { padding: 28px; border-radius: 14px; border: 1px solid var(--s-line); background: #ffffff; }
@@ -231,10 +231,14 @@
 .site-text h2 { font-size: 30px; }
 .site-text p + p { margin-top: 16px; }
 .site-text p { color: var(--s-muted); }
+.site-text h2 + .site-rt { margin-top: 16px; }
+.site-rt :is(ul, ol) { margin: 12px 0 0; padding-left: 22px; color: var(--s-muted); }
+.site-rt li + li { margin-top: 4px; }
+.site :is(.site-rt, .site-lead, .site-h, .site-quote) a { color: var(--s-brand); text-underline-offset: 3px; }
 .site-quote { margin: 0; padding: 28px 32px; border-radius: 14px; background: var(--s-tint); font-size: 20px; line-height: 1.5; font-weight: 600; letter-spacing: -0.01em; }
 .site-quote cite { display: block; margin-top: 16px; font-style: normal; font-size: 14px; font-weight: 500; color: var(--s-muted); }
 .site-cta { margin: 0 48px 72px; padding: 56px; border-radius: 20px; background: var(--s-ink); color: #ffffff; display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
-.site-cta h2 { font-size: 32px; max-width: 18ch; }
+.site-cta h2, .site-cta .site-h { font-size: 32px; max-width: 18ch; }
 .site-cta p { color: #b8c6c1; margin-top: 10px; }
 .site-cta .site-btn { background: #ffffff; color: var(--s-ink); }
 
@@ -292,12 +296,29 @@
 /* =================== Stage (d): dialogs, toasts, motion, canvas overrides =================== */
 /* Canvas: style overrides from the inspector. Vars live on the block wrapper; .o-skin marks the visible element of a leaf block. */
 .blk[style*="--o-bg:"]:not(:has(> .o-skin)), .blk[style*="--o-bg:"] > .o-skin { background: var(--o-bg) !important; }
-.blk[style*="--o-fg:"], .blk[style*="--o-fg:"] :is(h1, h2, h3, p, a, cite, .site-eyebrow), .blk[style*="--o-fg:"] > .o-skin { color: var(--o-fg) !important; }
+.blk[style*="--o-fg:"], .blk[style*="--o-fg:"] :is(h1, h2, h3, h4, h5, h6, p, li, a, cite, .site-h, .site-eyebrow), .blk[style*="--o-fg:"] > .o-skin { color: var(--o-fg) !important; }
+.blk[style*="--o-link:"] a { color: var(--o-link) !important; }
 .blk[style*="--o-r:"]:not(:has(> .o-skin)), .blk[style*="--o-r:"] > .o-skin { border-radius: var(--o-r) !important; overflow: hidden; }
 .blk[style*="--o-sh:"]:not(:has(> .o-skin)), .blk[style*="--o-sh:"] > .o-skin { box-shadow: var(--o-sh) !important; }
 .blk[style*="--o-pad:"]:not(:has(> .o-skin)), .blk[style*="--o-pad:"] > .o-skin { padding: var(--o-pad) !important; height: auto; }
-.blk[style*="--o-fs:"] :is(h1, h2, h3, p, blockquote, .site-btn), .blk[style*="--o-fs:"].site-card { font-size: var(--o-fs) !important; }
-.blk[style*="--o-fw:"] :is(h1, h2, h3, p, blockquote, .site-btn) { font-weight: var(--o-fw) !important; }
+.blk[style*="--o-fs:"] :is(h1, h2, h3, h4, h5, h6, p, li, blockquote, .site-h, .site-btn), .blk[style*="--o-fs:"].site-card { font-size: var(--o-fs) !important; }
+.blk[style*="--o-fw:"] :is(h1, h2, h3, h4, h5, h6, p, li, blockquote, .site-h, .site-btn), .blk[style*="--o-fw:"].site-card { font-weight: var(--o-fw) !important; }
+.blk[style*="--o-ff:"] :is(h1, h2, h3, h4, h5, h6, p, li, blockquote, .site-h, .site-btn), .blk[style*="--o-ff:"].site-card { font-family: var(--o-ff) !important; }
+.blk[style*="--o-fst:"] :is(h1, h2, h3, h4, h5, h6, p, li, blockquote, .site-h, .site-btn), .blk[style*="--o-fst:"].site-card { font-style: var(--o-fst) !important; }
+.blk[style*="--o-lh:"] :is(h1, h2, h3, h4, h5, h6, p, li, blockquote, .site-h, .site-btn), .blk[style*="--o-lh:"].site-card { line-height: var(--o-lh) !important; }
+.blk[style*="--o-ls:"] :is(h1, h2, h3, h4, h5, h6, p, li, blockquote, .site-h, .site-btn), .blk[style*="--o-ls:"].site-card { letter-spacing: var(--o-ls) !important; }
+.blk[style*="--o-tt:"] :is(h1, h2, h3, h4, h5, h6, p, li, blockquote, .site-h, .site-btn), .blk[style*="--o-tt:"].site-card { text-transform: var(--o-tt) !important; }
+.blk[style*="--o-td:"] :is(h1, h2, h3, h4, h5, h6, p, li, blockquote, .site-h, .site-btn), .blk[style*="--o-td:"].site-card, .blk[style*="--o-td:"] a { text-decoration-line: var(--o-td) !important; }
+.blk[style*="--o-ts:"] :is(h1, h2, h3, h4, h5, h6, p, li, blockquote, .site-h, .site-btn), .blk[style*="--o-ts:"].site-card { text-shadow: var(--o-ts) !important; }
+.blk[style*="--o-bs:"]:not(:has(> .o-skin)), .blk[style*="--o-bs:"] > .o-skin { border-style: var(--o-bs) !important; border-width: var(--o-bw) !important; border-color: var(--o-bc) !important; }
+.blk[style*="--o-w:"]:not(:has(> .o-skin)), .blk[style*="--o-w:"] > .o-skin { width: var(--o-w) !important; }
+.blk[style*="--o-h:"]:not(:has(> .o-skin)), .blk[style*="--o-h:"] > .o-skin { height: var(--o-h) !important; }
+.blk[style*="--o-minw:"]:not(:has(> .o-skin)), .blk[style*="--o-minw:"] > .o-skin { min-width: var(--o-minw) !important; }
+.blk[style*="--o-maxw:"]:not(:has(> .o-skin)), .blk[style*="--o-maxw:"] > .o-skin { max-width: var(--o-maxw) !important; }
+.blk[style*="--o-minh:"]:not(:has(> .o-skin)), .blk[style*="--o-minh:"] > .o-skin { min-height: var(--o-minh) !important; }
+.blk[style*="--o-maxh:"]:not(:has(> .o-skin)), .blk[style*="--o-maxh:"] > .o-skin { max-height: var(--o-maxh) !important; }
+.blk[style*="--o-ovf:"]:not(:has(> .o-skin)), .blk[style*="--o-ovf:"] > .o-skin { overflow: var(--o-ovf) !important; }
+.blk[style*="--o-ar:"]:not(:has(> .o-skin)), .blk[style*="--o-ar:"] > .o-skin { aspect-ratio: var(--o-ar) !important; }
 .blk.is-hidden-dev { opacity: 0.35; }
 .blk.is-hidden-dev::after { content: ""; position: absolute; inset: 0; background: var(--bd-blk-background); pointer-events: none; }
 .blk.is-run-a { animation: pv-in-a var(--adur) var(--aease) both; }

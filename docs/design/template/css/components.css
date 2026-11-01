@@ -29,29 +29,13 @@
 .bd-iconbtn--sm { width: var(--bd-control-sm); height: var(--bd-control-sm); border-radius: var(--bd-radius-sm); }
 .bd-iconbtn--danger:hover { background: var(--bd-danger-soft); color: var(--bd-danger); }
 
-[data-tip] { position: relative; }
-[data-tip]::after {
-  content: attr(data-tip);
-  position: absolute; left: 50%; top: var(--bd-tip-top);
-  transform: translate(-50%, -4px);
-  z-index: var(--bd-z-tooltip);
-  padding: var(--bd-space-1) var(--bd-space-2);
-  border-radius: var(--bd-radius-sm);
-  background: var(--bd-text); color: var(--bd-surface);
-  font-size: var(--bd-text-xs); line-height: var(--bd-leading-xs); font-weight: var(--bd-weight-medium);
-  white-space: nowrap; pointer-events: none;
-  opacity: 0;
-  transition: opacity var(--bd-duration-fast) var(--bd-ease-exit), transform var(--bd-duration-fast) var(--bd-ease-exit);
-}
-[data-tip]:hover::after { opacity: 1; transform: translate(-50%, 0); transition: opacity var(--bd-duration-fast) var(--bd-ease-enter) 400ms, transform var(--bd-duration-fast) var(--bd-ease-enter) 400ms; }
-[data-tip]:focus-visible::after { opacity: 1; transform: translate(-50%, 0); transition-delay: 0ms; }
-[data-tip-pos="top"]::after { top: auto; bottom: var(--bd-tip-bottom); transform: var(--bd-tip-tf); }
-[data-tip-pos="end"]::after { left: auto; right: 0; transform: translate(0, -4px); }
-[data-tip-pos="end"]:hover::after, [data-tip-pos="end"]:focus-visible::after { transform: translate(0, 0); }
-[data-tip-pos="start"]::after { left: 0; transform: translate(0, -4px); }
-[data-tip-pos="start"]:hover::after, [data-tip-pos="start"]:focus-visible::after { transform: translate(0, 0); }
-[data-tip-pos="right"]::after { left: var(--bd-tip-left); top: 50%; transform: translate(-4px, -50%); }
-[data-tip-pos="right"]:hover::after, [data-tip-pos="right"]:focus-visible::after { transform: translate(0, -50%); }
+/* Tooltip: one floating layer per page (js/tooltips.js), positioned against the viewport so no
+   panel, scroll area or stacking context can cover or clip it. Triggers carry data-tip and an
+   optional data-tip-pos: bottom (default), top, start, end, right. */
+.bd-tooltip { position: fixed; left: 0; top: 0; z-index: var(--bd-z-tooltip); max-width: var(--bd-tip-max-w); padding: var(--bd-space-1) var(--bd-space-2); border-radius: var(--bd-radius-sm); background: var(--bd-text); color: var(--bd-surface); box-shadow: var(--bd-elevation-2); font-family: var(--font-sans); font-size: var(--bd-text-xs); line-height: var(--bd-leading-xs); font-weight: var(--bd-weight-medium); pointer-events: none; opacity: 0; transform: translateY(var(--bd-tip-shift)); transition: opacity var(--bd-duration-fast) var(--bd-ease-exit), transform var(--bd-duration-fast) var(--bd-ease-exit); }
+.bd-tooltip.is-on { opacity: 1; transform: none; transition-timing-function: var(--bd-ease-enter); }
+.bd-tooltip[data-side="top"] { transform: translateY(calc(var(--bd-tip-shift) * -1)); }
+.bd-tooltip[data-side="top"].is-on { transform: none; }
 
 /* Segmented control (device switcher and every icon group) */
 .bd-seg {
@@ -611,3 +595,20 @@ button.bd-list__row[aria-selected="true"] { background: var(--bd-surface-selecte
 .bd-timeline span.b { background: var(--bd-accent-soft); box-shadow: inset 0 0 0 var(--bd-border-width) var(--bd-accent); }
 .bd-rm { display: inline-flex; align-items: center; gap: var(--bd-space-1); height: var(--bd-control-xs); padding: 0 var(--bd-space-2); border-radius: var(--bd-radius-pill); background: var(--bd-surface-2); color: var(--bd-text-muted); font-size: var(--bd-text-xs); }
 .bd-rm.is-on { background: var(--bd-warning-soft); color: var(--bd-text); }
+
+/* Rich text field (WYSIWYG) */
+.bd-wys { display: flex; flex-direction: column; gap: var(--bd-space-2); }
+.bd-wys__box { border: var(--bd-border-width) solid var(--bd-border); border-radius: var(--bd-radius-md); background: var(--bd-surface); overflow: hidden; transition: border-color var(--bd-duration-fast) var(--bd-ease-standard), box-shadow var(--bd-duration-fast) var(--bd-ease-standard); }
+.bd-wys__box:hover { border-color: var(--bd-border-strong); }
+.bd-wys__box:focus-within { border-color: var(--bd-accent); box-shadow: 0 0 0 var(--bd-focus-width) var(--bd-accent-soft); }
+.bd-wys__bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--bd-space-half); padding: var(--bd-space-1); border-bottom: var(--bd-border-width) solid var(--bd-border); background: var(--bd-surface-2); }
+.bd-wys__bar .bd-iconbtn[aria-pressed="true"] { background: var(--bd-accent-soft); color: var(--bd-accent); }
+.bd-wys__sep { width: var(--bd-border-width); height: var(--bd-icon-sm); margin: 0 var(--bd-space-1); background: var(--bd-border); }
+.bd-wys__link { display: flex; align-items: center; gap: var(--bd-space-1); padding: var(--bd-space-1); border-top: var(--bd-border-width) solid var(--bd-border); background: var(--bd-surface-2); }
+.bd-wys__link .bd-input { flex: 1; height: var(--bd-control-compact); }
+.bd-wys__link .bd-btn { height: var(--bd-control-compact); padding: 0 var(--bd-space-2); }
+.bd-wys__area { min-height: calc(var(--bd-control-lg) * 2); max-height: calc(var(--bd-control-lg) * 6); overflow: auto; padding: var(--bd-space-2) var(--bd-space-3); font-size: var(--bd-text-sm); line-height: var(--bd-leading-sm); color: var(--bd-text); outline: none; overflow-wrap: anywhere; }
+.bd-wys__area p { margin: 0; }
+.bd-wys__area p + p { margin-top: var(--bd-space-2); }
+.bd-wys__area :is(ul, ol) { margin: var(--bd-space-1) 0; padding-left: var(--bd-space-5); }
+.bd-wys__area a { color: var(--bd-accent); text-decoration: underline; }

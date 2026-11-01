@@ -7,7 +7,8 @@
  *   - parses the template once (own parser, so <sc-for> inside <select> survives),
  *   - renders {{dotted.lookup}} holes, <sc-for list as> loops and <sc-if value> branches,
  *   - patches the live DOM in place (inputs keep focus, sliders keep dragging),
- *   - wires on* attributes to native events (onClick, onChange, onKeyDown, onPointerDown…).
+ *   - wires on* attributes to native events (onClick, onChange, onKeyDown, onPointerDown…),
+ *   - sets rich text through data-html="{{hole}}" as innerHTML (skipped while that element is being edited).
  *
  * It is a demo harness for mocked state, not a framework to ship: the production editor
  * re-implements these screens in packages/editor.
@@ -103,6 +104,7 @@
           continue;
         }
         if (lname === 'ref' && only) { vn.ref = lookup(only[1], scope); continue; }
+        if (lname === 'data-html' && only) { vn.html = str(lookup(only[1], scope)); continue; }
         if (only) {
           const v = lookup(only[1], scope);
           if (BOOL[lname]) { if (v === true || v === 'true') vn.attrs[lname] = ''; continue; }
@@ -139,9 +141,11 @@
   function update(el, vn, svg, fresh) {
     const prev = el.__a || {};
     for (const n in prev) if (!(n in vn.attrs)) el.removeAttribute(n);
+    const tagName = vn.tag.toLowerCase();
+    const liveValue = !svg && (tagName === 'input' || tagName === 'textarea' || tagName === 'select');
     for (const n in vn.attrs) {
       if (prev[n] !== vn.attrs[n]) {
-        if (n === 'value' && !svg) continue;
+        if (n === 'value' && liveValue) continue; // set as a property below, so typing is not overwritten
         el.setAttribute(n, vn.attrs[n]);
       }
     }
@@ -155,7 +159,14 @@
     }
     for (const t in el.__h) if (!want[t]) el.__h[t] = null;
     const childSvg = svg && vn.tag.toLowerCase() !== 'foreignobject';
-    patchKids(el, vn.kids, childSvg);
+    if (vn.html !== undefined) {
+      // Rich text: set as HTML, but never while the user is typing in it (keeps the caret).
+      const editing = el.isContentEditable && el.contains(document.activeElement);
+      if (!editing && el.__html !== vn.html) { el.innerHTML = vn.html; }
+      el.__html = vn.html;
+    } else {
+      patchKids(el, vn.kids, childSvg);
+    }
     if (!svg) {
       const tag = vn.tag.toLowerCase();
       if ('value' in vn.attrs && (tag === 'input' || tag === 'textarea' || tag === 'select')) {

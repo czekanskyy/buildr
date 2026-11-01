@@ -17,10 +17,11 @@ Open `index.html` by double-clicking it.
 | `css/tokens.css` | Design tokens, 1:1 from the design system. Scope `.buildr-editor`, dark theme via `data-theme="dark"` |
 | `css/metrics.css` | Fixed geometry of individual widgets (box model, 3×3 pad, curve, tiles). Not part of the shared scale |
 | `css/base.css` | Box model, type, icons, focus ring, utilities |
-| `css/components.css` | Buttons, tooltips, segmented controls, tabs, fields, every inspector control, menus, dialogs, toasts |
+| `css/components.css` | Buttons, tooltips, segmented controls, tabs, fields, every inspector control (incl. the rich text field), menus, dialogs, toasts |
 | `css/editor.css` | Shell, top bar, panels, stage, canvas overlays, status bar, sample site, preview, motion demos |
 | `css/template.css` | Only the strip that links the demo pages |
-| `js/runtime.js` | Small view layer: parses each template, renders `{{holes}}`, `<sc-for>` and `<sc-if>`, patches the DOM in place and wires `on*` attributes to native events |
+| `js/runtime.js` | Small view layer: parses each template, renders `{{holes}}`, `<sc-for>` and `<sc-if>`, patches the DOM in place, wires `on*` attributes to native events and sets rich text from `data-html="{{hole}}"` |
+| `js/tooltips.js` | One shared tooltip layer appended to `<body>` (fixed position, top z-index), so tooltips are never clipped or covered by panels |
 | `js/<screen>.js` | One component per screen; `renderVals()` returns the values its template reads. All state is mocked and resets on reload |
 
 Each screen's markup lives in its HTML page inside `<script type="text/x-template" data-component="…">`,
@@ -29,7 +30,11 @@ next to the `<div data-mount="…">` it renders into.
 ## Interactions demonstrated
 
 Tabs, accordions (open state remembered in `localStorage`), sliders and number fields that update the
-canvas live, label scrubbing, link/unlink, colour popover, search filter, hover and selection, device
+canvas live, the full style panel in the editor (layout block / flex / grid, position inside a flex or grid
+parent, size, spacing, typography, colours, background, per-side border and corners, preset and custom
+shadows, text shadow, filters and transforms, animations), a rich text field (bold, italic, underline,
+strike, link, lists, clear) for headings, texts and quotes, the HTML element choice (shown in the selection
+chip, e.g. "Nagłówek · h2"), label scrubbing, link/unlink, colour popover, search filter, hover and selection, device
 switcher with per-device overrides, tooltips, menus, "Odtwórz podgląd", publish and shortcuts dialogs
 (focus trap, Esc), toasts with "Cofnij", and keyboard on the canvas (Tab, Enter, Esc, Delete, Ctrl+D, ?).
 

@@ -2,6 +2,8 @@
 /* Component metrics: fixed geometry of individual widgets (box model, pad, curve, tiles…).
    Not part of the shared scale; change them only together with the component. */
 .buildr-editor {
+  --bd-tip-max-w: 280px;
+  --bd-tip-shift: -4px;
   --bd-alpha-h: 8px;
   --bd-bgprev-h: 64px;
   --bd-blk-background: repeating-linear-gradient(135deg, transparent 0 6px, var(--bd-override-soft) 6px 8px);
@@ -45,10 +47,6 @@
   --bd-logo-h: 22px;
   --bd-logo-w: 22px;
   --bd-menu-min-w: 248px;
-  --bd-tip-bottom: calc(100% + 6px);
-  --bd-tip-left: calc(100% + 6px);
-  --bd-tip-tf: translate(-50%, 4px);
-  --bd-tip-top: calc(100% + 6px);
   --bd-mod-dot-h: 6px;
   --bd-mod-dot-w: 6px;
   --bd-mstage-background-image: radial-gradient(var(--bd-border) 1px, transparent 1px);
