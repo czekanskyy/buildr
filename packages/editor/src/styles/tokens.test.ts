@@ -10,9 +10,9 @@ const stylesDir = fileURLToPath(new URL('.', import.meta.url));
 const srcDir = join(stylesDir, '..');
 const packageDir = join(srcDir, '..');
 const bundleScript = join(packageDir, '../../tooling/scripts/bundle-css.mjs');
-const PARTIALS = ['tokens', 'base', 'shell', 'primitives', 'panels'];
+const PARTIALS = ['tokens', 'metrics', 'base', 'shell', 'primitives', 'panels'];
 
-const read = (file: string) => readFileSync(join(stylesDir, file), 'utf8');
+const read = (file: string) => readFileSync(join(stylesDir, file), 'utf8').replaceAll('\r\n', '\n');
 const tokensCss = read('tokens.css');
 
 /** The body of the first rule whose selector list contains `selector`. */
@@ -76,7 +76,7 @@ function pairs(): { kind: string; fg: string; bg: string; min: number }[] {
   }
   add('text', 'accent-text', 'accent', TEXT);
   add('text', 'danger-text', 'danger', TEXT);
-  for (const s of ['danger', 'warning', 'success', 'info']) {
+  for (const s of ['danger', 'warning', 'success', 'info', 'override']) {
     add('text', s, 'surface', TEXT);
     add('text', s, `${s}-soft`, TEXT);
   }
@@ -89,6 +89,11 @@ function pairs(): { kind: string; fg: string; bg: string; min: number }[] {
   for (const fg of ['accent', 'primary']) {
     for (const bg of ['surface', 'bg']) add('boundary', fg, bg, BOUNDARY);
   }
+  for (const fg of ['toast-text', 'toast-accent', 'toast-ok', 'toast-err'])
+    add('text', fg, 'toast-bg', TEXT);
+  add('text', 'canvas-select-text', 'canvas-select', TEXT);
+  add('boundary', 'canvas-select', 'canvas-page', BOUNDARY);
+  // Template canvas-hover is decorative (2.98:1); selection carries the 3:1 boundary.
   return out;
 }
 
@@ -113,6 +118,26 @@ describe('design tokens: contrast (identity.md section 8)', () => {
     });
   }
 
+  it('matches every approved template token in both themes', () => {
+    const template = readFileSync(
+      join(packageDir, '../../docs/design/template/css/tokens.css'),
+      'utf8',
+    );
+    const templateLight = declarations(block(template, '.buildr-editor {'));
+    const templateDark = declarations(block(template, '.buildr-editor[data-theme="dark"]'));
+    const normalize = (value: string) =>
+      value.replace(
+        /rgba\((\d+), (\d+), (\d+), ([\d.]+)\)/g,
+        (_, r, g, b, alpha) => `rgb(${r} ${g} ${b} / ${Number((Number(alpha) * 100).toFixed(4))}%)`,
+      );
+    for (const [expected, actual] of [
+      [templateLight, light],
+      [templateDark, dark],
+    ] as const) {
+      for (const [name, value] of expected) expect(actual.get(name), name).toBe(normalize(value));
+    }
+  });
+
   it('keeps the system-dark block identical to data-theme="dark"', () => {
     for (const [name, value] of dark) {
       if (name === '--bd-canvas-page') continue;
@@ -128,12 +153,17 @@ describe('design tokens: contrast (identity.md section 8)', () => {
   it('overrides the durations under prefers-reduced-motion', () => {
     const reduced = tokensCss.slice(tokensCss.indexOf('@media (prefers-reduced-motion'));
     expect(reduced).toContain('--bd-duration-fast: 0ms');
-    expect(reduced).toContain('--bd-duration-base: 0ms');
+    for (const name of light.keys()) {
+      if (name.startsWith('--bd-duration-')) expect(reduced).toContain(`${name}: 0ms`);
+    }
   });
 });
 
 describe('design tokens: usage', () => {
-  const defined = new Set(light.keys());
+  const defined = new Set([
+    ...light.keys(),
+    ...declarations(block(read('metrics.css'), '.buildr-editor,')).keys(),
+  ]);
   const partials = PARTIALS.map((name) => ({ name, css: read(`${name}.css`) }));
 
   it('defines every colour role in both themes', () => {
@@ -177,7 +207,8 @@ describe('design tokens: usage', () => {
   it('lists every partial, in order, in the dev entry', () => {
     const entry = readFileSync(join(srcDir, 'styles.css'), 'utf8');
     const imports = [...entry.matchAll(/@import\s+"\.\/styles\/([\w-]+)\.css";/g)].map((m) => m[1]);
-    expect(imports).toEqual(PARTIALS);
+    expect(imports).toEqual(PARTIALS.filter((name) => name !== 'metrics'));
+    expect(tokensCss).toContain('@import "./metrics.css";');
   });
 });
 
@@ -186,15 +217,15 @@ describe('published stylesheet (bundle-css.mjs)', () => {
   afterAll(() => rmSync(out, { recursive: true, force: true }));
 
   execFileSync(process.execPath, [bundleScript, out], { cwd: packageDir });
-  const published = readFileSync(join(out, 'styles.css'), 'utf8');
+  const published = readFileSync(join(out, 'styles.css'), 'utf8').replaceAll('\r\n', '\n');
 
   it('inlines every partial, in order, with no @import left', () => {
     expect(published).not.toMatch(/@import/);
     let at = -1;
     for (const { name } of PARTIALS.map((name) => ({ name }))) {
-      const source = read(`${name}.css`);
+      const source = read(`${name}.css`).replace(/@import[^;]+;/g, '');
       const index = published.indexOf(
-        source.trim().slice(0, 200).replaceAll('../fonts/', './fonts/'),
+        source.trim().slice(0, source.trim().indexOf('*/')).replaceAll('../fonts/', './fonts/'),
       );
       expect(index, `${name}.css is inlined`).toBeGreaterThan(at);
       at = index;

@@ -1,10 +1,10 @@
 # Buildr editor - visual identity (PB-147)
 
-Status: **proposed, treated as approved by default.** No maintainer was available to review this card, so the values below are the proposal of the implementing agent and are the input to PB-119 unless a maintainer changes them (see [Choices to revisit](#10-choices-to-revisit)). Decisions V1-V5 in [the phase 13 plan](../backlog/phase-13-editor-visual-polish.md) are the brief; this document is the answer.
+Status: **approved template v2 (PB-151).** No maintainer was available to review this card, so the values below are the proposal of the implementing agent and are the input to PB-119 unless a maintainer changes them (see [Choices to revisit](#10-choices-to-revisit)). Decisions V1-V5 in [the phase 13 plan](../backlog/phase-13-editor-visual-polish.md) are the brief; this document is the answer.
 
 Companion documents: [editor-design.md](../editor-design.md) (guidelines, first draft) and the mockups in [`mockups/`](mockups/).
 
-**Character**: dense and precise. Cool, slightly blue-tinted neutrals; one indigo-blue accent used sparingly (selection, focus, the single primary action); a dark toolbar in both themes; thin borders; shadows only on floating layers.
+**Character**: dense and precise. Cool, slightly blue-tinted neutrals; one indigo-blue accent used sparingly (selection, focus, the single primary action); a toolbar matching the theme; thin borders; shadows only on floating layers.
 
 ## 1. How PB-119 consumes this document
 
@@ -85,25 +85,40 @@ Selector: `.buildr-editor` (and `.buildr-editor[data-theme="light"]`).
   --bd-accent-hover: #3049bd;
   --bd-accent-soft: #e2e8fc;
   --bd-accent-text: #ffffff;
+  --bd-primary: #3f5ae0;
+  --bd-primary-hover: #3049bd;
+  --bd-primary-text: #ffffff;
   --bd-focus: #3f5ae0;
+  --bd-override: #a34f09;
+  --bd-override-soft: #fdf0e3;
   --bd-danger: #c0282d;
   --bd-danger-soft: #fdecec;
   --bd-warning: #8a5300;
   --bd-warning-soft: #fff3d9;
+  --bd-toast-bg: #1c1e25;
+  --bd-toast-text: #f4f5f8;
+  --bd-toast-accent: #a3b3f4;
+  --bd-toast-ok: #6fd39a;
+  --bd-toast-err: #ff9a8f;
+  --bd-toast-hover: rgb(255 255 255 / 12%);
   --bd-success: #1b7a3d;
   --bd-success-soft: #e4f5ea;
   --bd-info: #0b6b80;
   --bd-info-soft: #e0f3f7;
-  --bd-toolbar: #1c1d22;
-  --bd-toolbar-hover: #33363f;
-  --bd-toolbar-border: #33363f;
-  --bd-toolbar-text: #f0f1f4;
-  --bd-toolbar-muted: #b4b9c6;
-  --bd-toolbar-focus: #a3b3f4;
+  --bd-toolbar: #ffffff;
+  --bd-toolbar-hover: #eceef2;
+  --bd-toolbar-border: #dfe1e7;
+  --bd-toolbar-text: #1c1d22;
+  --bd-toolbar-muted: #4b5060;
+  --bd-canvas-page: #ffffff;
+  --bd-canvas-hover: #7a90ee;
+  --bd-canvas-select: #3f5ae0;
+  --bd-canvas-guide: #a3b3f4;
+  --bd-canvas-select-text: #ffffff;
   --bd-shadow: rgb(18 19 23 / 14%);
-  --bd-primary: #3f5ae0;
-  --bd-primary-text: #ffffff;
-  --bd-primary-hover: #3049bd;
+  --bd-overlay: rgb(18 19 23 / 50%);
+  --bd-danger-text: #ffffff;
+  --bd-toolbar-focus: #3f5ae0;
 ```
 
 ### 3.3 Roles: dark theme
@@ -125,11 +140,22 @@ Selector: `@media (prefers-color-scheme: dark) { .buildr-editor:not([data-theme=
   --bd-accent-hover: #a3b3f4;
   --bd-accent-soft: #25325f;
   --bd-accent-text: #0f1636;
+  --bd-primary: #8ea2f5;
+  --bd-primary-hover: #a3b3f4;
+  --bd-primary-text: #0f1636;
   --bd-focus: #a3b3f4;
+  --bd-override: #f2b552;
+  --bd-override-soft: #3a2e15;
   --bd-danger: #ff8a8a;
   --bd-danger-soft: #3d2226;
   --bd-warning: #f2b552;
   --bd-warning-soft: #3a2e15;
+  --bd-toast-bg: #eef0f5;
+  --bd-toast-text: #15161b;
+  --bd-toast-accent: #3f5ae0;
+  --bd-toast-ok: #1d7a47;
+  --bd-toast-err: #b8322a;
+  --bd-toast-hover: rgb(0 0 0 / 8%);
   --bd-success: #5fce85;
   --bd-success-soft: #173325;
   --bd-info: #5fc9dc;
@@ -139,11 +165,15 @@ Selector: `@media (prefers-color-scheme: dark) { .buildr-editor:not([data-theme=
   --bd-toolbar-border: #26282f;
   --bd-toolbar-text: #ecedf1;
   --bd-toolbar-muted: #a9aebb;
-  --bd-toolbar-focus: #a3b3f4;
+  --bd-canvas-page: #ffffff;
+  --bd-canvas-hover: #7a90ee;
+  --bd-canvas-select: #3f5ae0;
+  --bd-canvas-guide: #a3b3f4;
+  --bd-canvas-select-text: #ffffff;
   --bd-shadow: rgb(0 0 0 / 55%);
-  --bd-primary-hover: #3049bd;
-  --bd-primary: #3f5ae0;
-  --bd-primary-text: #ffffff;
+  --bd-overlay: rgb(0 0 0 / 60%);
+  --bd-danger-text: #2a0b0e;
+  --bd-toolbar-focus: #a3b3f4;
 ```
 
 ### 3.4 What the roles mean
@@ -162,17 +192,17 @@ Selector: `@media (prefers-color-scheme: dark) { .buildr-editor:not([data-theme=
 | `accent-hover` (*new*) | hover of accent text/links |
 | `accent-soft` (*new*) | tinted background for accent chips, icon wells, override pills |
 | `accent-text` | text on a solid `accent` fill (e.g. the "Hero" label chip on the canvas) |
-| `primary`, `primary-hover`, `primary-text` (*new*) | the solid primary button and toggles: the same `#3f5ae0` / white in both themes so the primary action looks identical everywhere |
+| `primary`, `primary-hover`, `primary-text` (*new*) | the solid primary button and toggles: theme-specific indigo fill and contrasting text |
 | `focus` | focus ring colour |
 | `danger`, `warning`, `success`, `info` | semantic text/icon colour on `surface`; `*-soft` is the matching tinted background for notices and badges (text on it is checked) |
-| `toolbar*` (*new*) | the dark toolbar: fill, hover, border, text, muted text, its own focus ring (the toolbar is dark in both themes) |
+| `toolbar*` (*new*) | the themed toolbar: fill, hover, border, text, muted text, its own focus ring (the toolbar is white in light, near-black in dark) |
 | `shadow` | shadow colour used by the elevation tokens |
 
 Semantic hues (red about 0, amber about 38, green about 145, teal about 190) are all at least 60 degrees away from the accent hue (229), and `info` is teal, not blue, so nothing semantic can be mistaken for the accent or for selection.
 
 ### 3.5 Theme-independent tokens
 
-Selector: `.buildr-editor`. Keeps `--bd-radius: 6px` (alias of `--bd-radius-md`), `--bd-toolbar-height: 44px` and `--bd-issues-height: 160px` from the current stylesheet; `--bd-shadow` is replaced by the elevation tokens (below).
+Selector: `.buildr-editor`. Keeps `--bd-radius: var(--bd-radius-md); `--bd-shadow` is replaced by the elevation tokens (below).
 
 ## 4. Typography
 
@@ -180,8 +210,8 @@ Inter, self-hosted (V3), weights 400/500/600 only. Fallback stack: `system-ui, -
 
 ```css
 .buildr-editor {
-  --bd-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --bd-font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  --bd-font: var(--font-sans);
+  --bd-font-mono: var(--font-mono);
 
   --bd-text-xs: 11px;  --bd-leading-xs: 16px;   /* hints, badges, slot suffix, status bar counts */
   --bd-text-sm: 12px;  --bd-leading-sm: 16px;   /* labels, tabs, section headings, tooltips, buttons in dense bars */
@@ -211,34 +241,81 @@ No uppercase text-transform and no letter-spacing on small text: section heading
 
 ```css
 .buildr-editor {
-  /* spacing: 2 4 6 8 12 16 20 24 32 */
-  --bd-space-0: 2px;  --bd-space-1: 4px;  --bd-space-2: 6px;  --bd-space-3: 8px;  --bd-space-4: 12px;
-  --bd-space-5: 16px; --bd-space-6: 20px; --bd-space-7: 24px; --bd-space-8: 32px;
-
-  --bd-radius-sm: 4px;   /* checkbox, chip inner, tooltip, segmented item */
-  --bd-radius-md: 6px;   /* inputs, buttons, tiles, menus, rows */
-  --bd-radius-lg: 8px;   /* dialogs, popovers, cards */
-  --bd-radius-pill: 999px; /* status pill, override chip, toggle */
-
-  --bd-control-sm: 24px;  /* icon buttons in dense rows, segmented items */
-  --bd-control-md: 28px;  /* default: inputs, buttons, tree rows, tabs bar items */
-  --bd-control-lg: 32px;  /* dialog buttons, search in the insert panel header when touch-friendly */
-  --bd-panel-header: 40px;
-  --bd-statusbar-height: 28px;
-  --bd-toolbar-height: 44px;
-
+  --bd-elevation-1: 0 1px 2px rgb(18 19 23 / 14%);
+  --bd-elevation-2: 0 4px 12px rgb(18 19 23 / 14%), 0 0 0 1px #dfe1e7;
+  --bd-elevation-3: 0 12px 32px rgb(18 19 23 / 14%), 0 0 0 1px #dfe1e7;
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  --bd-text-xs: 11px;
+  --bd-leading-xs: 16px;
+  --bd-text-sm: 12px;
+  --bd-leading-sm: 16px;
+  --bd-text-md: 13px;
+  --bd-leading-md: 20px;
+  --bd-text-lg: 15px;
+  --bd-leading-lg: 24px;
+  --bd-text-xl: 18px;
+  --bd-leading-xl: 24px;
+  --bd-weight-regular: 400;
+  --bd-weight-medium: 500;
+  --bd-weight-semibold: 600;
+  --bd-space-1: 4px;
+  --bd-space-2: 8px;
+  --bd-space-3: 12px;
+  --bd-space-4: 16px;
+  --bd-space-5: 24px;
+  --bd-space-6: 32px;
+  --bd-radius-sm: 4px;
+  --bd-radius-md: 6px;
+  --bd-radius-lg: 8px;
+  --bd-radius-xl: 12px;
+  --bd-radius-pill: 999px;
+  --bd-control-sm: 24px;
+  --bd-control-md: 32px;
+  --bd-control-lg: 40px;
+  --bd-toolbar-height: 52px;
+  --bd-panel-header: 44px;
+  --bd-statusbar-height: 32px;
+  --bd-space-half: 2px;
+  --bd-icon-xs: 12px;
+  --bd-icon-sm: 16px;
+  --bd-control-xs: 20px;
+  --bd-control-compact: 28px;
+  --bd-radius-xs: 3px;
+  --bd-left: 280px;
+  --bd-right: 340px;
+  --bd-rail: 48px;
+  --bd-splitter-hit: 8px;
   --bd-border-width: 1px;
-
-  --bd-elevation-1: 0 1px 2px var(--bd-shadow);                              /* sticky headers, page on the stage */
-  --bd-elevation-2: 0 4px 12px var(--bd-shadow), 0 0 0 1px var(--bd-border); /* menus, popovers, tooltips, toasts */
-  --bd-elevation-3: 0 12px 32px var(--bd-shadow), 0 0 0 1px var(--bd-border);/* dialogs, overlays on narrow screens */
-
-  --bd-duration-fast: 100ms;   /* hover, press */
-  --bd-duration-base: 160ms;   /* open/close, zoom, overlay slide */
-  --bd-ease: cubic-bezier(0.2, 0, 0, 1);
-}
-@media (prefers-reduced-motion: reduce) {
-  .buildr-editor { --bd-duration-fast: 0ms; --bd-duration-base: 0ms; }
+  --bd-focus-width: 2px;
+  --bd-select-width: 2px;
+  --bd-device-tablet: 768px;
+  --bd-device-mobile: 390px;
+  --bd-duration-fast: 120ms;
+  --bd-duration-base: 200ms;
+  --bd-duration-slow: 320ms;
+  --bd-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --bd-ease-enter: cubic-bezier(0, 0, 0.2, 1);
+  --bd-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --bd-z-canvas-overlay: 10;
+  --bd-z-canvas-toolbar: 20;
+  --bd-z-panel: 30;
+  --bd-z-toolbar: 40;
+  --bd-z-overlay-panel: 50;
+  --bd-z-dropdown: 100;
+  --bd-z-tooltip: 200;
+  --bd-z-dialog: 300;
+  --bd-z-toast: 400;
+  --bd-font: var(--font-sans);
+  --bd-font-mono: var(--font-mono);
+  --bd-tracking-tight: -0.005em;
+  --bd-space-0: var(--bd-space-half);
+  --bd-space-7: var(--bd-space-5);
+  --bd-space-8: var(--bd-space-6);
+  --bd-radius: var(--bd-radius-md);
+  --bd-issues-height: 160px;
+  --bd-splitter-size: 1px;
+  --bd-ease: var(--bd-ease-standard);
 }
 ```
 
@@ -247,19 +324,19 @@ Rules:
 - Borders are 1px `--bd-border` for structure (panel dividers, cards) and 1px `--bd-border-strong` for interactive controls. Panels are separated by a 1px line, never by a heavy bar.
 - Elevation is used **only** on floating layers (menus, popovers, tooltips, toasts, dialogs, the narrow-screen overlay) and the page on the stage. Panels themselves are flat.
 - Panel body padding is `--bd-space-5` (16px) horizontally, `--bd-space-4` (12px) between field groups, `--bd-space-3` (8px) between label and control.
-- Row height is `--bd-control-md` (28px) for tree rows, menu items and list-view entries; tiles are 68px high with `--bd-space-3` gaps.
+- Row height is `--bd-control-md` (32px) for tree rows, menu items and list-view entries; tiles are 76px high with `--bd-space-3` gaps.
 
 ### Focus ring
 
 ```css
 .buildr-editor :focus-visible {
   outline: 2px solid var(--bd-focus);
-  outline-offset: 1px;
+  outline-offset: 2px;
 }
 .buildr-editor .bd-toolbar :focus-visible { outline-color: var(--bd-toolbar-focus); }
 ```
 
-2px, offset 1px, `--bd-focus` (>= 3:1 against `surface`, `bg` and, in the toolbar, `--bd-toolbar-focus` against `--bd-toolbar`). Inside clipped containers (tree rows, tiles) use `outline-offset: -2px`. Never remove an outline without replacing it. Selection is not focus: selected rows use `surface-selected` plus a 2px `accent` left bar; focus is always the ring.
+2px, offset 2px, `--bd-focus` (>= 3:1 against `surface`, `bg` and, in the toolbar, `--bd-toolbar-focus` against `--bd-toolbar`). Inside clipped containers (tree rows, tiles) use `outline-offset: -2px`. Never remove an outline without replacing it. Selection is not focus: selected rows use `surface-selected` plus a 2px `accent` left bar; focus is always the ring.
 
 ## 6. Component states (summary for PB-119 and later)
 
@@ -317,16 +394,16 @@ Not covered by a ratio (deliberately): `border` (decorative hairlines between re
 | text | `--bd-success` #1b7a3d | `--bd-success-soft` #e4f5ea | 4.76 | 4.5 | yes |
 | text | `--bd-info` #0b6b80 | `--bd-surface` #ffffff | 6.12 | 4.5 | yes |
 | text | `--bd-info` #0b6b80 | `--bd-info-soft` #e0f3f7 | 5.35 | 4.5 | yes |
-| text | `--bd-toolbar-text` #f0f1f4 | `--bd-toolbar` #1c1d22 | 14.90 | 4.5 | yes |
-| text | `--bd-toolbar-text` #f0f1f4 | `--bd-toolbar-hover` #33363f | 10.68 | 4.5 | yes |
-| text | `--bd-toolbar-muted` #b4b9c6 | `--bd-toolbar` #1c1d22 | 8.57 | 4.5 | yes |
-| text | `--bd-toolbar-muted` #b4b9c6 | `--bd-toolbar-hover` #33363f | 6.15 | 4.5 | yes |
+| text | `--bd-toolbar-text` #1c1d22 | `--bd-toolbar` #ffffff | 16.82 | 4.5 | yes |
+| text | `--bd-toolbar-text` #1c1d22 | `--bd-toolbar-hover` #eceef2 | 14.48 | 4.5 | yes |
+| text | `--bd-toolbar-muted` #4b5060 | `--bd-toolbar` #ffffff | 8.03 | 4.5 | yes |
+| text | `--bd-toolbar-muted` #4b5060 | `--bd-toolbar-hover` #eceef2 | 6.91 | 4.5 | yes |
 | boundary | `--bd-border-strong` #7d8391 | `--bd-surface` #ffffff | 3.80 | 3 | yes |
 | boundary | `--bd-border-strong` #7d8391 | `--bd-surface-2` #f4f5f8 | 3.49 | 3 | yes |
 | boundary | `--bd-border-strong` #7d8391 | `--bd-bg` #e9ebf0 | 3.19 | 3 | yes |
 | boundary | `--bd-focus` #3f5ae0 | `--bd-surface` #ffffff | 5.60 | 3 | yes |
 | boundary | `--bd-focus` #3f5ae0 | `--bd-bg` #e9ebf0 | 4.69 | 3 | yes |
-| boundary | `--bd-toolbar-focus` #a3b3f4 | `--bd-toolbar` #1c1d22 | 8.26 | 3 | yes |
+| boundary | `--bd-toolbar-focus` #3f5ae0 | `--bd-toolbar` #ffffff | 5.60 | 3 | yes |
 | boundary | `--bd-accent` #3f5ae0 | `--bd-surface` #ffffff | 5.60 | 3 | yes |
 | boundary | `--bd-accent` #3f5ae0 | `--bd-bg` #e9ebf0 | 4.69 | 3 | yes |
 | boundary | `--bd-primary` #3f5ae0 | `--bd-surface` #ffffff | 5.60 | 3 | yes |
@@ -353,8 +430,8 @@ Not covered by a ratio (deliberately): `border` (decorative hairlines between re
 | text | `--bd-text-subtle` #9fa5b4 | `--bd-surface-hover` #2b2d35 | 5.57 | 4.5 | yes |
 | text | `--bd-text-subtle` #9fa5b4 | `--bd-surface-selected` #243268 | 4.92 | 4.5 | yes |
 | text | `--bd-text` #ecedf1 | `--bd-accent-soft` #25325f | 10.56 | 4.5 | yes |
-| text | `--bd-primary-text` #ffffff | `--bd-primary` #3f5ae0 | 5.60 | 4.5 | yes |
-| text | `--bd-primary-text` #ffffff | `--bd-primary-hover` #3049bd | 7.46 | 4.5 | yes |
+| text | `--bd-primary-text` #0f1636 | `--bd-primary` #8ea2f5 | 7.27 | 4.5 | yes |
+| text | `--bd-primary-text` #0f1636 | `--bd-primary-hover` #a3b3f4 | 8.68 | 4.5 | yes |
 | text | `--bd-accent` #8ea2f5 | `--bd-surface` #1c1d22 | 6.92 | 4.5 | yes |
 | text | `--bd-accent` #8ea2f5 | `--bd-surface-2` #23252b | 6.30 | 4.5 | yes |
 | text | `--bd-accent` #8ea2f5 | `--bd-accent-soft` #25325f | 5.08 | 4.5 | yes |
@@ -380,8 +457,8 @@ Not covered by a ratio (deliberately): `border` (decorative hairlines between re
 | boundary | `--bd-toolbar-focus` #a3b3f4 | `--bd-toolbar` #0c0d10 | 9.54 | 3 | yes |
 | boundary | `--bd-accent` #8ea2f5 | `--bd-surface` #1c1d22 | 6.92 | 3 | yes |
 | boundary | `--bd-accent` #8ea2f5 | `--bd-bg` #121317 | 7.63 | 3 | yes |
-| boundary | `--bd-primary` #3f5ae0 | `--bd-surface` #1c1d22 | 3.00 | 3 | yes |
-| boundary | `--bd-primary` #3f5ae0 | `--bd-bg` #121317 | 3.32 | 3 | yes |
+| boundary | `--bd-primary` #8ea2f5 | `--bd-surface` #1c1d22 | 6.92 | 3 | yes |
+| boundary | `--bd-primary` #8ea2f5 | `--bd-bg` #121317 | 7.63 | 3 | yes |
 
 
 ## 9. "Not WordPress" check
@@ -400,8 +477,8 @@ The palette is inspired by the general look of block editors (blue accent, near-
 These are the judgement calls a maintainer may want to override. Changing any of them means editing the tables above and re-running the appendix script; PB-119 has not started, so the cost is nil.
 
 1. **Accent hue and value** (`#3f5ae0`, indigo-blue). Alternative: a slightly more violet or teal accent.
-2. **Primary button colour is the same in both themes** (`#3f5ae0` with white text, 5.6:1), while `accent` (text/icons) is lighter in dark. Alternative: a lighter primary in dark with dark text.
-3. **The toolbar is dark in both themes**, and darker than the panels in the dark theme (`#0c0d10` vs `#1c1d22`).
+2. **Primary button colour is the theme-specific** (`#3f5ae0` with white text, 5.6:1), while `accent` (text/icons) is lighter in dark. Alternative: a lighter primary in dark with dark text.
+3. **The toolbar is white in light, near-black in dark**, and darker than the panels in the dark theme (`#0c0d10` vs `#1c1d22`).
 4. **Cool-tinted neutrals** instead of pure greys.
 5. **`border` is decorative and low contrast**; only `border-strong` (`#7d8391`, a fairly visible grey) meets 3:1. Alternative: one border colour at 3:1 everywhere (heavier look).
 6. **Spacing scale starts at 2px** (2/4/6/8/12/16/20/24/32), as in the card; the 6px step is used sparingly.
@@ -409,69 +486,33 @@ These are the judgement calls a maintainer may want to override. Changing any of
 8. **Info is teal**, so it is never the accent blue.
 9. **Focus ring** is 2px with 1px offset rather than a box-shadow ring, so it also works with forced-colours mode.
 
-## Appendix A: contrast script
+## Appendix A: contrast verification
 
-Run with `node contrast.mjs` (two files, ESM, no dependencies). `tokens.mjs` holds the theme objects that section 3 was generated from; `contrast.mjs` prints the tables of section 8 and reports the number of failing rows on stderr.
+Run `pnpm test --filter @next-buildr/editor`. `styles/tokens.test.ts` computes WCAG
+ratios directly from the shipped light/dark declarations, including override, toast and canvas roles.
 
-`tokens.mjs`
+## Template v2 foundation (PB-151 / WP1)
 
-```js
-export const accent = {50:'#f1f4fe',100:'#e2e8fc',200:'#c7d2f9',300:'#a3b3f4',400:'#7a90ee',500:'#5570e8',600:'#3f5ae0',700:'#3049bd',800:'#293c94',900:'#22326f'};
-export const neutral = {0:'#ffffff',50:'#f7f8fa',100:'#f0f1f4',150:'#e8eaef',200:'#dfe1e7',300:'#c8ccd5',400:'#a3a8b5',500:'#7d8391',600:'#636a7b',700:'#4b5060',800:'#33363f',850:'#26282f',900:'#1c1d22',950:'#121317'};
-export const light = {
- bg:'#e9ebf0', surface:'#ffffff', 'surface-2':'#f4f5f8', 'surface-hover':'#eceef2', 'surface-selected':'#e2e8fc',
- border:'#dfe1e7', 'border-strong':'#7d8391',
- text:'#1c1d22', 'text-muted':'#4b5060', 'text-subtle':'#5c6373',
- accent:'#3f5ae0', 'accent-hover':'#3049bd', 'accent-soft':'#e2e8fc', 'accent-text':'#ffffff', focus:'#3f5ae0',
- danger:'#c0282d','danger-soft':'#fdecec', warning:'#8a5300','warning-soft':'#fff3d9', success:'#1b7a3d','success-soft':'#e4f5ea', info:'#0b6b80','info-soft':'#e0f3f7',
- toolbar:'#1c1d22','toolbar-hover':'#33363f','toolbar-border':'#33363f',
- 'toolbar-text':'#f0f1f4','toolbar-muted':'#b4b9c6','toolbar-focus':'#a3b3f4',
- shadow:'rgb(18 19 23 / 14%)'
-};
-export const dark = {
- bg:'#121317', surface:'#1c1d22', 'surface-2':'#23252b', 'surface-hover':'#2b2d35', 'surface-selected':'#243268',
- border:'#33363f', 'border-strong':'#7d8391',
- text:'#ecedf1', 'text-muted':'#b0b5c2', 'text-subtle':'#9fa5b4',
- accent:'#8ea2f5', 'accent-hover':'#a3b3f4', 'accent-soft':'#25325f', 'accent-text':'#0f1636', focus:'#a3b3f4',
- danger:'#ff8a8a','danger-soft':'#3d2226', warning:'#f2b552','warning-soft':'#3a2e15', success:'#5fce85','success-soft':'#173325', info:'#5fc9dc','info-soft':'#143038',
- toolbar:'#0c0d10','toolbar-hover':'#26282f','toolbar-border':'#26282f',
- 'toolbar-text':'#ecedf1','toolbar-muted':'#a9aebb','toolbar-focus':'#a3b3f4',
- shadow:'rgb(0 0 0 / 55%)'
-};
-// primary button fill (both themes): accent-600 with white, dark uses a dedicated pair
-light['primary']='#3f5ae0'; light['primary-text']='#ffffff';
-light['primary-hover']='#3049bd'; dark['primary-hover']='#3049bd'; dark['primary']='#3f5ae0'; dark['primary-text']='#ffffff';
+The approved [template](template/README.md) supersedes PB-147 values and historical mockups.
+Inter remains self-hosted; no template font links or demo runtime ship.
 
-```
+| Group | v2 tokens and values |
+|---|---|
+| Toolbar | light white with dark text; dark near-black with light text; focus follows theme |
+| Primary | light #3f5ae0 / white; dark #8ea2f5 / #0f1636 |
+| Override | light #a34f09 / #fdf0e3; dark #f2b552 / #3a2e15 (`override`, `override-soft`) |
+| Toast | `toast-bg/text/accent/ok/err/hover`; inverted surface per theme |
+| Canvas | `canvas-page/hover/select/guide/select-text`; white page, stable blue overlays |
+| Type | `--font-sans`, `--font-mono`; legacy `--bd-font`, `--bd-font-mono` aliases; XL 18px / 24px |
+| Spacing | half 2px; steps 1?6: 4 / 8 / 12 / 16 / 24 / 32px; legacy 0/7/8 alias half/5/6 |
+| Geometry | controls 24/32/40px, compact 28px, toolbar 52px, header 44px, status 32px, right panel 340px |
+| Motion | fast/base/slow 120/200/320ms; standard/enter/exit easing; all durations zero with reduced motion |
+| Metrics | `styles/metrics.css`: fixed box model, 3?3 pad, curve, tiles and other widget geometry |
 
-`contrast.mjs`
+`tokens.css` imports `metrics.css` before theme declarations; both development and the recursive
+bundler include it. Metrics contain geometry and references to colour tokens, never literal colours,
+so the existing stylelint configuration needs no exception. Existing CSS token names remain available;
+shared scale names take the approved v2 values. Later workers own shell/primitives/panels styling.
 
-```js
-import {light,dark} from './tokens.mjs';
-const lum=h=>{const c=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(v=>v<=.03928?v/12.92:((v+.055)/1.055)**2.4);return .2126*c[0]+.7152*c[1]+.0722*c[2]};
-export const cr=(a,b)=>{const [x,y]=[lum(a),lum(b)].sort((p,q)=>q-p);return (x+.05)/(y+.05)};
-const T=4.5,B=3;
-export function pairs(t){
- const P=[]; const add=(kind,fg,bg,min)=>P.push({kind,fg,bg,min,ratio:cr(t[fg],t[bg])});
- for(const f of ['text','text-muted','text-subtle'])for(const b of ['surface','surface-2','bg','surface-hover','surface-selected'])add('text',f,b,T);
- add('text','text','accent-soft',T);
- add('text','primary-text','primary',T); add('text','primary-text','primary-hover',T);
- add('text','accent','surface',T);add('text','accent','surface-2',T);add('text','accent','accent-soft',T);add('text','accent','surface-selected',T);
- add('text','accent-text','accent',T);
- for(const s of ['danger','warning','success','info']){add('text',s,'surface',T);add('text',s,s+'-soft',T);}
- for(const f of ['toolbar-text','toolbar-muted'])for(const b of ['toolbar','toolbar-hover'])add('text',f,b,T);
- for(const b of ['surface','surface-2','bg'])add('boundary','border-strong',b,B);
- for(const b of ['surface','bg'])add('boundary','focus',b,B);
- add('boundary','toolbar-focus','toolbar',B);
- add('boundary','accent','surface',B);add('boundary','accent','bg',B);
- add('boundary','primary','surface',B);add('boundary','primary','bg',B);
- return P;
-}
-if(process.argv[1].endsWith('contrast.mjs')){
- let bad=0;
- for(const [n,t] of [['light',light],['dark',dark]]){console.log(`\n### ${n}\n\n| Kind | Foreground | Background | Ratio | Min | Pass |\n|---|---|---|---|---|---|`);
-  for(const p of pairs(t)){const ok=p.ratio>=p.min;if(!ok)bad++;console.log(`| ${p.kind} | \`--bd-${p.fg}\` ${t[p.fg]} | \`--bd-${p.bg}\` ${t[p.bg]} | ${p.ratio.toFixed(2)} | ${p.min} | ${ok?'yes':'**NO**'} |`)}}
- console.error('failures',bad);
-}
-
-```
+Canvas hover/guide are decorative cues: template hover is 2.98:1 on the white page.
+The selection boundary and its label meet 3:1 and 4.5:1 respectively; hover is never the sole selection indicator.
