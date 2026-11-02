@@ -207,6 +207,8 @@ toast.dismiss(id);
 
 Controls for entering values live in `ui/primitives.tsx` and `styles/primitives.css`: `SegmentedControl` (a `fieldset` of `aria-pressed` buttons in a pill track; icon-only segments get a tooltip and an `aria-label`), `NumberUnitInput` (tabular numerals, unit menu, arrow-key steps) and `ColorSwatch` (decorative; paints only a colour notation). Use a segmented control for 2 to 5 short, mutually exclusive choices and a select beyond that. The style inspector's origin dot uses `--bd-accent` (set here), `--bd-warning` (inherited) and a hollow ring (default).
 
+In the Style inspector, segments use compact padding and wrap instead of shrinking below their contents. Additional keyword selects occupy a separate row. Field headers can wrap their reset and override controls, and fields retain `min-width: 0` inside paired grids. `apps/playground/e2e/inspector-layout.spec.ts` checks text overflow and sibling intersections in both themes at 1280px and in the 1024px panel overlay, plus the small-screen notice below the editor's minimum width.
+
 ## Accessibility checks (PB-131)
 
 - Every editor state of the visual baseline is checked with axe in both themes (`apps/playground/e2e/editor-a11y.spec.ts`); a new panel, dialog or state that joins the baseline joins that spec too.

@@ -75,3 +75,11 @@ Issues come back in render order, then rule order. Never throws for bad data; a 
 | `accordion-structure` | `buildr/accordion-item`: `summary` |
 
 A component can also opt into a custom rule by listing its id in `a11y.rules`; `ctx.nodesFor(rule)` returns those nodes together with the rule's `appliesTo` types. Sample-data resolution (`ctx.resolve` in the sketch above) is not implemented yet: dynamic values stay unknown.
+
+## Redesign v2 accessibility
+
+The toolbar theme control adds one Tab stop when the host has not forced a theme. Its accessible name includes the current preference; activation cycles system, light and dark. The explicit theme menu remains available. Dialogs retain focus trapping, Escape dismissal and focus return. Controls use accessible labels and keyboard operation, and reduced-motion preferences suppress animation durations. Light, dark and system preferences are supported.
+
+The shared `Dialog` uses Radix's modal `Root` and `Content` (modal defaults remain enabled); its `onCloseAutoFocus` restores the opener. Template v2 introduces toolbar, override and inverted toast colour roles, checked in both themes. Toast dismiss icons and their focus rings use `--bd-toast-text` against `--bd-toast-bg`, with contrast tests also compositing the hover surface. Axe covers the real clipboard toast with Undo/Cofnij and dismiss controls in both themes; keyboard navigation verifies the visible dismiss focus ring.
+
+Legacy names changed dimensions: `--bd-space-2..6` now mean 8 / 12 / 16 / 24 / 32px rather than 6 / 8 / 12 / 16 / 20px; `--bd-control-md` changed from 28 to 32px. See [Legacy token migration](editor-design.md#legacy-token-migration-pb-151) before reusing old layout overrides. New English/Polish message keys supply device override and theme announcements (`toolbar.device.override`, `toolbar.theme.current`), empty canvas and clipboard feedback (`editor.canvas.empty`, `clipboard.cut.done`, `clipboard.paste.done`), named insertion feedback (`insert.target*`, `insert.done.named`), and inspector search, style state/property and rich-text control labels.

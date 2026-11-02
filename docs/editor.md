@@ -410,3 +410,15 @@ Closes phase 13 (the visual polish). The checks that keep it closed:
 ## Small screens
 
 The editor needs room for the panels and the canvas, so it does not open in a window narrower than `config.minViewportWidth` (CSS pixels, default `1024`: phones and tablets held upright). `EditorApp` then loads nothing and shows a notice asking the author to use a computer; the check follows the window (`matchMedia`), so the editor opens by itself once the window is wide enough, for example after rotating a tablet. An editor that is already open stays open when the window shrinks, so no work is torn down. `0` turns the check off. The texts are `app.smallScreen.*` in the `messages` catalog.
+
+## Redesign v2
+
+The editor has a toolbar, a left Blocks/Structure panel, a canvas stage with status bar, and a right inspector. The toolbar theme control cycles system, light and dark; the more menu also offers explicit choices. A host-forced theme hides the quick control. The inspector groups content, style and advanced settings; style controls include layout, spacing, typography, backgrounds, borders and shadow presets, with breakpoint overrides where supported.
+
+Template v2 changes the light toolbar palette, dark primary colours, inverted toast surfaces and widget geometry. Legacy spacing names `--bd-space-2..6` now resolve to 8 / 12 / 16 / 24 / 32px (previously 6 / 8 / 12 / 16 / 20px), and `--bd-control-md` is 32px instead of 28px. They preserve names, not old dimensions; see [Legacy token migration](editor-design.md#legacy-token-migration-pb-151) for the full list.
+
+The English and Polish catalogs include the new `toolbar.device.override`, `toolbar.theme.current`, `editor.canvas.empty`, `clipboard.cut.done`, `clipboard.paste.done`, `insert.target`, `insert.target.named` and `insert.done.named` keys. Inspector additions cover `style.property.*`, `style.state.*`, `style.source.*`, `style.width.*`, `style.gradient.*`, colour and alignment controls, `inspector.search*`, `inspector.scrub`, and rich-text formatting labels; placeholders also come from the catalogs.
+
+The issues drawer keeps the template's 160px content area plus room for the host status bar and severity filters (216px total). It uses one title in its status bar and compact rows so at least two findings fit without scrolling. The toolbar shrinks the page title at its final collapse level at 1024px; the brand and panel controls remain visible. Clipboard cut/paste toasts offer the existing Undo action (Cofnij in Polish) and dismiss button, with contrasting icons and focus rings in both themes.
+
+The playground's deterministic feedback fixtures accept `uiLocale=en|pl` alongside `seed` and `theme`; the toast baselines use Polish to cover Cofnij.
