@@ -412,7 +412,7 @@
   flex: 1;
   min-width: 0;
   height: 100%;
-  overflow: hidden;
+  overflow: clip;
 }
 
 .buildr-editor .bd-toolbar-zone {
@@ -424,9 +424,23 @@
 }
 
 /* Last step of collapsing: only now may the title give way. */
+.buildr-editor .bd-toolbar-row[data-level="4"] .bd-toolbar-zone[data-zone="left"] {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.buildr-editor .bd-toolbar-row[data-level="4"] .bd-toolbar-heading {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
 .buildr-editor .bd-toolbar-row[data-level="4"] .bd-toolbar-title {
   flex: 0 1 auto;
-  min-width: 6ch;
+  min-width: 0;
+}
+
+.buildr-editor .bd-toolbar-zone > .bd-status-pill {
+  flex: none;
 }
 
 .buildr-editor .bd-status-pill {
@@ -449,6 +463,7 @@
 
 .buildr-editor .bd-toolbar .bd-save-status {
   gap: var(--bd-space-2);
+  margin-inline-end: var(--bd-space-2);
   white-space: nowrap;
 }
 

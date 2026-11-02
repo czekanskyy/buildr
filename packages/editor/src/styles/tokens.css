@@ -130,7 +130,8 @@
   --bd-space-7: var(--bd-space-5);
   --bd-space-8: var(--bd-space-6);
   --bd-radius: var(--bd-radius-md);
-  --bd-issues-height: 160px;
+  /* Template content height plus the host status bar and severity filters. */
+  --bd-issues-height: calc(var(--bd-issues-h) + var(--bd-statusbar-height) + var(--bd-control-sm));
   --bd-splitter-size: 1px;
   --bd-ease: var(--bd-ease-standard);
 }

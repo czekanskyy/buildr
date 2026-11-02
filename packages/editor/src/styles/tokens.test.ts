@@ -125,6 +125,27 @@ describe('design tokens: contrast (identity.md section 8)', () => {
       }
       expect(failures).toEqual([]);
     });
+
+    it(`keeps the toast dismiss icon and focus ring above 3:1, including hover, in ${theme}`, () => {
+      const foreground = tokens.get('--bd-toast-text') as string;
+      const background = tokens.get('--bd-toast-bg') as string;
+      const hover = tokens.get('--bd-toast-hover') as string;
+      const match = /rgb\((\d+) (\d+) (\d+) \/ (\d+)%\)/.exec(hover);
+      expect(match).not.toBeNull();
+      const alpha = Number(match?.[4]) / 100;
+      const composited = `#${[1, 3, 5]
+        .map((offset, channel) =>
+          Math.round(
+            Number.parseInt(background.slice(offset, offset + 2), 16) * (1 - alpha) +
+              Number(match?.[channel + 1]) * alpha,
+          )
+            .toString(16)
+            .padStart(2, '0'),
+        )
+        .join('')}`;
+      expect(ratio(foreground, background)).toBeGreaterThanOrEqual(BOUNDARY);
+      expect(ratio(foreground, composited)).toBeGreaterThanOrEqual(BOUNDARY);
+    });
   }
 
   it('matches every approved template token in both themes', () => {

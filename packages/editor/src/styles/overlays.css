@@ -69,32 +69,76 @@
   font-weight: var(--bd-weight-semibold);
 }
 .buildr-editor .bd-toast-close {
-  color: inherit;
+  background: transparent;
+  color: var(--bd-toast-text);
 }
 .buildr-editor .bd-toast-action:hover,
 .buildr-editor .bd-toast-close:hover {
   background: var(--bd-toast-hover);
   color: var(--bd-toast-text);
 }
+.buildr-editor .bd-toast-action:focus-visible,
+.buildr-editor .bd-toast-close:focus-visible {
+  outline: var(--bd-focus-width) solid var(--bd-toast-text);
+  outline-offset: var(--bd-focus-width);
+}
 .buildr-editor .bd-issues .bd-issues {
-  padding: var(--bd-space-3) var(--bd-space-4);
+  padding: 0 var(--bd-space-4);
   border-top: 0;
 }
 .buildr-editor .bd-issues-filters {
   gap: var(--bd-space-1);
-  padding-block: var(--bd-space-2);
+  padding: 0;
   border-bottom: var(--bd-border-width) solid var(--bd-border);
+}
+.buildr-editor .bd-issues-filters .bd-button {
+  min-height: var(--bd-control-sm);
 }
 .buildr-editor .bd-issues-filters button[aria-pressed="true"] {
   background: var(--bd-accent-soft);
   color: var(--bd-accent);
 }
 .buildr-editor .bd-issue {
-  padding: var(--bd-space-3) 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: var(--bd-control-lg);
+  padding: var(--bd-space-1) 0;
 }
 .buildr-editor .bd-issue-target {
-  padding: var(--bd-space-2);
+  grid-column: 1;
+  grid-row: 1;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--bd-space-3);
+  width: 100%;
+  min-height: var(--bd-control-sm);
+  padding: 0 var(--bd-space-1);
   border-radius: var(--bd-radius-md);
+}
+.buildr-editor .bd-issue > .bd-button {
+  grid-column: 2;
+  grid-row: 1;
+  min-height: var(--bd-control-sm);
+}
+.buildr-editor .bd-issue-help,
+.buildr-editor .bd-issue-error {
+  grid-column: 1 / -1;
+}
+.buildr-editor .bd-issue-head {
+  flex: none;
+}
+.buildr-editor .bd-issue-message {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.buildr-editor .bd-issue-source {
+  flex: none;
+  font-size: var(--bd-text-xs);
+}
+.buildr-editor .bd-issues-severity {
+  margin-top: 0;
 }
 .buildr-editor .bd-issue-target:enabled:hover {
   background: var(--bd-surface-hover);

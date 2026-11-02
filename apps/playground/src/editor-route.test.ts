@@ -14,6 +14,15 @@ describe('parseEditorRoute', () => {
     expect(parseEditorRoute('')).toEqual({ seed: undefined, theme: undefined });
   });
 
+  it('selects only supported UI catalogs for localized feedback fixtures', () => {
+    expect(parseEditorRoute('?seed=landing&theme=light&uiLocale=pl')).toEqual({
+      seed: 'landing',
+      theme: 'light',
+      uiLocale: 'pl',
+    });
+    expect(parseEditorRoute('?uiLocale=__proto__')).toEqual({ seed: undefined, theme: undefined });
+  });
+
   it.each(['', 'x', 'Landing', '__proto__'])('ignores the value %j', (value) => {
     expect(parseEditorRoute(`?seed=${value}&theme=${value}`)).toEqual({
       seed: undefined,

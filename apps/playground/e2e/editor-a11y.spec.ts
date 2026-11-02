@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, type Page, test } from '@playwright/test';
+import { expectTwoIssueRows, showUndoToast } from './feedback.ts';
 
 // PB-131: axe against every state of the editor visual baseline (PB-118), in both themes.
 const themes = ['light', 'dark'] as const;
@@ -84,7 +85,43 @@ for (const theme of themes) {
       await expect(page.getByRole('dialog')).toHaveCount(0);
       await page.getByRole('button', { name: 'Show issues' }).click();
       await expect(page.getByText('Checking the page…')).toHaveCount(0);
+      await expectTwoIssueRows(page);
       await expectNoViolations(page);
+    });
+
+    test('toast with undo and dismiss', async ({ page }) => {
+      await open(page, 'landing', theme);
+      const toast = await showUndoToast(page);
+      const dismiss = toast.getByRole('button', { name: 'Dismiss notification' });
+      await expect(dismiss).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+      await expect(dismiss.locator('svg')).toHaveAttribute('stroke', 'currentColor');
+      // Enter through the keyboard: programmatic focus after a pointer click need not match :focus-visible.
+      await dismiss.press('Shift+Tab');
+      await page.keyboard.press('Tab');
+      await expect(dismiss).toBeFocused();
+      await expect(dismiss).toHaveCSS('outline-style', 'solid');
+      await expect(dismiss).toHaveCSS('outline-width', '2px');
+      await expectNoViolations(page);
+      await toast.getByRole('button', { name: 'Undo', exact: true }).click();
+      await expect(
+        page.frameLocator('iframe').getByRole('heading', { name: heading }),
+      ).toBeVisible();
+      await expect(toast).toHaveCount(0);
+      await showUndoToast(page);
+      await toast.getByRole('button', { name: 'Dismiss notification' }).click();
+      await expect(toast).toHaveCount(0);
+    });
+
+    test('Polish toast with Cofnij and dismiss', async ({ page }) => {
+      await page.goto(`/?seed=landing&theme=${theme}&uiLocale=pl`);
+      await expect(page.locator('.bd-canvas-host')).toHaveAttribute('data-status', 'ready');
+      const toast = await showUndoToast(page, 'pl');
+      await expectNoViolations(page);
+      await toast.getByRole('button', { name: 'Cofnij', exact: true }).click();
+      await expect(
+        page.frameLocator('iframe').getByRole('heading', { name: heading }),
+      ).toBeVisible();
+      await expect(toast).toHaveCount(0);
     });
 
     for (const label of ['Tablet', 'Mobile']) {

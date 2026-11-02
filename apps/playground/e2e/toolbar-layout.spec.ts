@@ -1,0 +1,44 @@
+import { expect, test } from '@playwright/test';
+
+for (const theme of ['light', 'dark']) {
+  for (const width of [1024, 1280, 1440]) {
+    test(`toolbar fits at ${width}px, ${theme}`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 768 });
+      await page.goto(`/?seed=landing&theme=${theme}`);
+      await expect(page.locator('.bd-canvas-host')).toHaveAttribute('data-status', 'ready', {
+        timeout: 15_000,
+      });
+      const row = page.locator('.bd-toolbar-row');
+      await expect
+        .poll(() => row.evaluate((el) => el.scrollWidth - el.clientWidth))
+        .toBeLessThanOrEqual(0);
+      await expect(page.locator('.bd-brand')).toBeInViewport({ ratio: 1 });
+      if (width === 1024) {
+        await expect(row.getByRole('button', { name: 'Left panel' })).toBeInViewport({ ratio: 1 });
+        // An editable long name must give way without pushing controls outside the row.
+        const title = page.getByRole('textbox', { name: 'Page name', exact: true });
+        await title.fill('A long page title that must truncate at the minimum editor width');
+        await title.press('Enter');
+        await expect
+          .poll(() => row.evaluate((el) => el.scrollWidth - el.clientWidth))
+          .toBeLessThanOrEqual(0);
+        await expect(title).toHaveCSS('text-overflow', 'ellipsis');
+        await expect(row.getByRole('button', { name: 'Publish', exact: true })).toBeInViewport({
+          ratio: 1,
+        });
+      }
+      if (width === 1440) {
+        const saved = row.locator('.bd-save-status');
+        await expect(saved).toHaveAttribute('data-compact', 'false');
+        const picker = row.getByRole('combobox', { name: 'Content language' });
+        await expect
+          .poll(async () => {
+            const statusBox = await saved.boundingBox();
+            const pickerBox = await picker.boundingBox();
+            return statusBox && pickerBox ? pickerBox.x - statusBox.x - statusBox.width : 0;
+          })
+          .toBeGreaterThanOrEqual(8);
+      }
+    });
+  }
+}

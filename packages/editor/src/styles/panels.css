@@ -962,12 +962,15 @@
   flex-direction: column;
   align-items: stretch;
   gap: var(--bd-space-1);
+  min-width: 0;
 }
 .buildr-editor .bd-style-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--bd-space-2);
   min-height: var(--bd-control-sm);
+  min-width: 0;
 }
 .buildr-editor .bd-style-head > :first-child {
   flex: 1 1 auto;
@@ -1014,6 +1017,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--bd-space-2);
+  min-width: 0;
 }
 .buildr-editor .bd-style-enum > select {
   flex: 1 1 auto;
@@ -1464,11 +1468,17 @@
   color: var(--bd-text-subtle);
 }
 .buildr-editor .bd-style-enum > .bd-segmented {
-  flex: 1;
+  /* Keep the keyword menu on its own row instead of squeezing the segments. */
+  flex: 1 0 100%;
 }
-.buildr-editor .bd-style-enum .bd-segment {
-  flex: 1;
-  min-width: 0;
+.buildr-editor .bd-styles .bd-segmented {
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+.buildr-editor .bd-styles .bd-segment {
+  flex: 1 0 auto;
+  min-width: var(--bd-control-compact);
+  padding-inline: var(--bd-space-1);
 }
 .buildr-editor .bd-inspector .bd-checkbox,
 .buildr-editor .bd-style-check input {
