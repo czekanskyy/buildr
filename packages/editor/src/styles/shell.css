@@ -423,20 +423,10 @@
   white-space: nowrap;
 }
 
-/* Last step of collapsing: only now may the title give way. */
-.buildr-editor .bd-toolbar-row[data-level="4"] .bd-toolbar-zone[data-zone="left"] {
-  flex: 0 1 auto;
-  min-width: 0;
-}
-
-.buildr-editor .bd-toolbar-row[data-level="4"] .bd-toolbar-heading {
-  flex: 0 1 auto;
-  min-width: 0;
-}
-
+/* Last step of collapsing: remove the document chip cleanly, never leave a text sliver. */
+.buildr-editor .bd-toolbar-row[data-level="4"] .bd-toolbar-heading,
 .buildr-editor .bd-toolbar-row[data-level="4"] .bd-toolbar-title {
-  flex: 0 1 auto;
-  min-width: 0;
+  display: none;
 }
 
 .buildr-editor .bd-toolbar-zone > .bd-status-pill {

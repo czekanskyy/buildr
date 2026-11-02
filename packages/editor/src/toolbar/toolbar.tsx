@@ -39,7 +39,7 @@ export interface ToolbarProps {
 /**
  * What changes as the row runs out of room, in order (a step is taken only when the content
  * overflows): 1 the version history moves into the more menu, 2 the save text becomes icon only,
- * 3 the link back to the CMS moves into the more menu, 4 the title may shrink.
+ * 3 the link back to the CMS moves into the more menu, 4 the title chip is hidden.
  */
 const COLLAPSE = { versions: 1, saveText: 2, cms: 3, title: 4 } as const;
 
