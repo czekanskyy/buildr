@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buildr – panel ustawień</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@300;400;500;600;700&amp;family=Fraunces:ital,wght@0,400;0,600;1,400&amp;family=DM+Sans:wght@400;500;700&amp;family=Lora:ital,wght@0,400;0,600;1,400&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/metrics.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/editor.css">
+<link rel="stylesheet" href="css/template.css">
+</head>
+<body class="tpl-page">
+<nav class="tpl-nav buildr-editor" aria-label="Strony szablonu">
+  <b>Buildr – szablon</b>
+  <a href="index.html">Edytor</a>
+  <a href="style-panel.html" aria-current="page">Panel ustawień</a>
+  <a href="components.html">Komponenty</a>
+</nav>
+<main class="tpl-main" data-mount="style-panel"></main>
+
+<script type="text/x-template" data-component="style-panel">
+<div class="buildr-editor" data-theme="{{theme}}" style="width: 100%; height: calc(100vh - var(--bd-panel-header)); min-height: 720px; display: grid; grid-template-columns: minmax(0, 1fr) var(--bd-right); font-family: var(--font-sans); color: var(--bd-text); background: var(--bd-bg); overflow: hidden">
+
+  <!-- ============ PREVIEW ============ -->
+  <section class="pv-stage" aria-label="Podgląd zaznaczonego bloku">
+    <div class="pv-bar">
+      <div class="bd-seg" role="radiogroup" aria-label="Rozmiar ekranu">
+        <sc-for list="{{devices}}" as="d" hint-placeholder-count="3">
+          <button class="bd-seg__item" type="button" role="radio" aria-checked="{{d.on}}" aria-label="{{d.label}}" data-tip="{{d.label}}" onClick="{{d.pick}}">
+            <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="{{d.d1}}"></path><path d="{{d.d2}}"></path><path d="{{d.d3}}"></path></svg>
+          </button>
+        </sc-for>
+      </div>
+      <p>Każda zmiana w panelu od razu zmienia kartę. Najedź na kartę, aby zobaczyć animację po najechaniu.</p>
+    </div>
+    <div class="pv-scroll">
+      <div class="{{pv.frameCls}}" style="width: {{pv.frameW}}; padding: {{pv.framePad}}">
+        <div class="pv-ctx"><b>Trzy etapy, jedna osoba prowadząca</b><span>Możesz zamówić cały proces albo tylko wybrany etap.</span></div>
+        <sc-if value="{{pv.hiddenHere}}" hint-placeholder-val="{{false}}">
+          <div class="bd-note bd-note--ovr" style="margin-bottom: var(--bd-space-3); font-family: var(--font-sans)"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.7 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-2.2 3.2"></path><path d="M6.6 6.6C3.9 8.4 2 12 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6"></path><path d="m2 2 20 20"></path></svg><span>Ten blok jest ukryty na tym urządzeniu. W edytorze widzisz go wyszarzonego.</span></div>
+        </sc-if>
+        <div class="{{pv.marginCls}}" style="display: {{pv.wrapDisplay}}; width: {{pv.wrapW}}; padding: {{pv.marginPad}}; opacity: {{pv.hiddenOp}}">
+          <div class="{{pv.selCls}}" style="--adur: {{pv.adur}}; --aease: {{pv.aease}}; --adelay: {{pv.adelay}}; --a-op: {{pv.aop}}; --a-x: {{pv.ax}}; --a-y: {{pv.ay}}; --a-sc: {{pv.asc}}; display: {{pv.selDisplay}}; width: {{pv.selW}}">
+            <span class="pv-chip">Karta</span>
+            <div class="pv-card" style="box-sizing: border-box; {{pv.cardStyle}}">
+              <sc-if value="{{pv.hasOverlay}}" hint-placeholder-val="{{false}}"><span class="pv-ov" style="background: {{pv.overlay}}"></span></sc-if>
+              <sc-if value="{{pv.showIcon}}" hint-placeholder-val="{{true}}">
+                <span class="pv-ico"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></span>
+              </sc-if>
+              <h3 style="text-shadow: {{pv.textShadow}}">{{pv.title}}</h3>
+              <p>{{pv.desc}} <a href="#szczegoly">{{pv.linkText}}</a></p>
+              <sc-if value="{{pv.showBtn}}" hint-placeholder-val="{{true}}">
+                <span class="pv-btn" style="background: {{pv.btnBg}}; color: {{pv.btnColor}}; box-shadow: {{pv.btnBorder}}">{{pv.btnText}}</span>
+              </sc-if>
+              <sc-if value="{{pv.isVideo}}" hint-placeholder-val="{{false}}"><span class="pv-play"><svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true"><path d="M7 4v16l13-8z"></path></svg>Wideo w tle</span></sc-if>
+            </div>
+          </div>
+        </div>
+        <div class="pv-ctx" style="margin: 28px 0 0; opacity: .55"><span>Pozostałe karty sekcji są pominięte w podglądzie.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ INSPECTOR ============ -->
+  <aside class="bd-right" aria-label="Ustawienia bloku" style="border-left: var(--bd-border-width) solid var(--bd-border)">
+    <div class="bd-insp-head">
+      <span class="bd-insp-icon"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path><path d="M4 11h16"></path><path d="M8 15h6"></path></svg></span>
+      <div class="bd-insp-title"><strong>Karta</strong><small>„Projekt koncepcyjny” · w bloku: Kolumny</small></div>
+      <button class="bd-iconbtn" type="button" aria-label="{{allLabel}}" data-tip="{{allLabel}}" data-tip-pos="end" onClick="{{toggleAll}}">
+        <sc-if value="{{allOpen}}" hint-placeholder-val="{{false}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 20 5-5 5 5"></path><path d="m7 4 5 5 5-5"></path></svg></sc-if>
+        <sc-if value="{{notAllOpen}}" hint-placeholder-val="{{true}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"></path><path d="m7 9 5-5 5 5"></path></svg></sc-if>
+      </button>
+      <button class="bd-iconbtn" type="button" aria-label="Więcej opcji bloku" data-tip="Więcej opcji bloku" data-tip-pos="end"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h.01M12 12h.01M19 12h.01" style="stroke-width: 3"></path></svg></button>
+    </div>
+    <div class="bd-panel-head" style="padding-left: var(--bd-space-2)">
+      <div class="bd-tabs" role="tablist" aria-label="Ustawienia bloku">
+        <sc-for list="{{tabs}}" as="t" hint-placeholder-count="3">
+          <button class="bd-tab" type="button" role="tab" aria-selected="{{t.on}}" data-tip="{{t.tip}}" data-tip-pos="{{t.tipPos}}" onClick="{{t.pick}}">
+            <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="{{t.d1}}"></path><path d="{{t.d2}}"></path><path d="{{t.d3}}"></path></svg>
+            {{t.name}}
+            <sc-if value="{{t.mod}}" hint-placeholder-val="{{false}}"><span class="dot" role="img" aria-label="Zawiera zmienione ustawienia"></span></sc-if>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+    <div class="bd-insp-search" style="display: flex; flex-direction: column; gap: var(--bd-space-2)">
+      <label class="bd-search">
+        <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+        <span class="bd-sr">Szukaj ustawień</span>
+        <input type="search" placeholder="Szukaj ustawień, np. cień" value="{{q}}" onChange="{{onQ}}">
+      </label>
+      <sc-if value="{{devNote}}" hint-placeholder-val="{{false}}">
+        <div class="bd-note bd-note--ovr"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="{{devIco.d1}}"></path><path d="{{devIco.d2}}"></path></svg><span>Edytujesz wartości dla: <b>{{devName}}</b>. Pola z pomarańczową ikoną mają tu własną wartość.</span></div>
+      </sc-if>
+    </div>
+    <div class="bd-panel-body" style="padding-top: var(--bd-space-1)">
+      <sc-if value="{{noResults}}" hint-placeholder-val="{{false}}">
+        <div class="bd-empty" style="padding: var(--bd-space-5) var(--bd-space-2)"><strong>Brak ustawień „{{q}}”</strong><span style="font-size: var(--bd-text-sm)">Spróbuj: odstęp, kolor, cień, zaokrąglenie.</span></div>
+      </sc-if>
+      <sc-for list="{{sections}}" as="sec" hint-placeholder-count="9">
+        <section class="bd-sec">
+          <button class="bd-sec__head" type="button" aria-expanded="{{sec.openStr}}" aria-controls="{{sec.bodyId}}" onClick="{{sec.toggle}}">
+            <svg class="i lead" viewBox="0 0 24 24" aria-hidden="true"><path d="{{sec.d1}}"></path><path d="{{sec.d2}}"></path><path d="{{sec.d3}}"></path></svg>
+            <span>{{sec.name}}</span>
+            <sc-if value="{{sec.ovr}}" hint-placeholder-val="{{false}}"><span class="bd-ovr" role="img" aria-label="{{sec.ovrLabel}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="{{devIco.d1}}"></path><path d="{{devIco.d2}}"></path></svg>{{sec.ovrCount}}</span></sc-if>
+            <sc-if value="{{sec.mod}}" hint-placeholder-val="{{false}}"><span class="bd-mod-dot" role="img" aria-label="Zawiera zmienione ustawienia"></span></sc-if>
+            <svg class="i chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>
+          </button>
+          <div class="{{sec.bodyCls}}" id="{{sec.bodyId}}" role="region" aria-label="{{sec.name}}">
+            <div class="bd-sec__inner">
+              <sc-if value="{{sec.open}}" hint-placeholder-val="{{false}}">
+              <div class="bd-sec__content">
+                <sc-for list="{{sec.fields}}" as="f" hint-placeholder-count="4">
+                  <sc-if value="{{f.isSub}}" hint-placeholder-val="{{false}}"><div class="bd-subhead">{{f.label}}</div></sc-if>
+
+                  <sc-if value="{{f.isGeneric}}" hint-placeholder-val="{{true}}">
+                    <div class="{{f.rowCls}}">
+                      <div class="bd-flabel-wrap">
+                        <label class="{{f.labelCls}}" for="{{f.id}}" onPointerDown="{{f.scrub}}" title="{{f.scrubTip}}">{{f.lpre}}<mark>{{f.lmid}}</mark>{{f.lpost}}</label>
+                        <sc-if value="{{f.resp}}" hint-placeholder-val="{{false}}"><span class="{{f.devCls}}" role="img" aria-label="{{f.devTip}}" data-tip="{{f.devTip}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="{{devIco.d1}}"></path><path d="{{devIco.d2}}"></path></svg></span></sc-if>
+                        <sc-if value="{{f.hasHelp}}" hint-placeholder-val="{{false}}"><button class="bd-help" type="button" aria-label="{{f.help}}" data-tip="{{f.help}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg></button></sc-if>
+                      </div>
+                      <div class="bd-fctl" style="position: relative">
+
+                        <sc-if value="{{f.isRange}}" hint-placeholder-val="{{false}}">
+                          <div class="bd-range">
+                            <div class="bd-range__track" style="--p: {{f.p}}">
+                              <input id="{{f.id}}" type="range" min="{{f.min}}" max="{{f.max}}" step="{{f.step}}" value="{{f.val}}" onChange="{{f.onVal}}" aria-valuetext="{{f.valText}}" style="--p: {{f.p}}">
+                              <span class="bd-range__bubble">{{f.valText}}</span>
+                            </div>
+                            <span class="bd-input"><input type="number" aria-label="{{f.label}} – wartość" min="{{f.min}}" max="{{f.max}}" step="{{f.step}}" value="{{f.val}}" onChange="{{f.onVal}}"><span>{{f.unit}}</span></span>
+                          </div>
+                        </sc-if>
+
+                        <sc-if value="{{f.isSeg}}" hint-placeholder-val="{{false}}">
+                          <div class="{{f.segCls}}" role="radiogroup" aria-label="{{f.label}}">
+                            <sc-for list="{{f.opts}}" as="o" hint-placeholder-count="3">
+                              <button class="bd-seg__item" type="button" role="radio" aria-checked="{{o.checked}}" aria-label="{{o.aria}}" data-tip="{{o.tip}}" data-tip-pos="{{o.tipPos}}" onClick="{{o.pick}}">
+                                <sc-if value="{{o.hasIcon}}" hint-placeholder-val="{{true}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="{{o.d1}}"></path><path d="{{o.d2}}"></path><path d="{{o.d3}}"></path></svg></sc-if>
+                                <sc-if value="{{o.hasText}}" hint-placeholder-val="{{false}}"><span>{{o.text}}</span></sc-if>
+                              </button>
+                            </sc-for>
+                          </div>
+                        </sc-if>
+
+                        <sc-if value="{{f.isNum}}" hint-placeholder-val="{{false}}">
+                          <span class="bd-input">
+                            <input id="{{f.id}}" type="number" value="{{f.val}}" placeholder="{{f.placeholder}}" onChange="{{f.onVal}}" step="{{f.step}}">
+                            <sc-if value="{{f.hasUnits}}" hint-placeholder-val="{{true}}">
+                              <select class="bd-unit" aria-label="Jednostka: {{f.label}}" value="{{f.unitVal}}" onChange="{{f.onUnit}}">
+                                <sc-for list="{{f.units}}" as="u" hint-placeholder-count="3"><option value="{{u}}">{{u}}</option></sc-for>
+                              </select>
+                            </sc-if>
+                            <sc-if value="{{f.noUnits}}" hint-placeholder-val="{{false}}"><span style="padding-right: var(--bd-space-2); color: var(--bd-text-subtle); font-size: var(--bd-text-xs)">{{f.unit}}</span></sc-if>
+                            <span class="bd-step">
+                              <button type="button" aria-label="Zwiększ: {{f.label}}" tabindex="-1" onClick="{{f.inc}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m18 15-6-6-6 6"></path></svg></button>
+                              <button type="button" aria-label="Zmniejsz: {{f.label}}" tabindex="-1" onClick="{{f.dec}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button>
+                            </span>
+                          </span>
+                        </sc-if>
+
+                        <sc-if value="{{f.isSelect}}" hint-placeholder-val="{{false}}">
+                          <span class="bd-input bd-selectbox">
+                            <select id="{{f.id}}" value="{{f.val}}" onChange="{{f.onVal}}">
+                              <sc-for list="{{f.opts}}" as="o" hint-placeholder-count="4"><option value="{{o.v}}">{{o.l}}</option></sc-for>
+                            </select>
+                            <svg class="i chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+                          </span>
+                        </sc-if>
+
+                        <sc-if value="{{f.isFont}}" hint-placeholder-val="{{false}}">
+                          <button class="bd-input bd-selectbox" type="button" id="{{f.id}}" aria-haspopup="listbox" aria-expanded="{{f.openStr}}" onClick="{{f.toggle}}" style="padding: 0 28px 0 var(--bd-space-2); text-align: left; cursor: pointer; font-family: {{f.fontCss}}; font-size: var(--bd-text-md)">{{f.val}}<svg class="i chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button>
+                          <sc-if value="{{f.open}}" hint-placeholder-val="{{false}}">
+                            <div class="bd-popover" style="top: calc(100% + 4px); right: 0; width: 232px; gap: var(--bd-space-2); padding: var(--bd-space-2)">
+                              <label class="bd-search"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg><span class="bd-sr">Szukaj kroju</span><input type="search" placeholder="Szukaj kroju pisma" value="{{f.fq}}" onChange="{{f.onFq}}" autoFocus="{{f.yes}}"></label>
+                              <div role="listbox" aria-label="Kroje pisma" style="display: flex; flex-direction: column; gap: 2px">
+                                <sc-for list="{{f.fonts}}" as="o" hint-placeholder-count="5">
+                                  <button class="bd-menu__item" type="button" role="option" aria-selected="{{o.on}}" onClick="{{o.pick}}" style="font-family: {{o.css}}; height: 36px"><span style="flex: 1">{{o.name}}</span><small style="font-family: var(--font-sans); color: var(--bd-text-subtle); font-size: var(--bd-text-xs)">{{o.kind}}</small></button>
+                                </sc-for>
+                              </div>
+                            </div>
+                          </sc-if>
+                        </sc-if>
+
+                        <sc-if value="{{f.isColor}}" hint-placeholder-val="{{false}}">
+                          <span class="bd-input bd-colorfield">
+                            <button class="bd-swatch" type="button" aria-label="Wybierz kolor: {{f.label}}" aria-expanded="{{f.openStr}}" onClick="{{f.toggle}}"><span style="background: {{f.css}}"></span></button>
+                            <input id="{{f.id}}" class="hex" type="text" value="{{f.hex}}" onChange="{{f.onHex}}" aria-label="{{f.label}} – kod koloru" spellcheck="false">
+                            <span class="op">{{f.op}}%</span>
+                          </span>
+                          <sc-if value="{{f.open}}" hint-placeholder-val="{{false}}">
+                            <div class="bd-popover" role="dialog" aria-label="Wybór koloru: {{f.label}}" style="top: calc(100% + 4px); right: 0">
+                              <h4>Paleta strony</h4>
+                              <div class="bd-palette">
+                                <sc-for list="{{f.palette}}" as="c" hint-placeholder-count="8">
+                                  <button type="button" aria-label="{{c.name}}" aria-pressed="{{c.on}}" data-tip="{{c.name}}" onClick="{{c.pick}}" style="background: {{c.hex}}"></button>
+                                </sc-for>
+                              </div>
+                              <h4>Własny kolor</h4>
+                              <div class="bd-range bd-hue"><div class="bd-range__track" style="--p: {{f.hueP}}"><input type="range" min="0" max="360" value="{{f.hue}}" onChange="{{f.onHue}}" aria-label="Odcień"></div></div>
+                              <div class="bd-range bd-alpha"><div class="bd-range__track" style="--p: {{f.opP}}"><input type="range" min="0" max="100" value="{{f.op}}" onChange="{{f.onOp}}" aria-label="Krycie koloru" style="background: linear-gradient(to right, transparent, {{f.hex}})"></div><span class="bd-input"><input type="number" min="0" max="100" value="{{f.op}}" onChange="{{f.onOp}}" aria-label="Krycie koloru w procentach"><span>%</span></span></div>
+                              <div class="bd-popover__row"><span class="bd-input mono" style="flex: 1"><input type="text" value="{{f.hex}}" onChange="{{f.onHex}}" aria-label="Kod koloru"></span><button class="bd-btn" type="button" onClick="{{f.toggle}}">Gotowe</button></div>
+                            </div>
+                          </sc-if>
+                        </sc-if>
+
+                        <sc-if value="{{f.isSwitch}}" hint-placeholder-val="{{false}}">
+                          <span style="display: flex; justify-content: flex-end"><button class="bd-switch" type="button" role="switch" id="{{f.id}}" aria-checked="{{f.on}}" aria-label="{{f.label}}" onClick="{{f.toggle}}"></button></span>
+                        </sc-if>
+
+                        <sc-if value="{{f.isText}}" hint-placeholder-val="{{false}}">
+                          <span class="{{f.inputCls}}">
+                            <input id="{{f.id}}" type="text" value="{{f.val}}" placeholder="{{f.placeholder}}" onChange="{{f.onVal}}" readOnly="{{f.bound}}">
+                            <sc-if value="{{f.canBind}}" hint-placeholder-val="{{false}}"><button class="{{f.srcCls}}" type="button" aria-label="{{f.srcTip}}" data-tip="{{f.srcTip}}" data-tip-pos="end" onClick="{{f.toggleBind}}" style="margin-right: var(--bd-space-1)"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"></ellipse><path d="M4 5v14a8 3 0 0 0 16 0V5"></path><path d="M4 12a8 3 0 0 0 16 0"></path></svg></button></sc-if>
+                          </span>
+                        </sc-if>
+
+                        <sc-if value="{{f.isArea}}" hint-placeholder-val="{{false}}">
+                          <span class="{{f.inputCls}}"><textarea id="{{f.id}}" value="{{f.val}}" placeholder="{{f.placeholder}}" onChange="{{f.onVal}}" spellcheck="false"></textarea></span>
+                        </sc-if>
+
+                        <sc-if value="{{f.isSides}}" hint-placeholder-val="{{false}}">
+                          <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) 24px; gap: var(--bd-space-1); align-items: center">
+                            <sc-for list="{{f.sides}}" as="sd" hint-placeholder-count="4">
+                              <span class="bd-input" style="height: 28px" data-tip="{{sd.name}}"><input type="number" value="{{sd.val}}" onChange="{{sd.onVal}}" aria-label="{{f.label}}: {{sd.name}}" style="text-align: center; padding: 0 2px"></span>
+                            </sc-for>
+                            <button class="bd-iconbtn bd-iconbtn--sm bd-linkt" type="button" aria-pressed="{{f.linked}}" aria-label="{{f.linkTip}}" data-tip="{{f.linkTip}}" data-tip-pos="end" onClick="{{f.toggleLink}}">
+                              <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17H7A5 5 0 0 1 7 7h2"></path><path d="M15 7h2a5 5 0 1 1 0 10h-2"></path><path d="{{f.linkMid}}"></path></svg>
+                            </button>
+                          </div>
+                        </sc-if>
+
+                        <sc-if value="{{f.isPad}}" hint-placeholder-val="{{false}}">
+                          <div class="bd-padrow">
+                            <div class="{{f.padCls}}" role="radiogroup" aria-label="{{f.label}}">
+                              <sc-for list="{{f.cells}}" as="c" hint-placeholder-count="9">
+                                <button type="button" role="radio" aria-checked="{{c.on}}" aria-label="{{c.name}}" title="{{c.name}}" onClick="{{c.pick}}"></button>
+                              </sc-for>
+                            </div>
+                            <p><strong>{{f.padText}}</strong>{{f.padHint}}</p>
+                          </div>
+                        </sc-if>
+
+                        <sc-if value="{{f.hasResetSlot}}" hint-placeholder-val="{{true}}">
+                          <sc-if value="{{f.changed}}" hint-placeholder-val="{{false}}">
+                            <button class="bd-reset" type="button" aria-label="Przywróć domyślne: {{f.label}}" data-tip="Przywróć domyślne" data-tip-pos="end" onClick="{{f.reset}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path></svg></button>
+                          </sc-if>
+                          <sc-if value="{{f.unchanged}}" hint-placeholder-val="{{true}}"><span class="bd-reset-slot"></span></sc-if>
+                        </sc-if>
+                      </div>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{f.isBox}}" hint-placeholder-val="{{false}}">
+                    <div class="bd-stack" style="gap: var(--bd-space-2)">
+                      <div class="bd-boxbar">
+                        <span class="swatchkey" style="background: var(--bd-override)"></span>
+                        <span class="bd-flabel">Margines (zewnętrzny)</span>
+                        <span class="{{f.devCls}}" role="img" aria-label="{{f.devTip}}" data-tip="{{f.devTip}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="{{devIco.d1}}"></path><path d="{{devIco.d2}}"></path></svg></span>
+                        <span class="bd-input" style="height: 24px; width: 56px; flex: none"><select class="bd-unit" style="width: 100%" aria-label="Jednostka marginesu" value="{{f.mUnit}}" onChange="{{f.onMUnit}}"><sc-for list="{{f.units}}" as="u" hint-placeholder-count="4"><option value="{{u}}">{{u}}</option></sc-for></select></span>
+                        <button class="bd-iconbtn bd-iconbtn--sm bd-linkt" type="button" aria-pressed="{{f.mLinked}}" aria-label="{{f.mLinkTip}}" data-tip="{{f.mLinkTip}}" data-tip-pos="end" onClick="{{f.toggleMLink}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17H7A5 5 0 0 1 7 7h2"></path><path d="M15 7h2a5 5 0 1 1 0 10h-2"></path><path d="{{f.mLinkMid}}"></path></svg></button>
+                      </div>
+                      <div class="bd-boxbar">
+                        <span class="swatchkey" style="background: var(--bd-success)"></span>
+                        <span class="bd-flabel">Dopełnienie (wewnętrzne)</span>
+                        <span class="bd-input" style="height: 24px; width: 56px; flex: none"><select class="bd-unit" style="width: 100%" aria-label="Jednostka dopełnienia" value="{{f.pUnit}}" onChange="{{f.onPUnit}}"><sc-for list="{{f.units}}" as="u" hint-placeholder-count="4"><option value="{{u}}">{{u}}</option></sc-for></select></span>
+                        <button class="bd-iconbtn bd-iconbtn--sm bd-linkt" type="button" aria-pressed="{{f.pLinked}}" aria-label="{{f.pLinkTip}}" data-tip="{{f.pLinkTip}}" data-tip-pos="end" onClick="{{f.togglePLink}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17H7A5 5 0 0 1 7 7h2"></path><path d="M15 7h2a5 5 0 1 1 0 10h-2"></path><path d="{{f.pLinkMid}}"></path></svg></button>
+                      </div>
+                      <div class="bd-box" role="group" aria-label="Margines i dopełnienie">
+                        <span class="bd-box__label">MARGINES</span>
+                        <span class="bd-box__v" style="grid-column: 2; grid-row: 1"><input type="number" class="{{f.m.t.cls}}" value="{{f.m.t.val}}" onChange="{{f.m.t.onVal}}" aria-label="Margines górny"></span>
+                        <span class="bd-box__v" style="grid-column: 3; grid-row: 2"><input type="number" class="{{f.m.r.cls}}" value="{{f.m.r.val}}" onChange="{{f.m.r.onVal}}" aria-label="Margines prawy"></span>
+                        <span class="bd-box__v" style="grid-column: 2; grid-row: 3"><input type="number" class="{{f.m.b.cls}}" value="{{f.m.b.val}}" onChange="{{f.m.b.onVal}}" aria-label="Margines dolny"></span>
+                        <span class="bd-box__v" style="grid-column: 1; grid-row: 2"><input type="number" class="{{f.m.l.cls}}" value="{{f.m.l.val}}" onChange="{{f.m.l.onVal}}" aria-label="Margines lewy"></span>
+                        <div class="bd-box__in">
+                          <span class="bd-box__label">DOPEŁNIENIE</span>
+                          <span class="bd-box__v" style="grid-column: 2; grid-row: 1"><input type="number" class="{{f.p.t.cls}}" value="{{f.p.t.val}}" onChange="{{f.p.t.onVal}}" aria-label="Dopełnienie górne"></span>
+                          <span class="bd-box__v" style="grid-column: 3; grid-row: 2"><input type="number" class="{{f.p.r.cls}}" value="{{f.p.r.val}}" onChange="{{f.p.r.onVal}}" aria-label="Dopełnienie prawe"></span>
+                          <span class="bd-box__v" style="grid-column: 2; grid-row: 3"><input type="number" class="{{f.p.b.cls}}" value="{{f.p.b.val}}" onChange="{{f.p.b.onVal}}" aria-label="Dopełnienie dolne"></span>
+                          <span class="bd-box__v" style="grid-column: 1; grid-row: 2"><input type="number" class="{{f.p.l.cls}}" value="{{f.p.l.val}}" onChange="{{f.p.l.onVal}}" aria-label="Dopełnienie lewe"></span>
+                          <div class="bd-box__core">treść</div>
+                        </div>
+                      </div>
+                      <p class="bd-hint">Kliknij liczbę, by ją zmienić. Strzałki ±1, Shift ±10. Połączone wartości zmieniają się razem.</p>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{f.isCorners}}" hint-placeholder-val="{{false}}">
+                    <div class="bd-stack" style="gap: var(--bd-space-2)">
+                      <div class="bd-boxbar"><span class="bd-flabel">Zaokrąglenie rogów</span>
+                        <button class="bd-iconbtn bd-iconbtn--sm bd-linkt" type="button" aria-pressed="{{f.linked}}" aria-label="{{f.linkTip}}" data-tip="{{f.linkTip}}" data-tip-pos="end" onClick="{{f.toggleLink}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17H7A5 5 0 0 1 7 7h2"></path><path d="M15 7h2a5 5 0 1 1 0 10h-2"></path><path d="{{f.linkMid}}"></path></svg></button>
+                        <sc-if value="{{f.changed}}" hint-placeholder-val="{{false}}"><button class="bd-reset" type="button" aria-label="Przywróć domyślne: zaokrąglenie" data-tip="Przywróć domyślne" data-tip-pos="end" onClick="{{f.reset}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path></svg></button></sc-if>
+                      </div>
+                      <div class="bd-corners">
+                        <span class="bd-input" style="grid-column: 1; grid-row: 1" data-tip="Lewy górny"><input type="number" min="0" value="{{f.c.tl.val}}" onChange="{{f.c.tl.onVal}}" aria-label="Róg lewy górny"></span>
+                        <span class="bd-input" style="grid-column: 3; grid-row: 1" data-tip="Prawy górny"><input type="number" min="0" value="{{f.c.tr.val}}" onChange="{{f.c.tr.onVal}}" aria-label="Róg prawy górny"></span>
+                        <span class="bd-corners__prev" style="border-radius: {{f.radiusCss}}" aria-hidden="true"></span>
+                        <span class="bd-input" style="grid-column: 1; grid-row: 3" data-tip="Lewy dolny"><input type="number" min="0" value="{{f.c.bl.val}}" onChange="{{f.c.bl.onVal}}" aria-label="Róg lewy dolny"></span>
+                        <span class="bd-input" style="grid-column: 3; grid-row: 3" data-tip="Prawy dolny"><input type="number" min="0" value="{{f.c.br.val}}" onChange="{{f.c.br.onVal}}" aria-label="Róg prawy dolny"></span>
+                      </div>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{f.isShadowCards}}" hint-placeholder-val="{{false}}">
+                    <div class="bd-stack" style="gap: var(--bd-space-2)">
+                      <span class="bd-flabel">Gotowe cienie</span>
+                      <div class="bd-cards" role="radiogroup" aria-label="Gotowe cienie">
+                        <sc-for list="{{f.cards}}" as="c" hint-placeholder-count="4">
+                          <button class="bd-rcard" type="button" role="radio" aria-checked="{{c.on}}" onClick="{{c.pick}}"><span class="mini" style="box-shadow: {{c.css}}"></span>{{c.name}}</button>
+                        </sc-for>
+                      </div>
+                      <div class="bd-shprev" aria-hidden="true"><span style="box-shadow: {{f.css}}"></span></div>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{f.isCards}}" hint-placeholder-val="{{false}}">
+                    <div class="bd-stack" style="gap: var(--bd-space-2)">
+                      <span class="bd-flabel">{{f.label}}</span>
+                      <div class="bd-cards bd-cards--3" role="radiogroup" aria-label="{{f.label}}">
+                        <sc-for list="{{f.cards}}" as="c" hint-placeholder-count="3">
+                          <button class="bd-rcard" type="button" role="radio" aria-checked="{{c.on}}" onClick="{{c.pick}}"><span style="display: inline-flex; align-items: center; height: 20px; padding: 0 8px; border-radius: 4px; font-size: 10px; {{c.css}}">Napisz</span>{{c.name}}</button>
+                        </sc-for>
+                      </div>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{f.isCurve}}" hint-placeholder-val="{{false}}">
+                    <div class="bd-curve">
+                      <svg viewBox="0 0 64 64" role="img" aria-label="Wykres krzywej: {{f.name}}">
+                        <path class="grid" d="M4 60H60M4 4V60"></path>
+                        <path class="ctl" d="{{f.ctl}}"></path>
+                        <path class="crv" d="{{f.path}}"></path>
+                        <circle class="dot" cx="4" cy="60" r="2.5"></circle>
+                        <circle class="dot" cx="60" cy="4" r="2.5"></circle>
+                      </svg>
+                      <div style="flex: 1; min-width: 0">
+                        <strong style="display: block; font-size: var(--bd-text-sm); font-weight: var(--bd-weight-medium)">{{f.name}}</strong>
+                        <code style="font-family: var(--font-mono); font-size: var(--bd-text-xs); color: var(--bd-text-subtle)">{{f.css}}</code>
+                      </div>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{f.isPlay}}" hint-placeholder-val="{{false}}">
+                    <button class="bd-btn" type="button" onClick="{{f.play}}" style="width: 100%">
+                      <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16l13-8z"></path></svg>Odtwórz podgląd
+                    </button>
+                  </sc-if>
+
+                  <sc-if value="{{f.isBgPrev}}" hint-placeholder-val="{{false}}">
+                    <div class="bd-bgprev" style="{{f.css}}" role="img" aria-label="Podgląd tła"></div>
+                  </sc-if>
+
+                  <sc-if value="{{f.isImg}}" hint-placeholder-val="{{false}}">
+                    <div class="bd-imgpick"><span class="bd-imgpick__thumb" aria-hidden="true"></span><span style="flex: 1; min-width: 0"><b>salon-okno.jpg</b><small>1600 × 1200 · 240 KB</small></span><button class="bd-btn" type="button" style="height: 28px; padding: 0 var(--bd-space-2)">Zmień</button></div>
+                  </sc-if>
+
+                  <sc-if value="{{f.isChecks}}" hint-placeholder-val="{{false}}">
+                    <div class="bd-stack" style="gap: var(--bd-space-2)">
+                      <span class="bd-flabel">{{f.label}}</span>
+                      <sc-for list="{{f.checks}}" as="c" hint-placeholder-count="3">
+                        <label class="bd-check"><input type="checkbox" checked="{{c.on}}" onChange="{{c.toggle}}">{{c.name}}</label>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{f.isVis}}" hint-placeholder-val="{{false}}">
+                    <div class="bd-stack" style="gap: var(--bd-space-2)">
+                      <span class="bd-flabel">Ukryj na urządzeniu</span>
+                      <div class="bd-vischips">
+                        <sc-for list="{{f.vis}}" as="v" hint-placeholder-count="3">
+                          <button class="bd-vis" type="button" aria-pressed="{{v.on}}" aria-label="{{v.aria}}" onClick="{{v.toggle}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="{{v.d1}}"></path><path d="{{v.d2}}"></path></svg>{{v.name}}<span class="st"></span></button>
+                        </sc-for>
+                      </div>
+                      <p class="bd-hint">Ukryty blok nie trafia na stronę na tym urządzeniu. W edytorze zostaje wyszarzony.</p>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{f.isCond}}" hint-placeholder-val="{{false}}">
+                    <div class="bd-stack" style="gap: var(--bd-space-2)">
+                      <div class="bd-note bd-note--info"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M7 12h10"></path><path d="M10 18h4"></path></svg><span>Pokaż, gdy <b>wpis.promocja</b> jest równe <b>tak</b></span></div>
+                      <div style="display: flex; gap: var(--bd-space-2)"><button class="bd-btn" type="button" style="flex: 1">Edytuj warunek</button><button class="bd-iconbtn" type="button" aria-label="Usuń warunek" data-tip="Usuń warunek" data-tip-pos="end"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path></svg></button></div>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{f.isKV}}" hint-placeholder-val="{{false}}">
+                    <div class="bd-stack" style="gap: var(--bd-space-1)">
+                      <div class="bd-kv"><span class="bd-flabel" style="font-size: var(--bd-text-xs)">Nazwa</span><span class="bd-flabel" style="font-size: var(--bd-text-xs)">Wartość</span><span></span></div>
+                      <div class="bd-kv"><span class="bd-input mono" style="height: 28px"><input type="text" value="data-etap" aria-label="Nazwa atrybutu"></span><span class="bd-input mono" style="height: 28px"><input type="text" value="koncepcja" aria-label="Wartość atrybutu"></span><button class="bd-iconbtn bd-iconbtn--sm" type="button" aria-label="Usuń atrybut" data-tip="Usuń atrybut" data-tip-pos="end"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button></div>
+                      <button class="bd-textbtn" type="button" style="align-self: flex-start"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Dodaj atrybut</button>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{f.isMore}}" hint-placeholder-val="{{false}}">
+                    <button class="bd-textbtn" type="button" aria-expanded="{{f.openStr}}" onClick="{{f.toggle}}" style="align-self: flex-start"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="{{f.chev}}"></path></svg>{{f.label}}</button>
+                  </sc-if>
+
+                  <sc-if value="{{f.isNote}}" hint-placeholder-val="{{false}}"><p class="bd-hint">{{f.label}}</p></sc-if>
+                </sc-for>
+                <sc-if value="{{sec.mod}}" hint-placeholder-val="{{false}}">
+                  <div class="bd-sec__foot"><button class="bd-textbtn" type="button" onClick="{{sec.reset}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path></svg>Resetuj sekcję</button></div>
+                </sc-if>
+              </div>
+              </sc-if>
+            </div>
+          </div>
+        </section>
+      </sc-for>
+    </div>
+  </aside>
+</div>
+</script>
+<script src="js/runtime.js"></script>
+<script src="js/tooltips.js"></script>
+<script src="js/style-panel.js"></script>
+</body>
+</html>

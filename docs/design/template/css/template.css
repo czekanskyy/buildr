@@ -1,0 +1,13 @@
+/* Template pages only: the strip that links the demo pages. Not part of the editor UI. */
+.tpl-page { background: var(--bd-bg, #e9ebf0); }
+.tpl-nav, .tpl-toolbar { position: sticky; top: 0; z-index: var(--bd-z-toolbar); display: flex; align-items: center; gap: var(--bd-space-4); height: var(--bd-panel-header); padding: 0 var(--bd-space-4); border-bottom: var(--bd-border-width) solid var(--bd-border); background: var(--bd-surface); font-size: var(--bd-text-sm); }
+.tpl-nav b { margin-right: var(--bd-space-2); font-weight: var(--bd-weight-semibold); }
+.tpl-nav a, .tpl-toolbar a { color: var(--bd-text-muted); text-decoration: none; padding: var(--bd-space-1) var(--bd-space-2); border-radius: var(--bd-radius-sm); }
+.tpl-nav a:hover, .tpl-toolbar a:hover { background: var(--bd-surface-hover); color: var(--bd-text); }
+.tpl-nav a[aria-current="page"] { color: var(--bd-accent); background: var(--bd-accent-soft); }
+.tpl-toolbar { top: var(--bd-panel-header); z-index: var(--bd-z-panel); }
+.tpl-toolbar > span { font-weight: var(--bd-weight-semibold); }
+.tpl-toolbar nav { display: flex; gap: var(--bd-space-1); flex: 1; }
+.tpl-main .bd-shell { height: calc(100vh - var(--bd-panel-header)); min-height: 640px; }
+.tpl-main > .buildr-editor:not(.bd-shell) { min-height: calc(100vh - var(--bd-panel-header)); }
+.tpl-stack > section { scroll-margin-top: calc(var(--bd-panel-header) * 2); border-bottom: var(--bd-border-width) solid var(--bd-border); }

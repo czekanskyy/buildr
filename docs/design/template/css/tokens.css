@@ -1,0 +1,162 @@
+/* Buildr Editor – design tokens, exported 1:1 from the Buildr Editor design system (tokens.json v2).
+   Scope: .buildr-editor. Dark theme: data-theme="dark" on the same element. */
+.buildr-editor {
+  color-scheme: light;
+  --bd-bg: #e9ebf0;
+  --bd-surface: #ffffff;
+  --bd-surface-2: #f4f5f8;
+  --bd-surface-hover: #eceef2;
+  --bd-surface-selected: #e2e8fc;
+  --bd-border: #dfe1e7;
+  --bd-border-strong: #7d8391;
+  --bd-text: #1c1d22;
+  --bd-text-muted: #4b5060;
+  --bd-text-subtle: #5c6373;
+  --bd-accent: #3f5ae0;
+  --bd-accent-hover: #3049bd;
+  --bd-accent-soft: #e2e8fc;
+  --bd-accent-text: #ffffff;
+  --bd-primary: #3f5ae0;
+  --bd-primary-hover: #3049bd;
+  --bd-primary-text: #ffffff;
+  --bd-focus: #3f5ae0;
+  --bd-override: #a34f09;
+  --bd-override-soft: #fdf0e3;
+  --bd-danger: #c0282d;
+  --bd-danger-soft: #fdecec;
+  --bd-warning: #8a5300;
+  --bd-warning-soft: #fff3d9;
+  --bd-toast-bg: #1c1e25; --bd-toast-text: #f4f5f8; --bd-toast-accent: #a3b3f4; --bd-toast-ok: #6fd39a; --bd-toast-err: #ff9a8f; --bd-toast-hover: rgba(255, 255, 255, 0.12);
+  --bd-success: #1b7a3d;
+  --bd-success-soft: #e4f5ea;
+  --bd-info: #0b6b80;
+  --bd-info-soft: #e0f3f7;
+  --bd-toolbar: #ffffff;
+  --bd-toolbar-hover: #eceef2;
+  --bd-toolbar-border: #dfe1e7;
+  --bd-toolbar-text: #1c1d22;
+  --bd-toolbar-muted: #4b5060;
+  --bd-canvas-page: #ffffff;
+  --bd-canvas-hover: #7a90ee;
+  --bd-canvas-select: #3f5ae0;
+  --bd-canvas-guide: #a3b3f4;
+  --bd-canvas-select-text: #ffffff;
+  --bd-shadow: rgba(18, 19, 23, 0.14);
+  --bd-overlay: rgba(18, 19, 23, 0.5);
+
+  --bd-elevation-1: 0 1px 2px rgba(18, 19, 23, 0.14);
+  --bd-elevation-2: 0 4px 12px rgba(18, 19, 23, 0.14), 0 0 0 1px #dfe1e7;
+  --bd-elevation-3: 0 12px 32px rgba(18, 19, 23, 0.14), 0 0 0 1px #dfe1e7;
+
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  --bd-text-xs: 11px;  --bd-leading-xs: 16px;
+  --bd-text-sm: 12px;  --bd-leading-sm: 16px;
+  --bd-text-md: 13px;  --bd-leading-md: 20px;
+  --bd-text-lg: 15px;  --bd-leading-lg: 24px;
+  --bd-text-xl: 18px;  --bd-leading-xl: 24px;
+  --bd-weight-regular: 400;
+  --bd-weight-medium: 500;
+  --bd-weight-semibold: 600;
+
+  --bd-space-1: 4px;
+  --bd-space-2: 8px;
+  --bd-space-3: 12px;
+  --bd-space-4: 16px;
+  --bd-space-5: 24px;
+  --bd-space-6: 32px;
+
+  --bd-radius-sm: 4px;
+  --bd-radius-md: 6px;
+  --bd-radius-lg: 8px;
+  --bd-radius-xl: 12px;
+  --bd-radius-pill: 999px;
+
+  --bd-control-sm: 24px;
+  --bd-control-md: 32px;
+  --bd-control-lg: 40px;
+  --bd-toolbar-height: 52px;
+  --bd-panel-header: 44px;
+  --bd-statusbar-height: 32px;
+  --bd-space-half: 2px;
+  --bd-icon-xs: 12px; --bd-icon-sm: 16px;
+  --bd-control-xs: 20px; --bd-control-compact: 28px;
+  --bd-radius-xs: 3px;
+  --bd-left: 280px;
+  --bd-right: 340px;
+  --bd-rail: 48px;
+  --bd-splitter-hit: 8px;
+  --bd-border-width: 1px;
+  --bd-focus-width: 2px;
+  --bd-select-width: 2px;
+  --bd-device-tablet: 768px;
+  --bd-device-mobile: 390px;
+
+  --bd-duration-fast: 120ms;
+  --bd-duration-base: 200ms;
+  --bd-duration-slow: 320ms;
+  --bd-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --bd-ease-enter: cubic-bezier(0, 0, 0.2, 1);
+  --bd-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  --bd-z-canvas-overlay: 10;
+  --bd-z-canvas-toolbar: 20;
+  --bd-z-panel: 30;
+  --bd-z-toolbar: 40;
+  --bd-z-overlay-panel: 50;
+  --bd-z-dropdown: 100;
+  --bd-z-tooltip: 200;
+  --bd-z-dialog: 300;
+  --bd-z-toast: 400;
+}
+
+.buildr-editor[data-theme="dark"] {
+  color-scheme: dark;
+  --bd-bg: #121317;
+  --bd-surface: #1c1d22;
+  --bd-surface-2: #23252b;
+  --bd-surface-hover: #2b2d35;
+  --bd-surface-selected: #243268;
+  --bd-border: #33363f;
+  --bd-border-strong: #7d8391;
+  --bd-text: #ecedf1;
+  --bd-text-muted: #b0b5c2;
+  --bd-text-subtle: #9fa5b4;
+  --bd-accent: #8ea2f5;
+  --bd-accent-hover: #a3b3f4;
+  --bd-accent-soft: #25325f;
+  --bd-accent-text: #0f1636;
+  --bd-primary: #8ea2f5;
+  --bd-primary-hover: #a3b3f4;
+  --bd-primary-text: #0f1636;
+  --bd-focus: #a3b3f4;
+  --bd-override: #f2b552;
+  --bd-override-soft: #3a2e15;
+  --bd-danger: #ff8a8a;
+  --bd-danger-soft: #3d2226;
+  --bd-warning: #f2b552;
+  --bd-warning-soft: #3a2e15;
+  --bd-toast-bg: #eef0f5; --bd-toast-text: #15161b; --bd-toast-accent: #3f5ae0; --bd-toast-ok: #1d7a47; --bd-toast-err: #b8322a; --bd-toast-hover: rgba(0, 0, 0, 0.08);
+  --bd-success: #5fce85;
+  --bd-success-soft: #173325;
+  --bd-info: #5fc9dc;
+  --bd-info-soft: #143038;
+  --bd-toolbar: #0c0d10;
+  --bd-toolbar-hover: #26282f;
+  --bd-toolbar-border: #26282f;
+  --bd-toolbar-text: #ecedf1;
+  --bd-toolbar-muted: #a9aebb;
+  --bd-shadow: rgba(0, 0, 0, 0.55);
+  --bd-overlay: rgba(0, 0, 0, 0.6);
+  --bd-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.55);
+  --bd-elevation-2: 0 4px 12px rgba(0, 0, 0, 0.55), 0 0 0 1px #33363f;
+  --bd-elevation-3: 0 12px 32px rgba(0, 0, 0, 0.55), 0 0 0 1px #33363f;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .buildr-editor {
+    --bd-duration-fast: 0ms;
+    --bd-duration-base: 0ms;
+    --bd-duration-slow: 0ms;
+  }
+}
