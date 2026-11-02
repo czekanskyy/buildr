@@ -21,6 +21,7 @@ import {
   $createParagraphNode,
   $getSelection,
   $isRangeSelection,
+  $isTextNode,
   createEditor,
   type ElementNode,
   FORMAT_TEXT_COMMAND,
@@ -43,10 +44,19 @@ interface Toolbar {
   readonly block: Block;
   readonly bold: boolean;
   readonly italic: boolean;
+  readonly underline: boolean;
+  readonly strike: boolean;
   readonly link: boolean;
 }
 
-const NO_TOOLBAR: Toolbar = { block: 'paragraph', bold: false, italic: false, link: false };
+const NO_TOOLBAR: Toolbar = {
+  block: 'paragraph',
+  bold: false,
+  italic: false,
+  underline: false,
+  strike: false,
+  link: false,
+};
 
 /** What the selection is in: its block type and text formats, for the toolbar's pressed states. */
 function readToolbar(editor: LexicalEditor): Toolbar {
@@ -66,13 +76,20 @@ function readToolbar(editor: LexicalEditor): Toolbar {
       block,
       bold: selection.hasFormat('bold'),
       italic: selection.hasFormat('italic'),
+      underline: selection.hasFormat('underline'),
+      strike: selection.hasFormat('strikethrough'),
       link: $isLinkNode(anchor) || $isLinkNode(parent),
     };
   });
 }
 
 const sameToolbar = (a: Toolbar, b: Toolbar) =>
-  a.block === b.block && a.bold === b.bold && a.italic === b.italic && a.link === b.link;
+  a.block === b.block &&
+  a.bold === b.bold &&
+  a.italic === b.italic &&
+  a.underline === b.underline &&
+  a.strike === b.strike &&
+  a.link === b.link;
 
 /**
  * A small Lexical editor (paragraph, headings 2 to 4, bold, italic, link, lists) whose output is the
@@ -233,7 +250,35 @@ export function RichTextControl({
           'richText.italic',
           toolbar.italic,
           () => run((e) => e.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic')),
-          'I',
+          <Icon name="italic" />,
+        )}
+        {button(
+          'richText.underline',
+          toolbar.underline,
+          () => run((e) => e.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline')),
+          <Icon name="underline" />,
+        )}
+        {button(
+          'richText.strike',
+          toolbar.strike,
+          () => run((e) => e.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough')),
+          <Icon name="strikethrough" />,
+        )}
+        {button(
+          'richText.clear',
+          false,
+          () =>
+            run((editor) =>
+              editor.update(() => {
+                const selection = $getSelection();
+                if (!$isRangeSelection(selection)) return;
+                for (const node of selection.extract()) {
+                  if ($isTextNode(node)) node.setFormat(0).setStyle('');
+                }
+                selection.format = 0;
+              }),
+            ),
+          <Icon name="rotate-ccw" />,
         )}
         {button(
           'richText.link',
@@ -257,6 +302,14 @@ export function RichTextControl({
       {linking ? (
         <form
           className="bd-rich-link"
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') {
+              event.preventDefault();
+              event.stopPropagation();
+              setLinking(false);
+              editorRef.current?.focus();
+            }
+          }}
           onSubmit={(event) => {
             event.preventDefault();
             applyLink();
@@ -264,6 +317,7 @@ export function RichTextControl({
         >
           <Input
             type="text"
+            disabled={disabled}
             value={url}
             aria-label={t('richText.linkUrl')}
             aria-invalid={linkError}
@@ -273,7 +327,7 @@ export function RichTextControl({
               setLinkError(false);
             }}
           />
-          <Button type="submit" variant="primary">
+          <Button type="submit" variant="primary" disabled={disabled}>
             {t('richText.linkApply')}
           </Button>
           {linkError ? <p role="alert">{t('richText.linkUnsafe')}</p> : null}

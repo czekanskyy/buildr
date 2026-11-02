@@ -1,0 +1,142 @@
+/* Left panel: template v2 library, structure and selection path. */
+.buildr-editor .bd-insert {
+  gap: var(--bd-space-3);
+  padding: var(--bd-space-3);
+  background: var(--bd-surface);
+}
+.buildr-editor .bd-insert-bar {
+  gap: var(--bd-space-2);
+}
+.buildr-editor .bd-insert-search {
+  background: var(--bd-surface-2);
+  border-radius: var(--bd-radius-md);
+}
+.buildr-editor .bd-insert-target {
+  display: flex;
+  align-items: center;
+  flex: none;
+  gap: var(--bd-space-2);
+  min-height: var(--bd-control-compact);
+  padding: var(--bd-space-1) var(--bd-space-2);
+  border-radius: var(--bd-radius-md);
+  background: var(--bd-accent-soft);
+  color: var(--bd-accent);
+  font-size: var(--bd-text-sm);
+  line-height: var(--bd-leading-sm);
+}
+.buildr-editor .bd-insert-target span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.buildr-editor .bd-insert-category-toggle {
+  min-height: var(--bd-control-md);
+  gap: var(--bd-space-2);
+  color: var(--bd-text);
+  font-weight: var(--bd-weight-semibold);
+}
+.buildr-editor .bd-insert-count {
+  background: transparent;
+  color: var(--bd-text-subtle);
+  font-size: var(--bd-text-xs);
+}
+.buildr-editor .bd-insert-item {
+  position: relative;
+  gap: var(--bd-space-2);
+  border: var(--bd-border-width) solid var(--bd-border);
+  border-radius: var(--bd-radius-lg);
+  background: var(--bd-surface);
+  cursor: grab;
+  transition:
+    border-color var(--bd-duration-fast) var(--bd-ease-standard),
+    box-shadow var(--bd-duration-fast) var(--bd-ease-standard);
+}
+.buildr-editor .bd-insert-item:hover {
+  border-color: var(--bd-border-strong);
+  color: var(--bd-accent);
+  box-shadow: var(--bd-elevation-1);
+}
+.buildr-editor .bd-insert-item:active {
+  background: var(--bd-surface-selected);
+  border-color: var(--bd-accent);
+  cursor: grabbing;
+}
+.buildr-editor .bd-insert-item:focus-visible {
+  outline: var(--bd-focus-width) solid var(--bd-focus);
+  outline-offset: var(--bd-focus-width);
+}
+.buildr-editor .bd-insert-label {
+  color: var(--bd-text);
+  font-size: var(--bd-text-sm);
+  line-height: var(--bd-leading-sm);
+  font-weight: var(--bd-weight-medium);
+}
+.buildr-editor .bd-insert-grip {
+  position: absolute;
+  inset-block-start: var(--bd-space-1);
+  inset-inline-end: var(--bd-space-1);
+  width: var(--bd-icon-xs);
+  height: var(--bd-icon-xs);
+  color: var(--bd-text-subtle);
+  opacity: 0;
+}
+.buildr-editor .bd-insert-item:hover .bd-insert-grip,
+.buildr-editor .bd-insert-item:focus-visible .bd-insert-grip {
+  opacity: 1;
+}
+.buildr-editor .bd-layer {
+  border-radius: var(--bd-radius-md);
+  font-size: var(--bd-text-sm);
+  transition: background-color var(--bd-duration-fast) var(--bd-ease-standard);
+}
+.buildr-editor .bd-layer:hover {
+  background-color: var(--bd-surface-hover);
+}
+.buildr-editor .bd-layer[data-selected="true"] {
+  background-color: var(--bd-surface-selected);
+  color: var(--bd-accent);
+}
+.buildr-editor .bd-layer[data-selected="true"]::before {
+  display: none;
+}
+.buildr-editor .bd-layer-toggle {
+  width: var(--bd-icon-sm);
+  color: var(--bd-text-subtle);
+}
+.buildr-editor .bd-layer-badge {
+  border-radius: var(--bd-radius-sm);
+}
+.buildr-editor .bd-layer-badge[data-badge="layers.badge.breakpoints"] {
+  background: var(--bd-override-soft);
+  color: var(--bd-override);
+}
+.buildr-editor .bd-layer-badge[data-badge="layers.badge.issues"] {
+  background: var(--bd-warning-soft);
+  color: var(--bd-warning);
+}
+.buildr-editor .bd-layer-badge[data-badge="layers.badge.visibleIf"] {
+  background: var(--bd-info-soft);
+  color: var(--bd-info);
+}
+.buildr-editor .bd-layer:focus-within .bd-layer-more,
+.buildr-editor .bd-layer:hover .bd-layer-more {
+  display: grid;
+}
+.buildr-editor .bd-breadcrumb[aria-current="location"] {
+  border-radius: var(--bd-radius-md);
+  background: var(--bd-accent-soft);
+  color: var(--bd-accent);
+  font-weight: var(--bd-weight-medium);
+}
+@media (prefers-reduced-motion: reduce) {
+  .buildr-editor .bd-insert-item,
+  .buildr-editor .bd-layer {
+    transition: none;
+  }
+}
+
+.buildr-editor .bd-insert[data-view="grid"] .bd-insert-list[data-kind="component"] .bd-insert-item {
+  height: var(--bd-tile-h);
+  padding: var(--bd-space-2);
+}

@@ -10,6 +10,7 @@ import {
   STYLE_GROUPS,
   type StyleGroup,
   type StylePropertyDef,
+  type StyleState,
   type Theme,
 } from '@next-buildr/core';
 import { type ReactNode, useId, useState } from 'react';
@@ -18,13 +19,17 @@ import { type MessageKey, useT } from '../../../messages/index.tsx';
 import { useEditor, useEditorState } from '../../../store/index.ts';
 import {
   ColorInput,
+  Icon,
   IconButton,
   Input,
   NumberUnitInput,
   SegmentedControl,
   Tooltip,
 } from '../../../ui/index.ts';
+import { ScrubLabel } from '../scrub-label.tsx';
+import { GradientFields } from './gradient-fields.tsx';
 import {
+  checkStyleInput,
   colorOf,
   isEnumeration,
   isNumeric,
@@ -36,10 +41,13 @@ import {
   takesNumber,
   unitsOf,
 } from './model.ts';
+import { propertyLabel } from './property-label.ts';
+import { StyleSection } from './section.tsx';
 import { PAIRS, SEGMENTED } from './segments.ts';
 import { SidesEditor, type SideWrite } from './sides-editor.tsx';
 import { TokenPicker } from './token-picker.tsx';
 import { useStyleValue } from './use-style-value.ts';
+import { AlignmentPad, ShadowPresets } from './widgets.tsx';
 
 export interface StyleInspectorProps {
   readonly node: PageNode;
@@ -50,12 +58,6 @@ export interface StyleInspectorProps {
 
 const pathOf = (def: StylePropertyDef, part?: string) =>
   `${def.group}.${def.name}${part !== undefined ? `.${part}` : ''}`;
-
-const humanize = (name: string) =>
-  name
-    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-    .toLowerCase()
-    .replace(/^./, (c) => c.toUpperCase());
 
 /** Where a property's value comes from at the breakpoint being edited. */
 type Origin = 'set' | 'inherited' | 'default';
@@ -115,6 +117,28 @@ function ValueField(props: {
 
   return (
     <div className="bd-style-value" data-path={path} data-source={current?.source ?? 'none'}>
+      {path === 'size.width' ? (
+        <SegmentedControl
+          label={t('style.width.mode')}
+          value={
+            shown === '100%'
+              ? 'full'
+              : shown === 'fit-content' || shown === 'auto' || shown === ''
+                ? 'auto'
+                : 'custom'
+          }
+          disabled={props.disabled}
+          options={[
+            { value: 'auto', label: t('style.width.auto') },
+            { value: 'full', label: t('style.width.full') },
+            { value: 'custom', label: t('style.width.custom') },
+          ]}
+          onValueChange={(mode) => {
+            if (mode === 'custom') document.getElementById(id)?.focus();
+            else field.change(mode === 'full' ? '100%' : 'fit-content');
+          }}
+        />
+      ) : null}
       {props.hideLabel === true ? null : (
         <label htmlFor={id} className="bd-field-label">
           {props.label}
@@ -124,9 +148,16 @@ function ValueField(props: {
         {def.grammar.kind === 'color' ? (
           <ColorInput
             color={swatch}
+            palette={Object.entries(props.theme.tokens.color).map(([name, color]) => ({
+              label: name,
+              color,
+            }))}
             label={`${props.label}: ${t('style.colorPicker')}`}
             disabled={props.disabled}
-            onColorChange={field.change}
+            onColorChange={(text) => {
+              const checked = checkStyleInput(def, text, props.theme);
+              if (checked.ok) field.pick(text);
+            }}
           />
         ) : null}
         {isNumeric(def) ? (
@@ -169,6 +200,17 @@ function ValueField(props: {
           onPick={field.pick}
         />
       </div>
+      {def.grammar.kind === 'gradient' ? (
+        <GradientFields
+          value={field.stored}
+          theme={props.theme}
+          disabled={props.disabled}
+          onChange={(text) => {
+            const checked = checkStyleInput(def, text, props.theme);
+            if (checked.ok) field.pick(text);
+          }}
+        />
+      ) : null}
       {slider !== undefined ? (
         <input
           type="range"
@@ -224,7 +266,7 @@ function StyleProperty(props: {
   const store = useEditor();
   const { def, nodeId, effective, layer } = props;
   const id = useId();
-  const label = def.group === 'border' && def.name === 'width' ? 'Border' : humanize(def.name);
+  const label = propertyLabel(def, t);
   const parts = partsOf(def);
   const layerObject = layerFor(layer);
 
@@ -285,6 +327,26 @@ function StyleProperty(props: {
       {control}
       {extras}
       <SourceDot origin={origin} from={from} />
+      {layer !== 'base' && !layer.startsWith('state:') ? (
+        <Tooltip content={here ? t('style.override') : `${t('style.editing')}: ${layer}`}>
+          <span
+            className="bd-device-indicator"
+            data-override={here}
+            role="img"
+            aria-label={here ? t('style.override') : layer}
+          >
+            <Icon
+              name={
+                layer === 'mobile'
+                  ? 'smartphone'
+                  : layer === 'tablet'
+                    ? 'tablet'
+                    : 'monitor-smartphone'
+              }
+            />
+          </span>
+        </Tooltip>
+      ) : null}
       {here ? (
         <IconButton
           icon="rotate-ccw"
@@ -408,7 +470,21 @@ function StyleProperty(props: {
       );
     }
   } else {
-    title = (
+    title = isNumeric(def) ? (
+      <ScrubLabel
+        htmlFor={id}
+        value={String(effective[key]?.value ?? '')}
+        step={stepOf(def)}
+        unit={takesNumber(def) ? '' : (unitsOf(def)[0] ?? '')}
+        disabled={props.disabled}
+        onValueChange={(text) => {
+          const checked = checkStyleInput(def, text, props.theme);
+          if (checked.ok) set(checked.value);
+        }}
+      >
+        {label}
+      </ScrubLabel>
+    ) : (
       <label htmlFor={id} className="bd-field-label">
         {label}
       </label>
@@ -435,6 +511,22 @@ function StyleProperty(props: {
     >
       {head(title)}
       {body}
+      {key === 'background.imagePosition' ? (
+        <AlignmentPad
+          value={String(effective[key]?.value ?? 'center')}
+          disabled={props.disabled}
+          label={label}
+          onPick={set}
+        />
+      ) : null}
+      {key === 'effects.shadow' ? (
+        <ShadowPresets
+          theme={props.theme}
+          value={String(effective[key]?.value ?? 'none')}
+          disabled={props.disabled}
+          onPick={set}
+        />
+      ) : null}
     </div>
   );
 }
@@ -451,36 +543,115 @@ export function StyleInspector({ node, breakpoint, theme = defaultTheme }: Style
   const doc = useEditorState((state) => state.doc);
   const readOnly = useEditorState((state) => state.readOnly);
   const [notice, setNotice] = useState('');
-  const layer = breakpoint ?? 'base';
+  const [query, setQuery] = useState('');
+  const [state, setState] = useState<StyleState | 'normal'>('normal');
+  const device = breakpoint ?? 'base';
+  const layer = state === 'normal' ? device : `state:${state}`;
   const meta = componentMeta(manifest, node.type);
   const disabled = readOnly || !canEdit(doc, createIndex(doc), node.id, 'style').ok;
-  const effective = effectiveStyles(node.styles ?? {}, layer, theme.breakpoints);
+  const baseEffective = effectiveStyles(node.styles ?? {}, device, theme.breakpoints);
+  const stateDecl = state === 'normal' ? undefined : node.styles?.state?.[state];
+  const stateEffective =
+    stateDecl === undefined ? {} : effectiveStyles({ base: stateDecl }, 'base', theme.breakpoints);
+  const effective: EffectiveStyles =
+    state === 'normal'
+      ? baseEffective
+      : {
+          ...baseEffective,
+          ...Object.fromEntries(
+            Object.entries(stateEffective).map(([path, entry]) => [
+              path,
+              { ...entry, source: layer },
+            ]),
+          ),
+        };
   const groups = STYLE_GROUPS.filter((group) => meta?.styles.groups.includes(group));
 
   if (groups.length === 0) {
     return <p className="bd-inspector-empty">{t('style.none')}</p>;
   }
-  const knownLayer = layer === 'base' || theme.breakpoints.some((b) => b.id === layer);
+  const knownLayer = device === 'base' || theme.breakpoints.some((b) => b.id === device);
 
   return (
     <div className="bd-styles" data-layer={layer}>
-      <p className="bd-styles-layer">
-        {`${t('style.editing')}: ${layer === 'base' ? t('style.desktop') : layer}`}
+      <div className="bd-inspector-search">
+        <Icon name="search" />
+        <Input
+          type="search"
+          aria-label={t('inspector.search')}
+          placeholder={t('inspector.search.placeholder')}
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+        />
+      </div>
+      <SegmentedControl
+        label={t('style.state.label')}
+        value={state}
+        options={[
+          { value: 'normal', label: t('style.state.normal') },
+          { value: 'hover', label: t('style.state.hover') },
+          { value: 'focus-visible', label: t('style.state.focus-visible') },
+          { value: 'active', label: t('style.state.active') },
+        ]}
+        onValueChange={(value) => {
+          if (
+            value === 'normal' ||
+            value === 'hover' ||
+            value === 'focus-visible' ||
+            value === 'active'
+          )
+            setState(value);
+        }}
+      />
+      <p className="bd-styles-layer" data-override={state === 'normal' && device !== 'base'}>
+        <Icon
+          name={device === 'base' ? 'monitor' : device === 'mobile' ? 'smartphone' : 'tablet'}
+        />
+        {`${t('style.editing')}: ${state === 'normal' ? (device === 'base' ? t('style.desktop') : device) : t(`style.state.${state}`)}`}
       </p>
       {!knownLayer ? <p className="bd-style-error">{t('style.unknownBreakpoint')}</p> : null}
-      {groups.map((group) => (
-        <StyleGroupSection
-          key={group}
-          group={group}
-          nodeId={node.id}
-          effective={effective}
-          layer={layer}
-          theme={theme}
-          disabled={disabled || !knownLayer}
-          onError={setNotice}
-          boxBorder={groups.includes('spacing') && groups.includes('border')}
-        />
-      ))}
+      {query.trim() !== '' &&
+      !groups.some(
+        (group) =>
+          (group === 'typography'
+            ? `${t('style.group.typography')} ${t('style.section.colors')}`
+            : group === 'effects'
+              ? `${t('style.group.effects')} ${t('style.section.shadow')}`
+              : group === 'border'
+                ? t('style.section.border')
+                : t(`style.group.${group}` as MessageKey)
+          )
+            .toLocaleLowerCase()
+            .includes(query.trim().toLocaleLowerCase()) ||
+          propertiesOfGroup(group).some((def) =>
+            propertyLabel(def, t).toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()),
+          ),
+      ) ? (
+        <p className="bd-inspector-empty" role="status">
+          {t('inspector.search.empty')}
+        </p>
+      ) : null}
+      {groups.flatMap((group) => {
+        const common = {
+          group,
+          nodeId: node.id,
+          effective,
+          layer,
+          theme,
+          disabled: disabled || !knownLayer,
+          onError: setNotice,
+          query: query.trim().toLocaleLowerCase(),
+        };
+        return [
+          <StyleGroupSection key={group} {...common} />,
+          ...(group === 'typography'
+            ? [<StyleGroupSection key="colors" {...common} section="colors" />]
+            : []),
+          ...(group === 'effects'
+            ? [<StyleGroupSection key="shadow" {...common} section="shadow" />]
+            : []),
+        ];
+      })}
       <div role="status" className="bd-inspector-notice">
         {notice}
       </div>
@@ -490,24 +661,39 @@ export function StyleInspector({ node, breakpoint, theme = defaultTheme }: Style
 
 function StyleGroupSection(props: {
   readonly group: StyleGroup;
+  readonly section?: 'colors' | 'shadow';
   readonly nodeId: string;
   readonly effective: EffectiveStyles;
   readonly layer: string;
   readonly theme: Theme;
   readonly disabled: boolean;
   readonly onError: (message: string) => void;
-  /** Spacing and border are both allowed: border width sits between margin and padding. */
-  readonly boxBorder: boolean;
+  readonly query: string;
 }) {
   const t = useT();
-  const borderWidth = getStyleProperty('border', 'width');
-  const inBox = props.boxBorder && borderWidth !== undefined;
+  const section = props.section ?? props.group;
+  const sectionLabel =
+    props.section !== undefined
+      ? t(`style.section.${props.section}`)
+      : props.group === 'border'
+        ? t('style.section.border')
+        : t(`style.group.${props.group}` as MessageKey);
   const defs = propertiesOfGroup(props.group).filter(
     (def) =>
       getStyleProperty(def.group, def.name) !== undefined &&
-      !(inBox && def.group === 'border' && def.name === 'width'),
+      (!props.layer.startsWith('state:') || def.allowInStates) &&
+      (props.group !== 'typography' ||
+        (props.section === 'colors' ? def.name === 'color' : def.name !== 'color')) &&
+      (props.group !== 'effects' ||
+        (props.section === 'shadow' ? def.name === 'shadow' : def.name !== 'shadow')) &&
+      (props.query === '' ||
+        sectionLabel.toLocaleLowerCase().includes(props.query) ||
+        propertyLabel(def, t).toLocaleLowerCase().includes(props.query)),
   );
-  const used = Object.keys(props.effective).some((path) => path.startsWith(`${props.group}.`));
+  const relevant = Object.entries(props.effective).filter(([path]) =>
+    defs.some((def) => path === pathOf(def) || path.startsWith(`${pathOf(def)}.`)),
+  );
+  const used = relevant.length > 0;
   const byName = new Map(defs.map((def) => [def.name, def]));
   const common = {
     nodeId: props.nodeId,
@@ -538,13 +724,7 @@ function StyleGroupSection(props: {
       );
       rows.push(
         <StyleProperty key={def.name} def={def} ring {...common}>
-          {inBox && borderWidth !== undefined ? (
-            <StyleProperty def={borderWidth} ring {...common}>
-              {padding}
-            </StyleProperty>
-          ) : (
-            padding
-          )}
+          {padding}
         </StyleProperty>,
       );
       continue;
@@ -562,10 +742,103 @@ function StyleGroupSection(props: {
     rows.push(<StyleProperty key={def.name} def={def} inline {...common} />);
   }
 
+  if (defs.length === 0) return null;
   return (
-    <details className="bd-style-group" open={used} data-group={props.group}>
-      <summary>{t(`style.group.${props.group}` as MessageKey)}</summary>
+    <StyleSection
+      name={section}
+      label={sectionLabel}
+      defaultOpen={used || props.group === 'layout' || props.group === 'spacing'}
+      searching={props.query !== ''}
+      modified={used}
+      override={
+        props.layer !== 'base' &&
+        !props.layer.startsWith('state:') &&
+        relevant.some(([, entry]) => entry.source === props.layer)
+      }
+    >
+      {props.group === 'layout' && props.query === '' ? <LayoutAlignment {...common} /> : null}
       {rows}
-    </details>
+    </StyleSection>
+  );
+}
+
+/** The pad is a shortcut for the same two layout commands as the individual segments. */
+function LayoutAlignment(props: {
+  readonly nodeId: string;
+  readonly effective: EffectiveStyles;
+  readonly layer: string;
+  readonly disabled: boolean;
+  readonly onError: (message: string) => void;
+}) {
+  const t = useT();
+  const store = useEditor();
+  const display = props.effective['layout.display']?.value;
+  if (display !== 'flex' && display !== 'inline-flex') return null;
+  const direction = String(props.effective['layout.direction']?.value ?? 'row');
+  const column = direction.startsWith('column');
+  const reverse = direction.endsWith('reverse');
+  const values = ['flex-start', 'center', 'flex-end'];
+  const main = String(props.effective['layout.justify']?.value ?? 'flex-start');
+  const cross = String(props.effective['layout.align']?.value ?? 'stretch');
+  const at = (value: string) =>
+    values.indexOf(value === 'start' ? 'flex-start' : value === 'end' ? 'flex-end' : value);
+  const mainIndex = at(main);
+  const crossIndex = at(cross);
+  const j = reverse && mainIndex !== -1 ? 2 - mainIndex : mainIndex;
+  const x = column ? crossIndex : j;
+  const y = column ? j : crossIndex;
+  const positions = [
+    'top left',
+    'top',
+    'top right',
+    'left',
+    'center',
+    'right',
+    'bottom left',
+    'bottom',
+    'bottom right',
+  ];
+  return (
+    <div className="bd-layout-alignment">
+      <span className="bd-field-label">{t('style.alignment')}</span>
+      <AlignmentPad
+        label={t('style.alignment')}
+        value={x < 0 || y < 0 ? '' : (positions[y * 3 + x] ?? '')}
+        disabled={props.disabled}
+        onPick={(position) => {
+          const index = positions.indexOf(position);
+          if (index < 0) return;
+          const row = Math.floor(index / 3);
+          const col = index % 3;
+          const mainAxis = column ? row : col;
+          const result = store.dispatchBatch(
+            [
+              {
+                type: 'node.setStyle',
+                payload: {
+                  id: props.nodeId,
+                  layer: layerFor(props.layer),
+                  group: 'layout',
+                  property: 'justify',
+                  value: values[reverse ? 2 - mainAxis : mainAxis] ?? 'center',
+                },
+              },
+              {
+                type: 'node.setStyle',
+                payload: {
+                  id: props.nodeId,
+                  layer: layerFor(props.layer),
+                  group: 'layout',
+                  property: 'align',
+                  value: values[column ? col : row] ?? 'center',
+                },
+              },
+            ],
+            { label: t('style.alignment') },
+          );
+          props.onError(result.ok ? '' : (result.error?.message ?? ''));
+        }}
+      />
+    </div>
   );
 }

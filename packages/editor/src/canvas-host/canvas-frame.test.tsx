@@ -9,6 +9,7 @@ import { DEFAULT_BREAKPOINTS } from '../app/config.ts';
 import { MessagesProvider } from '../messages/index.tsx';
 import { createEditorStore, EditorStoreProvider } from '../store/index.ts';
 import { CanvasFrame, canvasSource, createSession, stageMetrics } from './canvas-frame.tsx';
+import type { CanvasHost } from './host.ts';
 
 expect.extend(matchers);
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -75,6 +76,7 @@ describe('CanvasFrame', () => {
       registry: createRegistryMeta({ components: [] }),
       validationDelayMs: null,
     });
+    let host: CanvasHost | null = null;
     const container = document.createElement('div');
     document.body.append(container);
     const root = createRoot(container);
@@ -88,6 +90,9 @@ describe('CanvasFrame', () => {
               locales={locales}
               breakpoints={DEFAULT_BREAKPOINTS}
               handshakeTimeoutMs={30}
+              onHost={(value) => {
+                host = value;
+              }}
             />
           </EditorStoreProvider>
         </MessagesProvider>,
@@ -97,6 +102,15 @@ describe('CanvasFrame', () => {
     expect(container.querySelector('[role=status]')?.textContent).toContain('Connecting');
     expect(iframe()?.getAttribute('title')).toBe('Page preview');
     expect(container.querySelector('.bd-canvas-width')?.textContent).toBe('Desktop · 1280px');
+    expect(container.querySelector('[aria-busy="true"]')).not.toBeNull();
+    act(() => host?.state.setState({ status: 'initializing' }));
+    expect(container.querySelector('[role=status]')?.textContent).toContain('Connecting');
+    act(() => host?.state.setState({ status: 'ready' }));
+    expect(container.querySelector('[role=status]')?.textContent).toContain(
+      'This page is still empty',
+    );
+    expect(container.querySelector('[aria-busy="false"]')).not.toBeNull();
+    act(() => host?.state.setState({ status: 'connecting' }));
     const firstSrc = iframe()?.getAttribute('src');
     expect(firstSrc).toContain('https://canvas.example.com/__canvas?session=');
 

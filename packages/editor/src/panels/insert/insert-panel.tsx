@@ -50,6 +50,10 @@ export function InsertPanel() {
   const t = useT();
   const store = useEditor();
   const manifest = useManifest();
+  const selectedId = useEditorState((state) => state.anchorId);
+  const selectedNode = useEditorState((state) =>
+    state.anchorId === null ? undefined : state.doc.nodes[state.anchorId],
+  );
   const readOnly = useEditorState((state) => state.readOnly);
   const [query, setQuery] = useState('');
   const [view, setView] = useState<View>(readView);
@@ -186,6 +190,7 @@ export function InsertPanel() {
             <ComponentIcon meta={{ icon: item.icon }} size="md" />
           </span>
         )}
+        <Icon name="ellipsis" className="bd-insert-grip" aria-hidden="true" />
         <span className="bd-insert-label">{item.label}</span>
         {view === 'list' && item.description !== undefined ? (
           <span className="bd-insert-desc" aria-hidden="true">
@@ -247,6 +252,19 @@ export function InsertPanel() {
           />
         </div>
       </div>
+      {selectedNode !== undefined ? (
+        <div className="bd-insert-target" data-node-id={selectedId}>
+          <Icon name="arrow-right" aria-hidden="true" />
+          <span>
+            {t('insert.target')}:{' '}
+            <b>
+              {selectedNode.name ??
+                manifest?.components[selectedNode.type]?.label ??
+                selectedNode.type}
+            </b>
+          </span>
+        </div>
+      ) : null}
       <div className="bd-insert-scroll">
         {empty ? <p className="bd-insert-empty">{t('insert.empty')}</p> : null}
         {loading ? (

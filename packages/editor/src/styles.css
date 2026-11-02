@@ -1,5 +1,5 @@
 /*
- * The editor's stylesheet entry: ordered partials (tokens, base, shell, primitives, panels).
+ * The editor's stylesheet entry: ordered partials (tokens, base, shell, primitives, panels, left panel, overlays).
  * Everything is scoped under `.buildr-editor` (plus the floating-layer classes), so importing
  * it never touches the host page. The published `dist/styles.css` is these partials
  * flattened in this order (see tooling/scripts/bundle-css.mjs).
@@ -10,3 +10,5 @@
 @import "./styles/shell.css";
 @import "./styles/primitives.css";
 @import "./styles/panels.css";
+@import "./styles/left-panel.css";
+@import "./styles/overlays.css";

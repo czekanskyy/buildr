@@ -9,7 +9,7 @@ Companion documents: [editor-design.md](../editor-design.md) (guidelines, first 
 ## 1. How PB-119 consumes this document
 
 - Every block marked `css` in sections 3-6 is copy-pasteable into `styles/tokens.css` (selector shown above each block).
-- Names keep the existing `--bd-*` prefix. Existing roles keep their name and meaning; new roles are marked *new*.
+- Names keep the existing `--bd-*` prefix. Existing roles keep their names; template v2 changes some values and scale meanings (see Legacy token migration below). New roles are marked *new*.
 - Values are literal here; in `tokens.css` they are the only place literals may appear (V7).
 - Section 8 is the contrast table. PB-119's unit test recomputes it from `tokens.css`; every row must stay `yes`.
 
@@ -516,3 +516,26 @@ shared scale names take the approved v2 values. Later workers own shell/primitiv
 
 Canvas hover/guide are decorative cues: template hover is 2.98:1 on the white page.
 The selection boundary and its label meet 3:1 and 4.5:1 respectively; hover is never the sole selection indicator.
+
+### Legacy token migration (PB-151)
+
+Legacy names remain available, but several changed meaning in template v2:
+`--bd-space-2..6` changed from 6 / 8 / 12 / 16 / 20px to
+8 / 12 / 16 / 24 / 32px; `--bd-control-md` from 28 to 32px,
+`--bd-control-lg` from 32 to 40px, `--bd-panel-header` from 40 to 44px,
+`--bd-statusbar-height` from 28 to 32px, `--bd-toolbar-height` from 44 to 52px,
+and `--bd-right` from 320 to 340px. Fast/base durations changed from
+100 / 160ms to 120 / 200ms. Light `--bd-toolbar`, `--bd-toolbar-hover`,
+`--bd-toolbar-border`, `--bd-toolbar-text`, `--bd-toolbar-muted` and
+`--bd-toolbar-focus` now describe the light toolbar palette. Dark `--bd-primary`,
+`--bd-primary-hover` and `--bd-primary-text` now follow the dark accent palette
+instead of retaining the light primary palette.
+Rewritten consumers use the template scale. These names are not compatibility
+aliases for the old geometry. Consumers retaining old geometry must use tokens
+resolving to the old pixel values (for example `--bd-control-compact` for 28px).
+The main-relative audit of pre-existing CSS/TSX files under `packages/editor/src`
+and `apps/playground` found no untouched consumers of any changed alias,
+including `--bd-control-md`; new WP3/WP5 partials use the template scale.
+`--bd-space-0/7/8`, font aliases, easing and elevations retain their resolved
+values despite changes in how they are expressed. `--bd-canvas-hover` is defined
+but has no consumer.

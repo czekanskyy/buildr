@@ -10,7 +10,16 @@ const stylesDir = fileURLToPath(new URL('.', import.meta.url));
 const srcDir = join(stylesDir, '..');
 const packageDir = join(srcDir, '..');
 const bundleScript = join(packageDir, '../../tooling/scripts/bundle-css.mjs');
-const PARTIALS = ['tokens', 'metrics', 'base', 'shell', 'primitives', 'panels'];
+const PARTIALS = [
+  'tokens',
+  'metrics',
+  'base',
+  'shell',
+  'primitives',
+  'panels',
+  'left-panel',
+  'overlays',
+];
 
 const read = (file: string) => readFileSync(join(stylesDir, file), 'utf8').replaceAll('\r\n', '\n');
 const tokensCss = read('tokens.css');
@@ -230,6 +239,27 @@ describe('published stylesheet (bundle-css.mjs)', () => {
       expect(index, `${name}.css is inlined`).toBeGreaterThan(at);
       at = index;
     }
+  });
+
+  it('matches the dev entry partial order exactly, without duplicated modules', () => {
+    const entry = readFileSync(join(srcDir, 'styles.css'), 'utf8');
+    const flatten = (source: string): string =>
+      source.replace(
+        /@import\s+"\.\/styles\/([^";]+)";|@import\s+"\.\/([^";]+)";/g,
+        (_, root, local) => flatten(read(root ?? local)),
+      );
+    expect(published.replace(/\s+/g, ' ').trim()).toBe(
+      flatten(entry).replaceAll('../fonts/', './fonts/').replace(/\s+/g, ' ').trim(),
+    );
+  });
+
+  it('includes the left panel module stylesheet', () => {
+    expect(published).toContain('.buildr-editor .bd-insert-target');
+    expect(published).toContain('.buildr-editor .bd-insert-grip');
+  });
+
+  it('includes the overlay module stylesheet', () => {
+    expect(published).toContain(read('overlays.css').trim());
   });
 
   it('ships the Inter subsets and the licence next to the stylesheet', () => {

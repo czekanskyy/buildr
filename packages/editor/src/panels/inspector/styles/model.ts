@@ -6,6 +6,7 @@ import {
   type StylePropertyDef,
   type Theme,
 } from '@next-buildr/core';
+import type { StyleLayer } from '@next-buildr/core/commands';
 
 /** What an author typed, checked against the property's grammar and the theme. */
 export type StyleInput =
@@ -73,8 +74,12 @@ export function isEnumeration(def: StylePropertyDef): boolean {
 }
 
 /** The layer a breakpoint id edits: desktop is `{}`. */
-export const layerFor = (breakpoint: string | undefined) =>
-  breakpoint === undefined || breakpoint === 'base' ? {} : { bp: breakpoint };
+export const layerFor = (breakpoint: string | undefined): StyleLayer => {
+  if (breakpoint === 'state:hover') return { state: 'hover' };
+  if (breakpoint === 'state:focus-visible') return { state: 'focus-visible' };
+  if (breakpoint === 'state:active') return { state: 'active' };
+  return breakpoint === undefined || breakpoint === 'base' ? {} : { bp: breakpoint };
+};
 
 /** The units the property's grammar allows, and nothing else: they are all the unit menu offers. */
 export function unitsOf(def: StylePropertyDef): readonly string[] {
@@ -99,7 +104,12 @@ export function stepOf(def: StylePropertyDef): number {
 
 /** Whether the property is edited as a number (with a unit menu) rather than as free keyword text. */
 export function isNumeric(def: StylePropertyDef): boolean {
-  return unitsOf(def).length > 0 || takesNumber(def);
+  return (
+    unitsOf(def).length > 0 ||
+    takesNumber(def) ||
+    def.grammar.kind === 'gridTrack' ||
+    def.grammar.kind === 'gridSpan'
+  );
 }
 
 export interface TokenEntry {

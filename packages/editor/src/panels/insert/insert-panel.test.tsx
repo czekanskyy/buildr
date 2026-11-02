@@ -216,6 +216,17 @@ describe('InsertPanel', () => {
     expect(container.querySelectorAll('img')).toHaveLength(1);
   });
 
+  it('keeps the selection chip in sync without changing the document', async () => {
+    const store = await mount();
+    const before = store.getState().doc;
+    expect(container.querySelector('.bd-insert-target')).toBeNull();
+    await act(async () => store.select('root'));
+    expect(container.querySelector('.bd-insert-target')?.textContent).toContain('page');
+    expect(store.getState().doc).toBe(before);
+    await act(async () => store.clearSelection());
+    expect(container.querySelector('.bd-insert-target')).toBeNull();
+  });
+
   it('inserts into the selected container, at the end, and selects the new node', async () => {
     const store = await mount();
     await act(async () => store.select('boxNode001'));
