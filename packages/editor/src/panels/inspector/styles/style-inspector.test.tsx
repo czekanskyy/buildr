@@ -17,7 +17,7 @@ import * as matchers from 'vitest-axe/matchers';
 import { ManifestProvider } from '../../../app/manifest.tsx';
 import { MessagesProvider } from '../../../messages/index.tsx';
 import { createEditorStore, EditorStoreProvider, useEditorState } from '../../../store/index.ts';
-import { checkStyleInput } from './model.ts';
+import { boundsOf, checkStyleInput } from './model.ts';
 import { StyleInspector } from './style-inspector.tsx';
 
 expect.extend(matchers);
@@ -103,7 +103,9 @@ async function mount(
   });
   store.select('box0000001');
   const View = () => {
-    const node = useEditorState((state) => state.doc.nodes['box0000001']);
+    const node = useEditorState((state) =>
+      state.anchorId === null ? undefined : state.doc.nodes[state.anchorId],
+    );
     if (node === undefined) return null;
     return <StyleInspector node={node} {...(breakpoint !== undefined ? { breakpoint } : {})} />;
   };
@@ -130,6 +132,14 @@ const type = (element: HTMLInputElement, value: string) =>
   });
 
 describe('checkStyleInput', () => {
+  it('uses the grammar bounds for each scrubbed notation', () => {
+    const lineHeight = getStyleProperty('typography', 'lineHeight');
+    const columns = getStyleProperty('layout', 'columns');
+    if (lineHeight === undefined || columns === undefined) throw new Error('property missing');
+    expect(boundsOf(lineHeight, '1')).toEqual({ min: 0.5, max: 5 });
+    expect(boundsOf(lineHeight, '24px')).toEqual({ min: 0 });
+    expect(boundsOf(columns, '2')).toEqual({ min: 1, max: 12 });
+  });
   const gap = getStyleProperty('layout', 'gap');
   const opacity = getStyleProperty('effects', 'opacity');
   it('accepts tokens the theme has and lengths', () => {
@@ -341,11 +351,11 @@ describe('style inspector controls (PB-128)', () => {
 });
 
 describe('template v2 inspector controls', () => {
-  it('remembers a collapsed style section after unmount, without changing the document', async () => {
+  it('remembers a collapsed unused style section after unmount, without changing the document', async () => {
     const store = await mount();
     const initial = store.getState().doc;
     const toggle = container.querySelector<HTMLButtonElement>(
-      '[data-group="layout"] .bd-props-toggle',
+      '[data-group="spacing"] .bd-props-toggle',
     );
     expect(toggle?.getAttribute('aria-expanded')).toBe('true');
     await act(async () => toggle?.click());
@@ -355,7 +365,7 @@ describe('template v2 inspector controls', () => {
     await mount();
     expect(
       container
-        .querySelector('[data-group="layout"] .bd-props-toggle')
+        .querySelector('[data-group="spacing"] .bd-props-toggle')
         ?.getAttribute('aria-expanded'),
     ).toBe('false');
   });
@@ -607,7 +617,18 @@ describe('template width modes', () => {
     await pick('Full');
     expect(styles(store)?.base?.size?.width).toBe('100%');
     await pick('Auto');
-    expect(styles(store)?.base?.size?.width).toBe('fit-content');
+    expect(styles(store)?.base?.size?.width).toBe('auto');
+    expect(
+      [...(mode?.querySelectorAll('button') ?? [])]
+        .find((button) => button.textContent === 'Auto')
+        ?.getAttribute('aria-pressed'),
+    ).toBe('true');
+    await type(inputAt('size.width'), 'fit-content');
+    expect(
+      [...(mode?.querySelectorAll('button') ?? [])]
+        .find((button) => button.textContent === 'Auto')
+        ?.getAttribute('aria-pressed'),
+    ).toBe('false');
     await pick('Custom');
     expect(document.activeElement).toBe(inputAt('size.width'));
     await type(inputAt('size.width'), '340px');
@@ -616,6 +637,85 @@ describe('template width modes', () => {
 });
 
 describe('template hover styles', () => {
+  it('resets state and search on selection, restores accordion preferences, and opens used sections', async () => {
+    const store = await mount(undefined, [
+      'layout',
+      'background',
+      'effects',
+      'spacing',
+      'visibility',
+    ]);
+    const sectionButton = (name: string) =>
+      container.querySelector<HTMLButtonElement>(`[data-group="${name}"] .bd-props-toggle`);
+    await act(async () => sectionButton('layout')?.click());
+    await act(async () => sectionButton('spacing')?.click());
+    await act(async () => {
+      store.dispatch({
+        type: 'node.setStyle',
+        payload: { id: 'root', layer: {}, group: 'layout', property: 'display', value: 'flex' },
+      });
+    });
+    await act(async () => buttonNamed('Hover').click());
+    await type(
+      container.querySelector<HTMLInputElement>('.bd-inspector-search input') as HTMLInputElement,
+      'color',
+    );
+    await act(async () => store.select('root'));
+    expect(container.querySelector('.bd-styles')?.getAttribute('data-layer')).toBe('base');
+    expect(container.querySelector<HTMLInputElement>('.bd-inspector-search input')?.value).toBe('');
+    expect(sectionButton('layout')?.getAttribute('aria-expanded')).toBe('true');
+    expect(sectionButton('spacing')?.getAttribute('aria-expanded')).toBe('false');
+    await act(async () => sectionButton('visibility')?.click());
+    expect(sectionButton('visibility')?.getAttribute('aria-expanded')).toBe('true');
+    await act(async () => store.select('box0000001'));
+    expect(sectionButton('visibility')?.getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('translates the source of values in every pseudo-state', async () => {
+    await mount(undefined, ['effects']);
+    for (const label of ['Hover', 'Focus', 'Pressed']) {
+      await act(async () => buttonNamed(label).click());
+      const select = container.querySelector<HTMLSelectElement>(
+        '[data-style-prop="effects.cursor"] select',
+      );
+      if (select === null) throw new Error('cursor select missing');
+      await act(async () => {
+        select.value = 'pointer';
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+      expect(select.textContent).toContain(`pointer (${label})`);
+      expect(select.textContent).not.toContain('state:');
+    }
+  });
+
+  it('stores the selected palette token for colors and gradient stops', async () => {
+    const store = await mount(undefined, ['background']);
+    const name = Object.keys(defaultTheme.tokens.color)[0] as string;
+    const token = `$color.${name}`;
+    const trigger = container.querySelector<HTMLButtonElement>(
+      '[data-style-prop="background.color"] .bd-color-trigger',
+    );
+    await act(async () => trigger?.click());
+    const pick = () =>
+      document.querySelector<HTMLButtonElement>(`.bd-color-palette button[aria-label="${name}"]`);
+    await act(async () => pick()?.click());
+    expect(styles(store)?.base?.background?.color).toBe(token);
+    await act(async () =>
+      document
+        .querySelector('.bd-color-popover')
+        ?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })),
+    );
+    const stops = container.querySelectorAll<HTMLButtonElement>(
+      '.bd-gradient-stop .bd-color-trigger',
+    );
+    expect(stops).toHaveLength(2);
+    await act(async () => stops[1]?.click());
+    await act(async () => pick()?.click());
+    expect(styles(store)?.base?.background?.gradient).toBe(
+      `linear-gradient(180deg, ${token}, ${token})`,
+    );
+  });
+
   it('edits allowed visual properties through existing state-layer commands, with undo and redo', async () => {
     const store = await mount('mobile', ['layout', 'effects', 'background']);
     const dispatch = vi.spyOn(store, 'dispatch');

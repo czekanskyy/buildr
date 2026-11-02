@@ -280,7 +280,7 @@ export function Inspector({ locale, defaultLocale, renderStyle }: InspectorProps
                   label={t('inspector.attr.anchor')}
                   value={node.anchor ?? ''}
                   disabled={disabled}
-                  placeholder="section-1"
+                  placeholder={t('inspector.htmlId.placeholder')}
                   onChange={setAttr}
                 />
                 {node.visibleIf !== undefined ? (

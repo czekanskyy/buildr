@@ -622,7 +622,11 @@ export interface ColorInputProps {
   readonly disabled?: boolean;
   /** Called with a `#rrggbb` colour the browser's own picker chose. */
   readonly onColorChange: (hex: string) => void;
-  readonly palette?: readonly { readonly label: string; readonly color: string }[];
+  readonly palette?: readonly {
+    readonly label: string;
+    readonly color: string;
+    readonly value?: string;
+  }[];
 }
 
 /** A keyboard-accessible colour popover; all writes still pass the caller's grammar. */
@@ -677,7 +681,10 @@ export function ColorInput({
             aria-pressed={color === entry.color}
             disabled={disabled === true}
             onClick={() => {
-              choose(entry.color);
+              if (entry.value !== undefined) {
+                setDraft(undefined);
+                change(entry.value);
+              } else choose(entry.color);
             }}
           >
             <ColorSwatch color={entry.color} />

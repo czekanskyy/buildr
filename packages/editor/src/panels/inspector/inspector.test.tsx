@@ -414,15 +414,15 @@ describe('template v2 prop controls', () => {
       payload: { id: 'widget0001', prop: 'count', value: { kind: 'static', value: 7 } },
     });
     await drag(90);
-    expect(propOf(store, 'widget0001', 'count')).toEqual({ kind: 'static', value: 7 });
+    expect(propOf(store, 'widget0001', 'count')).toEqual({ kind: 'static', value: 10 });
     await act(async () => {
       store.undo();
     });
-    expect(propOf(store, 'widget0001', 'count')).toBeUndefined();
+    expect(propOf(store, 'widget0001', 'count')).toEqual({ kind: 'static', value: 7 });
     await act(async () => {
       store.redo();
     });
-    expect(propOf(store, 'widget0001', 'count')).toEqual({ kind: 'static', value: 7 });
+    expect(propOf(store, 'widget0001', 'count')).toEqual({ kind: 'static', value: 10 });
   });
 
   it('saves underline, strike and clear as safe rich-text props, and undoes the changes', async () => {
@@ -486,6 +486,28 @@ describe('template v2 prop controls', () => {
     });
     await format('Strikethrough');
     expect(JSON.stringify(propOf(store, 'widget0001', 'rich'))).toContain('"format":12');
+    Range.prototype.getBoundingClientRect ??= () => new DOMRect();
+    Range.prototype.getClientRects ??= () => [] as unknown as DOMRectList;
+    await act(async () =>
+      editor.update(
+        () => {
+          $getRoot().getFirstDescendant()?.selectStart();
+        },
+        { discrete: true },
+      ),
+    );
+    dispatch.mockClear();
+    await format('Clear formatting');
+    expect(dispatch).not.toHaveBeenCalled();
+    expect(JSON.stringify(propOf(store, 'widget0001', 'rich'))).toContain('"format":12');
+    await act(async () =>
+      editor.update(
+        () => {
+          $getRoot().select(0, 1);
+        },
+        { discrete: true },
+      ),
+    );
     await format('Clear formatting');
     expect(propOf(store, 'widget0001', 'rich')).toEqual(s(initial));
   });

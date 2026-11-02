@@ -102,6 +102,17 @@ export function stepOf(def: StylePropertyDef): number {
   return grammar.number.max - grammar.number.min <= 10 && grammar.number.integer !== true ? 0.1 : 1;
 }
 
+/** Scrubbing follows the active notation: a length and a unitless number can have different limits. */
+export function boundsOf(def: StylePropertyDef, value: string): { min?: number; max?: number } {
+  const grammar = def.grammar;
+  if (grammar.kind === 'gridTrack' || grammar.kind === 'gridSpan') return { min: 1, max: 12 };
+  if (grammar.kind !== 'composite') return {};
+  if (grammar.number !== undefined && !/[a-z%]$/i.test(value)) {
+    return { min: grammar.number.min, max: grammar.number.max };
+  }
+  return grammar.length?.negative === true ? {} : { min: 0 };
+}
+
 /** Whether the property is edited as a number (with a unit menu) rather than as free keyword text. */
 export function isNumeric(def: StylePropertyDef): boolean {
   return (

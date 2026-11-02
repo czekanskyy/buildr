@@ -138,6 +138,8 @@ function Field(props: {
               htmlFor={id}
               value={String(reading.value ?? def.default)}
               step={def.step ?? 1}
+              min={def.min}
+              max={def.max}
               disabled={disabled}
               onValueChange={(text) => {
                 const next = parseNumber(text, def);

@@ -11,7 +11,7 @@ export function ThemeControl() {
     theme.preference === 'system' ? 'light' : theme.preference === 'light' ? 'dark' : 'system';
   return (
     <IconButton
-      label={`${t('toolbar.theme')}: ${t(`toolbar.theme.${theme.preference}`)}`}
+      label={t('toolbar.theme.current').replace('{theme}', t(`toolbar.theme.${theme.preference}`))}
       hint={t(`toolbar.theme.${next}`)}
       icon={theme.preference === 'dark' ? 'moon' : theme.preference === 'light' ? 'sun' : 'monitor'}
       variant="ghost"

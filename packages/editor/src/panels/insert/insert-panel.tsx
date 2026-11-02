@@ -48,6 +48,7 @@ function writeView(view: View): void {
  */
 export function InsertPanel() {
   const t = useT();
+  const [targetBefore, targetAfter] = t('insert.target.named').split('{name}');
   const store = useEditor();
   const manifest = useManifest();
   const selectedId = useEditorState((state) => state.anchorId);
@@ -151,7 +152,11 @@ export function InsertPanel() {
       toast.show({ id: 'insert', variant: 'error', message: result.error.message });
       return;
     }
-    toast.show({ id: 'insert', variant: 'success', message: `${t('insert.done')}: ${item.label}` });
+    toast.show({
+      id: 'insert',
+      variant: 'success',
+      message: t('insert.done.named').replace('{name}', () => item.label),
+    });
     // The command gives the fragment fresh ids; the new node is the one now at the target position.
     const created = store.getState().doc.nodes[parentId]?.slots?.[slot]?.[at];
     if (created !== undefined) store.select(created);
@@ -256,12 +261,13 @@ export function InsertPanel() {
         <div className="bd-insert-target" data-node-id={selectedId}>
           <Icon name="arrow-right" aria-hidden="true" />
           <span>
-            {t('insert.target')}:{' '}
+            {targetBefore}
             <b>
               {selectedNode.name ??
                 manifest?.components[selectedNode.type]?.label ??
                 selectedNode.type}
             </b>
+            {targetAfter}
           </span>
         </div>
       ) : null}

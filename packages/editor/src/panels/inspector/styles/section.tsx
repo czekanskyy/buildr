@@ -1,4 +1,4 @@
-import { type ReactNode, useId, useState } from 'react';
+import { type ReactNode, useEffect, useId, useState } from 'react';
 import { z } from 'zod';
 import type { IconName } from '../../../ui/icon.tsx';
 import { Icon } from '../../../ui/index.ts';
@@ -38,7 +38,12 @@ export function StyleSection(props: {
   readonly children: ReactNode;
 }) {
   const id = useId();
-  const [open, setOpen] = useState(() => readSections()[props.name] ?? props.defaultOpen);
+  const [open, setOpen] = useState(
+    () => props.modified || (readSections()[props.name] ?? props.defaultOpen),
+  );
+  useEffect(() => {
+    if (props.modified) setOpen(true);
+  }, [props.modified]);
   const expanded = props.searching || open;
   return (
     <section className="bd-style-group" data-group={props.name} data-override={props.override}>

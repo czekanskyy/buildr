@@ -271,7 +271,7 @@ export function RichTextControl({
             run((editor) =>
               editor.update(() => {
                 const selection = $getSelection();
-                if (!$isRangeSelection(selection)) return;
+                if (!$isRangeSelection(selection) || selection.isCollapsed()) return;
                 for (const node of selection.extract()) {
                   if ($isTextNode(node)) node.setFormat(0).setStyle('');
                 }
@@ -321,7 +321,7 @@ export function RichTextControl({
             value={url}
             aria-label={t('richText.linkUrl')}
             aria-invalid={linkError}
-            placeholder="https://"
+            placeholder={t('richText.linkUrl.placeholder')}
             onChange={(event) => {
               setUrl(event.target.value);
               setLinkError(false);

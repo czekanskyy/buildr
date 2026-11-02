@@ -28,6 +28,7 @@ export function GradientFields(props: {
   const palette = Object.entries(props.theme.tokens.color).map(([label, color]) => ({
     label,
     color,
+    value: `$color.${label}`,
   }));
   const write = (a: string, b: string, degrees: string) =>
     props.onChange(`linear-gradient(${degrees}deg, ${a}, ${b})`);

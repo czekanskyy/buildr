@@ -172,7 +172,7 @@ describe('UI primitives', () => {
     );
     await act(async () => close?.click());
     expect(document.body.querySelector('[role=dialog]')).toBeNull();
-    expect(document.activeElement).toBe(opener);
+    await vi.waitFor(() => expect(document.activeElement).toBe(opener));
   });
 
   it('Dialog has a header, a scrollable body and a footer for actions, and passes axe', async () => {
@@ -371,7 +371,7 @@ describe('UI primitives', () => {
       native.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     });
     expect(document.querySelector('.bd-color-popover')).toBeNull();
-    expect(document.activeElement).toBe(trigger);
+    await vi.waitFor(() => expect(document.activeElement).toBe(trigger));
   });
 
   it('ColorSwatch paints only colour notations, never raw CSS', async () => {

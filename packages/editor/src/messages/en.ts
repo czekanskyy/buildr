@@ -428,6 +428,14 @@ export const en = {
   'style.state.hover': 'Hover',
   'style.state.focus-visible': 'Focus',
   'style.state.active': 'Pressed',
+  'style.source.hover': 'Hover',
+  'style.source.focus-visible': 'Focus',
+  'style.source.active': 'Pressed',
+  'inspector.htmlId.placeholder': 'section-1',
+  'richText.linkUrl.placeholder': 'https://',
+  'toolbar.theme.current': 'Theme: {theme}',
+  'insert.target.named': 'Insert at selection: {name}',
+  'insert.done.named': 'Inserted: {name}',
   // WP4 end
 } as const;
 

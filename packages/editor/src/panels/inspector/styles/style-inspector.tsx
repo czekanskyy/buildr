@@ -29,6 +29,7 @@ import {
 import { ScrubLabel } from '../scrub-label.tsx';
 import { GradientFields } from './gradient-fields.tsx';
 import {
+  boundsOf,
   checkStyleInput,
   colorOf,
   isEnumeration,
@@ -58,6 +59,14 @@ export interface StyleInspectorProps {
 
 const pathOf = (def: StylePropertyDef, part?: string) =>
   `${def.group}.${def.name}${part !== undefined ? `.${part}` : ''}`;
+
+function sourceLabel(source: string, t: (key: MessageKey) => string): string {
+  if (source === 'base') return t('style.desktop');
+  if (source === 'state:hover') return t('style.source.hover');
+  if (source === 'state:focus-visible') return t('style.source.focus-visible');
+  if (source === 'state:active') return t('style.source.active');
+  return source;
+}
 
 /** Where a property's value comes from at the breakpoint being edited. */
 type Origin = 'set' | 'inherited' | 'default';
@@ -120,13 +129,7 @@ function ValueField(props: {
       {path === 'size.width' ? (
         <SegmentedControl
           label={t('style.width.mode')}
-          value={
-            shown === '100%'
-              ? 'full'
-              : shown === 'fit-content' || shown === 'auto' || shown === ''
-                ? 'auto'
-                : 'custom'
-          }
+          value={shown === '100%' ? 'full' : shown === 'auto' || shown === '' ? 'auto' : 'custom'}
           disabled={props.disabled}
           options={[
             { value: 'auto', label: t('style.width.auto') },
@@ -135,7 +138,7 @@ function ValueField(props: {
           ]}
           onValueChange={(mode) => {
             if (mode === 'custom') document.getElementById(id)?.focus();
-            else field.change(mode === 'full' ? '100%' : 'fit-content');
+            else field.change(mode === 'full' ? '100%' : 'auto');
           }}
         />
       ) : null}
@@ -151,6 +154,7 @@ function ValueField(props: {
             palette={Object.entries(props.theme.tokens.color).map(([name, color]) => ({
               label: name,
               color,
+              value: `$color.${name}`,
             }))}
             label={`${props.label}: ${t('style.colorPicker')}`}
             disabled={props.disabled}
@@ -236,7 +240,7 @@ function ValueField(props: {
         </datalist>
       ) : null}
       {field.inherited && current !== undefined ? (
-        <span className="bd-style-source">{`${t('style.from')} ${current.source === 'base' ? t('style.desktop') : current.source}`}</span>
+        <span className="bd-style-source">{`${t('style.from')} ${sourceLabel(current.source, t)}`}</span>
       ) : null}
       {error !== '' ? (
         <p id={`${id}-error`} role="alert" className="bd-style-error">
@@ -317,7 +321,7 @@ function StyleProperty(props: {
   const here = paths.some((path) => effective[path]?.source === layer);
   const known = paths.map((path) => effective[path]).filter((entry) => entry !== undefined);
   const origin: Origin = here ? 'set' : known.length > 0 ? 'inherited' : 'default';
-  const from = known[0]?.source === 'base' ? t('style.desktop') : known[0]?.source;
+  const from = known[0] !== undefined ? sourceLabel(known[0].source, t) : undefined;
   const base = { def, effective, layer, theme: props.theme, disabled: props.disabled };
   const keywords = keywordsOf(def);
   const key = pathOf(def);
@@ -414,9 +418,7 @@ function StyleProperty(props: {
     const segments = SEGMENTED[key]?.filter((segment) => keywords.includes(segment.keyword));
     const currentText = current !== undefined ? String(current.value) : undefined;
     const currentLabel =
-      current !== undefined
-        ? `${String(current.value)} (${current.source === 'base' ? t('style.desktop') : current.source})`
-        : '—';
+      current !== undefined ? `${String(current.value)} (${sourceLabel(current.source, t)})` : '—';
     const remaining =
       segments === undefined
         ? keywords
@@ -475,6 +477,7 @@ function StyleProperty(props: {
         htmlFor={id}
         value={String(effective[key]?.value ?? '')}
         step={stepOf(def)}
+        {...boundsOf(def, String(effective[key]?.value ?? ''))}
         unit={takesNumber(def) ? '' : (unitsOf(def)[0] ?? '')}
         disabled={props.disabled}
         onValueChange={(text) => {
@@ -538,6 +541,17 @@ function StyleProperty(props: {
  * that comes from a wider breakpoint is shown as such, and "Reset" removes only this layer's key.
  */
 export function StyleInspector({ node, breakpoint, theme = defaultTheme }: StyleInspectorProps) {
+  return (
+    <SelectedStyleInspector
+      key={node.id}
+      node={node}
+      {...(breakpoint !== undefined ? { breakpoint } : {})}
+      theme={theme}
+    />
+  );
+}
+
+function SelectedStyleInspector({ node, breakpoint, theme = defaultTheme }: StyleInspectorProps) {
   const t = useT();
   const manifest = useManifest();
   const doc = useEditorState((state) => state.doc);
