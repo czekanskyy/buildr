@@ -1,0 +1,80 @@
+import { resolveTokenRef, type Theme } from '@next-buildr/core';
+import { useT } from '../../../messages/index.tsx';
+import { ColorInput, NumberUnitInput } from '../../../ui/index.ts';
+
+const SIMPLE_GRADIENT =
+  /^linear-gradient\((-?\d+(?:\.\d+)?deg),\s*(#[0-9a-f]{3,8}|\$color\.[a-z0-9-]+)(?: 0%)?,\s*(#[0-9a-f]{3,8}|\$color\.[a-z0-9-]+)(?: 100%)?\)$/i;
+
+/** The template's two-stop editor. More complex existing gradients retain their text editor. */
+export function GradientFields(props: {
+  readonly value: string;
+  readonly theme: Theme;
+  readonly disabled: boolean;
+  readonly onChange: (value: string) => void;
+}) {
+  const t = useT();
+  const match = SIMPLE_GRADIENT.exec(props.value);
+  const names = Object.keys(props.theme.tokens.color);
+  if (match === null && props.value !== '' && props.value !== 'none') return null;
+  if (names.length === 0) return null;
+  const angle = match?.[1]?.slice(0, -3) ?? '180';
+  const start = match?.[2] ?? `$color.${names[0]}`;
+  const end = match?.[3] ?? `$color.${names[1] ?? names[0]}`;
+  const resolve = (value: string) => {
+    if (!value.startsWith('$')) return value;
+    const token = resolveTokenRef(props.theme, value);
+    return token.ok ? token.value.value : undefined;
+  };
+  const palette = Object.entries(props.theme.tokens.color).map(([label, color]) => ({
+    label,
+    color,
+    value: `$color.${label}`,
+  }));
+  const write = (a: string, b: string, degrees: string) =>
+    props.onChange(`linear-gradient(${degrees}deg, ${a}, ${b})`);
+  return (
+    <div className="bd-gradient-fields">
+      <div className="bd-gradient-stop">
+        <span>{t('style.gradient.start')}</span>
+        <ColorInput
+          label={t('style.gradient.start')}
+          color={resolve(start)}
+          palette={palette}
+          disabled={props.disabled}
+          onColorChange={(color) => write(color, end, angle)}
+        />
+      </div>
+      <div className="bd-gradient-stop">
+        <span>{t('style.gradient.end')}</span>
+        <ColorInput
+          label={t('style.gradient.end')}
+          color={resolve(end)}
+          palette={palette}
+          disabled={props.disabled}
+          onColorChange={(color) => write(start, color, angle)}
+        />
+      </div>
+      <div className="bd-gradient-angle">
+        <span>{t('style.gradient.angle')}</span>
+        <NumberUnitInput
+          value={angle}
+          units={[]}
+          unitLabel={t('style.unit')}
+          ariaLabel={t('style.gradient.angle')}
+          disabled={props.disabled}
+          onValueChange={(value) => write(start, end, value)}
+        />
+        <input
+          type="range"
+          className="bd-range"
+          aria-label={`${t('style.gradient.angle')}: ${t('style.slider')}`}
+          min="-360"
+          max="360"
+          value={angle}
+          disabled={props.disabled}
+          onChange={(event) => write(start, end, event.target.value)}
+        />
+      </div>
+    </div>
+  );
+}

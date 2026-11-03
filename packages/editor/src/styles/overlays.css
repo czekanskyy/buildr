@@ -1,0 +1,197 @@
+/* WP5: floating surfaces and canvas host chrome, using the template v2 roles. */
+.bd-dialog-overlay {
+  animation: bd-overlay-in var(--bd-duration-base) var(--bd-ease-enter) both;
+}
+.bd-dialog {
+  width: min(var(--bd-dialog-w), calc(100vw - var(--bd-space-6)));
+  max-height: calc(100vh - var(--bd-space-6));
+  border-radius: var(--bd-radius-xl);
+  animation: bd-overlay-in var(--bd-duration-slow) var(--bd-ease-enter) both;
+}
+.bd-dialog-header {
+  gap: var(--bd-space-3);
+  padding: var(--bd-space-4) var(--bd-space-4) var(--bd-space-3) var(--bd-space-5);
+}
+.bd-dialog-title {
+  line-height: var(--bd-dialog-head-lh);
+}
+.bd-dialog-body {
+  padding: 0 var(--bd-space-5) var(--bd-space-4);
+  font-size: var(--bd-text-md);
+  line-height: var(--bd-leading-md);
+  color: var(--bd-text-muted);
+}
+.bd-dialog-footer {
+  gap: var(--bd-space-2);
+  padding: var(--bd-space-3) var(--bd-space-5);
+  background: var(--bd-surface-2);
+}
+.buildr-editor .bd-toast-region {
+  left: 50%;
+  right: auto;
+  bottom: calc(var(--bd-statusbar-height) + var(--bd-space-4));
+  transform: translateX(-50%);
+  width: min(var(--bd-dialog-w), calc(100vw - var(--bd-space-6)));
+  gap: var(--bd-space-2);
+}
+.buildr-editor .bd-toast-list {
+  gap: var(--bd-space-2);
+}
+.buildr-editor .bd-toast {
+  min-height: var(--bd-control-lg);
+  padding: var(--bd-space-2) var(--bd-space-2) var(--bd-space-2) var(--bd-space-3);
+  border: 0;
+  border-radius: var(--bd-radius-lg);
+  background: var(--bd-toast-bg);
+  color: var(--bd-toast-text);
+  font-size: var(--bd-text-sm);
+  animation: bd-toast-enter var(--bd-duration-slow) var(--bd-ease-enter) both;
+}
+.buildr-editor .bd-toast-detail {
+  color: inherit;
+}
+.buildr-editor .bd-toast[data-variant="success"] .bd-toast-icon {
+  color: var(--bd-toast-ok);
+}
+.buildr-editor .bd-toast[data-variant="error"] .bd-toast-icon,
+.buildr-editor .bd-toast[data-variant="warning"] .bd-toast-icon {
+  color: var(--bd-toast-err);
+}
+.buildr-editor .bd-toast[data-variant="info"] .bd-toast-icon {
+  color: var(--bd-toast-accent);
+}
+.buildr-editor .bd-toast-action {
+  height: var(--bd-control-compact);
+  padding: 0 var(--bd-space-2);
+  border: 0;
+  background: none;
+  color: var(--bd-toast-accent);
+  font-weight: var(--bd-weight-semibold);
+}
+.buildr-editor .bd-toast-close {
+  background: transparent;
+  color: var(--bd-toast-text);
+}
+.buildr-editor .bd-toast-action:hover,
+.buildr-editor .bd-toast-close:hover {
+  background: var(--bd-toast-hover);
+  color: var(--bd-toast-text);
+}
+.buildr-editor .bd-toast-action:focus-visible,
+.buildr-editor .bd-toast-close:focus-visible {
+  outline: var(--bd-focus-width) solid var(--bd-toast-text);
+  outline-offset: var(--bd-focus-width);
+}
+.buildr-editor .bd-issues .bd-issues {
+  padding: 0 var(--bd-space-4);
+  border-top: 0;
+}
+.buildr-editor .bd-issues-filters {
+  gap: var(--bd-space-1);
+  padding: 0;
+  border-bottom: var(--bd-border-width) solid var(--bd-border);
+}
+.buildr-editor .bd-issues-filters .bd-button {
+  min-height: var(--bd-control-sm);
+}
+.buildr-editor .bd-issues-filters button[aria-pressed="true"] {
+  background: var(--bd-accent-soft);
+  color: var(--bd-accent);
+}
+.buildr-editor .bd-issue {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: var(--bd-control-lg);
+  padding: var(--bd-space-1) 0;
+}
+.buildr-editor .bd-issue-target {
+  grid-column: 1;
+  grid-row: 1;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--bd-space-3);
+  width: 100%;
+  min-height: var(--bd-control-sm);
+  padding: 0 var(--bd-space-1);
+  border-radius: var(--bd-radius-md);
+}
+.buildr-editor .bd-issue > .bd-button {
+  grid-column: 2;
+  grid-row: 1;
+  min-height: var(--bd-control-sm);
+}
+.buildr-editor .bd-issue-help,
+.buildr-editor .bd-issue-error {
+  grid-column: 1 / -1;
+}
+.buildr-editor .bd-issue-head {
+  flex: none;
+}
+.buildr-editor .bd-issue-message {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.buildr-editor .bd-issue-source {
+  flex: none;
+  font-size: var(--bd-text-xs);
+}
+.buildr-editor .bd-issues-severity {
+  margin-top: 0;
+}
+.buildr-editor .bd-issue-target:enabled:hover {
+  background: var(--bd-surface-hover);
+}
+.buildr-editor .bd-canvas-card {
+  gap: var(--bd-space-3);
+  background: var(--bd-surface);
+}
+.buildr-editor .bd-canvas-card > .bd-icon {
+  padding: var(--bd-space-3);
+  box-sizing: content-box;
+  border-radius: var(--bd-radius-xl);
+  background: var(--bd-surface-2);
+  color: var(--bd-text-subtle);
+}
+.buildr-editor .bd-canvas-error > .bd-icon {
+  color: var(--bd-danger);
+}
+.buildr-editor .bd-canvas-frame[data-status="initializing"] {
+  visibility: hidden;
+}
+.buildr-editor .bd-canvas-stage {
+  transition: width var(--bd-duration-slow) var(--bd-ease-standard);
+}
+@keyframes bd-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes bd-toast-enter {
+  from {
+    opacity: 0;
+    transform: translateY(var(--bd-space-3));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bd-dialog-overlay,
+  .bd-dialog,
+  .buildr-editor .bd-toast {
+    animation: none;
+  }
+  .buildr-editor .bd-canvas-stage,
+  .buildr-editor .bd-canvas-frame {
+    transition: none;
+  }
+}
+.buildr-editor .bd-canvas-empty {
+  pointer-events: none;
+}

@@ -15,6 +15,7 @@
       "!**/.turbo",
       "!**/coverage",
       "!**/.claude",
+      "!docs/design/template",
       "!pnpm-lock.yaml",
       "!**/.next",
       "!**/payload-types.ts",

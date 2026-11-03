@@ -6,17 +6,18 @@ import {
   createSeededIdGenerator,
   defaultTheme,
   getStyleProperty,
+  type StyleGroup,
   toManifest,
 } from '@next-buildr/core';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { axe } from 'vitest-axe';
 import * as matchers from 'vitest-axe/matchers';
 import { ManifestProvider } from '../../../app/manifest.tsx';
 import { MessagesProvider } from '../../../messages/index.tsx';
 import { createEditorStore, EditorStoreProvider, useEditorState } from '../../../store/index.ts';
-import { checkStyleInput } from './model.ts';
+import { boundsOf, checkStyleInput } from './model.ts';
 import { StyleInspector } from './style-inspector.tsx';
 
 expect.extend(matchers);
@@ -69,6 +70,9 @@ beforeEach(() => {
   };
   Element.prototype.scrollIntoView ??= () => {};
   Element.prototype.hasPointerCapture ??= () => false;
+  localStorage.clear();
+  Element.prototype.setPointerCapture ??= () => {};
+  Element.prototype.releasePointerCapture ??= () => {};
   container = document.createElement('div');
   document.body.append(container);
   root = createRoot(container);
@@ -80,23 +84,35 @@ afterEach(() => {
 
 type Store = ReturnType<typeof createEditorStore>;
 
-async function mount(breakpoint?: string): Promise<Store> {
+async function mount(
+  breakpoint?: string,
+  groups?: readonly StyleGroup[],
+  readOnly = false,
+): Promise<Store> {
+  const activeRegistry =
+    groups === undefined
+      ? registry
+      : createRegistryMeta({ components: [page, { ...box, styles: { groups } }] });
+  const activeManifest = groups === undefined ? manifest : toManifest(activeRegistry);
   const store = createEditorStore({
     doc: fixture(),
-    registry,
+    registry: activeRegistry,
+    readOnly,
     generateId: createSeededIdGenerator(3),
     validationDelayMs: null,
   });
   store.select('box0000001');
   const View = () => {
-    const node = useEditorState((state) => state.doc.nodes['box0000001']);
+    const node = useEditorState((state) =>
+      state.anchorId === null ? undefined : state.doc.nodes[state.anchorId],
+    );
     if (node === undefined) return null;
     return <StyleInspector node={node} {...(breakpoint !== undefined ? { breakpoint } : {})} />;
   };
   await act(async () =>
     root.render(
       <MessagesProvider locale="en">
-        <ManifestProvider manifest={manifest}>
+        <ManifestProvider manifest={activeManifest}>
           <EditorStoreProvider store={store}>
             <View />
           </EditorStoreProvider>
@@ -116,6 +132,14 @@ const type = (element: HTMLInputElement, value: string) =>
   });
 
 describe('checkStyleInput', () => {
+  it('uses the grammar bounds for each scrubbed notation', () => {
+    const lineHeight = getStyleProperty('typography', 'lineHeight');
+    const columns = getStyleProperty('layout', 'columns');
+    if (lineHeight === undefined || columns === undefined) throw new Error('property missing');
+    expect(boundsOf(lineHeight, '1')).toEqual({ min: 0.5, max: 5 });
+    expect(boundsOf(lineHeight, '24px')).toEqual({ min: 0 });
+    expect(boundsOf(columns, '2')).toEqual({ min: 1, max: 12 });
+  });
   const gap = getStyleProperty('layout', 'gap');
   const opacity = getStyleProperty('effects', 'opacity');
   it('accepts tokens the theme has and lengths', () => {
@@ -323,5 +347,403 @@ describe('style inspector controls (PB-128)', () => {
   it('has no accessibility violations', async () => {
     await mount();
     expect(await axe(container)).toHaveNoViolations();
+  });
+});
+
+describe('template v2 inspector controls', () => {
+  it('remembers a collapsed unused style section after unmount, without changing the document', async () => {
+    const store = await mount();
+    const initial = store.getState().doc;
+    const toggle = container.querySelector<HTMLButtonElement>(
+      '[data-group="spacing"] .bd-props-toggle',
+    );
+    expect(toggle?.getAttribute('aria-expanded')).toBe('true');
+    await act(async () => toggle?.click());
+    expect(toggle?.getAttribute('aria-expanded')).toBe('false');
+    expect(store.getState().doc).toBe(initial);
+    await act(async () => root.render(null));
+    await mount();
+    expect(
+      container
+        .querySelector('[data-group="spacing"] .bd-props-toggle')
+        ?.getAttribute('aria-expanded'),
+    ).toBe('false');
+  });
+
+  it('ignores malformed stored preferences and searches localized property labels', async () => {
+    localStorage.setItem('buildr.editor.inspector.styles', '{"layout":"invalid"}');
+    const store = await mount();
+    const initial = store.getState().doc;
+    const search = container.querySelector<HTMLInputElement>('[type="search"]');
+    if (search === null) throw new Error('search missing');
+    await type(search, 'gap');
+    expect(container.querySelector('[data-style-prop="layout.gap"]')).not.toBeNull();
+    expect(container.querySelector('[data-style-prop="layout.display"]')).toBeNull();
+    expect(container.querySelector('[data-group="spacing"]')).toBeNull();
+    await type(search, 'no such setting');
+    expect(container.textContent).toContain('No matching settings');
+    expect(store.getState().doc).toBe(initial);
+  });
+
+  it('uses two existing style commands for the flex pad, one undo step, and redo', async () => {
+    const store = await mount();
+    await act(async () => buttonNamed('flex').click());
+    const dispatch = vi.spyOn(store, 'dispatchBatch');
+    const pad = container.querySelector('[aria-label="Content alignment"]');
+    const pick = pad?.querySelector<HTMLButtonElement>('[aria-label="bottom right"]');
+    await act(async () => pick?.click());
+    expect(dispatch).toHaveBeenCalledWith(
+      [
+        {
+          type: 'node.setStyle',
+          payload: {
+            id: 'box0000001',
+            layer: {},
+            group: 'layout',
+            property: 'justify',
+            value: 'flex-end',
+          },
+        },
+        {
+          type: 'node.setStyle',
+          payload: {
+            id: 'box0000001',
+            layer: {},
+            group: 'layout',
+            property: 'align',
+            value: 'flex-end',
+          },
+        },
+      ],
+      { label: 'Content alignment' },
+    );
+    expect(styles(store)?.base?.layout).toMatchObject({ justify: 'flex-end', align: 'flex-end' });
+    await act(async () => {
+      store.undo();
+    });
+    expect(styles(store)?.base?.layout?.justify).toBeUndefined();
+    expect(styles(store)?.base?.layout?.align).toBeUndefined();
+    expect(styles(store)?.base?.layout?.display).toBe('flex');
+    await act(async () => {
+      store.redo();
+    });
+    expect(styles(store)?.base?.layout?.justify).toBe('flex-end');
+  });
+
+  it('scrubs validated lengths through node.setStyle and rejects negative padding', async () => {
+    const store = await mount();
+    await type(inputAt('layout.gap'), '10px');
+    const dispatch = vi.spyOn(store, 'dispatch');
+    const label = container.querySelector<HTMLElement>(
+      '[data-style-prop="layout.gap"] label.bd-scrub-label',
+    );
+    if (label === null) throw new Error('scrub label missing');
+    await act(async () => {
+      label.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, button: 0, clientX: 10 }));
+      label.dispatchEvent(new MouseEvent('pointermove', { bubbles: true, clientX: 19 }));
+      label.dispatchEvent(new MouseEvent('pointerup', { bubbles: true }));
+    });
+    expect(dispatch).toHaveBeenCalledWith({
+      type: 'node.setStyle',
+      payload: { id: 'box0000001', layer: {}, group: 'layout', property: 'gap', value: '13px' },
+    });
+    const before = styles(store)?.base?.spacing;
+    await type(inputAt('spacing.padding.top'), '-5px');
+    expect(styles(store)?.base?.spacing).toEqual(before);
+  });
+
+  it('writes linked and unlinked corners and borders through commands at the active device', async () => {
+    const store = await mount('mobile', ['border']);
+    const dispatch = vi.spyOn(store, 'dispatch');
+    await type(inputAt('border.radius.topLeft'), '8px');
+    expect(styles(store)?.bp?.['mobile']?.border?.radius).toEqual({
+      topLeft: '8px',
+      topRight: '8px',
+      bottomRight: '8px',
+      bottomLeft: '8px',
+    });
+    await act(async () => {
+      store.undo();
+    });
+    expect(styles(store)?.bp?.['mobile']?.border?.radius).toBeUndefined();
+    await act(async () => {
+      store.redo();
+    });
+    expect(styles(store)?.bp?.['mobile']?.border?.radius?.bottomRight).toBe('8px');
+    await act(async () => buttonNamed('Border: Link sides').click());
+    await type(inputAt('border.width.left'), '2px');
+    expect(styles(store)?.bp?.['mobile']?.border?.width).toEqual({ left: '2px' });
+    expect(dispatch).toHaveBeenCalledWith({
+      type: 'node.setStyle',
+      payload: {
+        id: 'box0000001',
+        layer: { bp: 'mobile' },
+        group: 'border',
+        property: 'width',
+        side: 'left',
+        value: '2px',
+      },
+    });
+    expect(
+      container
+        .querySelector('[data-style-prop="border.width"] .bd-device-indicator')
+        ?.getAttribute('data-override'),
+    ).toBe('true');
+    await act(async () => buttonNamed('Reset: Border').click());
+    expect(styles(store)?.bp?.['mobile']?.border?.width).toBeUndefined();
+  });
+
+  it('uses only theme shadow tokens and validates colour edits before dispatch', async () => {
+    const store = await mount('mobile', ['effects', 'background']);
+    const dispatch = vi.spyOn(store, 'dispatch');
+    const preset = container.querySelector<HTMLButtonElement>(
+      '.bd-shadow-presets button:nth-child(2)',
+    );
+    await act(async () => preset?.click());
+    const token = `$shadow.${Object.keys(defaultTheme.tokens.shadow)[0]}`;
+    expect(styles(store)?.bp?.['mobile']?.effects?.shadow).toBe(token);
+    expect(dispatch).toHaveBeenCalledWith({
+      type: 'node.setStyle',
+      payload: {
+        id: 'box0000001',
+        layer: { bp: 'mobile' },
+        group: 'effects',
+        property: 'shadow',
+        value: token,
+      },
+    });
+    const color = container.querySelector<HTMLButtonElement>(
+      '[data-style-prop="background.color"] .bd-color-trigger',
+    );
+    await act(async () => color?.click());
+    const input = document.querySelector<HTMLInputElement>('.bd-color-hex input');
+    if (input === null) throw new Error('colour field missing');
+    dispatch.mockClear();
+    await type(input, 'url(https://example.com)');
+    expect(dispatch).not.toHaveBeenCalled();
+    await type(input, '#12345680');
+    expect(styles(store)?.bp?.['mobile']?.background?.color).toBe('#12345680');
+    expect(dispatch).toHaveBeenCalledWith({
+      type: 'node.setStyle',
+      payload: {
+        id: 'box0000001',
+        layer: { bp: 'mobile' },
+        group: 'background',
+        property: 'color',
+        value: '#12345680',
+      },
+    });
+    await act(async () => {
+      store.undo();
+    });
+    expect(styles(store)?.bp?.['mobile']?.background?.color).toBeUndefined();
+  });
+
+  it('does not allow writes to a readonly document and exposes accessible supported widgets', async () => {
+    await mount('mobile', ['effects', 'border', 'background'], true);
+    for (const toggle of container.querySelectorAll<HTMLButtonElement>(
+      '.bd-props-toggle[aria-expanded=false]',
+    )) {
+      await act(async () => toggle.click());
+    }
+    for (const control of container.querySelectorAll<
+      HTMLInputElement | HTMLButtonElement | HTMLSelectElement
+    >('[data-style-prop] input, [data-style-prop] button, [data-style-prop] select')) {
+      expect(control.disabled).toBe(true);
+    }
+    expect(await axe(container)).toHaveNoViolations();
+  });
+});
+
+describe('template gradient and image position widgets', () => {
+  it('writes a linear gradient and image position through validated style commands', async () => {
+    const store = await mount('mobile', ['background']);
+    const dispatch = vi.spyOn(store, 'dispatch');
+    const angle = container.querySelector<HTMLInputElement>(
+      '.bd-gradient-angle input:not([type=range])',
+    );
+    if (angle === null) throw new Error('gradient angle missing');
+    await type(angle, '90');
+    const names = Object.keys(defaultTheme.tokens.color);
+    const gradient = `linear-gradient(90deg, $color.${names[0]}, $color.${names[1] ?? names[0]})`;
+    expect(styles(store)?.bp?.['mobile']?.background?.gradient).toBe(gradient);
+    expect(dispatch).toHaveBeenCalledWith({
+      type: 'node.setStyle',
+      payload: {
+        id: 'box0000001',
+        layer: { bp: 'mobile' },
+        group: 'background',
+        property: 'gradient',
+        value: gradient,
+      },
+    });
+    const pad = container.querySelector(
+      '[data-style-prop="background.imagePosition"] .bd-alignment-pad',
+    );
+    await act(async () =>
+      pad?.querySelector<HTMLButtonElement>('[aria-label="top left"]')?.click(),
+    );
+    expect(styles(store)?.bp?.['mobile']?.background?.imagePosition).toBe('top left');
+    await act(async () => {
+      store.undo();
+    });
+    expect(styles(store)?.bp?.['mobile']?.background?.imagePosition).toBeUndefined();
+    expect(styles(store)?.bp?.['mobile']?.background?.gradient).toBe(gradient);
+    await act(async () => {
+      store.redo();
+    });
+    expect(styles(store)?.bp?.['mobile']?.background?.imagePosition).toBe('top left');
+  });
+
+  it('keeps a gradient with more than two stops editable without silently simplifying it', async () => {
+    const store = await mount(undefined, ['background']);
+    const gradient = 'linear-gradient(180deg, #123456, #456789, #abcdef)';
+    await type(inputAt('background.gradient'), gradient);
+    expect(styles(store)?.base?.background?.gradient).toBe(gradient);
+    expect(container.querySelector('.bd-gradient-fields')).toBeNull();
+  });
+});
+
+describe('template width modes', () => {
+  it('writes existing width values for automatic and full width, while Custom focuses the input', async () => {
+    const store = await mount(undefined, ['size']);
+    const mode = container.querySelector('[aria-label="Width mode"]');
+    const pick = async (value: string) =>
+      act(async () => {
+        [...(mode?.querySelectorAll('button') ?? [])]
+          .find((button) => button.textContent === value)
+          ?.click();
+      });
+    await pick('Full');
+    expect(styles(store)?.base?.size?.width).toBe('100%');
+    await pick('Auto');
+    expect(styles(store)?.base?.size?.width).toBe('auto');
+    expect(
+      [...(mode?.querySelectorAll('button') ?? [])]
+        .find((button) => button.textContent === 'Auto')
+        ?.getAttribute('aria-pressed'),
+    ).toBe('true');
+    await type(inputAt('size.width'), 'fit-content');
+    expect(
+      [...(mode?.querySelectorAll('button') ?? [])]
+        .find((button) => button.textContent === 'Auto')
+        ?.getAttribute('aria-pressed'),
+    ).toBe('false');
+    await pick('Custom');
+    expect(document.activeElement).toBe(inputAt('size.width'));
+    await type(inputAt('size.width'), '340px');
+    expect(styles(store)?.base?.size?.width).toBe('340px');
+  });
+});
+
+describe('template hover styles', () => {
+  it('resets state and search on selection, restores accordion preferences, and opens used sections', async () => {
+    const store = await mount(undefined, [
+      'layout',
+      'background',
+      'effects',
+      'spacing',
+      'visibility',
+    ]);
+    const sectionButton = (name: string) =>
+      container.querySelector<HTMLButtonElement>(`[data-group="${name}"] .bd-props-toggle`);
+    await act(async () => sectionButton('layout')?.click());
+    await act(async () => sectionButton('spacing')?.click());
+    await act(async () => {
+      store.dispatch({
+        type: 'node.setStyle',
+        payload: { id: 'root', layer: {}, group: 'layout', property: 'display', value: 'flex' },
+      });
+    });
+    await act(async () => buttonNamed('Hover').click());
+    await type(
+      container.querySelector<HTMLInputElement>('.bd-inspector-search input') as HTMLInputElement,
+      'color',
+    );
+    await act(async () => store.select('root'));
+    expect(container.querySelector('.bd-styles')?.getAttribute('data-layer')).toBe('base');
+    expect(container.querySelector<HTMLInputElement>('.bd-inspector-search input')?.value).toBe('');
+    expect(sectionButton('layout')?.getAttribute('aria-expanded')).toBe('true');
+    expect(sectionButton('spacing')?.getAttribute('aria-expanded')).toBe('false');
+    await act(async () => sectionButton('visibility')?.click());
+    expect(sectionButton('visibility')?.getAttribute('aria-expanded')).toBe('true');
+    await act(async () => store.select('box0000001'));
+    expect(sectionButton('visibility')?.getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('translates the source of values in every pseudo-state', async () => {
+    await mount(undefined, ['effects']);
+    for (const label of ['Hover', 'Focus', 'Pressed']) {
+      await act(async () => buttonNamed(label).click());
+      const select = container.querySelector<HTMLSelectElement>(
+        '[data-style-prop="effects.cursor"] select',
+      );
+      if (select === null) throw new Error('cursor select missing');
+      await act(async () => {
+        select.value = 'pointer';
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+      expect(select.textContent).toContain(`pointer (${label})`);
+      expect(select.textContent).not.toContain('state:');
+    }
+  });
+
+  it('stores the selected palette token for colors and gradient stops', async () => {
+    const store = await mount(undefined, ['background']);
+    const name = Object.keys(defaultTheme.tokens.color)[0] as string;
+    const token = `$color.${name}`;
+    const trigger = container.querySelector<HTMLButtonElement>(
+      '[data-style-prop="background.color"] .bd-color-trigger',
+    );
+    await act(async () => trigger?.click());
+    const pick = () =>
+      document.querySelector<HTMLButtonElement>(`.bd-color-palette button[aria-label="${name}"]`);
+    await act(async () => pick()?.click());
+    expect(styles(store)?.base?.background?.color).toBe(token);
+    await act(async () =>
+      document
+        .querySelector('.bd-color-popover')
+        ?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })),
+    );
+    const stops = container.querySelectorAll<HTMLButtonElement>(
+      '.bd-gradient-stop .bd-color-trigger',
+    );
+    expect(stops).toHaveLength(2);
+    await act(async () => stops[1]?.click());
+    await act(async () => pick()?.click());
+    expect(styles(store)?.base?.background?.gradient).toBe(
+      `linear-gradient(180deg, ${token}, ${token})`,
+    );
+  });
+
+  it('edits allowed visual properties through existing state-layer commands, with undo and redo', async () => {
+    const store = await mount('mobile', ['layout', 'effects', 'background']);
+    const dispatch = vi.spyOn(store, 'dispatch');
+    await act(async () => buttonNamed('Hover').click());
+    expect(container.querySelector('[data-group="layout"]')).toBeNull();
+    expect(container.querySelector('[data-style-prop="effects.cursor"]')).not.toBeNull();
+    await type(inputAt('background.color'), '#123456');
+    expect(dispatch).toHaveBeenCalledWith({
+      type: 'node.setStyle',
+      payload: {
+        id: 'box0000001',
+        layer: { state: 'hover' },
+        group: 'background',
+        property: 'color',
+        value: '#123456',
+      },
+    });
+    expect(styles(store)?.state?.hover?.background?.color).toBe('#123456');
+    expect(styles(store)?.bp?.['mobile']?.background?.color).toBeUndefined();
+    await act(async () => {
+      store.undo();
+    });
+    expect(styles(store)?.state?.hover?.background?.color).toBeUndefined();
+    await act(async () => {
+      store.redo();
+    });
+    expect(styles(store)?.state?.hover?.background?.color).toBe('#123456');
+    await act(async () => buttonNamed('Reset: Color').click());
+    expect(styles(store)?.state?.hover?.background?.color).toBeUndefined();
   });
 });

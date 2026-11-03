@@ -1,4 +1,9 @@
-import type { EffectiveStyles, StylePropertyDef, Theme } from '@next-buildr/core';
+import {
+  type EffectiveStyles,
+  resolveTokenRef,
+  type StylePropertyDef,
+  type Theme,
+} from '@next-buildr/core';
 import { type ReactNode, useEffect, useState } from 'react';
 import { type MessageKey, useT } from '../../../messages/index.tsx';
 import { IconButton, NumberUnitInput } from '../../../ui/index.ts';
@@ -51,7 +56,14 @@ function SideField(props: SideFieldProps) {
       className="bd-side-field"
       data-path={path}
       data-part={part}
-      data-source={field.current?.source ?? 'none'}
+      data-source={
+        field.current === undefined
+          ? 'none'
+          : field.current.source === props.layer
+            ? 'set'
+            : 'inherited'
+      }
+      data-override={props.layer !== 'base' && field.current?.source === props.layer}
     >
       <NumberUnitInput
         compact
@@ -232,7 +244,26 @@ export function SidesEditor(props: SidesEditorProps) {
   return (
     <div className="bd-sides" data-property={def.name} data-shape={def.shape}>
       {props.renderHead(extras)}
-      <div className="bd-sides-grid">
+      <div className={def.shape === 'corners' ? 'bd-sides-grid bd-corners-grid' : 'bd-sides-grid'}>
+        {def.shape === 'corners' ? (
+          <span
+            className="bd-corners-preview"
+            aria-hidden="true"
+            style={Object.fromEntries(
+              parts.map((part) => {
+                let value = currentOf(part) ?? '';
+                if (value.startsWith('$')) {
+                  const token = resolveTokenRef(props.theme, value);
+                  value = token.ok ? String(token.value.value) : '';
+                }
+                return [
+                  `border${part.charAt(0).toUpperCase()}${part.slice(1)}Radius`,
+                  /^(?:0|\d+(?:\.\d+)?(?:px|rem|em|%))$/.test(value) ? value : undefined,
+                ];
+              }),
+            )}
+          />
+        ) : null}
         {parts.map((part) => (
           <div key={part} className="bd-sides-cell">
             {field(part)}

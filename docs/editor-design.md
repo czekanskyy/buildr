@@ -1,12 +1,12 @@
 # Editor design guidelines
 
-Status: **reference (PB-119).** Token values are shipped in `packages/editor/src/styles/tokens.css`; the icon rules (PB-120) are in [Icons](#icons). The source of the approved values is [design/identity.md](design/identity.md); mockups are in [design/mockups/](design/mockups/).
+Status: **reference (PB-151, template v2).** Token values are shipped in `packages/editor/src/styles/tokens.css`; the icon rules (PB-120) are in [Icons](#icons). The source of the approved values is [template tokens v2](design/template/README.md); mockups are in [design/mockups/](design/mockups/).
 
-Every editor task in [phase 13](backlog/phase-13-editor-visual-polish.md) references this document. Where it disagrees with a mockup, the token tables in `identity.md` win.
+Every editor task in [phase 13](backlog/phase-13-editor-visual-polish.md) references this document. Where it disagrees with a mockup, the approved template tokens v2 win.
 
 ## Principles
 
-1. **Dense and precise.** 28px controls, 4-6px radii, thin borders, 12-13px text. The editor is a tool used for hours; it should show as much of the document and its properties as fit, calmly.
+1. **Dense and precise.** 32px controls, 4-6px radii, thin borders, 12-13px text. The editor is a tool used for hours; it should show as much of the document and its properties as fit, calmly.
 2. **Content first, chrome second.** The canvas is the loudest thing on screen. Panels are flat and quiet; the accent colour is reserved for selection, focus and the one primary action.
 3. **One accent, one primary.** At most one solid primary button is visible per region (Publish in the toolbar, the confirm button in a dialog). Everything else is secondary or ghost.
 4. **Tokens only.** No literal colour, spacing or font size outside `tokens.css` (enforced by stylelint from PB-119). If a value is missing, add a token instead of a literal.
@@ -21,15 +21,15 @@ Every editor task in [phase 13](backlog/phase-13-editor-visual-polish.md) refere
 |---|---|---|
 | Accent | indigo-blue `#3f5ae0` (scale 50-900) | [identity.md section 3](design/identity.md#3-colour) |
 | Neutrals | cool greys; surfaces `bg` / `surface` / `surface-2`, states `surface-hover` / `surface-selected` | section 3 |
-| Toolbar | dark in both themes, own `toolbar*` tokens | section 3.4 |
+| Toolbar | white in light, near-black in dark, own `toolbar*` tokens | section 3.4 |
 | Semantic | danger, warning, success, info (teal), each with a `*-soft` background | section 3.4 |
-| Type | Inter 400/500/600 at 11 / 12 / 13 / 15px, line heights 16 / 16 / 20 / 24 | [section 4](design/identity.md#4-typography) |
-| Spacing | 2 4 6 8 12 16 20 24 32 (`--bd-space-0..8`) | [section 5](design/identity.md#5-shape-density-and-elevation) |
+| Type | Inter 400/500/600 at 11 / 12 / 13 / 15 / 18px, line heights 16 / 16 / 20 / 24 | [section 4](design/identity.md#4-typography) |
+| Spacing | 2px half-step; 4 / 8 / 12 / 16 / 24 / 32px (`--bd-space-1..6`) | [section 5](design/identity.md#5-shape-density-and-elevation) |
 | Radii | 4 / 6 / 8px (+ pill) | section 5 |
-| Controls | 24 / 28 / 32px, panel header 40px, toolbar 44px, status bar 28px | section 5 |
+| Controls | 24 / 32 / 40px, panel header 44px, toolbar 52px, status bar 32px | section 5 |
 | Elevation | three levels, floating layers only | section 5 |
-| Focus | 2px ring, 1px offset, `--bd-focus` | section 5 |
-| Motion | 100ms / 160ms, disabled under `prefers-reduced-motion` | section 5 |
+| Focus | 2px ring, 2px offset, `--bd-focus` | section 5 |
+| Motion | 120ms / 200ms / 320ms, disabled under `prefers-reduced-motion` | section 5 |
 
 ## Token reference
 
@@ -39,11 +39,14 @@ All tokens are CSS custom properties with the `--bd-` prefix, defined **only** i
 
 | File | Contents |
 |---|---|
-| `styles/tokens.css` | every token, both themes, reduced-motion override |
+| `styles/tokens.css` | shared tokens, both themes, reduced-motion override; imports metrics |
+| `styles/metrics.css` | fixed widget geometry, imported before shared tokens |
 | `styles/base.css` | `@font-face` (Inter), box-sizing, root text style, focus ring, scrollbars, tabular numerals |
 | `styles/shell.css` | toolbar, body grid, panels, splitters, issues row, canvas host, application frame |
 | `styles/primitives.css` | buttons, inputs, select, tabs, toggle, popover, tooltip, dialog, menu, toasts, drag ghost |
 | `styles/panels.css` | layers, insert palette, inspector, value editor, issues and publish, media picker |
+| `styles/left-panel.css` | template left panel and layers overrides |
+| `styles/overlays.css` | template dialogs, toasts, issues and canvas states |
 
 `src/styles.css` only `@import`s the partials in that order (used in development). The published `dist/styles.css` is the same partials inlined in the same order by `tooling/scripts/bundle-css.mjs`, with `dist/fonts/` (six woff2 files and `LICENSE-inter.txt`). Each area task of phase 13 owns one partial. `pnpm lint:css` (stylelint) forbids literal colours, spacing (`margin`, `padding`, `gap`) and `font-size` outside `tokens.css`.
 
@@ -63,10 +66,10 @@ Values per theme: [identity.md sections 3.2 and 3.3](design/identity.md#3-colour
 | `border`, `border-strong` | decorative hairlines / boundary of interactive controls (>= 3:1) |
 | `text`, `text-muted`, `text-subtle` | primary, labels, hints and placeholders |
 | `accent`, `accent-hover`, `accent-soft`, `accent-text` | accent text and icons, hover, tinted background, text on solid accent |
-| `primary`, `primary-hover`, `primary-text` | the solid primary button and toggles (same in both themes) |
+| `primary`, `primary-hover`, `primary-text` | the solid primary button and toggles (theme-specific) |
 | `focus` | focus ring |
 | `danger`, `warning`, `success`, `info` (+ `-soft`) | semantic text/icon and matching tinted background; `danger-text` is text on a solid danger fill |
-| `toolbar`, `toolbar-hover`, `toolbar-border`, `toolbar-text`, `toolbar-muted`, `toolbar-focus` | the dark toolbar (dark in both themes) |
+| `toolbar`, `toolbar-hover`, `toolbar-border`, `toolbar-text`, `toolbar-muted`, `toolbar-focus` | the themed toolbar |
 | `shadow`, `overlay` | shadow colour for elevation, dialog backdrop |
 | `canvas-page` | the white page drawn on the stage (user content, not chrome) |
 
@@ -74,15 +77,15 @@ Values per theme: [identity.md sections 3.2 and 3.3](design/identity.md#3-colour
 
 | Group | Tokens |
 |---|---|
-| Spacing | `--bd-space-0..8` = 2 / 4 / 6 / 8 / 12 / 16 / 20 / 24 / 32px |
-| Type size and line | `--bd-text-xs/sm/md/lg` = 11 / 12 / 13 / 15px with `--bd-leading-xs/sm/md/lg` = 16 / 16 / 20 / 24px |
+| Spacing | `--bd-space-half` = 2px; `--bd-space-1..6` = 4 / 8 / 12 / 16 / 24 / 32px (legacy `0`, `7`, `8` aliases remain) |
+| Type size and line | `--bd-text-xs/sm/md/lg/xl` = 11 / 12 / 13 / 15 / 18px with `--bd-leading-xs/sm/md/lg/xl` = 16 / 16 / 20 / 24 / 24px |
 | Weight | `--bd-weight-regular/medium/semibold` = 400 / 500 / 600 |
 | Font | `--bd-font` (Inter, then the system stack), `--bd-font-mono`, `--bd-tracking-tight` (titles) |
 | Radius | `--bd-radius-sm/md/lg/pill` = 4 / 6 / 8px / pill; `--bd-radius` = md |
-| Controls | `--bd-control-sm/md/lg` = 24 / 28 / 32px; `--bd-panel-header` 40px; `--bd-toolbar-height` 44px; `--bd-statusbar-height` 28px |
+| Controls | `--bd-control-sm/md/lg` = 24 / 32 / 40px; `--bd-panel-header` 44px; `--bd-toolbar-height` 52px; `--bd-statusbar-height` 32px |
 | Borders | `--bd-border-width` 1px |
 | Elevation | `--bd-elevation-1` (stage page), `-2` (menus, popovers, tooltips, toasts), `-3` (dialogs, overlays) |
-| Motion | `--bd-duration-fast` 100ms, `--bd-duration-base` 160ms, `--bd-ease`; both durations become 0ms under `prefers-reduced-motion` |
+| Motion | `--bd-duration-fast` 120ms, `--bd-duration-base` 200ms, `--bd-ease`; both durations become 0ms under `prefers-reduced-motion` |
 | Layout (runtime) | `--bd-left`, `--bd-right` panel widths (defaults in `tokens.css`, set inline by the layout), `--bd-splitter-size`, `--bd-issues-height` |
 
 ### Type styles
@@ -102,17 +105,17 @@ Inter 400 / 500 / 600, self-hosted: latin and latin-ext (Polish) woff2 subsets i
 
 ## Layout grid
 
-Spacing sits on a 4px grid with 2px and 6px as fine steps (`--bd-space-0`, `-2`); use the fine steps only inside a control (chip padding, icon gaps).
+Spacing sits on a 4px grid with a 2px fine step (`--bd-space-half`); use the fine steps only inside a control (chip padding, icon gaps).
 
 | Element | Rule |
 |---|---|
-| Toolbar | 44px, dark, `--bd-space-4` side padding, gap `--bd-space-3` |
-| Panel (PB-122) | 40px header (tabs or title), scroll body with `--bd-space-4` padding, optional sticky footer; panels are flat and separated by a 1px line. See [Panel anatomy](#panel-anatomy) |
+| Toolbar | 52px, themed, `--bd-space-4` side padding, gap `--bd-space-3` |
+| Panel (PB-122) | 44px header (tabs or title), scroll body with `--bd-space-4` padding, optional sticky footer; panels are flat and separated by a 1px line. See [Panel anatomy](#panel-anatomy) |
 | Between field groups | `--bd-space-4`; label to control `--bd-space-3` (`--bd-space-1` inside a compact field) |
-| Rows (layers, menu items, list view) | `--bd-control-md` (28px) |
-| Tiles | 68px high, `--bd-space-3` gaps |
+| Rows (layers, menu items, list view) | `--bd-control-md` (32px) |
+| Tiles | 76px high, `--bd-space-3` gaps |
 | Splitters | 1px line with an 8px invisible hit area (PB-122) |
-| Status bar (PB-122) | 28px |
+| Status bar (PB-122) | 32px |
 | Narrow screens (PB-122, V9) | below 1100px the side panels are overlays; the canvas keeps at least 480px |
 
 ## Icons
@@ -137,8 +140,8 @@ Rules:
 
 ## Density rules
 
-- Default control height is 28px (`--bd-control-md`); 24px only for icon buttons in dense rows and segmented items; 32px for dialog buttons.
-- Body text is 13px, labels 12px, captions 11px. Nothing below 11px; nothing between the four sizes.
+- Default control height is 32px (`--bd-control-md`); 24px only for icon buttons in dense rows and segmented items; 40px for dialog buttons.
+- Body text is 13px, labels 12px, captions 11px. XL titles use 18px; fixed widget diagrams use the metric-specific sizes.
 - Short controls (numbers, selects, toggles) go two to a row; long ones (text, rich text, lists) stack at full width. In the inspector this is `data-layout="row"` / `"stack"` on `.bd-field` (kinds boolean, select, number, icon are rows); the Content tab of a Heading and of a Button fits 800px of window height.
 - Target: a 1280px screen shows the full toolbar on one row, and a typical component's Content tab fits the inspector without scrolling.
 
@@ -179,7 +182,7 @@ The three side panels (Insert / Layers, Inspector) share one frame, provided by 
 
 A panel renders `<PanelHeader>`, `<PanelBody>` and optionally `<PanelFooter>` as its top-level children. Until a panel adopts them (PB-125, PB-126, PB-127) its content simply fills the frame without padding. Never add a second scroll container inside a panel body unless the content needs one (a virtualised list).
 
-The status bar (`.bd-issues-bar`, 28px, `--bd-statusbar-height`) sits below the columns: the issues toggle with error (`circle-alert`, `--bd-danger`) and warning (`triangle-alert`, `--bd-warning`) counts on the left; breakpoint, zoom and save state on the right. Below 1100px the panels are overlays (`.bd-body[data-narrow="true"]`) with `--bd-elevation-3`.
+The status bar (`.bd-issues-bar`, 32px, `--bd-statusbar-height`) sits below the columns: the issues toggle with error (`circle-alert`, `--bd-danger`) and warning (`triangle-alert`, `--bd-warning`) counts on the left; breakpoint, zoom and save state on the right. Below 1100px the panels are overlays (`.bd-body[data-narrow="true"]`) with `--bd-elevation-3`.
 
 ## Feedback surfaces (PB-129)
 
@@ -204,9 +207,60 @@ toast.dismiss(id);
 
 Controls for entering values live in `ui/primitives.tsx` and `styles/primitives.css`: `SegmentedControl` (a `fieldset` of `aria-pressed` buttons in a pill track; icon-only segments get a tooltip and an `aria-label`), `NumberUnitInput` (tabular numerals, unit menu, arrow-key steps) and `ColorSwatch` (decorative; paints only a colour notation). Use a segmented control for 2 to 5 short, mutually exclusive choices and a select beyond that. The style inspector's origin dot uses `--bd-accent` (set here), `--bd-warning` (inherited) and a hollow ring (default).
 
+In the Style inspector, segments use compact padding and wrap instead of shrinking below their contents. Additional keyword selects occupy a separate row. Field headers can wrap their reset and override controls, and fields retain `min-width: 0` inside paired grids. `apps/playground/e2e/inspector-layout.spec.ts` checks text overflow and sibling intersections in both themes at 1280px and in the 1024px panel overlay, plus the small-screen notice below the editor's minimum width.
+
 ## Accessibility checks (PB-131)
 
 - Every editor state of the visual baseline is checked with axe in both themes (`apps/playground/e2e/editor-a11y.spec.ts`); a new panel, dialog or state that joins the baseline joins that spec too.
 - Text contrast is what axe measures, but icon-only controls are not: check them by eye in both themes. On the dark toolbar every control takes its colours from `--bd-toolbar-*` (a segmented control inside the toolbar overrides its inactive and hover colours; the generic segment colours belong on a light surface).
 - A dialog returns focus to the element that had it when it opened (`Dialog` remembers it), so controlled dialogs need no trigger.
 
+
+## Template v2 foundation (PB-151 / WP1)
+
+The approved [template](design/template/README.md) supersedes PB-147 values and historical mockups.
+Inter remains self-hosted; no template font links or demo runtime ship.
+
+| Group | v2 tokens and values |
+|---|---|
+| Toolbar | light white with dark text; dark near-black with light text; focus follows theme |
+| Primary | light #3f5ae0 / white; dark #8ea2f5 / #0f1636 |
+| Override | light #a34f09 / #fdf0e3; dark #f2b552 / #3a2e15 (`override`, `override-soft`) |
+| Toast | `toast-bg/text/accent/ok/err/hover`; inverted surface per theme |
+| Canvas | `canvas-page/hover/select/guide/select-text`; white page, stable blue overlays |
+| Type | `--font-sans`, `--font-mono`; legacy `--bd-font`, `--bd-font-mono` aliases; XL 18px / 24px |
+| Spacing | half 2px; steps 1?6: 4 / 8 / 12 / 16 / 24 / 32px; legacy 0/7/8 alias half/5/6 |
+| Geometry | controls 24/32/40px, compact 28px, toolbar 52px, header 44px, status 32px, right panel 340px |
+| Motion | fast/base/slow 120/200/320ms; standard/enter/exit easing; all durations zero with reduced motion |
+| Metrics | `styles/metrics.css`: fixed box model, 3?3 pad, curve, tiles and other widget geometry |
+
+`tokens.css` imports `metrics.css` before theme declarations; both development and the recursive
+bundler include it. Metrics contain geometry and references to colour tokens, never literal colours,
+so the existing stylelint configuration needs no exception. Existing CSS token names remain available;
+shared scale names take the approved v2 values. Later workers own shell/primitives/panels styling.
+
+Canvas hover/guide are decorative cues: template hover is 2.98:1 on the white page.
+The selection boundary and its label meet 3:1 and 4.5:1 respectively; hover is never the sole selection indicator.
+
+### Legacy token migration (PB-151)
+
+Legacy names remain available, but several changed meaning in template v2:
+`--bd-space-2..6` changed from 6 / 8 / 12 / 16 / 20px to
+8 / 12 / 16 / 24 / 32px; `--bd-control-md` from 28 to 32px,
+`--bd-control-lg` from 32 to 40px, `--bd-panel-header` from 40 to 44px,
+`--bd-statusbar-height` from 28 to 32px, `--bd-toolbar-height` from 44 to 52px,
+and `--bd-right` from 320 to 340px. Fast/base durations changed from
+100 / 160ms to 120 / 200ms. Light `--bd-toolbar`, `--bd-toolbar-hover`,
+`--bd-toolbar-border`, `--bd-toolbar-text`, `--bd-toolbar-muted` and
+`--bd-toolbar-focus` now describe the light toolbar palette. Dark `--bd-primary`,
+`--bd-primary-hover` and `--bd-primary-text` now follow the dark accent palette
+instead of retaining the light primary palette.
+Rewritten consumers use the template scale. These names are not compatibility
+aliases for the old geometry. Consumers retaining old geometry must use tokens
+resolving to the old pixel values (for example `--bd-control-compact` for 28px).
+The main-relative audit of pre-existing CSS/TSX files under `packages/editor/src`
+and `apps/playground` found no untouched consumers of any changed alias,
+including `--bd-control-md`; new WP3/WP5 partials use the template scale.
+`--bd-space-0/7/8`, font aliases, easing and elevations retain their resolved
+values despite changes in how they are expressed. `--bd-canvas-hover` is defined
+but has no consumer.

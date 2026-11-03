@@ -541,7 +541,12 @@ function Layer({
       {row.slot !== 'default' ? <span className="bd-layer-slot">{row.slot}</span> : null}
       {badges.map((badge) => (
         <Tooltip key={badge.key} content={t(badge.key)}>
-          <span className="bd-layer-badge" role="img" aria-label={t(badge.key)}>
+          <span
+            className="bd-layer-badge"
+            data-badge={badge.key}
+            role="img"
+            aria-label={t(badge.key)}
+          >
             <Icon name={badge.icon} />
           </span>
         </Tooltip>

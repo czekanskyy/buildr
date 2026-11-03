@@ -462,7 +462,11 @@ describe('ClipboardProvider', () => {
   let root: Root;
 
   function Bridge() {
-    return <input aria-label="field" />;
+    return (
+      <main className="bd-canvas" tabIndex={-1}>
+        <input aria-label="field" />
+      </main>
+    );
   }
   function Shortcuts(props: { children: React.ReactNode }) {
     const actions = useClipboardActions();
@@ -519,6 +523,30 @@ describe('ClipboardProvider', () => {
     expect(rootOrder(store)).toHaveLength(3);
     await key(document.body, { key: 'x', ctrlKey: true });
     expect(rootOrder(store)).toHaveLength(2);
+  });
+
+  it('offers undo after paste and does not undo a later edit', async () => {
+    const io = memoryIO();
+    const store = await mount(io);
+    act(() => store.select('leafBBBBB1'));
+    await key(document.body, { key: 'c', ctrlKey: true });
+    await key(document.body, { key: 'v', ctrlKey: true });
+    const undo = () =>
+      [...container.querySelectorAll<HTMLButtonElement>('.bd-toast-action')].find(
+        (button) => button.textContent === 'Undo',
+      );
+    expect(undo()).toBeDefined();
+    act(() => undo()?.focus());
+    act(() => undo()?.click());
+    expect(rootOrder(store)).toHaveLength(2);
+    expect(document.activeElement).toBe(container.querySelector('.bd-canvas'));
+    act(() => store.redo());
+    expect(rootOrder(store)).toHaveLength(3);
+    await key(document.body, { key: 'v', ctrlKey: true });
+    act(() => store.undo());
+    const version = store.getState().docVersion;
+    act(() => undo()?.click());
+    expect(store.getState().docVersion).toBe(version);
   });
 
   it('says why a paste was refused', async () => {

@@ -1,4 +1,5 @@
 import { expect, type Page, test } from '@playwright/test';
+import { expectTwoIssueRows, showUndoToast } from '../../feedback.ts';
 
 // The editor in the states listed by PB-118, light and dark, at two window sizes. Every state is
 // seeded through `/?seed=..&theme=..` (no storage, seeded ids), the canvas is awaited through the
@@ -13,7 +14,9 @@ const themes = ['light', 'dark'] as const;
 async function open(page: Page, seed: 'empty' | 'landing', theme: (typeof themes)[number]) {
   await page.goto(`/?seed=${seed}&theme=${theme}`);
   await expect(page.locator('.buildr-editor')).toHaveAttribute('data-theme', theme);
-  await expect(page.locator('.bd-canvas-host')).toHaveAttribute('data-status', 'ready');
+  await expect(page.locator('.bd-canvas-host')).toHaveAttribute('data-status', 'ready', {
+    timeout: 15_000,
+  });
   if (seed === 'landing') {
     await expect(
       page
@@ -46,6 +49,21 @@ const shot = (page: Page, name: string) =>
   expect(page).toHaveScreenshot(`editor-${name}.png`, { animations: 'disabled' });
 
 for (const theme of themes) {
+  test(`${theme} toolbar at minimum width`, async ({ browser }) => {
+    const context = await browser.newContext({
+      viewport: { width: 1024, height: 768 },
+      reducedMotion: 'reduce',
+    });
+    const page = await context.newPage();
+    await open(page, 'landing', theme);
+    const row = page.locator('.bd-toolbar-row');
+    await expect
+      .poll(() => row.evaluate((el) => el.scrollWidth - el.clientWidth))
+      .toBeLessThanOrEqual(0);
+    await shot(page, `toolbar-${theme}-1024`);
+    await context.close();
+  });
+
   for (const size of sizes) {
     test.describe(`${theme} ${size.width}x${size.height}`, () => {
       test.use({ viewport: size, reducedMotion: 'reduce' });
@@ -134,7 +152,20 @@ for (const theme of themes) {
         await expect(page.getByRole('dialog')).toHaveCount(0);
         await page.getByRole('button', { name: 'Show issues' }).click();
         await expect(page.getByText('Checking the page…')).toHaveCount(0);
+        await expectTwoIssueRows(page);
         await shot(page, name('issues'));
+      });
+
+      test('toast with undo and dismiss', async ({ page }) => {
+        await page.goto(`/?seed=landing&theme=${theme}&uiLocale=pl`);
+        await expect(page.locator('.bd-canvas-host')).toHaveAttribute('data-status', 'ready', {
+          timeout: 15_000,
+        });
+        await page.addStyleTag({
+          content: '*, *::before, *::after { caret-color: transparent !important; }',
+        });
+        await showUndoToast(page, 'pl');
+        await shot(page, name('toast'));
       });
     });
   }

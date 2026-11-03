@@ -1,0 +1,117 @@
+/* Component metrics: fixed geometry of individual widgets (box model, pad, curve, tiles…).
+   Not part of the shared scale; change them only together with the component. */
+.buildr-editor,
+.bd-portal:not(.buildr-editor *),
+.bd-popover:not(.buildr-editor *),
+.bd-select-content:not(.buildr-editor *),
+.bd-tooltip:not(.buildr-editor *),
+.bd-dialog:not(.buildr-editor *),
+.bd-dialog-overlay:not(.buildr-editor *),
+.bd-menu:not(.buildr-editor *) {
+  --bd-tip-max-w: 280px;
+  --bd-tip-shift: -4px;
+  --bd-alpha-h: 8px;
+  --bd-bgprev-h: 64px;
+  --bd-blk-background: repeating-linear-gradient(
+    135deg,
+    transparent 0 6px,
+    var(--bd-override-soft) 6px 8px
+  );
+  --bd-blk-outline-off: 2px;
+  --bd-box-cols: 44px 1fr 44px;
+  --bd-box-core-fs: 10px;
+  --bd-box-h: 168px;
+  --bd-box-in-cols: 40px 1fr 40px;
+  --bd-box-in-rows: 26px 1fr 26px;
+  --bd-box-label-fs: 10px;
+  --bd-box-rows: 28px 1fr 28px;
+  --bd-box-v-w: 36px;
+  --bd-boxbar-h: 10px;
+  --bd-boxbar-w: 10px;
+  --bd-check-h: 4px;
+  --bd-check-tf: rotate(-45deg) translate(1px, -1px) scale(0);
+  --bd-check-tf-2: rotate(-45deg) translate(1px, -1px) scale(1);
+  --bd-check-w: 8px;
+  --bd-colorfield-w: 48px;
+  --bd-corners-cols: 56px 1fr 56px;
+  --bd-corners-prev-h: 72px;
+  --bd-corners-rows: auto 72px auto;
+  --bd-curve-h: 64px;
+  --bd-curve-w: 64px;
+  --bd-dialog--wide-w: 760px;
+  --bd-dialog-head-lh: 24px;
+  --bd-dialog-w: 480px;
+  --bd-drop-min-h: 88px;
+  --bd-empty-h: 56px;
+  --bd-empty-w: 56px;
+  --bd-field-cols: 104px minmax(0, 1fr);
+  --bd-field-h: 6px;
+  --bd-field-w: 6px;
+  --bd-hue-h: 8px;
+  --bd-imgpick-thumb-w: 56px;
+  --bd-input--area-lh: 18px;
+  --bd-input--area-min-h: 96px;
+  --bd-issues-h: 160px;
+  --bd-issues-head-h: 36px;
+  --bd-kv-cols: minmax(0, 1fr) minmax(0, 1fr) 24px;
+  --bd-logo-h: 22px;
+  --bd-logo-w: 22px;
+  --bd-menu-min-w: 248px;
+  --bd-mod-dot-h: 6px;
+  --bd-mod-dot-w: 6px;
+  --bd-mstage-background-image: radial-gradient(var(--bd-border) 1px, transparent 1px);
+  --bd-mstage-bg-size: 12px 12px;
+  --bd-mstage-h: 120px;
+  --bd-ovr-h: 18px;
+  --bd-pad--col-h: 8px;
+  --bd-pad--col-w: 14px;
+  --bd-pad-h: 84px;
+  --bd-pad-h-2: 4px;
+  --bd-pad-w: 84px;
+  --bd-pad-w-2: 4px;
+  --bd-palette-sh: 0 0 0 var(--bd-focus-width) var(--bd-surface), 0 0 0 4px var(--bd-accent);
+  --bd-pattern-thumb-h: 88px;
+  --bd-popover-w: 256px;
+  --bd-range-bubble-bottom: calc(100% - 2px);
+  --bd-range-bubble-tf: translate(-50%, 4px);
+  --bd-range-h: 4px;
+  --bd-range-h-2: 14px;
+  --bd-range-sh: 0 0 0 4px var(--bd-accent-soft);
+  --bd-range-w: 14px;
+  --bd-range-w-2: 64px;
+  --bd-rcard-h: 18px;
+  --bd-rcard-prev-w: 36px;
+  --bd-row-h: 30px;
+  --bd-row-m-l: 7px;
+  --bd-row-w: 9px;
+  --bd-selectbox-pad-r: 28px;
+  --bd-shprev-background-image: radial-gradient(var(--bd-border) 1px, transparent 1px);
+  --bd-shprev-bg-size: 12px 12px;
+  --bd-shprev-h: 88px;
+  --bd-shprev-h-2: 48px;
+  --bd-shprev-w: 72px;
+  --bd-states-cols: 168px repeat(6, minmax(0, 1fr));
+  --bd-step-h: 10px;
+  --bd-step-w: 10px;
+  --bd-swatch-background-position: 0 0, 4px 4px;
+  --bd-swatch-bg-size: 8px 8px;
+  --bd-switch-h: 18px;
+  --bd-switch-h-2: 14px;
+  --bd-switch-left: 2px;
+  --bd-switch-tf: translateX(14px);
+  --bd-switch-w: 14px;
+  --bd-tab-h: 6px;
+  --bd-tab-w: 6px;
+  --bd-tile-h: 76px;
+  --bd-timeline-bottom: 4px;
+  --bd-timeline-top: 4px;
+  --bd-trow-acts-h: 22px;
+  --bd-trow-acts-w: 22px;
+  --bd-trow-badge-h: 18px;
+  --bd-trow-badge-w: 18px;
+  --bd-trow-guide-left: 7px;
+  --bd-trow-h: 8px;
+  --bd-trow-left: 40px;
+  --bd-trow-left-2: 36px;
+  --bd-trow-w: 8px;
+}

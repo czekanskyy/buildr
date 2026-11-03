@@ -33,7 +33,10 @@ export function EditorPage() {
         migrations={registry.migrations}
         canvasUrl="/canvas"
         documentRef={documentRef}
-        {...(route.theme === undefined ? {} : { config: { theme: route.theme } })}
+        config={{
+          ...(route.theme === undefined ? {} : { theme: route.theme }),
+          ...(route.uiLocale === undefined ? {} : { uiLocale: route.uiLocale }),
+        }}
       />
     </div>
   );

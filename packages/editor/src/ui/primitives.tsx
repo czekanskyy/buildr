@@ -6,7 +6,7 @@ import * as TabsPrimitive from '@radix-ui/react-tabs';
 import * as TogglePrimitive from '@radix-ui/react-toggle';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, Ref } from 'react';
-import { useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { useT } from '../messages/index.tsx';
 import { Icon, type IconName } from './icon.tsx';
 import { usePortalContainer } from './portal.tsx';
@@ -107,6 +107,8 @@ export function Select({ value, onValueChange, options, label, disabled }: Selec
 // --- Tabs --------------------------------------------------------------------------------------
 
 export interface TabItem {
+  readonly icon?: IconName;
+  readonly modified?: boolean;
   readonly value: string;
   readonly label: string;
   readonly content: ReactNode;
@@ -131,7 +133,11 @@ export function Tabs({ items, label, value, defaultValue, onValueChange }: TabsP
       <TabsPrimitive.List className="bd-tabs-list" aria-label={label}>
         {items.map((item) => (
           <TabsPrimitive.Trigger key={item.value} value={item.value} className="bd-tab">
+            {item.icon !== undefined ? <Icon name={item.icon} /> : null}
             {item.label}
+            {item.modified === true ? (
+              <span className="bd-tab-modified" aria-hidden="true" />
+            ) : null}
           </TabsPrimitive.Trigger>
         ))}
       </TabsPrimitive.List>
@@ -616,25 +622,124 @@ export interface ColorInputProps {
   readonly disabled?: boolean;
   /** Called with a `#rrggbb` colour the browser's own picker chose. */
   readonly onColorChange: (hex: string) => void;
+  readonly palette?: readonly {
+    readonly label: string;
+    readonly color: string;
+    readonly value?: string;
+  }[];
 }
 
-/**
- * The colour swatch as a button that opens the browser's colour picker. The native input sits
- * invisibly over the swatch, so it keeps the platform's keyboard and screen-reader behaviour; what
- * it returns is a hex colour, which the caller still checks against the grammar.
- */
-export function ColorInput({ color, label, disabled, onColorChange }: ColorInputProps) {
+/** A keyboard-accessible colour popover; all writes still pass the caller's grammar. */
+export function ColorInput({
+  color,
+  label,
+  disabled,
+  onColorChange,
+  palette = [],
+}: ColorInputProps) {
+  const t = useT();
+  const id = useId();
+  const [draft, setDraft] = useState<string | undefined>();
+  const text = draft ?? color ?? '';
+  const expanded =
+    color !== undefined && /^#[0-9a-f]{3,4}$/i.test(color)
+      ? `#${[...color.slice(1)].map((c) => c + c).join('')}`
+      : color;
+  const hex = hexOf(expanded?.slice(0, 7)) ?? '#000000';
+  const alpha =
+    expanded !== undefined && /^#[0-9a-f]{8}$/i.test(expanded)
+      ? Math.round((Number.parseInt(expanded.slice(7), 16) / 255) * 100)
+      : 100;
+  const change = (value: string) => {
+    if (disabled === true) return;
+    onColorChange(value);
+  };
+  const choose = (value: string) => {
+    setDraft(undefined);
+    const chosenHex = hexOf(value);
+    const suffix =
+      expanded !== undefined && /^#[0-9a-f]{8}$/i.test(expanded) ? expanded.slice(7) : '';
+    change(chosenHex !== undefined && suffix !== '' ? `${chosenHex}${suffix}` : value);
+  };
   return (
-    <span className="bd-color-input">
-      <ColorSwatch color={color} />
-      <input
-        type="color"
-        className="bd-color-native"
-        aria-label={label}
-        value={hexOf(color) ?? '#000000'}
-        disabled={disabled === true}
-        onChange={(event) => onColorChange(event.target.value)}
-      />
-    </span>
+    <Popover
+      label={label}
+      contentClassName="bd-color-popover"
+      trigger={
+        <Button className="bd-color-trigger" aria-label={label} disabled={disabled === true}>
+          <ColorSwatch color={color} />
+        </Button>
+      }
+    >
+      <fieldset className="bd-color-palette" aria-label={t('style.tokens')}>
+        {palette.map((entry) => (
+          <Button
+            key={entry.label}
+            className="bd-palette-color"
+            aria-label={entry.label}
+            title={entry.label}
+            aria-pressed={color === entry.color}
+            disabled={disabled === true}
+            onClick={() => {
+              if (entry.value !== undefined) {
+                setDraft(undefined);
+                change(entry.value);
+              } else choose(entry.color);
+            }}
+          >
+            <ColorSwatch color={entry.color} />
+          </Button>
+        ))}
+      </fieldset>
+      <label className="bd-color-hex" htmlFor={`${id}-hex`}>
+        <span>{t('style.color.hex')}</span>
+        <Input
+          id={`${id}-hex`}
+          value={text}
+          disabled={disabled === true}
+          spellCheck={false}
+          aria-invalid={
+            draft !== undefined && !/^#[0-9a-f]{3,4}$|^#[0-9a-f]{6}([0-9a-f]{2})?$/i.test(text)
+          }
+          onChange={(event) => {
+            const value = event.target.value;
+            setDraft(value);
+            if (/^#[0-9a-f]{3,4}$|^#[0-9a-f]{6}([0-9a-f]{2})?$/i.test(value)) change(value);
+          }}
+          onBlur={() => setDraft(undefined)}
+        />
+      </label>
+      <label className="bd-color-opacity">
+        <span>{t('style.color.alpha')}</span>
+        <output>{alpha}%</output>
+        <input
+          type="range"
+          className="bd-range"
+          min="0"
+          max="100"
+          value={alpha}
+          disabled={disabled === true || hexOf(expanded?.slice(0, 7)) === undefined}
+          onChange={(event) => {
+            setDraft(undefined);
+            change(
+              `${hex}${Math.round((Number(event.target.value) / 100) * 255)
+                .toString(16)
+                .padStart(2, '0')}`,
+            );
+          }}
+        />
+      </label>
+      <label className="bd-color-picker">
+        <span>{t('style.color.native')}</span>
+        <input
+          type="color"
+          value={hex}
+          disabled={disabled === true}
+          onChange={(event) => {
+            choose(event.target.value);
+          }}
+        />
+      </label>
+    </Popover>
   );
 }

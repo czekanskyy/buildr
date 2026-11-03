@@ -176,7 +176,7 @@ export function EditorLayout({
           label={t('editor.resize.left')}
           controls={ids.left}
         />
-        <main className="bd-canvas" aria-label={t('editor.canvas')}>
+        <main className="bd-canvas" aria-label={t('editor.canvas')} tabIndex={-1}>
           {center}
         </main>
         <Splitter

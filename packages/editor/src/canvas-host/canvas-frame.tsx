@@ -2,7 +2,7 @@ import { createParentTransport } from '@next-buildr/core/protocol';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { BreakpointConfig } from '../app/config.ts';
 import { type MessageKey, useT } from '../messages/index.tsx';
-import { useEditor } from '../store/index.ts';
+import { useEditor, useEditorState } from '../store/index.ts';
 import { Button, Icon } from '../ui/index.ts';
 import { type CanvasHost, type CanvasHostOptions, createCanvasHost } from './host.ts';
 
@@ -87,6 +87,10 @@ const BREAKPOINT_LABELS: Readonly<Record<string, MessageKey>> = {
 export function CanvasFrame(props: CanvasFrameProps) {
   const t = useT();
   const store = useEditor();
+  const empty = useEditorState((state) => {
+    const root = state.doc.nodes[state.doc.root];
+    return Object.values(root?.slots ?? {}).every((children) => children.length === 0);
+  });
   const [attempt, setAttempt] = useState(0);
   const session = useMemo(() => {
     void attempt;
@@ -172,7 +176,12 @@ export function CanvasFrame(props: CanvasFrameProps) {
   const error = hostState?.error;
 
   return (
-    <div className="bd-canvas-host" ref={area} data-status={status}>
+    <div
+      className="bd-canvas-host"
+      ref={area}
+      data-status={status}
+      aria-busy={status === 'connecting' || status === 'initializing'}
+    >
       <p className="bd-canvas-width">{widthLabel}</p>
       <div className="bd-canvas-stage-area" ref={wrap}>
         <div
@@ -197,10 +206,16 @@ export function CanvasFrame(props: CanvasFrameProps) {
           />
         </div>
       </div>
-      {status === 'connecting' ? (
+      {status === 'connecting' || status === 'initializing' ? (
         <div className="bd-canvas-card bd-canvas-status" role="status">
           <Icon name="monitor-smartphone" size="md" />
           <p className="bd-canvas-title">{t('editor.canvas.connecting')}</p>
+        </div>
+      ) : null}
+      {status === 'ready' && empty ? (
+        <div className="bd-canvas-card bd-canvas-status bd-canvas-empty" role="status">
+          <Icon name="monitor-smartphone" size="md" />
+          <p className="bd-canvas-title">{t('editor.canvas.empty')}</p>
         </div>
       ) : null}
       {status === 'error' && error !== undefined ? (

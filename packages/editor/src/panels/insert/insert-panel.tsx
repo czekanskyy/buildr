@@ -48,8 +48,13 @@ function writeView(view: View): void {
  */
 export function InsertPanel() {
   const t = useT();
+  const [targetBefore, targetAfter] = t('insert.target.named').split('{name}');
   const store = useEditor();
   const manifest = useManifest();
+  const selectedId = useEditorState((state) => state.anchorId);
+  const selectedNode = useEditorState((state) =>
+    state.anchorId === null ? undefined : state.doc.nodes[state.anchorId],
+  );
   const readOnly = useEditorState((state) => state.readOnly);
   const [query, setQuery] = useState('');
   const [view, setView] = useState<View>(readView);
@@ -147,7 +152,11 @@ export function InsertPanel() {
       toast.show({ id: 'insert', variant: 'error', message: result.error.message });
       return;
     }
-    toast.show({ id: 'insert', variant: 'success', message: `${t('insert.done')}: ${item.label}` });
+    toast.show({
+      id: 'insert',
+      variant: 'success',
+      message: t('insert.done.named').replace('{name}', () => item.label),
+    });
     // The command gives the fragment fresh ids; the new node is the one now at the target position.
     const created = store.getState().doc.nodes[parentId]?.slots?.[slot]?.[at];
     if (created !== undefined) store.select(created);
@@ -186,6 +195,7 @@ export function InsertPanel() {
             <ComponentIcon meta={{ icon: item.icon }} size="md" />
           </span>
         )}
+        <Icon name="ellipsis" className="bd-insert-grip" aria-hidden="true" />
         <span className="bd-insert-label">{item.label}</span>
         {view === 'list' && item.description !== undefined ? (
           <span className="bd-insert-desc" aria-hidden="true">
@@ -247,6 +257,20 @@ export function InsertPanel() {
           />
         </div>
       </div>
+      {selectedNode !== undefined ? (
+        <div className="bd-insert-target" data-node-id={selectedId}>
+          <Icon name="arrow-right" aria-hidden="true" />
+          <span>
+            {targetBefore}
+            <b>
+              {selectedNode.name ??
+                manifest?.components[selectedNode.type]?.label ??
+                selectedNode.type}
+            </b>
+            {targetAfter}
+          </span>
+        </div>
+      ) : null}
       <div className="bd-insert-scroll">
         {empty ? <p className="bd-insert-empty">{t('insert.empty')}</p> : null}
         {loading ? (

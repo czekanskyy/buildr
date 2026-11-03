@@ -3,7 +3,7 @@ import { createContext, type ReactNode, useContext, useMemo } from 'react';
 import { type MessageKey, useT } from '../messages/index.tsx';
 import type { ExternalActions } from '../shortcuts/index.ts';
 import { useEditor } from '../store/index.ts';
-import { TOAST_MS, useToast } from '../ui/index.ts';
+import { TOAST_MS, usePortalContainer, useToast } from '../ui/index.ts';
 import {
   browserClipboard,
   type Clipboard,
@@ -68,11 +68,47 @@ export function ClipboardProvider(props: {
   const store = useEditor();
   const t = useT();
   const toast = useToast();
+  const portalContainer = usePortalContainer();
   const io = props.io ?? browserClipboard();
-  const clipboard = useMemo(
-    () => createClipboard({ store, io, migrations: props.migrations }),
-    [store, io, props.migrations],
-  );
+  const clipboard = useMemo(() => {
+    const base = createClipboard({ store, io, migrations: props.migrations });
+    const withUndo = (action: () => Promise<ClipboardResult>, message: MessageKey) => async () => {
+      const previousFocus = document.activeElement;
+      const before = store.getState().docVersion;
+      const result = await action();
+      const version = store.getState().docVersion;
+      if (result.ok && version !== before) {
+        toast.show({
+          id: 'clipboard.undo',
+          variant: 'success',
+          message: t(message),
+          action: {
+            label: t('shortcut.undo'),
+            onSelect: () => {
+              // Never undo a later, unrelated edit from an old notification.
+              if (store.getState().docVersion === version) store.undo();
+              if (
+                previousFocus instanceof HTMLElement &&
+                previousFocus.isConnected &&
+                previousFocus !== document.body
+              ) {
+                previousFocus.focus();
+              } else {
+                (portalContainer ?? document).querySelector<HTMLElement>('.bd-canvas')?.focus();
+              }
+              toast.dismiss('clipboard.undo');
+            },
+          },
+        });
+      }
+      return result;
+    };
+    return {
+      copy: base.copy,
+      cut: withUndo(base.cut, 'clipboard.cut.done'),
+      paste: withUndo(base.paste, 'clipboard.paste.done'),
+    };
+  }, [store, io, props.migrations, toast, t, portalContainer]);
 
   const report = useMemo(
     () => (result: ClipboardResult) => {

@@ -8,9 +8,10 @@ import {
   s,
   toManifest,
 } from '@next-buildr/core';
+import { $getRoot, type LexicalEditor } from 'lexical';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { axe } from 'vitest-axe';
 import * as matchers from 'vitest-axe/matchers';
 import { ManifestProvider } from '../../app/manifest.tsx';
@@ -39,6 +40,7 @@ const widget: ComponentMeta = {
     symbol: p.icon({}),
     ariaLabel: p.text({ group: 'accessibility' }),
     fixed: p.number({ default: 1, localizable: false }),
+    rich: p.richText({ label: 'Rich text' }),
   },
   contentCategories: ['flow'],
   styles: { groups: [] },
@@ -389,5 +391,124 @@ describe('Inspector', () => {
     await mount('widget0001', { renderStyle: (node) => <p>styles of {node.id}</p> });
     await openTab('Style');
     expect(container.textContent).toContain('styles of widget0001');
+  });
+});
+
+describe('template v2 prop controls', () => {
+  it('scrubs bounded numeric props through node.setProp with undo and redo', async () => {
+    const store = await mount('widget0001');
+    const dispatch = vi.spyOn(store, 'dispatch');
+    const label = field('count').querySelector('label') as HTMLElement;
+    const drag = async (x: number) =>
+      act(async () => {
+        label.dispatchEvent(
+          new MouseEvent('pointerdown', { bubbles: true, button: 0, clientX: 0 }),
+        );
+        label.dispatchEvent(new MouseEvent('pointermove', { bubbles: true, clientX: x }));
+        label.dispatchEvent(new MouseEvent('pointerup', { bubbles: true }));
+      });
+    await drag(6);
+    expect(propOf(store, 'widget0001', 'count')).toEqual({ kind: 'static', value: 7 });
+    expect(dispatch).toHaveBeenCalledWith({
+      type: 'node.setProp',
+      payload: { id: 'widget0001', prop: 'count', value: { kind: 'static', value: 7 } },
+    });
+    await drag(90);
+    expect(propOf(store, 'widget0001', 'count')).toEqual({ kind: 'static', value: 10 });
+    await act(async () => {
+      store.undo();
+    });
+    expect(propOf(store, 'widget0001', 'count')).toEqual({ kind: 'static', value: 7 });
+    await act(async () => {
+      store.redo();
+    });
+    expect(propOf(store, 'widget0001', 'count')).toEqual({ kind: 'static', value: 10 });
+  });
+
+  it('saves underline, strike and clear as safe rich-text props, and undoes the changes', async () => {
+    const doc = fixture();
+    const node = doc.nodes['widget0001'];
+    if (node === undefined) throw new Error('widget missing');
+    const initial = {
+      type: 'root',
+      version: 1,
+      children: [
+        {
+          type: 'paragraph',
+          version: 1,
+          children: [{ type: 'text', version: 1, text: 'Hello', format: 0 }],
+        },
+      ],
+    };
+    const store = await mount(
+      'widget0001',
+      {},
+      { ...doc, nodes: { ...doc.nodes, widget0001: { ...node, props: { rich: s(initial) } } } },
+    );
+    const dispatch = vi.spyOn(store, 'dispatch');
+    const editor = (
+      field('rich').querySelector('[role=textbox]') as HTMLElement & {
+        __lexicalEditor: LexicalEditor;
+      }
+    ).__lexicalEditor;
+    await act(async () => {
+      editor.update(
+        () => {
+          $getRoot().select(0, 1);
+        },
+        { discrete: true },
+      );
+    });
+    const format = async (label: string) =>
+      act(async () => {
+        field('rich').querySelector<HTMLButtonElement>(`[aria-label="${label}"]`)?.click();
+      });
+    await format('Underline');
+    const formatted = propOf(store, 'widget0001', 'rich');
+    expect(formatted?.kind).toBe('static');
+    expect(dispatch.mock.calls.every(([command]) => command.type === 'node.setProp')).toBe(true);
+    expect(JSON.stringify(formatted)).toContain('"format":8');
+    await act(async () => {
+      store.undo();
+    });
+    expect(propOf(store, 'widget0001', 'rich')).toEqual(s(initial));
+    await act(async () => {
+      store.redo();
+    });
+    expect(JSON.stringify(propOf(store, 'widget0001', 'rich'))).toContain('"format":8');
+    await act(async () => {
+      editor.update(
+        () => {
+          $getRoot().select(0, 1);
+        },
+        { discrete: true },
+      );
+    });
+    await format('Strikethrough');
+    expect(JSON.stringify(propOf(store, 'widget0001', 'rich'))).toContain('"format":12');
+    Range.prototype.getBoundingClientRect ??= () => new DOMRect();
+    Range.prototype.getClientRects ??= () => [] as unknown as DOMRectList;
+    await act(async () =>
+      editor.update(
+        () => {
+          $getRoot().getFirstDescendant()?.selectStart();
+        },
+        { discrete: true },
+      ),
+    );
+    dispatch.mockClear();
+    await format('Clear formatting');
+    expect(dispatch).not.toHaveBeenCalled();
+    expect(JSON.stringify(propOf(store, 'widget0001', 'rich'))).toContain('"format":12');
+    await act(async () =>
+      editor.update(
+        () => {
+          $getRoot().select(0, 1);
+        },
+        { discrete: true },
+      ),
+    );
+    await format('Clear formatting');
+    expect(propOf(store, 'widget0001', 'rich')).toEqual(s(initial));
   });
 });

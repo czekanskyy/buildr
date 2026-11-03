@@ -74,6 +74,9 @@ describe('BuilderEditor shell', () => {
 
   it('has a Polish translation for every English string', () => {
     expect(Object.keys(pl).sort()).toEqual(Object.keys(en).sort());
+    for (const value of Object.values(pl)) {
+      expect(value).not.toMatch(/\p{L}\?+\p{L}|\?+\p{L}|\p{L}\?{2,}/u);
+    }
     for (const k of Object.keys(en) as (keyof typeof en)[]) expect(pl[k]).not.toBe('');
     expect(UI_LOCALES).toEqual(['en', 'pl']);
     expect(createTranslator('pl-PL')('ui.close')).toBe(pl['ui.close']);

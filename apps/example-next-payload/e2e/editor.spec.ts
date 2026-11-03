@@ -93,13 +93,9 @@ test('a style set on mobile does not leak to desktop', async ({ scratch }) => {
   await heading.click();
   await page.getByRole('button', { name: 'Mobile' }).click();
   await page.getByRole('tab', { name: 'Style' }).click();
-  // A group opens by itself when it already has values, so open it rather than toggle it.
-  await page
-    .locator('details', { hasText: 'Typography' })
-    .first()
-    .evaluate((d: HTMLDetailsElement) => {
-      d.open = true;
-    });
+  // A modified section opens itself; only expand it when it is still collapsed.
+  const typography = page.getByRole('button', { name: 'Typography', exact: true });
+  if ((await typography.getAttribute('aria-expanded')) === 'false') await typography.click();
   await page
     .getByRole('group', { name: 'Text align' })
     .getByRole('button', { name: 'right' })

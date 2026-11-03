@@ -251,6 +251,48 @@ describe('Toolbar', () => {
     expect(document.querySelector('[role=tooltip]')?.textContent).toContain('Tablet · 820px');
   });
 
+  it('shows a quick theme action and preserves host-forced themes', async () => {
+    const setPreference = vi.fn();
+    const theme: ThemeState = {
+      preference: 'system',
+      attribute: 'system',
+      forced: false,
+      setPreference,
+    };
+    await mount({}, { theme });
+    await act(async () => byName('Theme: System')?.click());
+    expect(setPreference).toHaveBeenCalledWith('light');
+    await mount({}, { theme: { ...theme, forced: true } });
+    expect(byName('Theme: System')).toBeUndefined();
+  });
+
+  it('marks device overrides on the selected node without changing the document', async () => {
+    const store = await mount();
+    const doc = fixture();
+    const node = doc.nodes['itemAAAAA1'];
+    if (node === undefined) throw new Error('Missing fixture node');
+    const responsive = {
+      ...doc,
+      nodes: {
+        ...doc.nodes,
+        itemAAAAA1: {
+          ...node,
+          styles: { bp: { tablet: { typography: { fontSize: '24px' } } } },
+        },
+      },
+    };
+    await act(async () => {
+      store.replaceDocument(responsive);
+      store.select('itemAAAAA1');
+    });
+    expect(byName('Tablet')?.getAttribute('data-override')).toBe('true');
+    expect(byName('Mobile')?.getAttribute('data-override')).toBe('false');
+    expect(byName('Tablet')?.getAttribute('aria-description')).toBe('Overrides for this device');
+    expect(store.getState().doc).toEqual(responsive);
+    await act(async () => store.select('root'));
+    expect(byName('Tablet')?.getAttribute('data-override')).toBe('false');
+  });
+
   it('shows the status pill of the document', async () => {
     await mount({ status: 'published' });
     expect(container.querySelector('.bd-status-pill')?.textContent).toBe('Published');

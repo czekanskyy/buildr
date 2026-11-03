@@ -5,6 +5,7 @@ import { useEditor, useEditorState } from '../store/index.ts';
 import { Button, Icon, IconButton, Tooltip } from '../ui/index.ts';
 import { MoreMenu } from './more-menu.tsx';
 import { SaveIndicator } from './save-indicator.tsx';
+import { ThemeControl } from './theme-control.tsx';
 
 export interface ToolbarRightProps {
   /** The locale and sample pickers (the shell's), placed between the save status and Preview. */
@@ -67,7 +68,7 @@ export function ToolbarRight(props: ToolbarRightProps) {
         </Tooltip>
       )}
       <Button onClick={props.onPreview} disabled={props.onPreview === undefined}>
-        {t('toolbar.preview')}
+        <Icon name="eye" /> {t('toolbar.preview')}
       </Button>
       <Button
         variant="primary"
@@ -79,8 +80,9 @@ export function ToolbarRight(props: ToolbarRightProps) {
           props.status === 'conflict'
         }
       >
-        {t('toolbar.publish')}
+        <Icon name="arrow-up" /> {t('toolbar.publish')}
       </Button>
+      <ThemeControl />
       <MoreMenu
         historyUrl={props.historyInMenu ? props.historyUrl : undefined}
         cmsUrl={props.moreCmsUrl}

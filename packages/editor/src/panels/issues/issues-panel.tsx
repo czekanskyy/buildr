@@ -152,7 +152,6 @@ export function IssuesPanel({ canvasDiagnostics }: IssuesPanelProps) {
 
   return (
     <section className="bd-issues" aria-label={t('issues.title')}>
-      <h2 className="bd-panel-title">{t('issues.title')}</h2>
       <fieldset className="bd-issues-filters" aria-label={t('issues.filter')}>
         {FILTERS.map((entry) => (
           <Button

@@ -172,7 +172,7 @@ describe('UI primitives', () => {
     );
     await act(async () => close?.click());
     expect(document.body.querySelector('[role=dialog]')).toBeNull();
-    expect(document.activeElement).toBe(opener);
+    await vi.waitFor(() => expect(document.activeElement).toBe(opener));
   });
 
   it('Dialog has a header, a scrollable body and a footer for actions, and passes axe', async () => {
@@ -335,9 +335,43 @@ describe('UI primitives', () => {
     expect(hexOf('$color.primary')).toBeUndefined();
     const onColorChange = vi.fn();
     await show(<ColorInput color="#3f5ae0" label="Colour" onColorChange={onColorChange} />);
-    const native = container.querySelector('input[type=color]') as HTMLInputElement;
+    await act(async () =>
+      container.querySelector<HTMLButtonElement>('[aria-label=Colour]')?.click(),
+    );
+    const native = document.querySelector('input[type=color]') as HTMLInputElement;
     expect(native.value).toBe('#3f5ae0');
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it('keeps colour alpha when a palette or native picker changes hue, and returns focus on Escape', async () => {
+    const onColorChange = vi.fn();
+    await show(
+      <ColorInput
+        color="#1234567f"
+        label="Colour"
+        palette={[{ label: 'Brand', color: '#654321' }]}
+        onColorChange={onColorChange}
+      />,
+    );
+    const trigger = container.querySelector<HTMLButtonElement>('[aria-label=Colour]');
+    await act(async () => trigger?.click());
+    await act(async () => document.querySelector<HTMLButtonElement>('[aria-label=Brand]')?.click());
+    expect(onColorChange).toHaveBeenLastCalledWith('#6543217f');
+    const native = document.querySelector<HTMLInputElement>('input[type=color]');
+    if (native === null) throw new Error('native colour picker missing');
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(
+        native,
+        '#abcdef',
+      );
+      native.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    expect(onColorChange).toHaveBeenLastCalledWith('#abcdef7f');
+    await act(async () => {
+      native.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    });
+    expect(document.querySelector('.bd-color-popover')).toBeNull();
+    await vi.waitFor(() => expect(document.activeElement).toBe(trigger));
   });
 
   it('ColorSwatch paints only colour notations, never raw CSS', async () => {

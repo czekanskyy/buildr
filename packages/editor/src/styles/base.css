@@ -73,7 +73,7 @@
 .bd-tooltip,
 .bd-dialog,
 .bd-menu {
-  font-family: var(--bd-font);
+  font-family: var(--font-sans);
   font-size: var(--bd-text-md);
   font-weight: var(--bd-weight-regular);
   line-height: var(--bd-leading-md);
@@ -97,11 +97,12 @@
   background: var(--bd-bg);
   color: var(--bd-text);
   -webkit-font-smoothing: antialiased;
+  font-feature-settings: "cv11", "ss01";
 }
 
 .buildr-editor :focus-visible {
-  outline: 2px solid var(--bd-focus);
-  outline-offset: 1px;
+  outline: var(--bd-focus-width) solid var(--bd-focus);
+  outline-offset: var(--bd-focus-width);
 }
 
 .buildr-editor .bd-toolbar :focus-visible {
@@ -112,4 +113,14 @@
 .bd-tabular,
 .buildr-editor input[type="number"] {
   font-variant-numeric: tabular-nums;
+}
+
+.buildr-editor [hidden] {
+  display: none !important;
+}
+
+.buildr-editor button {
+  font: inherit;
+  color: inherit;
+  margin: 0;
 }

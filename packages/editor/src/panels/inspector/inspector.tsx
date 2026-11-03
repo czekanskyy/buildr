@@ -243,9 +243,16 @@ export function Inspector({ locale, defaultLocale, renderStyle }: InspectorProps
       <Tabs
         label={t('inspector.tabs')}
         items={[
-          { value: 'content', label: t('inspector.tab.content'), content: propsPanel('content') },
+          {
+            value: 'content',
+            icon: 'type',
+            label: t('inspector.tab.content'),
+            content: propsPanel('content'),
+          },
           {
             value: 'style',
+            icon: 'image',
+            modified: node.styles !== undefined && Object.keys(node.styles).length > 0,
             label: t('inspector.tab.style'),
             content: renderStyle?.(node) ?? (
               <p className="bd-inspector-empty">{t('inspector.style.pending')}</p>
@@ -253,6 +260,7 @@ export function Inspector({ locale, defaultLocale, renderStyle }: InspectorProps
           },
           {
             value: 'advanced',
+            icon: 'braces',
             label: t('inspector.tab.advanced'),
             content: (
               <>
@@ -272,7 +280,7 @@ export function Inspector({ locale, defaultLocale, renderStyle }: InspectorProps
                   label={t('inspector.attr.anchor')}
                   value={node.anchor ?? ''}
                   disabled={disabled}
-                  placeholder="section-1"
+                  placeholder={t('inspector.htmlId.placeholder')}
                   onChange={setAttr}
                 />
                 {node.visibleIf !== undefined ? (

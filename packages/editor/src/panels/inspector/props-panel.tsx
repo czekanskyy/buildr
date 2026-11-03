@@ -3,6 +3,8 @@ import { useId, useState } from 'react';
 import { type MessageKey, useT } from '../../messages/index.tsx';
 import { Icon, IconButton } from '../../ui/index.ts';
 import { propLabel, renderControl } from './controls/index.ts';
+import { parseNumber } from './controls/number.tsx';
+import { ScrubLabel } from './scrub-label.tsx';
 import { type PropReading, readProp, translationLocale } from './value.ts';
 import { TranslationHint } from './values/translation.tsx';
 import { ValueEditor } from './values/value-editor.tsx';
@@ -131,12 +133,32 @@ function Field(props: {
     >
       <div className="bd-field-head">
         {control !== null && editable ? (
-          <label htmlFor={id} className="bd-field-label">
-            {label}
-            {translating ? (
-              <span className="bd-field-locale"> ({t('inspector.translation')})</span>
-            ) : null}
-          </label>
+          def.kind === 'number' ? (
+            <ScrubLabel
+              htmlFor={id}
+              value={String(reading.value ?? def.default)}
+              step={def.step ?? 1}
+              min={def.min}
+              max={def.max}
+              disabled={disabled}
+              onValueChange={(text) => {
+                const next = parseNumber(text, def);
+                if (next !== undefined) props.onChange(name, def, next);
+              }}
+            >
+              {label}
+              {translating ? (
+                <span className="bd-field-locale"> ({t('inspector.translation')})</span>
+              ) : null}
+            </ScrubLabel>
+          ) : (
+            <label htmlFor={id} className="bd-field-label">
+              {label}
+              {translating ? (
+                <span className="bd-field-locale"> ({t('inspector.translation')})</span>
+              ) : null}
+            </label>
+          )
         ) : (
           <span className="bd-field-label">{label}</span>
         )}
