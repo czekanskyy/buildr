@@ -542,20 +542,26 @@ describe('PersistenceProvider', () => {
     expect(controller.state.getState().revision).toBe(2);
   });
 
-  it('asks the author to choose in a conflict', async () => {
+  it('asks the author to choose in a conflict, as an alert dialog, and gives focus back', async () => {
     const fake = fakeAdapter();
     fake.next = () => ({ ok: false, kind: 'conflict', currentRevision: 9 });
     const { store, controller } = await mount(fake);
+    const opener = document.createElement('button');
+    document.body.append(opener);
+    opener.focus();
     edit(store);
     await advance(2000);
-    const dialog = document.querySelector('[role=dialog]');
+    const dialog = document.querySelector('[role=alertdialog]');
     expect(dialog?.textContent).toContain('This page was changed elsewhere');
+    expect(dialog?.getAttribute('aria-describedby')).not.toBeNull();
+    expect(dialog?.querySelector('.bd-dialog-icon[data-tone="warning"]')).not.toBeNull();
     fake.next = () => ({ ok: true, revision: 10, updatedAt: 't10' });
     const overwrite = [...(dialog?.querySelectorAll('button') ?? [])].find((b) =>
       b.textContent?.includes('Overwrite'),
     );
     await act(async () => overwrite?.click());
     expect(status(controller)).toBe('clean');
-    expect(document.querySelector('[role=dialog]')).toBeNull();
+    expect(document.querySelector('[role=alertdialog]')).toBeNull();
+    await vi.waitFor(() => expect(document.activeElement).toBe(opener));
   });
 });

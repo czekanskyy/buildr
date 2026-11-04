@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { axe } from 'vitest-axe';
 import * as matchers from 'vitest-axe/matchers';
+import { StageSlotsContext } from '../app/stage-slots.tsx';
 import { MessagesProvider } from '../messages/index.tsx';
 import { TOAST_MS, type ToastApi, ToastProvider, useToast } from './toast.tsx';
 
@@ -46,6 +47,53 @@ const show = (options: Parameters<ToastApi['show']>[0]) => act(() => void api.sh
 const advance = (ms: number) => act(() => void vi.advanceTimersByTime(ms));
 
 describe('toast region', () => {
+  it('portals into the stage when a stage is provided', async () => {
+    const stage = document.createElement('main');
+    document.body.append(stage);
+    await act(async () =>
+      root.render(
+        <MessagesProvider locale="en">
+          <StageSlotsContext.Provider
+            value={{ stage, issuesOpen: false, setIssuesOpen: () => undefined }}
+          >
+            <ToastProvider>
+              <Probe />
+            </ToastProvider>
+          </StageSlotsContext.Provider>
+        </MessagesProvider>,
+      ),
+    );
+    show({ message: 'In the stage' });
+    expect(stage.querySelector('.bd-toast-region[data-stage="true"]')?.textContent).toContain(
+      'In the stage',
+    );
+    expect(container.querySelector('.bd-toast-region')).toBeNull();
+    stage.remove();
+  });
+  it('keeps only the three newest toasts and leaves errors visible', () => {
+    show({ message: 'First' });
+    show({ message: 'Second' });
+    show({ message: 'Third' });
+    show({ message: 'Error', variant: 'error' });
+    expect(container.querySelectorAll('.bd-toast')).toHaveLength(3);
+    expect(container.textContent).not.toContain('First');
+    advance(TOAST_MS + 1);
+    expect(alert().textContent).toContain('Error');
+  });
+  it('evicts the oldest non-error toast first, and an error only when all are errors', () => {
+    show({ message: 'Err one', variant: 'error' });
+    show({ message: 'Second' });
+    show({ message: 'Third' });
+    show({ message: 'Fourth' });
+    expect(container.textContent).toContain('Err one');
+    expect(container.textContent).not.toContain('Second');
+    show({ message: 'Err two', variant: 'error' });
+    show({ message: 'Err three', variant: 'error' });
+    show({ message: 'Err four', variant: 'error' });
+    expect(container.querySelectorAll('.bd-toast')).toHaveLength(3);
+    expect(container.textContent).not.toContain('Err one');
+    expect(container.textContent).toContain('Err four');
+  });
   it('announces success, info and warning politely and errors as alerts', () => {
     expect(status().getAttribute('aria-live')).toBe('polite');
     show({ message: 'Saved', variant: 'success' });

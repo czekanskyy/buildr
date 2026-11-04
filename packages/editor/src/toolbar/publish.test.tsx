@@ -10,6 +10,7 @@ import {
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { StageSlotsContext } from '../app/stage-slots.tsx';
 import { MessagesProvider } from '../messages/index.tsx';
 import {
   collectIssues,
@@ -191,32 +192,96 @@ describe('the Issues panel and the publish dialog', () => {
     expect(store.getState().selectedIds).toEqual(['widget0001']);
   });
 
-  it('groups issues by severity, with severity and component icons', async () => {
+  it('lists issues worst first as rows with the severity icon, the message and the path', async () => {
     const { store, view } = setup(broken(), 'warn');
     await view(false);
     await act(async () => void store.validateNow());
-    const sections = [...container.querySelectorAll('.bd-issues-severity')];
-    expect(sections.length).toBeGreaterThan(0);
-    const order = sections.map((section) => section.getAttribute('data-severity'));
-    expect(order).toEqual(['error', 'warning', 'info'].filter((sev) => order.includes(sev)));
-    for (const section of sections) {
-      expect(section.querySelector('.bd-issues-heading svg')).not.toBeNull();
-      expect(section.querySelector('.bd-issue-severity[role=img]')).not.toBeNull();
-      expect(section.querySelector('.bd-issue-owner')?.textContent).not.toBe('');
+    const rows = [...container.querySelectorAll('.bd-issues-list .bd-issue')];
+    expect(rows.length).toBeGreaterThan(0);
+    const order = rows.map((row) => row.getAttribute('data-severity'));
+    expect(order).toEqual(
+      [...order].sort(
+        (x, y) =>
+          ['error', 'warning', 'info'].indexOf(x ?? '') -
+          ['error', 'warning', 'info'].indexOf(y ?? ''),
+      ),
+    );
+    for (const row of rows) {
+      expect(row.querySelector('.bd-issue-severity[role=img]')).not.toBeNull();
+      expect(row.querySelector('.bd-issue-message')?.textContent).not.toBe('');
+      expect(row.querySelector('.bd-issue-path')?.textContent).not.toBe('');
     }
+    expect(container.querySelector('.bd-issues-count')?.textContent).toBe(String(rows.length));
+    expect(container.querySelector('.bd-issues-head h2')?.textContent).toBe('Issues on the page');
   });
 
-  it('shows the publish counts as icon badges with a spoken text', async () => {
+  it('renders the help text of an issue under its message', async () => {
+    const { store, view } = setup(broken(), 'warn');
+    await view(false);
+    await act(async () => {
+      const snapshot = store.validateNow();
+      store.setState({
+        validation: {
+          ...snapshot,
+          a11y: [
+            {
+              ruleId: 'r',
+              severity: 'warning',
+              nodeId: 'widget0001',
+              message: 'Missing label',
+              help: 'Give it a label.',
+            },
+          ],
+        },
+      });
+    });
+    const helps = [...container.querySelectorAll('.bd-issues-list .bd-issue-help')];
+    expect(helps.map((help) => help.textContent)).toEqual(['Give it a label.']);
+  });
+
+  it('shows an all-good row when nothing was found', async () => {
+    const { store, view } = setup(clean(), 'warn');
+    await view(false);
+    await act(async () => void store.validateNow());
+    expect(container.querySelector('.bd-issue-ok')?.textContent).toContain('All good');
+    expect(container.querySelector('.bd-issues-count')?.textContent).toBe('0');
+  });
+
+  it('closes the drawer through the stage slots, and has no close button without them', async () => {
+    const { store, view } = setup(clean(), 'warn');
+    await view(false);
+    expect(container.querySelector('.bd-issues-head button')).toBeNull();
+    const setIssuesOpen = vi.fn();
+    await act(async () =>
+      root.render(
+        <MessagesProvider locale="en">
+          <EditorStoreProvider store={store}>
+            <StageSlotsContext.Provider value={{ stage: null, issuesOpen: true, setIssuesOpen }}>
+              <IssuesPanel />
+            </StageSlotsContext.Provider>
+          </EditorStoreProvider>
+        </MessagesProvider>,
+      ),
+    );
+    const close = container.querySelector<HTMLButtonElement>(
+      '.bd-issues-head button[aria-label="Close issues panel"]',
+    );
+    expect(close).not.toBeNull();
+    await act(async () => close?.click());
+    expect(setIssuesOpen).toHaveBeenCalledWith(false);
+  });
+
+  it('shows the publish rows and the counts sentence, without a schedule option', async () => {
     const { view } = setup(broken(), 'warn');
     await view(true);
-    const badges = [...document.querySelectorAll('.bd-publish-badge')];
-    expect(badges.map((badge) => badge.getAttribute('data-severity'))).toEqual([
-      'error',
-      'warning',
-      'info',
-    ]);
-    for (const badge of badges) expect(badge.querySelector('svg')).not.toBeNull();
-    expect(badges[0]?.textContent).toMatch(/[0-9] errors/);
+    const dialog = document.querySelector('[role=dialog]');
+    expect(dialog?.querySelector('.bd-dialog-icon')).not.toBeNull();
+    expect(dialog?.querySelectorAll('.bd-publish-row').length).toBeGreaterThan(0);
+    expect(dialog?.querySelector('.bd-publish-counts')?.textContent).toMatch(
+      /[0-9]+ (error|warning|note)/,
+    );
+    expect(dialog?.querySelector('[role=radiogroup]')).toBeNull();
+    expect(dialog?.textContent).not.toContain('Schedule');
   });
 
   it('refuses to publish while errors exist under the block policy', async () => {

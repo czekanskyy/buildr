@@ -104,8 +104,29 @@ describe('the media picker and control', () => {
     expect(search).toHaveBeenLastCalledWith({ cursor: 'page2' });
     expect(document.querySelectorAll('.bd-media-item')).toHaveLength(2);
     await act(async () => (document.querySelector('.bd-media-item') as HTMLElement).click());
+    expect(onPick).not.toHaveBeenCalled();
+    expect(document.querySelector('.bd-media-side img')).not.toBeNull();
+    expect((document.querySelector('.bd-media-side input') as HTMLInputElement).value).toBe(
+      'A cat',
+    );
+    await act(async () => byText('Insert image')?.click());
     expect(onPick).toHaveBeenCalledWith(photo);
     expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('hands over the edited alt text, including one cleared to empty', async () => {
+    const { media } = library();
+    const onPick = vi.fn();
+    await render(
+      <MediaLibraryProvider media={media}>
+        <MediaPicker open onOpenChange={() => undefined} onPick={onPick} searchDelayMs={0} />
+      </MediaLibraryProvider>,
+    );
+    await settle();
+    await act(async () => (document.querySelector('.bd-media-item') as HTMLElement).click());
+    await setValue(document.querySelector('.bd-media-side input') as HTMLInputElement, '');
+    await act(async () => byText('Insert image')?.click());
+    expect(onPick).toHaveBeenCalledWith({ ...photo, alt: '' });
   });
 
   it('searches and says when nothing matches', async () => {
@@ -120,7 +141,10 @@ describe('the media picker and control', () => {
         />
       </MediaLibraryProvider>,
     );
-    await setValue(document.querySelector('input[type=search]') as HTMLInputElement, 'none');
+    await setValue(
+      document.querySelector('input[aria-label="Search files"]') as HTMLInputElement,
+      'none',
+    );
     await settle();
     expect(search).toHaveBeenLastCalledWith({ text: 'none' });
     expect(document.body.textContent).toContain('No files found.');
@@ -197,6 +221,7 @@ describe('the media picker and control', () => {
     await act(async () => byText('Choose file')?.click());
     await settle();
     await act(async () => (document.querySelector('.bd-media-item') as HTMLElement).click());
+    await act(async () => byText('Insert image')?.click());
     expect(onChange).toHaveBeenLastCalledWith(toMediaRef(photo, 'uploads'));
 
     await mount(toMediaRef(photo, 'uploads'));

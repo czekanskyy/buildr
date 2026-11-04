@@ -8,6 +8,8 @@ import {
   useRef,
   useState,
 } from 'react';
+import { createPortal } from 'react-dom';
+import { useStageSlots } from '../app/stage-slots.tsx';
 import { useT } from '../messages/index.tsx';
 import { Icon, type IconName } from './icon.tsx';
 import { Button, IconButton } from './primitives.tsx';
@@ -37,7 +39,7 @@ export interface ToastApi {
 }
 
 /** How long a toast stays on screen by default. */
-export const TOAST_MS = 6000;
+export const TOAST_MS = 5000;
 
 interface Entry extends ToastOptions {
   readonly id: string;
@@ -69,6 +71,7 @@ export function useToast(): ToastApi {
  * editor that positions a message with `position: fixed`.
  */
 export function ToastProvider({ children }: { readonly children: ReactNode }) {
+  const stage = useStageSlots()?.stage;
   const [entries, setEntries] = useState<readonly Entry[]>([]);
   const counter = useRef(0);
 
@@ -80,7 +83,15 @@ export function ToastProvider({ children }: { readonly children: ReactNode }) {
     const serial = counter.current;
     const id = options.id ?? `toast-${serial}`;
     const entry: Entry = { ...options, id, variant: options.variant ?? 'info', serial };
-    setEntries((current) => [...current.filter((other) => other.id !== id), entry]);
+    setEntries((current) => {
+      const next = [...current.filter((other) => other.id !== id), entry];
+      // Over the limit: drop the oldest non-error toast first; an error goes only if all are errors.
+      while (next.length > 3) {
+        const at = next.findIndex((other) => other.variant !== 'error');
+        next.splice(at < 0 ? 0 : at, 1);
+      }
+      return next;
+    });
     return id;
   }, []);
   const api = useMemo(() => ({ show, dismiss }), [show, dismiss]);
@@ -90,17 +101,20 @@ export function ToastProvider({ children }: { readonly children: ReactNode }) {
       .filter((entry) => (entry.variant === 'error') === errors)
       .map((entry) => <ToastItem key={entry.id} entry={entry} onDismiss={dismiss} />);
 
+  const region = (
+    <div className="bd-toast-region" data-stage={stage ? 'true' : undefined}>
+      <div className="bd-toast-list" role="status" aria-live="polite">
+        {list(false)}
+      </div>
+      <div className="bd-toast-list" role="alert">
+        {list(true)}
+      </div>
+    </div>
+  );
   return (
     <ToastContext.Provider value={api}>
       {children}
-      <div className="bd-toast-region">
-        <div className="bd-toast-list" role="status" aria-live="polite">
-          {list(false)}
-        </div>
-        <div className="bd-toast-list" role="alert">
-          {list(true)}
-        </div>
-      </div>
+      {stage ? createPortal(region, stage) : region}
     </ToastContext.Provider>
   );
 }
@@ -114,7 +128,8 @@ function ToastItem({
 }) {
   const t = useT();
   const { id, serial, variant, action } = entry;
-  const duration = entry.duration === undefined ? TOAST_MS : entry.duration;
+  const duration =
+    variant === 'error' ? null : entry.duration === undefined ? TOAST_MS : entry.duration;
   const [paused, setPaused] = useState(false);
   const remaining = useRef(duration);
   // A replacement (a new serial) starts the countdown again.
@@ -139,6 +154,7 @@ function ToastItem({
     // biome-ignore lint/a11y/noStaticElementInteractions: hover and focus only pause the timer
     <div
       className="bd-toast"
+      style={{ order: serial }}
       data-variant={variant}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}

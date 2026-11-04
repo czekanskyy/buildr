@@ -106,6 +106,9 @@ function ConflictDialog() {
     <Dialog
       open={status === 'conflict'}
       hideClose
+      alert
+      icon="triangle-alert"
+      tone="warning"
       // The choice is the only way out: closing without one would leave the editor stuck in conflict.
       onOpenChange={() => undefined}
       title={t('save.conflict.title')}
@@ -113,12 +116,14 @@ function ConflictDialog() {
       footer={
         <>
           <Button onClick={() => void controller.reload()}>{t('save.conflict.reload')}</Button>
-          <Button variant="danger" onClick={() => void controller.overwrite()}>
+          <Button variant="primary" onClick={() => void controller.overwrite()}>
             {t('save.conflict.overwrite')}
           </Button>
         </>
       }
-    />
+    >
+      <p>{t('dialog.conflict.note')}</p>
+    </Dialog>
   );
 }
 

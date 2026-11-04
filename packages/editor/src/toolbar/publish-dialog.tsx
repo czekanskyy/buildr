@@ -1,7 +1,10 @@
 import type { Diagnostic } from '@next-buildr/core';
 import { useEffect, useState } from 'react';
-import { type MessageKey, useT } from '../messages/index.tsx';
+import { useManifest } from '../app/manifest.tsx';
+import { useStageSlots } from '../app/stage-slots.tsx';
+import { interpolate, type MessageKey, usePlural, useT } from '../messages/index.tsx';
 import {
+  issuePath,
   type PublishPolicy,
   publishGate,
   SEVERITY_ICON,
@@ -36,9 +39,13 @@ const FAILURE_KEY: Record<Exclude<PublishOutcome, { ok: true }>['kind'], Message
 export function PublishDialog(props: PublishDialogProps) {
   const { open, onOpenChange, policy, canvasDiagnostics, onPublished } = props;
   const t = useT();
+  const plural = usePlural();
+  const slots = useStageSlots();
+  const manifest = useManifest();
   const store = useEditor();
   const persistence = usePersistence();
   const readOnly = useEditorState((state) => state.readOnly);
+  const doc = useEditorState((state) => state.doc);
   const status = usePersistenceState((state) => state.status);
   const items = useIssues(canvasDiagnostics);
   const gate = publishGate(items, policy);
@@ -63,40 +70,79 @@ export function PublishDialog(props: PublishDialogProps) {
   };
 
   const done = outcome?.ok === true;
+  const counts = (['error', 'warning', 'info'] as const)
+    .filter((severity) => gate.counts[severity] > 0)
+    .map((severity) => plural(`issues.count.${severity}`, gate.counts[severity]))
+    .join(', ');
+  const showIssues = () => {
+    slots?.setIssuesOpen(true);
+    onOpenChange(false);
+  };
   return (
     <Dialog
       open={open}
       onOpenChange={onOpenChange}
-      title={t('publish.title')}
+      icon="send"
+      title={t('dialog.publish.title')}
       description={t('publish.description')}
       footer={
-        <Button
-          variant="primary"
-          disabled={gate.blocked || readOnly || working || done || status === 'conflict'}
-          onClick={() => void publish()}
-        >
-          {working ? t('publish.working') : t('toolbar.publish')}
-        </Button>
+        <>
+          <Button onClick={() => onOpenChange(false)}>{t('dialog.cancel')}</Button>
+          <Button
+            variant="primary"
+            disabled={gate.blocked || readOnly || working || done || status === 'conflict'}
+            onClick={() => void publish()}
+          >
+            {working ? t('publish.working') : t('dialog.publish.confirm')}
+          </Button>
+        </>
       }
     >
       <p className="bd-publish-notice">{t('publish.notice')}</p>
-      <ul className="bd-publish-summary" aria-label={t('publish.summary')}>
-        {(['error', 'warning', 'info'] as const).map((severity) => (
-          <li key={severity} className="bd-publish-badge" data-severity={severity}>
-            <Icon name={SEVERITY_ICON[severity]} />
-            <span aria-hidden="true">{gate.counts[severity]}</span>
-            <span className="bd-visually-hidden">
-              {t(`publish.count.${severity}`).replace('{count}', String(gate.counts[severity]))}
-            </span>
+      <ul className="bd-publish-list" aria-label={t('publish.summary')}>
+        {items.length === 0 ? (
+          <li className="bd-publish-row" data-severity="ok">
+            <Icon name="circle-check" className="bd-publish-row-icon" />
+            <span className="bd-publish-row-text">{t('issues.allGood')}</span>
           </li>
-        ))}
+        ) : (
+          items.map((item) => {
+            const path = item.nodeId === undefined ? '' : issuePath(doc, manifest, item.nodeId);
+            const content = (
+              <>
+                <Icon
+                  name={SEVERITY_ICON[item.severity]}
+                  label={t(`issues.filter.${item.severity}`)}
+                  className="bd-publish-row-icon"
+                />
+                <span className="bd-publish-row-text">{item.message}</span>
+                {path === '' ? null : <small className="bd-publish-row-path">{path}</small>}
+              </>
+            );
+            return (
+              <li key={item.key} className="bd-publish-row" data-severity={item.severity}>
+                {slots === undefined ? (
+                  content
+                ) : (
+                  <button type="button" className="bd-publish-row-button" onClick={showIssues}>
+                    {content}
+                  </button>
+                )}
+              </li>
+            );
+          })
+        )}
       </ul>
       {gate.blocked ? (
         <p role="alert" className="bd-publish-blocked">
           {t(gate.reason === 'blocking' ? 'publish.blocked.corrupt' : 'publish.blocked.errors')}
         </p>
-      ) : gate.counts.error + gate.counts.warning > 0 ? (
-        <p className="bd-field-hint">{t('publish.warn')}</p>
+      ) : counts !== '' ? (
+        <p className="bd-publish-counts">
+          {gate.counts.error > 0
+            ? `${t('publish.warn')} (${counts})`
+            : interpolate(t('dialog.publish.warningsDontBlock'), { issues: counts })}
+        </p>
       ) : null}
       {status === 'conflict' ? (
         <p role="alert" className="bd-publish-blocked">

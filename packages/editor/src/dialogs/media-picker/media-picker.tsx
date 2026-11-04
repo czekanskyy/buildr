@@ -1,7 +1,7 @@
 import type { MediaAsset } from '@next-buildr/core';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { type MessageKey, useT } from '../../messages/index.tsx';
-import { Button, Dialog, Input, Select } from '../../ui/index.ts';
+import { Button, Dialog, Icon, Input, SearchField, Select } from '../../ui/index.ts';
 import { useMediaLibrary } from './library.tsx';
 import { kindsFor, type MediaKind, mimeTypesFor } from './media-ref.ts';
 
@@ -42,6 +42,9 @@ export function MediaPicker(props: MediaPickerProps) {
   const [kind, setKind] = useState<MediaKind>(kinds[0] ?? 'all');
   const [load, setLoad] = useState<Load>({ state: 'loading' });
   const [more, setMore] = useState(false);
+  const [chosen, setChosen] = useState<MediaAsset | undefined>();
+  const [alt, setAlt] = useState('');
+  const altId = useId();
   // A reply that arrives after a newer search was made must not replace it.
   const request = useRef(0);
 
@@ -80,79 +83,149 @@ export function MediaPicker(props: MediaPickerProps) {
     return () => clearTimeout(timer);
   }, [open, library, run, searchDelayMs, text]);
 
+  useEffect(() => {
+    if (open) setChosen(undefined);
+  }, [open]);
+
+  const choose = (asset: MediaAsset) => {
+    setChosen(asset);
+    setAlt(asset.alt ?? '');
+  };
+
   const pick = (asset: MediaAsset) => {
     onPick(asset);
     onOpenChange(false);
   };
 
+  // The alternative text can be adjusted here; an unchanged one hands over the library entry as it is.
+  const insert = () => {
+    if (chosen === undefined) return;
+    const edited = alt.trim();
+    pick(edited !== (chosen.alt ?? '') ? { ...chosen, alt: edited } : chosen);
+  };
+
+  const preview = chosen;
   return (
     <Dialog
       open={open}
       onOpenChange={onOpenChange}
+      icon="image"
       title={t('media.picker.title')}
       description={t('media.picker.description')}
+      footer={
+        <>
+          <Button onClick={() => onOpenChange(false)}>{t('dialog.cancel')}</Button>
+          <Button variant="primary" disabled={chosen === undefined} onClick={insert}>
+            {t('media.insertImage')}
+          </Button>
+        </>
+      }
     >
       {library === undefined ? (
         <p className="bd-field-hint">{t('media.unavailable')}</p>
       ) : (
         <div className="bd-media-picker">
-          <div className="bd-media-tools">
-            <Input
-              type="search"
-              aria-label={t('media.search')}
-              placeholder={t('media.search')}
-              value={text}
-              onChange={(event) => setText(event.target.value)}
-            />
-            {kinds.length > 1 ? (
-              <Select
-                label={t('media.kind')}
-                value={kind}
-                onValueChange={(next) => setKind(next as MediaKind)}
-                options={kinds.map((entry) => ({ value: entry, label: t(KIND_KEY[entry]) }))}
+          <div className="bd-media-main">
+            <div className="bd-media-tools">
+              <SearchField
+                className="bd-media-search"
+                value={text}
+                onChange={setText}
+                label={t('media.search')}
+                clearLabel={t('blocks.search.clear')}
+                placeholder={t('media.search')}
               />
+              {kinds.length > 1 ? (
+                <Select
+                  label={t('media.kind')}
+                  value={kind}
+                  onValueChange={(next) => setKind(next as MediaKind)}
+                  options={kinds.map((entry) => ({ value: entry, label: t(KIND_KEY[entry]) }))}
+                />
+              ) : null}
+            </div>
+            {load.state === 'loading' ? (
+              <p role="status" className="bd-field-hint">
+                {t('media.loading')}
+              </p>
+            ) : null}
+            {load.state === 'error' ? (
+              <p role="alert" className="bd-media-error">
+                {t('media.error')}{' '}
+                <Button variant="ghost" onClick={() => void run(undefined, [])}>
+                  {t('media.retry')}
+                </Button>
+              </p>
+            ) : null}
+            {load.state === 'ready' && load.items.length === 0 ? (
+              <p className="bd-field-hint">{t('media.empty')}</p>
+            ) : null}
+            {load.state === 'ready' ? (
+              <ul className="bd-media-grid" aria-label={t('media.library.images')}>
+                {load.items.map((asset) => (
+                  <li key={asset.id}>
+                    <button
+                      type="button"
+                      className="bd-media-item"
+                      aria-pressed={chosen?.id === asset.id}
+                      onClick={() => choose(asset)}
+                    >
+                      {asset.mimeType.startsWith('image/') ? (
+                        <img src={asset.url} alt="" loading="lazy" />
+                      ) : (
+                        <span className="bd-media-file">{asset.mimeType}</span>
+                      )}
+                      <span className="bd-media-name">{asset.alt ?? asset.id}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            {load.state === 'ready' && load.next !== undefined ? (
+              <Button disabled={more} onClick={() => void run(load.next, load.items)}>
+                {t('media.more')}
+              </Button>
+            ) : null}
+            {library.media.upload !== undefined ? (
+              <UploadForm upload={library.media.upload} onUploaded={pick} />
             ) : null}
           </div>
-          {load.state === 'loading' ? (
-            <p role="status" className="bd-field-hint">
-              {t('media.loading')}
-            </p>
-          ) : null}
-          {load.state === 'error' ? (
-            <p role="alert" className="bd-media-error">
-              {t('media.error')}{' '}
-              <Button variant="ghost" onClick={() => void run(undefined, [])}>
-                {t('media.retry')}
-              </Button>
-            </p>
-          ) : null}
-          {load.state === 'ready' && load.items.length === 0 ? (
-            <p className="bd-field-hint">{t('media.empty')}</p>
-          ) : null}
-          {load.state === 'ready' ? (
-            <ul className="bd-media-grid" aria-label={t('media.picker.title')}>
-              {load.items.map((asset) => (
-                <li key={asset.id}>
-                  <button type="button" className="bd-media-item" onClick={() => pick(asset)}>
-                    {asset.mimeType.startsWith('image/') ? (
-                      <img src={asset.url} alt="" loading="lazy" />
-                    ) : (
-                      <span className="bd-media-file">{asset.mimeType}</span>
-                    )}
-                    <span className="bd-media-name">{asset.alt ?? asset.id}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-          {load.state === 'ready' && load.next !== undefined ? (
-            <Button disabled={more} onClick={() => void run(load.next, load.items)}>
-              {t('media.more')}
-            </Button>
-          ) : null}
-          {library.media.upload !== undefined ? (
-            <UploadForm upload={library.media.upload} onUploaded={pick} />
-          ) : null}
+          <aside className="bd-media-side" aria-label={t('media.picker.title')}>
+            {preview === undefined ? (
+              <p className="bd-field-hint">{t('media.none')}</p>
+            ) : (
+              <>
+                <div className="bd-media-preview-frame">
+                  {preview.mimeType.startsWith('image/') ? (
+                    <img src={preview.url} alt="" />
+                  ) : (
+                    <Icon name="file" size="md" />
+                  )}
+                </div>
+                <div className="bd-media-meta">
+                  <b className="bd-media-meta-name">{preview.alt ?? preview.id}</b>
+                  <small>
+                    {preview.width !== undefined && preview.height !== undefined
+                      ? `${preview.width} x ${preview.height} · `
+                      : ''}
+                    {preview.mimeType}
+                  </small>
+                </div>
+                <div className="bd-media-alt">
+                  <label className="bd-media-alt-label" htmlFor={altId}>
+                    {t('media.upload.alt')}
+                  </label>
+                  <Input
+                    id={altId}
+                    type="text"
+                    value={alt}
+                    onChange={(event) => setAlt(event.target.value)}
+                  />
+                </div>
+                <p className="bd-field-hint">{t('media.altHelp')}</p>
+              </>
+            )}
+          </aside>
         </div>
       )}
     </Dialog>
