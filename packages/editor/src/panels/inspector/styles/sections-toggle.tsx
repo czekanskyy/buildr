@@ -17,7 +17,7 @@ export function SectionsToggle() {
     registry.snapshot,
   );
   // PB-157 WP5a: no dedicated keys yet; the structure tree's labels say the same thing.
-  const label = allOpen ? t('structure.collapseAll') : t('structure.expandAll');
+  const label = allOpen ? t('styleSection.collapseAll') : t('styleSection.expandAll');
   return (
     <IconButton
       icon={allOpen ? 'chevrons-down-up' : 'chevrons-up-down'}

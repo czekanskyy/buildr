@@ -638,7 +638,7 @@ function SelectedStyleInspector({ node, breakpoint, theme = defaultTheme }: Styl
       <SearchField
         className="bd-inspector-search"
         label={t('inspector.search')}
-        clearLabel={t('insert.clear')}
+        clearLabel={t('inspector.search.clear')}
         placeholder={t('inspector.search.placeholder')}
         value={query}
         onChange={setQuery}

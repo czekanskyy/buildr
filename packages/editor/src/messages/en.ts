@@ -1143,6 +1143,20 @@ export const en = {
   'menu.unwrap': 'Unwrap',
   'menu.saveAsPattern': 'Save as pattern',
   'menu.delete': 'Delete block',
+  'inspector.inBlock': 'in block: {name}',
+  'inspector.search.clear': 'Clear search',
+  'styleSection.expandAll': 'Expand all sections',
+  'styleSection.collapseAll': 'Collapse all sections',
+  'styleField.shadow.layer': 'Shadow layer {n}',
+  'styleField.shadow.add': 'Add layer',
+  'dialog.delete.containsBlock.one':
+    'The block contains {count} block. You can undo the deletion with {shortcut}.',
+  'dialog.delete.containsBlock.few':
+    'The block contains {count} blocks. You can undo the deletion with {shortcut}.',
+  'dialog.delete.containsBlock.many':
+    'The block contains {count} blocks. You can undo the deletion with {shortcut}.',
+  'dialog.delete.containsBlock.other':
+    'The block contains {count} blocks. You can undo the deletion with {shortcut}.',
   // PB-157 WP0b end
 } as const;
 

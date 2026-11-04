@@ -1138,5 +1138,19 @@ export const pl: Messages = {
   'menu.unwrap': 'Rozpakuj',
   'menu.saveAsPattern': 'Zapisz jako wzorzec',
   'menu.delete': 'Usuń blok',
+  'inspector.inBlock': 'w bloku: {name}',
+  'inspector.search.clear': 'Wyczyść wyszukiwanie',
+  'styleSection.expandAll': 'Rozwiń wszystkie sekcje',
+  'styleSection.collapseAll': 'Zwiń wszystkie sekcje',
+  'styleField.shadow.layer': 'Warstwa cienia {n}',
+  'styleField.shadow.add': 'Dodaj warstwę',
+  'dialog.delete.containsBlock.one':
+    'Blok zawiera {count} blok. Usunięcie możesz cofnąć skrótem {shortcut}.',
+  'dialog.delete.containsBlock.few':
+    'Blok zawiera {count} bloki. Usunięcie możesz cofnąć skrótem {shortcut}.',
+  'dialog.delete.containsBlock.many':
+    'Blok zawiera {count} bloków. Usunięcie możesz cofnąć skrótem {shortcut}.',
+  'dialog.delete.containsBlock.other':
+    'Blok zawiera {count} bloków. Usunięcie możesz cofnąć skrótem {shortcut}.',
   // PB-157 WP0b end
 };

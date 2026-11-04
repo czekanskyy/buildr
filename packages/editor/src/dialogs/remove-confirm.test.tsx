@@ -44,7 +44,9 @@ const doc = (): BuilderDocument => ({
       name: 'Hero',
       slots: { default: ['itemAAAAA1', 'itemAAAAA2'] },
     },
-    secBBBBBB1: { id: 'secBBBBBB1', type: 'buildr/item' },
+    secBBBBBB1: { id: 'secBBBBBB1', type: 'buildr/item', slots: { default: ['itemBBBBB1'] } },
+    itemBBBBB1: { id: 'itemBBBBB1', type: 'buildr/item', slots: { default: ['itemBBBBB2'] } },
+    itemBBBBB2: { id: 'itemBBBBB2', type: 'buildr/item' },
     itemAAAAA1: { id: 'itemAAAAA1', type: 'buildr/item' },
     itemAAAAA2: { id: 'itemAAAAA2', type: 'buildr/item' },
   },
@@ -110,6 +112,13 @@ describe('RemoveConfirm', () => {
     const cancel = buttons.find((button) => button.textContent === 'Cancel');
     await act(async () => cancel?.click());
     expect(onCancel).toHaveBeenCalledOnce();
+  });
+
+  it('says "block" and not "section" for a nested block', async () => {
+    await render({ ids: ['itemBBBBB1'], hasDescendants: true });
+    const text = document.querySelector('[role=alertdialog]')?.textContent;
+    expect(text).toContain('The block contains 1 block.');
+    expect(text).not.toContain('The section contains');
   });
 
   it('uses the plural title for several nodes', async () => {

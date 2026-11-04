@@ -344,15 +344,6 @@
   color: var(--bd-warning);
 }
 
-.bd-heading {
-  margin: 0;
-  padding: var(--bd-space-3) var(--bd-space-4);
-  font-size: var(--bd-text-sm);
-  line-height: var(--bd-leading-sm);
-  font-weight: var(--bd-weight-semibold);
-  color: var(--bd-text-muted);
-}
-
 .buildr-editor .bd-breadcrumbs {
   min-width: 0;
 }
@@ -749,20 +740,6 @@
   font-weight: var(--bd-weight-semibold);
 }
 
-.bd-menu-group {
-  margin: 0;
-  padding: var(--bd-space-2) var(--bd-space-1) var(--bd-space-1);
-  border: 0;
-  border-top: var(--bd-border-width) solid var(--bd-border);
-}
-
-.bd-menu-label {
-  padding: 0 var(--bd-space-1) var(--bd-space-1);
-  color: var(--bd-text-muted);
-  font-size: var(--bd-text-xs);
-  line-height: var(--bd-leading-xs);
-}
-
 /* Preview (PB-091) */
 .bd-preview {
   position: fixed;
@@ -877,12 +854,6 @@
   opacity: 1;
 }
 
-.buildr-editor .bd-toolbar-heading {
-  display: flex;
-  min-width: 0;
-  margin: 0;
-}
-
 /* Too small a window: the editor does not open (docs/editor.md#small-screens) */
 .buildr-editor .bd-small-screen {
   display: flex;
@@ -955,15 +926,6 @@
 .buildr-editor .bd-panel-header {
   gap: var(--bd-space-2);
   padding-inline: var(--bd-space-3);
-}
-.buildr-editor .bd-toolbar .bd-toolbar-heading,
-.buildr-editor .bd-toolbar-zone[data-zone="left"] > .bd-toolbar-title {
-  padding-inline: var(--bd-space-2);
-  border-radius: var(--bd-radius-md);
-  background: var(--bd-surface-2);
-}
-.buildr-editor .bd-toolbar-zone[data-zone="left"] > .bd-toolbar-title {
-  padding-block: var(--bd-space-1);
 }
 
 /* The theme segment of the more options menu. */

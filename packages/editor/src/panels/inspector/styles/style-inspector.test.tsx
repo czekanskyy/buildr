@@ -836,7 +836,7 @@ describe('style sections chrome (PB-157 WP5a)', () => {
   it('expands and collapses every section from SectionsToggle', async () => {
     const store = await mount(undefined, ['layout', 'spacing', 'visibility']);
     const initial = store.getState().doc;
-    await act(async () => buttonNamed('Expand all').click());
+    await act(async () => buttonNamed('Expand all sections').click());
     for (const name of ['layout', 'spacing', 'visibility'])
       expect(head(name)?.getAttribute('aria-expanded')).toBe('true');
     expect(JSON.parse(localStorage.getItem('buildr.editor.inspector.styles') ?? '{}')).toEqual({
@@ -844,7 +844,7 @@ describe('style sections chrome (PB-157 WP5a)', () => {
       spacing: true,
       visibility: true,
     });
-    await act(async () => buttonNamed('Collapse all').click());
+    await act(async () => buttonNamed('Collapse all sections').click());
     for (const name of ['layout', 'spacing', 'visibility'])
       expect(head(name)?.getAttribute('aria-expanded')).toBe('false');
     expect(store.getState().doc).toBe(initial);

@@ -107,13 +107,6 @@
   padding: var(--bd-space-3);
   background: var(--bd-surface);
 }
-.buildr-editor .bd-insert-bar {
-  gap: var(--bd-space-2);
-}
-.buildr-editor .bd-insert-search {
-  background: var(--bd-surface-2);
-  border-radius: var(--bd-radius-md);
-}
 .buildr-editor .bd-insert-target {
   display: flex;
   align-items: center;

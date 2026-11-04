@@ -37,9 +37,15 @@ export function RemoveConfirm({ request, onConfirm, onCancel }: RemoveConfirmPro
         name,
       });
   const contained = descendantCount(doc, ids);
-  const description = interpolate(plural('dialog.delete.contains', Math.max(contained, 1)), {
-    shortcut: undoHint,
-  });
+  const description = interpolate(
+    plural(
+      section === true ? 'dialog.delete.contains' : 'dialog.delete.containsBlock',
+      Math.max(contained, 1),
+    ),
+    {
+      shortcut: undoHint,
+    },
+  );
   return (
     <Dialog
       open={request !== null}

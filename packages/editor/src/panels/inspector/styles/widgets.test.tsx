@@ -251,7 +251,7 @@ describe('shadow cards', () => {
     expect(container.querySelectorAll('.bd-wshadow__card').length).toBeGreaterThanOrEqual(1);
     expect(container.querySelectorAll('.bd-wshadow__card').length).toBeLessThanOrEqual(layers + 4);
     expect(container.querySelector('.bd-wshadow__add')).toBeNull();
-    expect(byLabel('Shadow 1: Blur').disabled).toBe(true);
+    expect(byLabel('Shadow layer 1: Blur').disabled).toBe(true);
     expect(base(store)?.effects?.shadow).toBe(`$shadow.${name}`);
   });
 
@@ -269,16 +269,16 @@ describe('shadow cards', () => {
     const two = '0px 4px 12px 0px #00000026, 0px 2px 4px 0px #00000026';
     await act(async () => root.render(<View value={two} />));
     expect(container.querySelectorAll('.bd-wshadow__card')).toHaveLength(2);
-    await type(byLabel('Shadow 1: Blur'), '20');
+    await type(byLabel('Shadow layer 1: Blur'), '20');
     expect(onChange).toHaveBeenLastCalledWith(
       '0px 4px 20px 0px #00000026, 0px 2px 4px 0px #00000026',
     );
-    await type(byLabel('Shadow 1: Shadow colour'), '#12');
+    await type(byLabel('Shadow layer 1: Shadow colour'), '#12');
     expect(onChange).toHaveBeenCalledTimes(2);
-    await act(async () => buttonNamed('Remove: Shadow 2').click());
+    await act(async () => buttonNamed('Remove: Shadow layer 2').click());
     expect(onChange).toHaveBeenLastCalledWith('0px 4px 12px 0px #00000026');
     await act(async () => root.render(<View value="0px 4px 12px 0px #00000026" />));
-    await act(async () => buttonNamed('Remove: Shadow 1').click());
+    await act(async () => buttonNamed('Remove: Shadow layer 1').click());
     expect(onChange).toHaveBeenLastCalledWith('none');
   });
 });

@@ -439,7 +439,7 @@ export function ShadowLayers(props: {
     <div className="bd-wshadow">
       {layers.map((layer, index) => {
         const key = `${index}`;
-        const name = `${t('style.property.effects.shadow')} ${index + 1}`;
+        const name = interpolate(t('styleField.shadow.layer'), { n: index + 1 });
         return (
           <fieldset key={key} className="bd-wshadow__card" aria-label={name}>
             <div className="bd-wshadow__head">
@@ -503,7 +503,7 @@ export function ShadowLayers(props: {
           disabled={props.disabled}
           onClick={add}
         >
-          {t('list.add')}
+          {t('styleField.shadow.add')}
         </button>
       ) : null}
     </div>
