@@ -99,7 +99,12 @@ export function PublishDialog(props: PublishDialogProps) {
       }
     >
       <p className="bd-publish-notice">{t('publish.notice')}</p>
-      <ul className="bd-publish-list" aria-label={t('publish.summary')}>
+      <ul
+        className="bd-publish-list"
+        aria-label={t('publish.summary')}
+        // biome-ignore lint/a11y/noNoninteractiveTabindex: a scrollable region must be reachable by keyboard
+        tabIndex={0}
+      >
         {items.length === 0 ? (
           <li className="bd-publish-row" data-severity="ok">
             <Icon name="circle-check" className="bd-publish-row-icon" />
