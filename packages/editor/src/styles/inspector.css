@@ -61,17 +61,59 @@
   margin-top: var(--bd-space-2);
 }
 
-/* Field rows: a 104px label column, then the control. */
-.buildr-editor .bd-field[data-layout="row"] {
-  grid-template-columns: var(--bd-field-cols);
+/* Property fields: the label row (label wraps, reset, icon-only value modes) and the control under it.
+   A switch is short enough to sit beside the label. */
+.buildr-editor .bd-field[data-prop][data-layout] {
+  grid-template-columns: minmax(0, 1fr) auto;
 }
-.buildr-editor .bd-field[data-layout="row"] > .bd-field-head {
+.buildr-editor .bd-field[data-prop][data-layout] > .bd-field-head {
+  grid-column: 1;
+  grid-row: 1;
   min-width: 0;
 }
+.buildr-editor .bd-field[data-prop][data-layout] > .bd-field-body {
+  display: contents;
+}
+.buildr-editor .bd-field[data-prop][data-layout] > .bd-field-body > .bd-value {
+  display: contents;
+}
+.buildr-editor
+  .bd-field[data-prop][data-layout]
+  > .bd-field-body
+  > .bd-value
+  > :not(.bd-value-modes) {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  min-width: 0;
+}
+.buildr-editor .bd-field[data-prop][data-layout] > .bd-field-body > .bd-value > .bd-value-modes {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+}
+.buildr-editor .bd-field[data-prop][data-layout] .bd-value-modes .bd-segment {
+  min-width: var(--bd-control-sm);
+  padding: 0 var(--bd-space-1);
+}
+.buildr-editor
+  .bd-field[data-prop][data-layout][data-kind="boolean"]
+  > .bd-field-body
+  > .bd-value[data-mode="static"]
+  > :not(.bd-value-modes) {
+  grid-column: 2;
+  grid-row: 2;
+  justify-self: end;
+}
+.buildr-editor .bd-field[data-prop][data-layout][data-kind="boolean"] > .bd-field-head {
+  grid-row: 1 / span 2;
+}
+.buildr-editor .bd-field[data-prop][data-layout] > .bd-field-hint {
+  grid-column: 1 / -1;
+  margin-top: calc(-1 * var(--bd-space-1));
+}
 .buildr-editor .bd-field-label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
   color: var(--bd-text-muted);
 }
 .buildr-editor .bd-field[data-prop]:has(.bd-field-reset) .bd-field-label {

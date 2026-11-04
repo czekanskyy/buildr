@@ -120,6 +120,7 @@ export function ValueEditor({
           value: entry.mode,
           label: t(entry.key),
           icon: entry.icon,
+          iconOnly: true,
         }))}
         onValueChange={(next) => choose(next as Mode)}
       />

@@ -575,9 +575,10 @@ function Shell(
                 headerActions={<SectionsToggle />}
                 onPageSettings={() => setPageOptionsOpen(true)}
                 onRemoveRequest={requestRemove}
-                renderStyle={(node) => (
+                renderStyle={(node, query) => (
                   <StyleInspector
                     node={node}
+                    query={query}
                     {...(breakpoint === config.breakpoints[0]?.id ? {} : { breakpoint })}
                   />
                 )}

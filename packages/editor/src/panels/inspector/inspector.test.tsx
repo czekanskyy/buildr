@@ -429,8 +429,12 @@ describe('Inspector', () => {
     };
     await mount('widget0001', {}, bound);
     expect((field('title').querySelector('input') as HTMLInputElement).value).toBe('post.title');
-    expect(field('title').querySelector('[aria-pressed=true]')?.textContent).toBe('Data');
-    expect(field('href').querySelector('[aria-pressed=true]')?.textContent).toBe('Formula');
+    expect(field('title').querySelector('[aria-pressed=true]')?.getAttribute('aria-label')).toBe(
+      'Data',
+    );
+    expect(field('href').querySelector('[aria-pressed=true]')?.getAttribute('aria-label')).toBe(
+      'Formula',
+    );
     expect((field('href').querySelector('textarea') as HTMLTextAreaElement).value).toBe(
       'post.slug',
     );

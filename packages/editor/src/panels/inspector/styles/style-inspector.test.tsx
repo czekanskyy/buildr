@@ -9,7 +9,7 @@ import {
   type StyleGroup,
   toManifest,
 } from '@next-buildr/core';
-import { act } from 'react';
+import { act, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { axe } from 'vitest-axe';
@@ -17,6 +17,7 @@ import * as matchers from 'vitest-axe/matchers';
 import { ManifestProvider } from '../../../app/manifest.tsx';
 import { MessagesProvider } from '../../../messages/index.tsx';
 import { createEditorStore, EditorStoreProvider, useEditorState } from '../../../store/index.ts';
+import { SearchField } from '../../../ui/index.ts';
 import { boundsOf, checkStyleInput } from './model.ts';
 import { StyleSectionsProvider } from './sections-context.tsx';
 import { SectionsToggle } from './sections-toggle.tsx';
@@ -108,11 +109,28 @@ async function mount(
     const node = useEditorState((state) =>
       state.anchorId === null ? undefined : state.doc.nodes[state.anchorId],
     );
+    const [query, setQuery] = useState('');
+    const [lastId, setLastId] = useState(node?.id);
+    if (node?.id !== lastId) {
+      setLastId(node?.id);
+      setQuery('');
+    }
     if (node === undefined) return null;
     return (
       <StyleSectionsProvider>
         <SectionsToggle />
-        <StyleInspector node={node} {...(breakpoint !== undefined ? { breakpoint } : {})} />
+        <SearchField
+          className="bd-inspector-search"
+          label="Search"
+          clearLabel="Clear"
+          value={query}
+          onChange={setQuery}
+        />
+        <StyleInspector
+          node={node}
+          query={query}
+          {...(breakpoint !== undefined ? { breakpoint } : {})}
+        />
       </StyleSectionsProvider>
     );
   };

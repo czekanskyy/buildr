@@ -17,14 +17,7 @@ import { type ReactNode, useId, useState } from 'react';
 import { componentMeta, useManifest } from '../../../app/manifest.tsx';
 import { interpolate, type MessageKey, useT } from '../../../messages/index.tsx';
 import { useEditor, useEditorState } from '../../../store/index.ts';
-import {
-  Icon,
-  Input,
-  NumberUnitInput,
-  SearchField,
-  SegmentedControl,
-  Tooltip,
-} from '../../../ui/index.ts';
+import { Icon, Input, NumberUnitInput, SegmentedControl, Tooltip } from '../../../ui/index.ts';
 import { ScrubLabel } from '../scrub-label.tsx';
 import { BoxModel } from './box-model.tsx';
 import { GradientFields } from './gradient-fields.tsx';
@@ -55,6 +48,8 @@ export interface StyleInspectorProps {
   /** The breakpoint being edited: `'base'` (desktop, the default) or a breakpoint id of the theme. */
   readonly breakpoint?: string;
   readonly theme?: Theme;
+  /** The search text from the inspector header, which filters sections and properties. */
+  readonly query?: string;
 }
 
 const pathOf = (def: StylePropertyDef, part?: string) =>
@@ -439,7 +434,11 @@ function StyleProperty(props: {
         ? keywords
         : keywords.filter((keyword) => !segments.some((segment) => segment.keyword === keyword));
     body = (
-      <div className="bd-style-enum" data-segmented={segments !== undefined ? '' : undefined}>
+      <div
+        className="bd-style-enum"
+        data-segmented={segments !== undefined ? '' : undefined}
+        data-more={segments !== undefined && remaining.length > 0 ? '' : undefined}
+      >
         {segments !== undefined ? (
           <SegmentedControl
             label={label}
@@ -564,24 +563,34 @@ function StyleProperty(props: {
  * the theme before anything is dispatched, so a value outside the grammar cannot be written; a value
  * that comes from a wider breakpoint is shown as such, and "Reset" removes only this layer's key.
  */
-export function StyleInspector({ node, breakpoint, theme = defaultTheme }: StyleInspectorProps) {
+export function StyleInspector({
+  node,
+  breakpoint,
+  theme = defaultTheme,
+  query,
+}: StyleInspectorProps) {
   return (
     <SelectedStyleInspector
       key={node.id}
       node={node}
       {...(breakpoint !== undefined ? { breakpoint } : {})}
       theme={theme}
+      {...(query !== undefined ? { query } : {})}
     />
   );
 }
 
-function SelectedStyleInspector({ node, breakpoint, theme = defaultTheme }: StyleInspectorProps) {
+function SelectedStyleInspector({
+  node,
+  breakpoint,
+  theme = defaultTheme,
+  query = '',
+}: StyleInspectorProps) {
   const t = useT();
   const manifest = useManifest();
   const doc = useEditorState((state) => state.doc);
   const readOnly = useEditorState((state) => state.readOnly);
   const [notice, setNotice] = useState('');
-  const [query, setQuery] = useState('');
   const [state, setState] = useState<StyleState | 'normal'>('normal');
   const device = breakpoint ?? 'base';
   const layer = state === 'normal' ? device : `state:${state}`;
@@ -635,14 +644,6 @@ function SelectedStyleInspector({ node, breakpoint, theme = defaultTheme }: Styl
 
   return (
     <div className="bd-styles" data-layer={layer}>
-      <SearchField
-        className="bd-inspector-search"
-        label={t('inspector.search')}
-        clearLabel={t('inspector.search.clear')}
-        placeholder={t('inspector.search.placeholder')}
-        value={query}
-        onChange={setQuery}
-      />
       <SegmentedControl
         label={t('style.state.label')}
         value={state}

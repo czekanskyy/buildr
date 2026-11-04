@@ -31,7 +31,7 @@ export interface InspectorProps {
   readonly locale?: string;
   readonly defaultLocale?: string;
   /** The Style tab (PB-082); without it the tab says the styles are edited elsewhere. */
-  readonly renderStyle?: (node: PageNode) => ReactNode;
+  readonly renderStyle?: (node: PageNode, query: string) => ReactNode;
   /** The tab shown (controlled). Without it the inspector keeps its own. */
   readonly tab?: InspectorTab;
   readonly onTabChange?: (tab: InspectorTab) => void;
@@ -442,7 +442,7 @@ export function Inspector({
             icon: 'image',
             modified: node.styles !== undefined && Object.keys(node.styles).length > 0,
             label: t('inspector.tab.style'),
-            content: renderStyle?.(node) ?? (
+            content: renderStyle?.(node, query) ?? (
               <p className="bd-inspector-empty">{t('inspector.style.pending')}</p>
             ),
           },

@@ -174,7 +174,7 @@ describe('value modes in the inspector', () => {
   const title = () => container.querySelector('[data-prop=title]') as HTMLElement;
   const button = (name: string) =>
     [...title().querySelectorAll('button')].find(
-      (element) => element.textContent === name,
+      (element) => (element.getAttribute('aria-label') ?? element.textContent) === name,
     ) as HTMLButtonElement;
   const click = (element: Element) =>
     act(async () => {

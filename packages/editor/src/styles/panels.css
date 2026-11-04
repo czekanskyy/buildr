@@ -1441,3 +1441,31 @@
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* A segmented enum with more keywords: the segments and a compact keyword menu share one line, under
+   the label (they do not fit beside it). */
+.buildr-editor .bd-style-field.bd-style-inline:has(.bd-style-enum[data-more]) {
+  grid-template-columns: minmax(0, 1fr);
+}
+.buildr-editor
+  .bd-style-field.bd-style-inline:has(.bd-style-enum[data-more])
+  > :not(.bd-style-head) {
+  grid-column: 1;
+}
+.buildr-editor .bd-style-enum[data-more] {
+  flex-wrap: nowrap;
+  gap: var(--bd-space-1);
+}
+.buildr-editor .bd-style-enum[data-more] > .bd-segmented {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.buildr-editor .bd-style-enum[data-more] > select {
+  flex: 0 0 auto;
+  width: 72px;
+}
+/* Compact rows: tight vertical rhythm between style properties. */
+.buildr-editor .bd-styles .bd-field.bd-style-field {
+  margin-block: var(--bd-space-1);
+  row-gap: 0;
+}
