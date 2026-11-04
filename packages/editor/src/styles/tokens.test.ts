@@ -18,6 +18,10 @@ const PARTIALS = [
   'primitives',
   'panels',
   'left-panel',
+  'canvas',
+  'inspector',
+  'style-panel',
+  'style-widgets',
   'overlays',
 ];
 

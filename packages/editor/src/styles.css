@@ -11,4 +11,8 @@
 @import "./styles/primitives.css";
 @import "./styles/panels.css";
 @import "./styles/left-panel.css";
+@import "./styles/canvas.css";
+@import "./styles/inspector.css";
+@import "./styles/style-panel.css";
+@import "./styles/style-widgets.css";
 @import "./styles/overlays.css";

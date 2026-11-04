@@ -6,7 +6,7 @@ import * as TabsPrimitive from '@radix-ui/react-tabs';
 import * as TogglePrimitive from '@radix-ui/react-toggle';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, Ref } from 'react';
-import { useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { useT } from '../messages/index.tsx';
 import { Icon, type IconName } from './icon.tsx';
 import { usePortalContainer } from './portal.tsx';
@@ -16,7 +16,7 @@ const cx = (...parts: (string | undefined | false)[]) => parts.filter(Boolean).j
 // --- Button ------------------------------------------------------------------------------------
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  readonly variant?: 'default' | 'primary' | 'ghost' | 'danger';
+  readonly variant?: 'default' | 'primary' | 'ghost' | 'danger' | 'text';
   readonly ref?: Ref<HTMLButtonElement>;
 }
 
@@ -32,13 +32,26 @@ export interface IconButtonProps extends Omit<ButtonProps, 'children' | 'aria-la
   readonly icon: IconName;
   /** Shown after the name in the tooltip only (a keyboard shortcut), not part of the accessible name. */
   readonly hint?: string | undefined;
+  /** `sm` is the 24px button of dense rows; `md` (default) the 32px one. */
+  readonly size?: 'sm' | 'md';
 }
 
 /** A button with an icon and a required accessible name; the name is also its tooltip. */
-export function IconButton({ label, icon, hint, className, ...rest }: IconButtonProps) {
+export function IconButton({
+  label,
+  icon,
+  hint,
+  size = 'md',
+  className,
+  ...rest
+}: IconButtonProps) {
   return (
     <Tooltip content={hint === undefined ? label : `${label} (${hint})`}>
-      <Button {...rest} aria-label={label} className={cx('bd-icon-button', className)}>
+      <Button
+        {...rest}
+        aria-label={label}
+        className={cx('bd-icon-button', size === 'sm' && 'bd-icon-button--sm', className)}
+      >
         <Icon name={icon} />
       </Button>
     </Tooltip>
@@ -53,6 +66,105 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 export function Input({ className, ...rest }: InputProps) {
   return <input {...rest} className={cx('bd-input', className)} />;
+}
+
+// --- Kbd ---------------------------------------------------------------------------------------
+
+export interface KbdProps {
+  readonly children: ReactNode;
+  readonly className?: string;
+  /** Hides it from assistive technology (a hint that another attribute already announces). */
+  readonly 'aria-hidden'?: boolean;
+}
+
+/** A keyboard key or shortcut, as printed in tooltips, menus and search hints. */
+export function Kbd({ children, className, 'aria-hidden': hidden }: KbdProps) {
+  return (
+    <kbd className={cx('bd-kbd', className)} {...(hidden === true ? { 'aria-hidden': true } : {})}>
+      {children}
+    </kbd>
+  );
+}
+
+// --- SearchField -------------------------------------------------------------------------------
+
+export interface SearchFieldProps {
+  readonly value: string;
+  readonly onChange: (value: string) => void;
+  /** The accessible name of the field. */
+  readonly label: string;
+  /** The accessible name of the clear button (shown while the field has a value). */
+  readonly clearLabel: string;
+  readonly placeholder?: string | undefined;
+  /** A shortcut shown at the end while the field is empty (`/`, `Ctrl+K`). */
+  readonly hint?: string | undefined;
+  readonly disabled?: boolean;
+  readonly className?: string;
+  readonly ref?: Ref<HTMLInputElement>;
+}
+
+/** A filter field: leading search icon, an optional shortcut hint, a clear button once typed in. */
+export function SearchField({
+  value,
+  onChange,
+  label,
+  clearLabel,
+  placeholder,
+  hint,
+  disabled,
+  className,
+  ref,
+}: SearchFieldProps) {
+  const inner = useRef<HTMLInputElement | null>(null);
+  // Radix dismisses a Dialog or Popover on Escape at the document in the capture phase, before the
+  // input sees the key. A window capture listener runs earlier still: a non-empty field clears
+  // itself and the key goes no further; an empty one is left alone.
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.target !== inner.current || value === '') return;
+      event.preventDefault();
+      event.stopPropagation();
+      onChange('');
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [value, onChange]);
+  return (
+    <div className={cx('bd-search', className)} data-disabled={disabled === true ? '' : undefined}>
+      <Icon name="search" />
+      <input
+        ref={(node) => {
+          inner.current = node;
+          if (typeof ref === 'function') ref(node);
+          else if (ref) ref.current = node;
+        }}
+        type="text"
+        value={value}
+        aria-label={label}
+        placeholder={placeholder}
+        disabled={disabled === true}
+        autoComplete="off"
+        spellCheck={false}
+        onChange={(event) => onChange(event.target.value)}
+      />
+      {value !== '' ? (
+        <Button
+          variant="ghost"
+          className="bd-icon-button bd-icon-button--sm bd-search-clear"
+          aria-label={clearLabel}
+          disabled={disabled === true}
+          onClick={() => {
+            onChange('');
+            inner.current?.focus();
+          }}
+        >
+          <Icon name="x" />
+        </Button>
+      ) : hint !== undefined ? (
+        <Kbd>{hint}</Kbd>
+      ) : null}
+    </div>
+  );
 }
 
 // --- Select ------------------------------------------------------------------------------------
@@ -86,7 +198,11 @@ export function Select({ value, onValueChange, options, label, disabled }: Selec
         </SelectPrimitive.Icon>
       </SelectPrimitive.Trigger>
       <SelectPrimitive.Portal container={portal}>
-        <SelectPrimitive.Content className="bd-select-content" position="popper" sideOffset={4}>
+        <SelectPrimitive.Content
+          className="bd-select-content bd-menu-in"
+          position="popper"
+          sideOffset={4}
+        >
           <SelectPrimitive.Viewport>
             {options.map((option) => (
               <SelectPrimitive.Item
@@ -183,7 +299,7 @@ export function Popover({
       <PopoverPrimitive.Trigger asChild>{trigger}</PopoverPrimitive.Trigger>
       <PopoverPrimitive.Portal container={portal}>
         <PopoverPrimitive.Content
-          className={cx('bd-popover', contentClassName)}
+          className={cx('bd-popover bd-menu-in', contentClassName)}
           sideOffset={6}
           {...(align !== undefined ? { align } : {})}
           {...(label !== undefined ? { 'aria-label': label } : {})}
@@ -197,7 +313,7 @@ export function Popover({
 
 // --- Dialog ------------------------------------------------------------------------------------
 
-export interface DialogProps {
+interface DialogBaseProps {
   readonly open: boolean;
   readonly onOpenChange: (open: boolean) => void;
   readonly title: string;
@@ -208,7 +324,20 @@ export interface DialogProps {
   readonly footer?: ReactNode;
   /** Omits the close button, for a dialog that can only be left by choosing (a conflict). */
   readonly hideClose?: boolean;
+  /** A glyph in a round well before the title, coloured by `tone`. */
+  readonly icon?: IconName;
+  /** Colours the icon well; `default` is the accent. */
+  readonly tone?: 'default' | 'info' | 'warning' | 'danger';
+  /** A text-style action at the start (left) of the footer, opposite the `footer` actions. */
+  readonly footerStart?: ReactNode;
 }
+
+/**
+ * An `alert` dialog interrupts and needs an answer (`role="alertdialog"`); it must say what it is
+ * about, so `description` is required with it and becomes its `aria-describedby` target.
+ */
+export type DialogProps = DialogBaseProps &
+  ({ readonly alert?: false } | { readonly alert: true; readonly description: string });
 
 /** A modal: header (title, description, close icon button), scrollable body, right-aligned footer. */
 export function Dialog({
@@ -219,6 +348,10 @@ export function Dialog({
   children,
   footer,
   hideClose,
+  icon,
+  tone = 'default',
+  alert,
+  footerStart,
 }: DialogProps) {
   const t = useT();
   const portal = usePortalContainer();
@@ -230,7 +363,8 @@ export function Dialog({
       <DialogPrimitive.Portal container={portal}>
         <DialogPrimitive.Overlay className="bd-dialog-overlay" />
         <DialogPrimitive.Content
-          className="bd-dialog"
+          className="bd-dialog bd-dialog-in"
+          {...(alert === true ? { role: 'alertdialog' } : {})}
           onOpenAutoFocus={() => {
             const active = document.activeElement;
             opener.current = active instanceof HTMLElement ? active : null;
@@ -246,6 +380,11 @@ export function Dialog({
           {...(description === undefined ? { 'aria-describedby': undefined } : {})}
         >
           <header className="bd-dialog-header">
+            {icon !== undefined ? (
+              <span className="bd-dialog-icon" data-tone={tone} aria-hidden="true">
+                <Icon name={icon} />
+              </span>
+            ) : null}
             <div className="bd-dialog-heading">
               <DialogPrimitive.Title className="bd-dialog-title">{title}</DialogPrimitive.Title>
               {description !== undefined && (
@@ -264,7 +403,14 @@ export function Dialog({
             )}
           </header>
           {children !== undefined && <div className="bd-dialog-body">{children}</div>}
-          {footer !== undefined && <footer className="bd-dialog-footer">{footer}</footer>}
+          {footer !== undefined || footerStart !== undefined ? (
+            <footer className="bd-dialog-footer">
+              {footerStart !== undefined ? (
+                <div className="bd-dialog-footer-start">{footerStart}</div>
+              ) : null}
+              {footer}
+            </footer>
+          ) : null}
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
@@ -285,7 +431,7 @@ export function Tooltip({ content, children }: TooltipProps) {
       <TooltipPrimitive.Root>
         <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
         <TooltipPrimitive.Portal container={portal}>
-          <TooltipPrimitive.Content className="bd-tooltip" sideOffset={6}>
+          <TooltipPrimitive.Content className="bd-tooltip bd-pop" sideOffset={6}>
             {content}
           </TooltipPrimitive.Content>
         </TooltipPrimitive.Portal>
@@ -327,33 +473,126 @@ export interface MenuItem {
   readonly onSelect: () => void;
   readonly disabled?: boolean;
   readonly danger?: boolean;
+  /** A glyph before the label. */
+  readonly icon?: IconName;
+  /** A shortcut printed at the end of the row (visual only, hidden from assistive technology). */
+  readonly kbd?: string;
+  /** The same shortcut as a real key combination (`Control+C`), announced as `aria-keyshortcuts`. */
+  readonly shortcut?: string;
+  /** Makes the row a checkbox item (`aria-checked`); `onSelect` toggles it. */
+  readonly checked?: boolean;
 }
 
 export interface ContextMenuProps {
   /** The area the menu opens on (right click, the menu key, Shift+F10). */
   readonly children: ReactNode;
-  readonly items: readonly MenuItem[];
+  readonly items?: readonly MenuItem[];
+  /** More rows after `items`: `MenuLabel`, `MenuSeparator`, `MenuCheckboxItem`. */
+  readonly content?: ReactNode;
   readonly label: string;
 }
 
-export function ContextMenu({ children, items, label }: ContextMenuProps) {
+/** A small caption above a group of rows. */
+export function MenuLabel({ children }: { readonly children: ReactNode }) {
+  return (
+    <ContextMenuPrimitive.Label className="bd-menu-caption">{children}</ContextMenuPrimitive.Label>
+  );
+}
+
+/** A hairline between groups of rows. */
+export function MenuSeparator() {
+  return <ContextMenuPrimitive.Separator className="bd-menu-separator" />;
+}
+
+export interface MenuCheckboxItemProps {
+  readonly checked: boolean;
+  readonly onCheckedChange: (checked: boolean) => void;
+  readonly children: ReactNode;
+  readonly kbd?: string | undefined;
+  /** A real key combination, announced as `aria-keyshortcuts`. */
+  readonly shortcut?: string | undefined;
+  readonly icon?: IconName | undefined;
+  readonly danger?: boolean | undefined;
+  readonly disabled?: boolean;
+}
+
+/** A row that toggles an option: `role="menuitemcheckbox"` with `aria-checked`, a check mark when on. */
+export function MenuCheckboxItem({
+  checked,
+  onCheckedChange,
+  children,
+  kbd,
+  shortcut,
+  icon,
+  danger,
+  disabled,
+}: MenuCheckboxItemProps) {
+  return (
+    <ContextMenuPrimitive.CheckboxItem
+      className="bd-menu-item"
+      checked={checked}
+      onCheckedChange={onCheckedChange}
+      disabled={disabled === true}
+      data-danger={danger === true ? '' : undefined}
+      aria-keyshortcuts={shortcut}
+    >
+      <span className="bd-menu-check" aria-hidden="true">
+        <ContextMenuPrimitive.ItemIndicator>
+          <Icon name="check" />
+        </ContextMenuPrimitive.ItemIndicator>
+      </span>
+      {icon !== undefined ? <Icon name={icon} /> : null}
+      <span className="bd-menu-item-label">{children}</span>
+      {kbd !== undefined ? (
+        <Kbd className="bd-menu-kbd" aria-hidden>
+          {kbd}
+        </Kbd>
+      ) : null}
+    </ContextMenuPrimitive.CheckboxItem>
+  );
+}
+
+export function ContextMenu({ children, items = [], content, label }: ContextMenuProps) {
   const portal = usePortalContainer();
   return (
     <ContextMenuPrimitive.Root>
       <ContextMenuPrimitive.Trigger asChild>{children}</ContextMenuPrimitive.Trigger>
       <ContextMenuPrimitive.Portal container={portal}>
-        <ContextMenuPrimitive.Content className="bd-menu bd-portal" aria-label={label}>
-          {items.map((item) => (
-            <ContextMenuPrimitive.Item
-              key={item.id}
-              className="bd-menu-item"
-              disabled={item.disabled ?? false}
-              data-danger={item.danger === true ? '' : undefined}
-              onSelect={item.onSelect}
-            >
-              {item.label}
-            </ContextMenuPrimitive.Item>
-          ))}
+        <ContextMenuPrimitive.Content className="bd-menu bd-menu-in bd-portal" aria-label={label}>
+          {items.map((item) =>
+            item.checked === undefined ? (
+              <ContextMenuPrimitive.Item
+                key={item.id}
+                className="bd-menu-item"
+                disabled={item.disabled ?? false}
+                data-danger={item.danger === true ? '' : undefined}
+                aria-keyshortcuts={item.shortcut}
+                onSelect={item.onSelect}
+              >
+                {item.icon !== undefined ? <Icon name={item.icon} /> : null}
+                <span className="bd-menu-item-label">{item.label}</span>
+                {item.kbd !== undefined ? (
+                  <Kbd className="bd-menu-kbd" aria-hidden>
+                    {item.kbd}
+                  </Kbd>
+                ) : null}
+              </ContextMenuPrimitive.Item>
+            ) : (
+              <MenuCheckboxItem
+                key={item.id}
+                checked={item.checked}
+                onCheckedChange={() => item.onSelect()}
+                kbd={item.kbd}
+                shortcut={item.shortcut}
+                icon={item.icon}
+                danger={item.danger}
+                disabled={item.disabled ?? false}
+              >
+                {item.label}
+              </MenuCheckboxItem>
+            ),
+          )}
+          {content}
         </ContextMenuPrimitive.Content>
       </ContextMenuPrimitive.Portal>
     </ContextMenuPrimitive.Root>

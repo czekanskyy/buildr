@@ -9,13 +9,19 @@ import {
   Button,
   ColorInput,
   ColorSwatch,
+  ContextMenu,
   Dialog,
   hexOf,
   IconButton,
   Input,
+  Kbd,
+  MenuCheckboxItem,
+  MenuLabel,
+  MenuSeparator,
   NumberUnitInput,
   Popover,
   PortalContainerProvider,
+  SearchField,
   SegmentedControl,
   Select,
   stepNumberText,
@@ -386,5 +392,280 @@ describe('UI primitives', () => {
     expect(ok?.style.backgroundColor).not.toBe('');
     expect(bad?.getAttribute('style')).toBeNull();
     expect(none?.hasAttribute('data-empty')).toBe(true);
+  });
+});
+
+describe('PB-157 primitives', () => {
+  it('Dialog alert: role alertdialog, tone icon well, footer start, focus returns', async () => {
+    function Host() {
+      const [open, setOpen] = useState(false);
+      return (
+        <>
+          <button type="button" id="opener" onClick={() => setOpen(true)}>
+            Open
+          </button>
+          <Dialog
+            open={open}
+            onOpenChange={setOpen}
+            title="Delete section"
+            alert
+            description="Removes the section"
+            icon="triangle-alert"
+            tone="danger"
+            footerStart={<Button variant="text">History</Button>}
+            footer={<Button variant="danger">Delete</Button>}
+          >
+            <p>body</p>
+          </Dialog>
+        </>
+      );
+    }
+    await show(<Host />);
+    const opener = container.querySelector<HTMLButtonElement>('#opener');
+    await act(async () => opener?.focus());
+    await act(async () => opener?.click());
+    const dialog = document.body.querySelector('[role=alertdialog]');
+    expect(dialog).not.toBeNull();
+    expect(document.body.querySelector('[role=dialog]')).toBeNull();
+    expect(dialog?.querySelector('.bd-dialog-icon')?.getAttribute('data-tone')).toBe('danger');
+    expect(dialog?.querySelector('.bd-dialog-footer-start button')?.textContent).toBe('History');
+    await act(async () =>
+      document.body.querySelector<HTMLButtonElement>('header button[aria-label="Close"]')?.click(),
+    );
+    expect(document.body.querySelector('[role=alertdialog]')).toBeNull();
+    await vi.waitFor(() => expect(document.activeElement).toBe(opener));
+  });
+
+  it('Dialog without the new props renders as before', async () => {
+    await show(
+      <Dialog open onOpenChange={() => {}} title="Plain" footer={<Button>OK</Button>}>
+        <p>body</p>
+      </Dialog>,
+    );
+    const dialog = document.body.querySelector('[role=dialog]');
+    expect(dialog).not.toBeNull();
+    expect(document.body.querySelector('[role=alertdialog]')).toBeNull();
+    expect(dialog?.className).toBe('bd-dialog bd-dialog-in');
+    expect(dialog?.hasAttribute('aria-describedby')).toBe(false);
+    const header = dialog?.querySelector(':scope > header.bd-dialog-header');
+    expect([...(header?.children ?? [])].map((child) => child.className)).toEqual([
+      'bd-dialog-heading',
+      'bd-button bd-icon-button',
+    ]);
+    expect(header?.querySelector('.bd-dialog-title')?.textContent).toBe('Plain');
+    expect(dialog?.querySelector(':scope > .bd-dialog-body')?.textContent).toBe('body');
+    expect(dialog?.querySelector(':scope > footer.bd-dialog-footer > button')?.textContent).toBe(
+      'OK',
+    );
+    expect(dialog?.querySelector('.bd-dialog-icon, .bd-dialog-footer-start')).toBeNull();
+  });
+
+  it('alert Dialog is described by its description', async () => {
+    await show(
+      <Dialog
+        open
+        onOpenChange={() => {}}
+        title="Delete"
+        description="This cannot be undone"
+        alert
+      />,
+    );
+    const dialog = document.body.querySelector('[role=alertdialog]');
+    const id = dialog?.getAttribute('aria-describedby');
+    expect(id).toBeTruthy();
+    expect(document.getElementById(id as string)?.textContent).toBe('This cannot be undone');
+  });
+
+  it('MenuCheckboxItem: aria-checked before and after, by pointer and by Enter and Space', async () => {
+    const seen: boolean[] = [];
+    function Host() {
+      const [on, setOn] = useState(false);
+      return (
+        <ContextMenu
+          label="Actions"
+          items={[
+            {
+              id: 'copy',
+              label: 'Copy',
+              kbd: 'Ctrl+C',
+              shortcut: 'Control+C',
+              icon: 'copy',
+              onSelect: () => {},
+            },
+            {
+              id: 'wide',
+              label: 'Wide',
+              checked: true,
+              danger: true,
+              icon: 'eye',
+              onSelect: () => {},
+            },
+          ]}
+          content={
+            <>
+              <MenuSeparator />
+              <MenuLabel>View</MenuLabel>
+              <MenuCheckboxItem
+                checked={on}
+                onCheckedChange={(next) => {
+                  seen.push(next);
+                  setOn(next);
+                }}
+              >
+                Grid
+              </MenuCheckboxItem>
+            </>
+          }
+        >
+          <div id="area">area</div>
+        </ContextMenu>
+      );
+    }
+    await show(<Host />);
+    const openMenu = () =>
+      act(async () => {
+        container.querySelector('#area')?.dispatchEvent(
+          new MouseEvent('contextmenu', {
+            bubbles: true,
+            cancelable: true,
+            clientX: 5,
+            clientY: 5,
+          }),
+        );
+      });
+    const grid = () =>
+      [...document.body.querySelectorAll('[role=menuitemcheckbox]')].find((el) =>
+        el.textContent?.includes('Grid'),
+      ) as HTMLElement;
+    await openMenu();
+    expect(grid().getAttribute('aria-checked')).toBe('false');
+    const copy = document.body.querySelector('[role=menuitem]');
+    expect(copy?.getAttribute('aria-keyshortcuts')).toBe('Control+C');
+    expect(copy?.querySelector('.bd-kbd')?.getAttribute('aria-hidden')).toBe('true');
+    const wide = [...document.body.querySelectorAll('[role=menuitemcheckbox]')].find((el) =>
+      el.textContent?.includes('Wide'),
+    );
+    expect(wide?.getAttribute('aria-checked')).toBe('true');
+    expect(wide?.hasAttribute('data-danger')).toBe(true);
+    expect(wide?.querySelector('[data-icon="eye"]')).not.toBeNull();
+    expect(document.body.querySelector('.bd-menu-caption')?.textContent).toBe('View');
+    expect(document.body.querySelector('[role=separator]')).not.toBeNull();
+    await act(async () => {
+      grid().dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    });
+    expect(seen).toEqual([true]);
+    await openMenu();
+    expect(grid().getAttribute('aria-checked')).toBe('true');
+    for (const key of ['Enter', ' ']) {
+      await act(async () => {
+        grid().focus();
+        grid().dispatchEvent(
+          new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+        );
+      });
+      await openMenu();
+    }
+    expect(seen).toEqual([true, false, true]);
+    expect(grid().getAttribute('aria-checked')).toBe('true');
+  });
+
+  it('Kbd renders a kbd element', async () => {
+    await show(<Kbd>Ctrl+K</Kbd>);
+    const kbd = container.querySelector('kbd');
+    expect(kbd?.className).toContain('bd-kbd');
+    expect(kbd?.textContent).toBe('Ctrl+K');
+  });
+
+  const typeInto = (input: HTMLInputElement | null, text: string) =>
+    act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(input, text);
+      input?.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+  const pressEscape = (target: Element | null) =>
+    act(async () => {
+      target?.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
+      );
+    });
+
+  function Search({ disabled }: { readonly disabled?: boolean }) {
+    const [value, setValue] = useState('');
+    return (
+      <SearchField
+        value={value}
+        onChange={setValue}
+        label="Search blocks"
+        clearLabel="Clear search"
+        hint="/"
+        {...(disabled === true ? { disabled } : {})}
+      />
+    );
+  }
+
+  it('SearchField: hint while empty, clear button once typed in, which empties and refocuses', async () => {
+    await show(<Search />);
+    const input = container.querySelector<HTMLInputElement>('input[aria-label="Search blocks"]');
+    expect(container.querySelector('kbd')?.textContent).toBe('/');
+    expect(container.querySelector('[aria-label="Clear search"]')).toBeNull();
+    await typeInto(input, 'hero');
+    expect(input?.value).toBe('hero');
+    expect(container.querySelector('kbd')).toBeNull();
+    await act(async () =>
+      container.querySelector<HTMLButtonElement>('[aria-label="Clear search"]')?.click(),
+    );
+    expect(input?.value).toBe('');
+    expect(document.activeElement).toBe(input);
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it('SearchField: Escape clears a non-empty field', async () => {
+    await show(<Search />);
+    const input = container.querySelector<HTMLInputElement>('input');
+    await typeInto(input, 'hero');
+    await pressEscape(input);
+    expect(input?.value).toBe('');
+  });
+
+  it('SearchField in a Dialog: Escape clears first and closes the dialog only when empty', async () => {
+    const onOpenChange = vi.fn();
+    function Host() {
+      const [value, setValue] = useState('');
+      return (
+        <Dialog open onOpenChange={onOpenChange} title="Find">
+          <SearchField value={value} onChange={setValue} label="Find" clearLabel="Clear" />
+        </Dialog>
+      );
+    }
+    await show(<Host />);
+    const input = document.body.querySelector<HTMLInputElement>('input[aria-label=Find]');
+    input?.focus();
+    await typeInto(input, 'hero');
+    await pressEscape(input);
+    expect(input?.value).toBe('');
+    expect(onOpenChange).not.toHaveBeenCalled();
+    expect(document.body.querySelector('[role=dialog]')).not.toBeNull();
+    await pressEscape(input);
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('SearchField: disabled blocks input and the clear button', async () => {
+    await show(
+      <SearchField
+        value="hero"
+        onChange={() => {}}
+        label="Search blocks"
+        clearLabel="Clear search"
+        disabled
+      />,
+    );
+    expect(container.querySelector('input')?.disabled).toBe(true);
+    expect(
+      container.querySelector<HTMLButtonElement>('[aria-label="Clear search"]')?.disabled,
+    ).toBe(true);
+  });
+
+  it('IconButton has a sm size', async () => {
+    await show(<IconButton label="More" icon="ellipsis" size="sm" />);
+    expect(container.querySelector('button')?.className).toContain('bd-icon-button--sm');
   });
 });

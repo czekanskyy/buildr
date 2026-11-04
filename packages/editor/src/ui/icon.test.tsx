@@ -139,3 +139,42 @@ describe('no glyph icons (PB-120)', () => {
     expect(offenders).toEqual([]);
   });
 });
+
+describe('template icons (PB-157)', () => {
+  it('draws the icons the design template adds, under real lucide names', async () => {
+    const names: IconName[] = [
+      'plus',
+      'minus',
+      'save',
+      'send',
+      'upload',
+      'palette',
+      'eye-off',
+      'crosshair',
+      'grip-vertical',
+      'ellipsis-vertical',
+      'chevron-up',
+      'chevrons-left',
+      'chevrons-down-up',
+      'chevrons-up-down',
+      'circle-question-mark',
+      'clipboard-paste',
+      'corner-left-up',
+      'list-filter',
+      'list-tree',
+      'lock-open',
+      'mouse-pointer-2',
+      'pencil-line',
+      'sliders-vertical',
+      'square-check-big',
+      'panel-top',
+      'table',
+      'globe',
+      'play',
+    ];
+    await show(names.map((name) => <Icon key={name} name={name} />));
+    expect(names.filter((name) => !(pascal(name) in icons))).toEqual([]);
+    expect(container.querySelectorAll('svg')).toHaveLength(names.length);
+    expect(container.querySelector('[data-icon="plus"]')).not.toBeNull();
+  });
+});
