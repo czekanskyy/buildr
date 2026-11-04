@@ -129,4 +129,53 @@ describe('CanvasFrame', () => {
     expect(container.querySelector('[role=status]')).not.toBeNull();
     await act(async () => root.unmount());
   });
+
+  it('has the device label, and the empty-page actions call back', async () => {
+    const store = createEditorStore({
+      doc: {
+        schemaVersion: 1,
+        root: 'root',
+        nodes: { root: { id: 'root', type: 'buildr/page' } },
+        components: {},
+      },
+      registry: createRegistryMeta({ components: [] }),
+      validationDelayMs: null,
+    });
+    let host: CanvasHost | null = null;
+    const calls: string[] = [];
+    const container = document.createElement('div');
+    document.body.append(container);
+    const root = createRoot(container);
+    await act(async () =>
+      root.render(
+        <MessagesProvider locale="en">
+          <EditorStoreProvider store={store}>
+            <CanvasFrame
+              canvasUrl="https://canvas.example.com/__canvas"
+              manifestHash="hash"
+              locales={locales}
+              breakpoints={DEFAULT_BREAKPOINTS}
+              emptyPage={{
+                onAddBlock: () => calls.push('add'),
+                onPickPattern: () => calls.push('pattern'),
+              }}
+              onHost={(value) => {
+                host = value;
+              }}
+            />
+          </EditorStoreProvider>
+        </MessagesProvider>,
+      ),
+    );
+    const label = container.querySelector('.bd-device-label');
+    expect(label?.textContent).toBe('Desktop · 1280px');
+    expect(container.querySelector('.bd-canvas-actions')).toBeNull();
+    act(() => host?.state.setState({ status: 'ready' }));
+    const buttons = [...container.querySelectorAll('.bd-canvas-actions button')];
+    expect(buttons.map((b) => b.textContent)).toEqual(['Add block', 'Choose a pattern']);
+    act(() => (buttons[0] as HTMLButtonElement).click());
+    act(() => (buttons[1] as HTMLButtonElement).click());
+    expect(calls).toEqual(['add', 'pattern']);
+    await act(async () => root.unmount());
+  });
 });

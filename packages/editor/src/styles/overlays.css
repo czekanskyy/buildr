@@ -442,6 +442,3 @@
     transition: none;
   }
 }
-.buildr-editor .bd-canvas-empty {
-  pointer-events: none;
-}

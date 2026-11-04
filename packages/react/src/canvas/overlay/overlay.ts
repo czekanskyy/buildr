@@ -1,6 +1,6 @@
 import type { NodeId } from '@next-buildr/core';
 import type { CanvasStore } from '../store.ts';
-import { CHIP_HEIGHT, placeChip } from './chip.ts';
+import { CHIP_GAP, CHIP_HEIGHT, chipText, placeChip } from './chip.ts';
 import { OVERLAY_STYLE, PAGE_STYLE } from './palette.ts';
 
 export interface OverlayOptions {
@@ -34,6 +34,10 @@ export interface Box {
   readonly label?: string;
   /** The node's own name (layers-panel label), when it has one. */
   readonly name?: string;
+  /** The component type id (the "tag" of the chip), on the primary box of a selected node only. */
+  readonly tag?: string;
+  /** A hovered node that has slots (a container): drawn dashed. */
+  readonly container?: boolean;
   /** Whether the node can be moved with a handle (a selected node other than the root). */
   readonly movable?: boolean;
 }
@@ -94,6 +98,10 @@ export function computeBoxes(
           ? { label: labelOf?.(type) ?? type }
           : {}),
         ...(kind === 'selected' && index === 0 && node?.name ? { name: node.name } : {}),
+        ...(kind === 'selected' && index === 0 && type !== undefined ? { tag: type } : {}),
+        ...(kind === 'hover' && Object.keys(node?.slots ?? {}).length > 0
+          ? { container: true }
+          : {}),
         ...(kind === 'selected' && index === 0 && root !== undefined && id !== root
           ? { movable: true }
           : {}),
@@ -104,6 +112,9 @@ export function computeBoxes(
   for (const id of selection) add('selected', id);
   return boxes;
 }
+
+/** Length of the chip's pop-in animation (`bd-pop` in the palette), in ms. */
+const POP_MS = 160;
 
 /**
  * The selection and hover overlay. It lives in a shadow root on a `position: fixed`,
@@ -139,6 +150,7 @@ export function createOverlay(options: OverlayOptions): Overlay {
   const warned = new Set<NodeId>();
   let frame: number | undefined;
   let lastSelection: readonly NodeId[] = [];
+  let popStart = Number.NEGATIVE_INFINITY;
   let destroyed = false;
 
   const draw = () => {
@@ -146,13 +158,19 @@ export function createOverlay(options: OverlayOptions): Overlay {
     if (destroyed) return;
     const { selection } = store.getState();
 
+    // The chip pops in when the selection changes, not on every redraw (a scroll redraws each frame).
+    // A redraw during the 160ms pop rebuilds the chip, so the animation resumes where it was.
+    const now = win.performance.now();
     if (selection !== lastSelection) {
+      popStart = now;
       lastSelection = selection;
       for (const id of selection) {
         const first = elementsOf(doc, id)[0];
         if (first !== undefined) openAncestorDetails(first);
       }
     }
+    const elapsed = now - popStart;
+    const pop = elapsed < POP_MS;
 
     const wanted = new Set<Element>();
     const state = store.getState();
@@ -193,7 +211,9 @@ export function createOverlay(options: OverlayOptions): Overlay {
     layer.replaceChildren(
       ...boxes.map((box) => {
         const el = doc.createElement('div');
-        el.className = `box ${box.kind}${box.primary ? '' : ' secondary'}`;
+        el.className = `box ${box.kind}${box.primary ? '' : ' secondary'}${
+          box.container === true ? ' container' : ''
+        }`;
         el.style.left = `${box.left}px`;
         el.style.top = `${box.top}px`;
         el.style.width = `${box.width}px`;
@@ -205,13 +225,15 @@ export function createOverlay(options: OverlayOptions): Overlay {
         let chip: HTMLElement | undefined;
         if (box.label !== undefined) {
           chip = doc.createElement('span');
-          chip.className = 'label';
-          chip.textContent = box.label;
-          if (box.name !== undefined && box.name !== box.label) {
-            const name = doc.createElement('span');
-            name.className = 'name';
-            name.textContent = ` · ${box.name}`;
-            chip.append(name);
+          chip.className = pop ? 'label pop' : 'label';
+          if (pop && elapsed > 0) chip.style.animationDelay = `-${elapsed}ms`;
+          const text = chipText(box.name ?? box.label, box.tag);
+          chip.textContent = text.name;
+          if (text.tag !== undefined) {
+            const tag = doc.createElement('span');
+            tag.className = 'name';
+            tag.textContent = ` · ${text.tag}`;
+            chip.append(tag);
           }
           el.append(chip);
         }
@@ -229,7 +251,7 @@ export function createOverlay(options: OverlayOptions): Overlay {
         }
         if (hasHandle && options.onHandleDown !== undefined) {
           const handle = doc.createElement('span');
-          handle.className = box.top < CHIP_HEIGHT ? 'handle inside' : 'handle';
+          handle.className = box.top < CHIP_HEIGHT + CHIP_GAP ? 'handle inside' : 'handle';
           if (box.top < 0) handle.style.top = `${-box.top}px`;
           handle.setAttribute('data-buildr-handle', '');
           handle.textContent = '✥';
@@ -245,7 +267,7 @@ export function createOverlay(options: OverlayOptions): Overlay {
         chip.classList.add('inside');
         chip.style.top = `${placed.offsetY}px`;
       }
-      if (placed.offsetX !== 0) chip.style.left = `${placed.offsetX}px`;
+      chip.style.left = `${placed.offsetX}px`;
     }
     const drop = store.getState().drop;
     if (drop !== null) {

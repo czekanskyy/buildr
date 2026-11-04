@@ -1,1 +1,35 @@
-/* PB-157: canvas styles, filled by a later work package. */
+/* PB-157: canvas host (stage, device label, frame, empty page), after the template's stage rules. */
+.buildr-editor .bd-canvas-host .bd-canvas-width.bd-device-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bd-space-2);
+  height: var(--bd-control-xs);
+  margin: 0 auto;
+  color: var(--bd-text-subtle);
+  font-size: var(--bd-text-xs);
+  line-height: var(--bd-leading-xs);
+}
+.buildr-editor .bd-canvas-host .bd-canvas-stage {
+  border-radius: var(--bd-radius-xl);
+  box-shadow: var(--bd-elevation-1);
+}
+.buildr-editor .bd-canvas-host .bd-canvas-empty {
+  /* Only the centred card is drawn; the page (and the drop zone) beneath stays visible, and clicks
+     inside the card reach its own buttons rather than falling through to the page. */
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  width: max-content;
+  max-width: calc(100% - var(--bd-space-5) * 2);
+  border: 1px solid var(--bd-border);
+  border-radius: var(--bd-radius-xl);
+  background: var(--bd-surface);
+  box-shadow: var(--bd-elevation-1);
+}
+.buildr-editor .bd-canvas-host .bd-canvas-empty .bd-canvas-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bd-space-2);
+}

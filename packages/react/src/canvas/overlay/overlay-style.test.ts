@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CHIP_HEIGHT, placeChip } from './chip.ts';
+import { CHIP_GAP, CHIP_HEIGHT, chipText, placeChip } from './chip.ts';
 import { OVERLAY_STYLE, OVERLAY_VAR_NAMES, OVERLAY_VARS, PAGE_STYLE } from './palette.ts';
 
 describe('placeChip', () => {
@@ -9,13 +9,13 @@ describe('placeChip', () => {
     expect(placeChip({ ...base, boxTop: 100 })).toEqual({
       placement: 'above',
       offsetY: 0,
-      offsetX: 0,
+      offsetX: -2,
     });
-    expect(placeChip({ ...base, boxTop: CHIP_HEIGHT }).placement).toBe('above');
+    expect(placeChip({ ...base, boxTop: CHIP_HEIGHT + CHIP_GAP }).placement).toBe('above');
   });
 
   it('flips inside the box when it would leave the viewport at the top', () => {
-    expect(placeChip({ ...base, boxTop: CHIP_HEIGHT - 1 })).toMatchObject({
+    expect(placeChip({ ...base, boxTop: CHIP_HEIGHT + CHIP_GAP - 1 })).toMatchObject({
       placement: 'inside',
       offsetY: 0,
     });
@@ -38,6 +38,13 @@ describe('placeChip', () => {
     );
   });
 
+  it('never starts left of the viewport, even for a box at its edge', () => {
+    expect(placeChip({ ...base, boxLeft: 0, boxTop: 100 }).offsetX).toBe(0);
+    expect(placeChip({ ...base, boxLeft: 1, boxTop: 100 }).offsetX).toBe(-1);
+    expect(placeChip({ ...base, boxLeft: -30, boxTop: 100 }).offsetX).toBe(30);
+    expect(placeChip({ ...base, boxLeft: 0, boxTop: 0 }).offsetX).toBe(0);
+  });
+
   it('leaves room for the drag handle', () => {
     expect(
       placeChip({
@@ -48,6 +55,14 @@ describe('placeChip', () => {
         reservedRight: 20,
       }).offsetX,
     ).toBe(-10);
+  });
+});
+
+describe('chipText', () => {
+  it('is "Name · tag", and leaves the tag out when it repeats the name', () => {
+    expect(chipText('Hero', 'buildr/hero')).toEqual({ name: 'Hero', tag: 'buildr/hero' });
+    expect(chipText('buildr/hero', 'buildr/hero')).toEqual({ name: 'buildr/hero' });
+    expect(chipText(undefined, 'buildr/hero')).toEqual({ name: 'buildr/hero' });
   });
 });
 
@@ -72,6 +87,18 @@ describe('overlay palette', () => {
     }
     const body = OVERLAY_STYLE.split('\n').slice(2).join('\n');
     expect(body.replace(/#fff\b/g, '')).not.toMatch(/#[0-9a-f]{3,6}\b|rgba?\(/i);
+  });
+
+  it('draws the template outlines and pops the chip in, except with reduced motion', () => {
+    expect(OVERLAY_STYLE).toContain(
+      '.box.selected { outline: 2px solid var(--buildr-accent); outline-offset: 2px; }',
+    );
+    expect(OVERLAY_STYLE).toContain('.box.hover { outline: 1px solid');
+    expect(OVERLAY_STYLE).toContain('.box.hover.container');
+    expect(OVERLAY_STYLE).toContain('animation: bd-pop');
+    expect(OVERLAY_STYLE).toMatch(
+      /prefers-reduced-motion: reduce\) \{ \.label\.pop \{ animation: none/,
+    );
   });
 
   it('never affects layout or pointer events of the page', () => {

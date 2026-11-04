@@ -25,18 +25,21 @@ export const OVERLAY_STYLE = `
 :host { all: initial; ${declarations} }
 .layer { position: fixed; inset: 0; pointer-events: none; z-index: 2147483647; }
 .box { position: fixed; box-sizing: border-box; pointer-events: none; }
-.box.selected { outline: 2px solid var(--buildr-accent); outline-offset: -2px; }
+.box.selected { outline: 2px solid var(--buildr-accent); outline-offset: 2px; }
 .box.hover { outline: 1px solid var(--buildr-accent); outline-offset: -1px; }
-.box.secondary { outline-style: dashed; }
-.label { position: absolute; left: 0; top: -20px; height: 20px; max-width: 280px; padding: 0 8px; box-sizing: border-box;
+.box.hover.container, .box.secondary { outline-style: dashed; }
+.label { position: absolute; left: -2px; top: -24px; height: 20px; max-width: 280px; padding: 0 8px; box-sizing: border-box;
   overflow: hidden; text-overflow: ellipsis; font: 600 11px/20px var(--buildr-font); letter-spacing: 0.01em;
   color: var(--buildr-accent-text); background: var(--buildr-accent); border-radius: 4px 4px 0 0; white-space: nowrap; }
 .label .name { font-weight: 400; opacity: 0.85; }
-.label.inside { top: 0; border-radius: 0 0 4px 0; }
-.handle { position: absolute; right: 0; top: -20px; width: 20px; height: 20px; background: var(--buildr-accent);
+.label.pop { animation: bd-pop 160ms cubic-bezier(0.2, 0, 0, 1); }
+.label.inside { top: 0; left: 0; border-radius: 0 0 4px 0; }
+@keyframes bd-pop { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .label.pop { animation: none; } }
+.handle { position: absolute; right: -2px; top: -24px; width: 20px; height: 20px; background: var(--buildr-accent);
   color: var(--buildr-accent-text); font: 700 12px/20px var(--buildr-font); text-align: center; cursor: grab;
   pointer-events: auto; touch-action: none; border-radius: 4px 4px 0 0; }
-.handle.inside { top: 0; border-radius: 0 0 0 4px; }
+.handle.inside { top: 0; right: 0; border-radius: 0 0 0 4px; }
 .drop { position: fixed; box-sizing: border-box; pointer-events: none; }
 .drop.line { background: var(--buildr-accent); border-radius: 1px; box-shadow: 0 0 0 1px var(--buildr-accent-soft); }
 .drop.line::before, .drop.line::after { content: ''; position: absolute; width: 8px; height: 8px; border-radius: 50%;

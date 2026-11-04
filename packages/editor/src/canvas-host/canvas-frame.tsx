@@ -1,6 +1,7 @@
 import { createParentTransport } from '@next-buildr/core/protocol';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { BreakpointConfig } from '../app/config.ts';
+import type { EmptyPageActions } from '../app/contracts.ts';
 import { type MessageKey, useT } from '../messages/index.tsx';
 import { useEditor, useEditorState } from '../store/index.ts';
 import { Button, Icon } from '../ui/index.ts';
@@ -19,6 +20,8 @@ export interface CanvasFrameProps {
   readonly handshakeTimeoutMs?: number;
   /** Gets the host once the frame is mounted (and `null` when it goes), for the toolbar and the drag-and-drop engine. */
   readonly onHost?: (host: CanvasHost | null) => void;
+  /** The actions of the empty-page state; the buttons show only when it is given. */
+  readonly emptyPage?: EmptyPageActions;
   readonly callbacks?: Pick<
     CanvasHostOptions,
     'onKeyDown' | 'onContextMenu' | 'onNodeDoubleClick' | 'onDropTarget' | 'onCommandError'
@@ -182,7 +185,7 @@ export function CanvasFrame(props: CanvasFrameProps) {
       data-status={status}
       aria-busy={status === 'connecting' || status === 'initializing'}
     >
-      <p className="bd-canvas-width">{widthLabel}</p>
+      <p className="bd-canvas-width bd-device-label">{widthLabel}</p>
       <div className="bd-canvas-stage-area" ref={wrap}>
         <div
           className="bd-canvas-stage"
@@ -216,6 +219,16 @@ export function CanvasFrame(props: CanvasFrameProps) {
         <div className="bd-canvas-card bd-canvas-status bd-canvas-empty" role="status">
           <Icon name="monitor-smartphone" size="md" />
           <p className="bd-canvas-title">{t('editor.canvas.empty')}</p>
+          {props.emptyPage !== undefined ? (
+            <div className="bd-canvas-actions">
+              <Button variant="primary" onClick={() => props.emptyPage?.onAddBlock()}>
+                {t('canvas.empty.add')}
+              </Button>
+              <Button onClick={() => props.emptyPage?.onPickPattern()}>
+                {t('canvas.empty.pattern')}
+              </Button>
+            </div>
+          ) : null}
         </div>
       ) : null}
       {status === 'error' && error !== undefined ? (
