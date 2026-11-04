@@ -1,17 +1,20 @@
 import { useMemo } from 'react';
+import { componentMeta, useManifest } from '../../app/manifest.tsx';
 import { useT } from '../../messages/index.tsx';
 import { pathTo, useEditor, useEditorState } from '../../store/index.ts';
+import { Icon } from '../../ui/index.ts';
 
 /** `buildr/section` reads as `section`: the namespace says nothing to the author. */
 const shortType = (type: string): string => type.slice(type.indexOf('/') + 1);
 
 /**
- * The path from the root to the selected node, each step a button that selects it. Hovering a step
+ * The path from the root to the selected node (named by the author or by the component's label), separated by chevrons, each step a button that selects it. Hovering a step
  * highlights that node on the canvas (through the store's `hoveredId`).
  */
 export function Breadcrumbs() {
   const t = useT();
   const store = useEditor();
+  const manifest = useManifest();
   const doc = useEditorState((state) => state.doc);
   const anchorId = useEditorState((state) => state.anchorId);
   const path = useMemo(() => (anchorId === null ? [] : pathTo(doc, anchorId)), [doc, anchorId]);
@@ -25,6 +28,7 @@ export function Breadcrumbs() {
           const current = id === anchorId;
           return (
             <li key={id}>
+              {id === path[0] ? null : <Icon name="chevron-right" />}
               <button
                 type="button"
                 className="bd-breadcrumb"
@@ -35,7 +39,11 @@ export function Breadcrumbs() {
                 onFocus={() => store.setHovered(id)}
                 onBlur={() => store.setHovered(null)}
               >
-                {node?.name ?? (node === undefined ? id : shortType(node.type))}
+                {node === undefined
+                  ? id
+                  : (node.name ??
+                    componentMeta(manifest, node.type)?.label ??
+                    shortType(node.type))}
               </button>
             </li>
           );

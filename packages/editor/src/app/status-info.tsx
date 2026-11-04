@@ -1,8 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import type { CanvasHost } from '../canvas-host/index.ts';
 import { type MessageKey, useT } from '../messages/index.tsx';
-import { usePersistenceState } from '../persistence/index.ts';
-import { useEditorState } from '../store/index.ts';
+import { ZoomMenu } from '../toolbar/zoom-menu.tsx';
 import type { BreakpointConfig } from './config.ts';
 
 export interface StatusInfoProps {
@@ -28,35 +27,24 @@ function useZoom(host: CanvasHost | null): 'fit' | number {
 }
 
 /**
- * The status bar's read-only facts (PB-122): the active breakpoint and its width, the canvas
- * zoom and the save state. They come from the host, the store and the persistence controller;
- * the save state is plain text (the toolbar's status carries the live region).
+ * The status bar's right side: the active breakpoint and its width, and the canvas zoom menu
+ * (the host's `setZoom`). The save state lives in the toolbar.
  */
 export function StatusInfo({ host, breakpoints, breakpoint }: StatusInfoProps) {
   const t = useT();
   const zoom = useZoom(host);
-  const status = usePersistenceState((state) => state.status);
-  const error = usePersistenceState((state) => state.error);
-  const readOnly = useEditorState((state) => state.readOnly);
   const active = breakpoints.find((item) => item.id === breakpoint);
   const key = BREAKPOINT_LABELS[breakpoint];
-  const save = readOnly
-    ? t('save.readOnly')
-    : status === 'error' && error?.kind === 'invalid'
-      ? t('save.invalid')
-      : t(`save.${status}`);
   return (
     <>
-      <span className="bd-status-item" title={t('editor.status.breakpoint')}>
+      <span
+        className="bd-status-btn bd-status-static bd-tabular"
+        title={t('editor.status.breakpoint')}
+      >
         {key === undefined ? breakpoint : t(key)}
         {active === undefined ? '' : ` ${active.width}px`}
       </span>
-      <span className="bd-status-item bd-tabular" title={t('editor.status.zoom')}>
-        {zoom === 'fit' ? t('editor.status.fit') : `${Math.round(zoom * 100)}%`}
-      </span>
-      <span className="bd-status-item" data-status={readOnly ? 'readOnly' : status}>
-        {save}
-      </span>
+      <ZoomMenu zoom={zoom} variant="status" onChange={(next) => host?.setZoom(next)} />
     </>
   );
 }

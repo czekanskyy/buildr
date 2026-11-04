@@ -1,10 +1,12 @@
 // @vitest-environment jsdom
-import { type BuilderDocument, createRegistryMeta } from '@next-buildr/core';
+
+import { type BuilderDocument, createRegistryMeta, type RegistryManifest } from '@next-buildr/core';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, describe, expect, it } from 'vitest';
 import { axe } from 'vitest-axe';
 import * as matchers from 'vitest-axe/matchers';
+import { ManifestProvider } from '../../app/manifest.tsx';
 import { MessagesProvider } from '../../messages/index.tsx';
 import { createEditorStore, EditorStoreProvider } from '../../store/index.ts';
 import { Breadcrumbs } from './breadcrumbs.tsx';
@@ -32,6 +34,12 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
+const manifest = {
+  manifestVersion: 1,
+  components: { 'buildr/text': { label: 'Paragraph' }, 'buildr/page': { label: 'Page' } },
+  templates: [],
+} as unknown as RegistryManifest;
+
 describe('Breadcrumbs', () => {
   it('shows the path, marks the hovered node and selects a step on click', async () => {
     const store = createEditorStore({
@@ -45,9 +53,11 @@ describe('Breadcrumbs', () => {
     await act(async () =>
       root.render(
         <MessagesProvider locale="en">
-          <EditorStoreProvider store={store}>
-            <Breadcrumbs />
-          </EditorStoreProvider>
+          <ManifestProvider manifest={manifest}>
+            <EditorStoreProvider store={store}>
+              <Breadcrumbs />
+            </EditorStoreProvider>
+          </ManifestProvider>
         </MessagesProvider>,
       ),
     );
@@ -55,8 +65,9 @@ describe('Breadcrumbs', () => {
 
     await act(async () => store.select('textNodeA1'));
     const buttons = [...container.querySelectorAll('button')];
-    expect(buttons.map((b) => b.textContent)).toEqual(['page', 'Hero', 'text']);
+    expect(buttons.map((b) => b.textContent)).toEqual(['Page', 'Hero', 'Paragraph']);
     expect(buttons[2]?.getAttribute('aria-current')).toBe('location');
+    expect(container.querySelectorAll('li > svg')).toHaveLength(2);
     expect(container.querySelector('nav')?.getAttribute('aria-label')).toBe('Selection path');
     expect(await axe(container)).toHaveNoViolations();
 
