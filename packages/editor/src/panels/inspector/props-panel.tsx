@@ -68,6 +68,10 @@ export interface PropsPanelProps {
   readonly locale: string | undefined;
   readonly defaultLocale: string | undefined;
   readonly disabled: boolean;
+  /** Lower-case text the labels must contain (the inspector search); empty shows everything. */
+  readonly query?: string;
+  /** Other fields on the same tab already match the query: no "no match" message. */
+  readonly othersMatch?: boolean;
   readonly onChange: (prop: string, def: PropDef, value: unknown) => void;
   readonly onReset: (prop: string, def: PropDef) => void;
   /** Writes a binding or a formula (PB-081). */
@@ -214,9 +218,21 @@ export function PropsPanel(props: PropsPanelProps) {
   const { node, meta, scope, locale, defaultLocale } = props;
   const { closed, toggle } = useClosedGroups(node.type);
   const panelId = useId();
-  const entries = Object.entries(meta.props).filter(
+  const query = props.query ?? '';
+  const all = Object.entries(meta.props).filter(
     ([, def]) => isAdvancedProp(def) === (scope === 'advanced'),
   );
+  const entries = all.filter(
+    ([name, def]) => query === '' || propLabel(name, def).toLowerCase().includes(query),
+  );
+  if (entries.length === 0 && all.length > 0) {
+    if (props.othersMatch === true) return null;
+    return (
+      <p className="bd-inspector-empty" data-state="no-match">
+        {t('inspector.search.noMatch').replace('{query}', query)}
+      </p>
+    );
+  }
   if (entries.length === 0) {
     return scope === 'content' ? (
       <div className="bd-inspector-empty" data-state="no-props">
@@ -250,7 +266,11 @@ export function PropsPanel(props: PropsPanelProps) {
               </button>
             </h4>
           ) : null}
-          <div id={`${panelId}-${group}`} className="bd-props-fields" hidden={closed.has(group)}>
+          <div
+            id={`${panelId}-${group}`}
+            className="bd-props-fields"
+            hidden={closed.has(group) && query === ''}
+          >
             {list.map(([name, def]) => (
               <Field
                 key={name}

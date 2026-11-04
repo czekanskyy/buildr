@@ -1,1 +1,94 @@
-/* PB-157: inspector styles, filled by a later work package. */
+/* PB-157 WP4: inspector shell (header, tabs, rail, field rows, empty state). Loads after panels.css. */
+
+/* Header: accent-soft icon well, title with a subtitle, actions. */
+.buildr-editor .bd-inspector-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--bd-control-md);
+  height: var(--bd-control-md);
+  border-radius: var(--bd-radius-md);
+  background: var(--bd-accent-soft);
+  color: var(--bd-accent);
+  flex: none;
+}
+.buildr-editor .bd-inspector-titles {
+  flex: 1;
+  min-width: 0;
+}
+.buildr-editor .bd-inspector-subtitle {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--bd-text-xs);
+  line-height: var(--bd-leading-xs);
+  color: var(--bd-text-subtle);
+}
+.buildr-editor .bd-inspector-actions {
+  align-items: center;
+}
+.buildr-editor .bd-inspector-search {
+  flex: none;
+}
+
+/* Tabs fill the width, label and dot sit together. */
+.buildr-editor .bd-inspector .bd-tab {
+  justify-content: center;
+}
+
+/* Collapsed rail: vertical icon tabs. */
+.buildr-editor .bd-inspector-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--bd-space-1);
+  padding: var(--bd-space-2) 0;
+}
+.buildr-editor .bd-inspector-rail-tabs {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--bd-space-1);
+}
+.buildr-editor .bd-inspector-rail-tabs [role="tab"][aria-selected="true"] {
+  background: var(--bd-accent-soft);
+  color: var(--bd-accent);
+}
+
+/* Empty state action. */
+.buildr-editor .bd-inspector-page-settings {
+  margin-top: var(--bd-space-2);
+}
+
+/* Field rows: a 104px label column, then the control. */
+.buildr-editor .bd-field[data-layout="row"] {
+  grid-template-columns: var(--bd-field-cols);
+}
+.buildr-editor .bd-field[data-layout="row"] > .bd-field-head {
+  min-width: 0;
+}
+.buildr-editor .bd-field-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--bd-text-muted);
+}
+.buildr-editor .bd-field[data-prop]:has(.bd-field-reset) .bd-field-label {
+  color: var(--bd-text);
+}
+
+/* The visibility-condition note. */
+.buildr-editor .bd-field.bd-note {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-space-2);
+  margin: var(--bd-space-2) 0;
+}
+.buildr-editor .bd-note-text {
+  flex: 1;
+  min-width: 0;
+}
+.buildr-editor .bd-note-text p {
+  margin: 0;
+}

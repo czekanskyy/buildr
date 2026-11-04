@@ -18,7 +18,7 @@ import { ManifestProvider } from '../../app/manifest.tsx';
 import { MessagesProvider } from '../../messages/index.tsx';
 import { createEditorStore, EditorStoreProvider } from '../../store/index.ts';
 import { parseNumber } from './controls/index.ts';
-import { Inspector, type InspectorProps } from './inspector.tsx';
+import { Inspector, type InspectorProps, InspectorRail } from './inspector.tsx';
 import { isAdvancedProp, propLabel } from './props-panel.tsx';
 import { readProp } from './value.ts';
 
@@ -198,14 +198,131 @@ describe('Inspector', () => {
     window.localStorage.clear();
   });
 
-  it('duplicates and deletes from the header with the same commands as the layers', async () => {
+  const openMenu = async () => {
+    const trigger = container.querySelector(
+      'button[aria-label="More block options"]',
+    ) as HTMLElement;
+    await act(async () => {
+      trigger.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, button: 0 }));
+      trigger.click();
+    });
+  };
+  const menuItem = (label: string) =>
+    [...document.querySelectorAll('[role=menuitem]')].find(
+      (el) => el.textContent === label,
+    ) as HTMLElement;
+
+  it('duplicates and deletes from the more menu with the same commands as the layers', async () => {
     const store = await mount('widget0001');
-    const named = (label: string) =>
-      container.querySelector(`button[aria-label="${label}"]`) as HTMLElement;
-    await act(async () => named('Duplicate element').click());
+    await openMenu();
+    await act(async () => menuItem('Duplicate').click());
     expect(Object.keys(store.getState().doc.nodes)).toHaveLength(4);
-    await act(async () => named('Delete element').click());
+    await openMenu();
+    await act(async () => menuItem('Delete block').click());
     expect(Object.keys(store.getState().doc.nodes)).toHaveLength(3);
+    await act(async () => store.undo());
+    expect(Object.keys(store.getState().doc.nodes)).toHaveLength(4);
+  });
+
+  it('navigates the more menu with the arrow keys', async () => {
+    await mount('widget0001');
+    await openMenu();
+    const items = () => [...document.querySelectorAll<HTMLElement>('[role=menuitem]')];
+    const key = (k: string) =>
+      act(async () => {
+        (document.activeElement as HTMLElement).dispatchEvent(
+          new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }),
+        );
+      });
+    expect(items().length).toBeGreaterThanOrEqual(2);
+    expect(document.activeElement).toBe(items()[0]);
+    await key('ArrowDown');
+    expect(document.activeElement).toBe(items()[1]);
+    await key('End');
+    expect(document.activeElement).toBe(items().at(-1));
+    await key('ArrowDown');
+    expect(document.activeElement).toBe(items()[0]);
+    await key('ArrowUp');
+    expect(document.activeElement).toBe(items().at(-1));
+    await key('Home');
+    expect(document.activeElement).toBe(items()[0]);
+    await key('Escape');
+    expect(document.querySelector('[role=menu]')).toBeNull();
+    expect(document.activeElement).toBe(
+      container.querySelector('button[aria-label="More block options"]'),
+    );
+  });
+
+  it('does not report no match on the Advanced tab while its name field matches', async () => {
+    await mount('widget0001');
+    await openTab('Advanced');
+    const search = container.querySelector('.bd-inspector-search input') as HTMLInputElement;
+    await typeInto(search, 'name');
+    expect(container.querySelector('[data-attr=name]')).not.toBeNull();
+    expect(container.querySelector('[data-state=no-match]')).toBeNull();
+    await typeInto(search, 'zzz');
+    expect(container.querySelector('[data-attr=name]')).toBeNull();
+    expect(container.querySelector('[data-state=no-match]')).not.toBeNull();
+  });
+
+  it('shows the parent in the subtitle', async () => {
+    await mount('widget0001');
+    expect(container.querySelector('.bd-inspector-subtitle')?.textContent).toContain('Page');
+  });
+
+  it('keeps its own tab, or follows a controlled one', async () => {
+    await mount('widget0001');
+    const tab = (name: string) =>
+      [...container.querySelectorAll('[role=tab]')].find((el) =>
+        el.textContent?.includes(name),
+      ) as HTMLElement;
+    await act(async () => {
+      tab('Advanced').dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0 }));
+    });
+    expect(tab('Advanced').getAttribute('aria-selected')).toBe('true');
+    await act(async () => root.unmount());
+    root = createRoot(container);
+    const onTabChange = vi.fn();
+    await mount('widget0001', { tab: 'style', onTabChange });
+    expect(tab('Style').getAttribute('aria-selected')).toBe('true');
+    await act(async () => {
+      tab('Content').dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0 }));
+    });
+    expect(onTabChange).toHaveBeenCalledWith('content');
+    expect(tab('Style').getAttribute('aria-selected')).toBe('true');
+  });
+
+  it('shows the page settings action in the empty state only when given', async () => {
+    await mount(null);
+    expect(container.textContent).not.toContain('Page settings');
+    await act(async () => root.unmount());
+    root = createRoot(container);
+    const onPageSettings = vi.fn();
+    await mount(null, { onPageSettings });
+    await act(async () =>
+      (
+        [...container.querySelectorAll('button')].find(
+          (b) => b.textContent === 'Page settings',
+        ) as HTMLElement
+      ).click(),
+    );
+    expect(onPageSettings).toHaveBeenCalled();
+  });
+
+  it('renders the rail and reports tab and expand clicks', async () => {
+    const onTabChange = vi.fn();
+    const onExpand = vi.fn();
+    await act(async () =>
+      root.render(
+        <MessagesProvider locale="en">
+          <InspectorRail tab="content" onTabChange={onTabChange} onExpand={onExpand} />
+        </MessagesProvider>,
+      ),
+    );
+    const style = container.querySelector('button[aria-label="Style"]') as HTMLElement;
+    await act(async () => style.click());
+    expect(onTabChange).toHaveBeenCalledWith('style');
+    expect(onExpand).toHaveBeenCalled();
   });
 
   it('gives every control an accessible name and passes axe', async () => {
