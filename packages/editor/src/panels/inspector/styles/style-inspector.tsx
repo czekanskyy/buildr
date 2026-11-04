@@ -15,18 +15,18 @@ import {
 } from '@next-buildr/core';
 import { type ReactNode, useId, useState } from 'react';
 import { componentMeta, useManifest } from '../../../app/manifest.tsx';
-import { type MessageKey, useT } from '../../../messages/index.tsx';
+import { interpolate, type MessageKey, useT } from '../../../messages/index.tsx';
 import { useEditor, useEditorState } from '../../../store/index.ts';
 import {
-  ColorInput,
   Icon,
-  IconButton,
   Input,
   NumberUnitInput,
+  SearchField,
   SegmentedControl,
   Tooltip,
 } from '../../../ui/index.ts';
 import { ScrubLabel } from '../scrub-label.tsx';
+import { BoxModel } from './box-model.tsx';
 import { GradientFields } from './gradient-fields.tsx';
 import {
   boundsOf,
@@ -42,13 +42,13 @@ import {
   takesNumber,
   unitsOf,
 } from './model.ts';
-import { propertyLabel } from './property-label.ts';
+import { Highlight, propertyLabel } from './property-label.tsx';
 import { StyleSection } from './section.tsx';
 import { PAIRS, SEGMENTED } from './segments.ts';
 import { SidesEditor, type SideWrite } from './sides-editor.tsx';
 import { TokenPicker } from './token-picker.tsx';
 import { useStyleValue } from './use-style-value.ts';
-import { AlignmentPad, ShadowPresets } from './widgets.tsx';
+import { AlignmentPad, ColorField, RangeSlider, ResetField, ShadowEditor } from './widgets.tsx';
 
 export interface StyleInspectorProps {
   readonly node: PageNode;
@@ -149,22 +149,35 @@ function ValueField(props: {
       )}
       <div className="bd-style-input">
         {def.grammar.kind === 'color' ? (
-          <ColorInput
-            color={swatch}
-            palette={Object.entries(props.theme.tokens.color).map(([name, color]) => ({
-              label: name,
-              color,
-              value: `$color.${name}`,
-            }))}
+          <ColorField
+            id={id}
+            text={shown}
+            swatch={swatch}
+            theme={props.theme}
             label={`${props.label}: ${t('style.colorPicker')}`}
+            ariaLabel={ariaLabel}
             disabled={props.disabled}
-            onColorChange={(text) => {
+            invalid={error !== ''}
+            describedBy={describedBy}
+            onText={field.change}
+            onSwatch={(text) => {
               const checked = checkStyleInput(def, text, props.theme);
               if (checked.ok) field.pick(text);
             }}
+            onBlur={field.blur}
+            trailing={
+              <TokenPicker
+                def={def}
+                theme={props.theme}
+                label={props.label}
+                current={current !== undefined ? String(current.value) : undefined}
+                disabled={props.disabled}
+                onPick={field.pick}
+              />
+            }
           />
         ) : null}
-        {isNumeric(def) ? (
+        {def.grammar.kind === 'color' ? null : isNumeric(def) ? (
           <NumberUnitInput
             id={id}
             value={shown}
@@ -195,14 +208,16 @@ function ValueField(props: {
             onBlur={field.blur}
           />
         )}
-        <TokenPicker
-          def={def}
-          theme={props.theme}
-          label={props.label}
-          current={current !== undefined ? String(current.value) : undefined}
-          disabled={props.disabled}
-          onPick={field.pick}
-        />
+        {def.grammar.kind === 'color' ? null : (
+          <TokenPicker
+            def={def}
+            theme={props.theme}
+            label={props.label}
+            current={current !== undefined ? String(current.value) : undefined}
+            disabled={props.disabled}
+            onPick={field.pick}
+          />
+        )}
       </div>
       {def.grammar.kind === 'gradient' ? (
         <GradientFields
@@ -216,10 +231,8 @@ function ValueField(props: {
         />
       ) : null}
       {slider !== undefined ? (
-        <input
-          type="range"
-          className="bd-range"
-          aria-label={`${props.label}: ${t('style.slider')}`}
+        <RangeSlider
+          label={`${props.label}: ${t('style.slider')}`}
           min={slider.min}
           max={slider.max}
           step={slider.step}
@@ -229,7 +242,7 @@ function ValueField(props: {
               : slider.max
           }
           disabled={props.disabled}
-          onChange={(event) => field.change(event.target.value)}
+          onChange={field.change}
         />
       ) : null}
       {listId !== undefined ? (
@@ -265,12 +278,15 @@ function StyleProperty(props: {
   readonly inline?: boolean;
   /** What sits inside the ring. */
   readonly children?: ReactNode;
+  /** The search text, highlighted in the label. */
+  readonly query?: string;
 }) {
   const t = useT();
   const store = useEditor();
   const { def, nodeId, effective, layer } = props;
   const id = useId();
   const label = propertyLabel(def, t);
+  const shownLabel = <Highlight text={label} query={props.query} />;
   const parts = partsOf(def);
   const layerObject = layerFor(layer);
 
@@ -351,23 +367,20 @@ function StyleProperty(props: {
           </span>
         </Tooltip>
       ) : null}
-      {here ? (
-        <IconButton
-          icon="rotate-ccw"
-          className="bd-field-reset"
-          disabled={props.disabled}
-          label={`${t('inspector.reset')}: ${label}`}
-          onClick={() =>
-            parts.length > 0
-              ? apply(
-                  parts
-                    .filter((part) => effective[pathOf(def, part)]?.source === layer)
-                    .map((part) => ({ part, value: undefined })),
-                )
-              : unset()
-          }
-        />
-      ) : null}
+      <ResetField
+        label={label}
+        changed={here}
+        disabled={props.disabled}
+        onReset={() =>
+          parts.length > 0
+            ? apply(
+                parts
+                  .filter((part) => effective[pathOf(def, part)]?.source === layer)
+                  .map((part) => ({ part, value: undefined })),
+              )
+            : unset()
+        }
+      />
     </div>
   );
 
@@ -383,7 +396,7 @@ function StyleProperty(props: {
               disabled={props.disabled}
               onChange={(event) => (event.target.checked ? set(true) : unset())}
             />
-            {label}
+            {shownLabel}
           </label>,
         )}
       </div>
@@ -403,7 +416,9 @@ function StyleProperty(props: {
           parts={parts}
           layout={props.ring === true ? 'ring' : 'row'}
           apply={apply}
-          renderHead={(extras) => head(<span className="bd-field-label">{label}</span>, extras)}
+          renderHead={(extras) =>
+            head(<span className="bd-field-label">{shownLabel}</span>, extras)
+          }
         >
           {props.children}
         </SidesEditor>
@@ -411,7 +426,7 @@ function StyleProperty(props: {
     );
   }
 
-  let title: ReactNode = <span className="bd-field-label">{label}</span>;
+  let title: ReactNode = <span className="bd-field-label">{shownLabel}</span>;
   let body: ReactNode;
   if (isEnumeration(def)) {
     const current = effective[key];
@@ -467,7 +482,7 @@ function StyleProperty(props: {
     if (segments === undefined) {
       title = (
         <label htmlFor={id} className="bd-field-label">
-          {label}
+          {shownLabel}
         </label>
       );
     }
@@ -485,11 +500,11 @@ function StyleProperty(props: {
           if (checked.ok) set(checked.value);
         }}
       >
-        {label}
+        {shownLabel}
       </ScrubLabel>
     ) : (
       <label htmlFor={id} className="bd-field-label">
-        {label}
+        {shownLabel}
       </label>
     );
     body = (
@@ -523,11 +538,20 @@ function StyleProperty(props: {
         />
       ) : null}
       {key === 'effects.shadow' ? (
-        <ShadowPresets
+        <ShadowEditor
           theme={props.theme}
           value={String(effective[key]?.value ?? 'none')}
           disabled={props.disabled}
           onPick={set}
+          onCustom={
+            // Only when the property stores a custom shadow; today it takes tokens and `none`.
+            checkStyleInput(def, '0px 4px 12px 0px #00000026', props.theme).ok
+              ? (text) => {
+                  const checked = checkStyleInput(def, text, props.theme);
+                  if (checked.ok) set(checked.value);
+                }
+              : undefined
+          }
         />
       ) : null}
     </div>
@@ -585,19 +609,40 @@ function SelectedStyleInspector({ node, breakpoint, theme = defaultTheme }: Styl
     return <p className="bd-inspector-empty">{t('style.none')}</p>;
   }
   const knownLayer = device === 'base' || theme.breakpoints.some((b) => b.id === device);
+  const maxWidth = theme.breakpoints.find((b) => b.id === device)?.maxWidth;
+  const deviceName =
+    device === 'tablet' || device === 'mobile'
+      ? t(`inspector.device.${device}` as 'inspector.device.tablet')
+      : device;
+  const needle = query.trim().toLocaleLowerCase();
+  const searching = needle !== '';
+  const anyMatch = groups.some(
+    (group) =>
+      (group === 'typography'
+        ? `${t('style.group.typography')} ${t('style.section.colors')}`
+        : group === 'effects'
+          ? `${t('style.group.effects')} ${t('style.section.shadow')}`
+          : group === 'border'
+            ? t('style.section.border')
+            : t(`style.group.${group}` as MessageKey)
+      )
+        .toLocaleLowerCase()
+        .includes(needle) ||
+      propertiesOfGroup(group).some((def) =>
+        propertyLabel(def, t).toLocaleLowerCase().includes(needle),
+      ),
+  );
 
   return (
     <div className="bd-styles" data-layer={layer}>
-      <div className="bd-inspector-search">
-        <Icon name="search" />
-        <Input
-          type="search"
-          aria-label={t('inspector.search')}
-          placeholder={t('inspector.search.placeholder')}
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-        />
-      </div>
+      <SearchField
+        className="bd-inspector-search"
+        label={t('inspector.search')}
+        clearLabel={t('insert.clear')}
+        placeholder={t('inspector.search.placeholder')}
+        value={query}
+        onChange={setQuery}
+      />
       <SegmentedControl
         label={t('style.state.label')}
         value={state}
@@ -617,33 +662,34 @@ function SelectedStyleInspector({ node, breakpoint, theme = defaultTheme }: Styl
             setState(value);
         }}
       />
-      <p className="bd-styles-layer" data-override={state === 'normal' && device !== 'base'}>
-        <Icon
-          name={device === 'base' ? 'monitor' : device === 'mobile' ? 'smartphone' : 'tablet'}
-        />
-        {`${t('style.editing')}: ${state === 'normal' ? (device === 'base' ? t('style.desktop') : device) : t(`style.state.${state}`)}`}
-      </p>
+      {state !== 'normal' ? (
+        <div className="bd-note bd-note--info bd-styles-layer" role="status">
+          <Icon name="monitor" />
+          <span>{`${t('style.editing')}: ${t(`style.state.${state}`)}`}</span>
+        </div>
+      ) : device !== 'base' ? (
+        <div className="bd-note bd-note--ovr bd-styles-layer" data-override="true" role="status">
+          <Icon
+            name={
+              device === 'mobile'
+                ? 'smartphone'
+                : device === 'tablet'
+                  ? 'tablet'
+                  : 'monitor-smartphone'
+            }
+          />
+          <span>
+            {t('inspector.device.editing')} <b>{deviceName}</b>
+            {maxWidth === undefined ? '' : ` (≤ ${maxWidth}px)`}. {t('inspector.device.hint')}
+          </span>
+        </div>
+      ) : null}
       {!knownLayer ? <p className="bd-style-error">{t('style.unknownBreakpoint')}</p> : null}
-      {query.trim() !== '' &&
-      !groups.some(
-        (group) =>
-          (group === 'typography'
-            ? `${t('style.group.typography')} ${t('style.section.colors')}`
-            : group === 'effects'
-              ? `${t('style.group.effects')} ${t('style.section.shadow')}`
-              : group === 'border'
-                ? t('style.section.border')
-                : t(`style.group.${group}` as MessageKey)
-          )
-            .toLocaleLowerCase()
-            .includes(query.trim().toLocaleLowerCase()) ||
-          propertiesOfGroup(group).some((def) =>
-            propertyLabel(def, t).toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()),
-          ),
-      ) ? (
-        <p className="bd-inspector-empty" role="status">
-          {t('inspector.search.empty')}
-        </p>
+      {searching && !anyMatch ? (
+        <div className="bd-empty" role="status">
+          <strong>{interpolate(t('inspector.search.noMatch'), { query: query.trim() })}</strong>
+          <span>{t('inspector.search.hint')}</span>
+        </div>
       ) : null}
       {groups.flatMap((group) => {
         const common = {
@@ -692,22 +738,68 @@ function StyleGroupSection(props: {
       : props.group === 'border'
         ? t('style.section.border')
         : t(`style.group.${props.group}` as MessageKey);
-  const defs = propertiesOfGroup(props.group).filter(
+  const store = useEditor();
+  const [moreDims, setMoreDims] = useState(false);
+  // Every property of the section, whatever the search says: "Reset section" and the counts use it.
+  const sectionDefs = propertiesOfGroup(props.group).filter(
     (def) =>
       getStyleProperty(def.group, def.name) !== undefined &&
       (!props.layer.startsWith('state:') || def.allowInStates) &&
       (props.group !== 'typography' ||
         (props.section === 'colors' ? def.name === 'color' : def.name !== 'color')) &&
       (props.group !== 'effects' ||
-        (props.section === 'shadow' ? def.name === 'shadow' : def.name !== 'shadow')) &&
-      (props.query === '' ||
-        sectionLabel.toLocaleLowerCase().includes(props.query) ||
-        propertyLabel(def, t).toLocaleLowerCase().includes(props.query)),
+        (props.section === 'shadow' ? def.name === 'shadow' : def.name !== 'shadow')),
+  );
+  const matching = sectionDefs.filter(
+    (def) =>
+      props.query === '' ||
+      sectionLabel.toLocaleLowerCase().includes(props.query) ||
+      propertyLabel(def, t).toLocaleLowerCase().includes(props.query),
   );
   const relevant = Object.entries(props.effective).filter(([path]) =>
-    defs.some((def) => path === pathOf(def) || path.startsWith(`${pathOf(def)}.`)),
+    sectionDefs.some((def) => path === pathOf(def) || path.startsWith(`${pathOf(def)}.`)),
   );
   const used = relevant.length > 0;
+  // Min. and max. dimensions sit behind a disclosure until one has a value or the search finds it.
+  const isLimit = (def: StylePropertyDef) =>
+    props.group === 'size' && /^(min|max)(Width|Height)$/.test(def.name);
+  const limitUsed = sectionDefs.some(
+    (def) =>
+      isLimit(def) &&
+      Object.keys(props.effective).some((path) => path.startsWith(`${pathOf(def)}`)),
+  );
+  const showLimits = moreDims || limitUsed || props.query !== '';
+  const defs = matching.filter((def) => !isLimit(def) || showLimits);
+  const hasLimits = props.query === '' && sectionDefs.some(isLimit);
+  /** Paths written at the layer being edited: what "Reset section" removes. */
+  const here = sectionDefs.flatMap((def) => {
+    const parts = partsOf(def);
+    return (parts.length > 0 ? parts.map((part) => ({ def, part })) : [{ def, part: undefined }])
+      .filter(({ part }) => props.effective[pathOf(def, part)]?.source === props.layer)
+      .map(({ part }) => ({ def, part }));
+  });
+  const isBreakpoint = props.layer !== 'base' && !props.layer.startsWith('state:');
+  const resetSection = () => {
+    let failure = '';
+    // The same command as the per-property reset, one undo step for the whole section.
+    store.transaction(sectionLabel, () => {
+      for (const { def, part } of here) {
+        const result = store.dispatch({
+          type: 'node.unsetStyle',
+          payload: {
+            id: props.nodeId,
+            layer: layerFor(props.layer),
+            group: def.group,
+            property: def.name,
+            ...(part !== undefined ? { side: part } : {}),
+          },
+        });
+        if (!result.ok) failure ||= result.error?.message ?? '';
+      }
+      return failure === '';
+    });
+    props.onError(failure);
+  };
   const byName = new Map(defs.map((def) => [def.name, def]));
   const common = {
     nodeId: props.nodeId,
@@ -716,6 +808,7 @@ function StyleGroupSection(props: {
     theme: props.theme,
     disabled: props.disabled,
     onError: props.onError,
+    query: props.query,
   };
 
   // Margin wraps padding as a ring (the way the page nests them); pairs share one row.
@@ -737,9 +830,11 @@ function StyleGroupSection(props: {
         <StyleProperty def={byName.get('padding') as StylePropertyDef} ring {...common} />
       );
       rows.push(
-        <StyleProperty key={def.name} def={def} ring {...common}>
-          {padding}
-        </StyleProperty>,
+        <BoxModel key="box-model">
+          <StyleProperty def={def} ring {...common}>
+            {padding}
+          </StyleProperty>
+        </BoxModel>,
       );
       continue;
     }
@@ -764,14 +859,27 @@ function StyleGroupSection(props: {
       defaultOpen={used || props.group === 'layout' || props.group === 'spacing'}
       searching={props.query !== ''}
       modified={used}
-      override={
-        props.layer !== 'base' &&
-        !props.layer.startsWith('state:') &&
-        relevant.some(([, entry]) => entry.source === props.layer)
-      }
+      override={isBreakpoint && here.length > 0}
+      overrideCount={isBreakpoint ? here.length : 0}
+      layer={props.layer}
+      query={props.query}
+      onReset={here.length > 0 ? resetSection : undefined}
+      resetDisabled={props.disabled}
     >
       {props.group === 'layout' && props.query === '' ? <LayoutAlignment {...common} /> : null}
       {rows}
+      {hasLimits ? (
+        <button
+          type="button"
+          className="bd-textbtn bd-more-dims"
+          aria-expanded={showLimits}
+          disabled={limitUsed}
+          onClick={() => setMoreDims(!moreDims)}
+        >
+          <Icon name={showLimits ? 'chevron-up' : 'chevron-down'} />
+          {showLimits ? t('styleField.dimensions.fewer') : t('styleField.dimensions.more')}
+        </button>
+      ) : null}
     </StyleSection>
   );
 }
@@ -816,6 +924,8 @@ function LayoutAlignment(props: {
     <div className="bd-layout-alignment">
       <span className="bd-field-label">{t('style.alignment')}</span>
       <AlignmentPad
+        column={column}
+        hint={t(column ? 'styleField.align.helpColumn' : 'styleField.align.helpRow')}
         label={t('style.alignment')}
         value={x < 0 || y < 0 ? '' : (positions[y * 3 + x] ?? '')}
         disabled={props.disabled}

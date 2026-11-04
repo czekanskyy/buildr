@@ -1,6 +1,7 @@
 import { resolveTokenRef, type Theme } from '@next-buildr/core';
 import { useT } from '../../../messages/index.tsx';
 import { ColorInput, NumberUnitInput } from '../../../ui/index.ts';
+import { RangeSlider } from './widgets.tsx';
 
 const SIMPLE_GRADIENT =
   /^linear-gradient\((-?\d+(?:\.\d+)?deg),\s*(#[0-9a-f]{3,8}|\$color\.[a-z0-9-]+)(?: 0%)?,\s*(#[0-9a-f]{3,8}|\$color\.[a-z0-9-]+)(?: 100%)?\)$/i;
@@ -64,15 +65,15 @@ export function GradientFields(props: {
           disabled={props.disabled}
           onValueChange={(value) => write(start, end, value)}
         />
-        <input
-          type="range"
-          className="bd-range"
-          aria-label={`${t('style.gradient.angle')}: ${t('style.slider')}`}
-          min="-360"
-          max="360"
-          value={angle}
+        <RangeSlider
+          label={`${t('style.gradient.angle')}: ${t('style.slider')}`}
+          min={-360}
+          max={360}
+          step={1}
+          value={Number(angle) || 0}
+          unit="°"
           disabled={props.disabled}
-          onChange={(event) => write(start, end, event.target.value)}
+          onChange={(value) => write(start, end, value)}
         />
       </div>
     </div>

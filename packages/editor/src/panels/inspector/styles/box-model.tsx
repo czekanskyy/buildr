@@ -1,73 +1,32 @@
-import { BOX_SIDES, type EffectiveStyles, type StylePropertyDef } from '@next-buildr/core';
-import { useState } from 'react';
+import { createContext, type ReactNode, useState } from 'react';
 import { useT } from '../../../messages/index.tsx';
 
-type Side = (typeof BOX_SIDES)[number];
-
-const OPPOSITE: Record<Side, Side> = {
-  top: 'bottom',
-  bottom: 'top',
-  left: 'right',
-  right: 'left',
-};
-
-const shortOf = (value: string | number | boolean | undefined): string => {
-  if (value === undefined) return '–';
-  const text = String(value);
-  const token = /^\$[A-Za-z]+\.(.+)$/.exec(text);
-  return token?.[1] ?? text.replace(/px$/, '');
-};
-
-export interface BoxModelProps {
-  readonly def: StylePropertyDef;
-  /** The visible name of the property (`Margin`). */
-  readonly label: string;
-  readonly effective: EffectiveStyles;
-  readonly layer: string;
-  readonly disabled: boolean;
-  /** Draws the edit field of the chosen side(s); it writes to every side in `sides`. */
-  readonly renderEditor: (sides: readonly Side[]) => React.ReactNode;
+/** Where the bars of the two boxes (key colour, label, unit, link) are drawn, above the diagram. */
+export interface BoxBars {
+  readonly margin: HTMLElement | null;
+  readonly padding: HTMLElement | null;
 }
 
+/** Present inside a `BoxModel`; the ring editors portal their header into the matching slot. */
+export const BoxBarsContext = createContext<BoxBars | undefined>(undefined);
+
 /**
- * The box-model widget for margin and padding: the four sides around a box, each showing its
- * value. Clicking a side chooses it for editing; Alt-click chooses both sides of its axis, and the
- * one field below then writes to both.
+ * The frame of the margin-and-padding editor: a bar for each box (key colour, name, unit, link
+ * toggle), then the nested boxes with the value inputs, then the hint. It owns no value; the ring
+ * editors it wraps write through the same commands as any other style field.
  */
-export function BoxModel({ def, label, effective, layer, disabled, renderEditor }: BoxModelProps) {
+export function BoxModel({ children }: { readonly children: ReactNode }) {
   const t = useT();
-  const [sides, setSides] = useState<readonly Side[]>(['top']);
-  const choose = (side: Side, both: boolean) =>
-    setSides(both ? [side, OPPOSITE[side]].sort() : [side]);
+  const [margin, setMargin] = useState<HTMLElement | null>(null);
+  const [padding, setPadding] = useState<HTMLElement | null>(null);
   return (
-    <div className="bd-box-model" data-property={def.name}>
-      <div className="bd-box-diagram" data-kind={def.name}>
-        {BOX_SIDES.map((side) => {
-          const current = effective[`${def.group}.${def.name}.${side}`];
-          return (
-            <button
-              key={side}
-              type="button"
-              className="bd-box-side"
-              data-side={side}
-              data-source={
-                current === undefined ? 'none' : current.source === layer ? 'set' : 'inherited'
-              }
-              aria-pressed={sides.includes(side)}
-              disabled={disabled}
-              aria-label={`${label} ${t(`style.side.${side}`)}`}
-              onClick={(event) => choose(side, event.altKey)}
-            >
-              {shortOf(current?.value)}
-            </button>
-          );
-        })}
-        <span className="bd-box-inner" aria-hidden="true" />
-      </div>
-      <p className="bd-field-hint">{t('style.box.hint')}</p>
-      <div key={sides.join()} className="bd-box-editor">
-        {renderEditor(sides)}
-      </div>
-    </div>
+    <BoxBarsContext.Provider value={{ margin, padding }}>
+      <fieldset className="bd-boxmodel" aria-label={t('styleField.spacing.title')}>
+        <div className="bd-boxbar" data-kind="margin" ref={setMargin} />
+        <div className="bd-boxbar" data-kind="padding" ref={setPadding} />
+        {children}
+        <p className="bd-hint">{t('styleField.spacing.hint')}</p>
+      </fieldset>
+    </BoxBarsContext.Provider>
   );
 }

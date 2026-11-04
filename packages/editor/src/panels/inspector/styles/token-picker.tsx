@@ -1,13 +1,13 @@
 import type { StylePropertyDef, Theme } from '@next-buildr/core';
 import { useState } from 'react';
 import { useT } from '../../../messages/index.tsx';
-import { Button, ColorSwatch, Icon, Popover } from '../../../ui/index.ts';
+import { Button, ColorSwatch, Icon, Popover, SearchField } from '../../../ui/index.ts';
 import { type TokenEntry, tokenEntries } from './model.ts';
 
 /**
  * The theme's tokens for a property, each with what it stands for: a swatch for a colour, the
  * value for a length or a font. Choosing one writes its `$scale.name` reference, exactly as typing
- * it would.
+ * it would. The typeface list is a combobox: a filter field narrows it, each name in its own face.
  */
 export function TokenPicker(props: {
   readonly def: StylePropertyDef;
@@ -19,12 +19,19 @@ export function TokenPicker(props: {
 }) {
   const t = useT();
   const [open, setOpen] = useState(false);
+  const [filter, setFilter] = useState('');
   const entries = tokenEntries(props.def, props.theme);
   if (entries.length === 0) return null;
   const isColor = props.def.grammar.kind === 'color';
+  const isFont = props.def.name === 'fontFamily';
+  const needle = filter.trim().toLocaleLowerCase();
+  const shown = isFont
+    ? entries.filter((entry) => entry.name.toLocaleLowerCase().includes(needle))
+    : entries;
   const pick = (entry: TokenEntry) => {
     props.onPick(entry.ref);
     setOpen(false);
+    setFilter('');
   };
   return (
     <Popover
@@ -41,8 +48,20 @@ export function TokenPicker(props: {
         </Button>
       }
     >
-      <ul className="bd-token-list" aria-label={`${t('style.tokens')}: ${props.label}`}>
-        {entries.map((entry) => (
+      {isFont ? (
+        <SearchField
+          value={filter}
+          onChange={setFilter}
+          label={t('styleField.font.search')}
+          clearLabel={t('insert.clear')}
+          placeholder={t('styleField.font.search')}
+        />
+      ) : null}
+      <ul
+        className="bd-token-list"
+        aria-label={isFont ? t('styleField.font.list') : `${t('style.tokens')}: ${props.label}`}
+      >
+        {shown.map((entry) => (
           <li key={entry.ref}>
             <button
               type="button"
@@ -51,7 +70,12 @@ export function TokenPicker(props: {
               onClick={() => pick(entry)}
             >
               {isColor ? <ColorSwatch color={entry.value} /> : null}
-              <span className="bd-token-name">{entry.name}</span>
+              <span
+                className="bd-token-name"
+                style={isFont ? { fontFamily: entry.value } : undefined}
+              >
+                {entry.name}
+              </span>
               {isColor ? null : <span className="bd-token-value">{entry.value}</span>}
             </button>
           </li>

@@ -312,3 +312,17 @@ describe('published stylesheet (bundle-css.mjs)', () => {
     expect(published).not.toMatch(/https?:\/\//);
   });
 });
+
+describe('empty-page card', () => {
+  const canvasCss = read('canvas.css');
+  const rule = canvasCss.slice(canvasCss.indexOf('.bd-canvas-empty {'));
+  it('is a centred card, not an opaque cover that lets clicks fall through to the page', () => {
+    const block = rule.slice(0, rule.indexOf('}'));
+    expect(block).toContain('translate(-50%, -50%)');
+    expect(block).not.toContain('pointer-events: none');
+    expect(block).toContain('inset: 50% auto auto 50%');
+  });
+  it('leaves no dead pointer-events rule behind in overlays.css', () => {
+    expect(read('overlays.css')).not.toMatch(/\.bd-canvas-empty\s*\{[^}]*pointer-events/);
+  });
+});
