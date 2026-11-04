@@ -8,20 +8,24 @@ const LABELS: Readonly<Record<PanelSide, MessageKey>> = {
 };
 
 /**
- * The button that opens or closes one side panel while the editor is narrow (PB-122). It renders
- * nothing when the panels sit beside the canvas.
+ * The button that shows or hides one side panel at every width. Wide: it collapses the panel to its
+ * rail (persisted); narrow (PB-122): it opens the panel as an overlay, one at a time. It renders
+ * nothing outside the layout (no `ShellPanels`).
  */
 export function PanelToggle({ side }: { readonly side: PanelSide }) {
   const t = useT();
   const panels = useShellPanels();
-  if (panels === undefined || !panels.narrow) return null;
+  if (panels === undefined) return null;
+  const wide = !panels.narrow;
+  if (wide && (panels.collapsed === undefined || panels.toggleCollapsed === undefined)) return null;
+  const pressed = wide ? panels.collapsed?.[side] !== true : panels.open[side];
   return (
     <IconButton
       label={t(LABELS[side])}
       icon={side === 'left' ? 'panel-left' : 'panel-right'}
       variant="ghost"
-      aria-pressed={panels.open[side]}
-      onClick={() => panels.toggle(side)}
+      aria-pressed={pressed}
+      onClick={() => (wide ? panels.toggleCollapsed?.(side) : panels.toggle(side))}
     />
   );
 }

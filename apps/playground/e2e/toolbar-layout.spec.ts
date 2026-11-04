@@ -9,34 +9,56 @@ for (const theme of ['light', 'dark']) {
         timeout: 15_000,
       });
       const row = page.locator('.bd-toolbar-row');
+      // No zone overflows its grid track, and the row itself does not scroll.
       await expect
         .poll(() => row.evaluate((el) => el.scrollWidth - el.clientWidth))
         .toBeLessThanOrEqual(0);
+      await expect
+        .poll(() =>
+          row.evaluate((el) =>
+            Math.max(
+              ...[...el.querySelectorAll<HTMLElement>('.bd-toolbar-cluster')].map(
+                (zone) => zone.scrollWidth - zone.clientWidth,
+              ),
+            ),
+          ),
+        )
+        .toBeLessThanOrEqual(0);
       await expect(page.locator('.bd-brand')).toBeInViewport({ ratio: 1 });
+      // The panel toggles are there at every width.
+      await expect(row.getByRole('button', { name: 'Left panel' })).toBeInViewport({ ratio: 1 });
+      await expect(row.getByRole('button', { name: 'Inspector panel' })).toBeInViewport({
+        ratio: 1,
+      });
+      await expect(row.getByRole('button', { name: 'Publish', exact: true })).toBeInViewport({
+        ratio: 1,
+      });
+      await expect(row.getByRole('button', { name: /page options/ })).toBeInViewport({ ratio: 1 });
       if (width === 1024) {
-        await expect(row.getByRole('button', { name: 'Left panel' })).toBeInViewport({ ratio: 1 });
-        // Rename while there is room, then verify the final collapse never leaves a sliver.
+        // Rename while there is room, then verify the final collapse leaves the chip without text.
         await page.setViewportSize({ width: 1440, height: 768 });
+        await row.getByRole('button', { name: /page options/ }).click();
         const title = page.getByRole('textbox', { name: 'Page name', exact: true });
         await title.fill('A long page title that must truncate at the minimum editor width');
         await title.press('Enter');
+        await page.keyboard.press('Escape');
         await page.setViewportSize({ width, height: 768 });
         await expect
-          .poll(() => page.locator('.bd-title-input').evaluate((el) => el.getClientRects().length))
+          .poll(() =>
+            page.locator('.bd-page-chip-title').evaluate((el) => el.getClientRects().length),
+          )
           .toBe(0);
-        await expect(page.locator('.bd-toolbar-heading')).toHaveCSS('display', 'none');
         await expect
           .poll(() => row.evaluate((el) => el.scrollWidth - el.clientWidth))
           .toBeLessThanOrEqual(0);
-        await expect(page.locator('.bd-title-input')).toHaveCSS('text-overflow', 'ellipsis');
-        await expect(row.getByRole('button', { name: 'Publish', exact: true })).toBeInViewport({
+        await expect(row.getByRole('button', { name: /page options/ })).toBeInViewport({
           ratio: 1,
         });
       }
       if (width === 1440) {
         const saved = row.locator('.bd-save-status');
         await expect(saved).toHaveAttribute('data-compact', 'false');
-        const picker = row.getByRole('combobox', { name: 'Content language' });
+        const picker = row.getByRole('button', { name: /Content language/ });
         await expect
           .poll(async () => {
             const statusBox = await saved.boundingBox();

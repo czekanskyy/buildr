@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useT } from '../messages/index.tsx';
 import type { DocumentAdapter, DocumentRef } from '../persistence/index.ts';
 import { Select } from '../ui/index.ts';
@@ -32,21 +32,33 @@ const write = (storage: SamplePickerProps['storage'], key: string, value: string
   }
 };
 
+export interface SamplesState {
+  readonly samples: readonly { id: string; label: string }[];
+  /** The chosen sample id, or DEFAULT_SAMPLE. */
+  readonly value: string;
+  /** The chosen entry's label; undefined while the default entry is in use. */
+  readonly label: string | undefined;
+  select(next: string): void;
+}
+
 /**
- * Chooses which entry a template is shown with (docs/editor.md#sample-data): the samples the adapter
- * lists, the choice sent to the canvas as its context and remembered per document. Renders nothing
- * when the adapter lists no samples (a page, not a template).
+ * The samples the adapter lists for a document and the remembered choice (docs/editor.md#sample-data):
+ * the choice is sent to the canvas as its context and remembered per document. Does nothing without
+ * props; samples stays empty when the adapter lists none (a page, not a template).
  */
-export function SamplePicker({ adapter, docRef, onChange, storage }: SamplePickerProps) {
-  const t = useT();
+export function useSamples(props: SamplePickerProps | undefined): SamplesState {
   const [samples, setSamples] = useState<readonly { id: string; label: string }[]>([]);
   const [value, setValue] = useState(DEFAULT_SAMPLE);
-  const collection = docRef.collection;
-  const id = docRef.id;
+  const adapter = props?.adapter;
+  const storage = props?.storage;
+  const collection = props?.docRef.collection;
+  const id = props?.docRef.id;
+  // The latest callback, so a fresh closure every render does not restart the effect.
+  const onChange = useRef(props?.onChange);
+  onChange.current = props?.onChange;
 
-  // `onChange` is deliberately not a dependency: the host passes a fresh closure every render.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: see above
   useEffect(() => {
+    if (adapter === undefined || collection === undefined || id === undefined) return;
     let cancelled = false;
     const ref = { collection, id };
     void (async () => {
@@ -62,7 +74,7 @@ export function SamplePicker({ adapter, docRef, onChange, storage }: SamplePicke
       // A remembered entry that no longer exists is forgotten, not sent to the canvas.
       if (saved !== null && list.some((sample) => sample.id === saved)) {
         setValue(saved);
-        onChange(saved);
+        onChange.current?.(saved);
       }
     })();
     return () => {
@@ -70,20 +82,41 @@ export function SamplePicker({ adapter, docRef, onChange, storage }: SamplePicke
     };
   }, [adapter, collection, id, storage]);
 
-  if (samples.length === 0) return null;
+  const select = (next: string) => {
+    if (collection === undefined || id === undefined) return;
+    setValue(next);
+    write(storage, keyOf({ collection, id }), next);
+    onChange.current?.(next === DEFAULT_SAMPLE ? null : next);
+  };
+  return {
+    samples,
+    value,
+    label: samples.find((sample) => sample.id === value)?.label,
+    select,
+  };
+}
+
+/** The select that chooses the sample entry, for a useSamples state; nothing when there are none. */
+export function SampleSelect({ state }: { readonly state: SamplesState }) {
+  const t = useT();
+  if (state.samples.length === 0) return null;
   return (
     <Select
       label={t('sample.label')}
-      value={value}
-      onValueChange={(next) => {
-        setValue(next);
-        write(storage, keyOf({ collection, id }), next);
-        onChange(next === DEFAULT_SAMPLE ? null : next);
-      }}
+      value={state.value}
+      onValueChange={state.select}
       options={[
         { value: DEFAULT_SAMPLE, label: t('sample.default') },
-        ...samples.map((sample) => ({ value: sample.id, label: sample.label })),
+        ...state.samples.map((sample) => ({ value: sample.id, label: sample.label })),
       ]}
     />
   );
+}
+
+/**
+ * Chooses which entry a template is shown with (docs/editor.md#sample-data). Renders nothing when the
+ * adapter lists no samples.
+ */
+export function SamplePicker(props: SamplePickerProps) {
+  return <SampleSelect state={useSamples(props)} />;
 }

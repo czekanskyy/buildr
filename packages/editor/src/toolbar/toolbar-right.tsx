@@ -1,60 +1,54 @@
 import type { ReactNode } from 'react';
+import type { BreakpointConfig } from '../app/config.ts';
 import { useT } from '../messages/index.tsx';
-import { useShortcutHint } from '../shortcuts/index.ts';
-import { useEditor, useEditorState } from '../store/index.ts';
-import { Button, Icon, IconButton, Tooltip } from '../ui/index.ts';
-import { MoreMenu } from './more-menu.tsx';
+import { useEditorState } from '../store/index.ts';
+import { Button, Icon, Tooltip } from '../ui/index.ts';
+import { BreakpointControl } from './breakpoint-control.tsx';
+import { LocaleChip } from './locale-chip.tsx';
+import { MoreMenu, type MoreMenuProps } from './more-menu.tsx';
+import { PanelToggle } from './panel-toggles.tsx';
 import { SaveIndicator } from './save-indicator.tsx';
-import { ThemeControl } from './theme-control.tsx';
 
 export interface ToolbarRightProps {
-  /** The locale and sample pickers (the shell's), placed between the save status and Preview. */
-  readonly pickers?: ReactNode;
+  readonly breakpoints: readonly BreakpointConfig[];
+  readonly breakpoint: string;
+  readonly onBreakpointChange: (id: string) => void;
   readonly status: string;
+  readonly onLocaleChange?: ((locale: string) => void) | undefined;
+  /** Replaces the locale chip with the shell's own pickers (the layout before the page chip). */
+  readonly legacyPickers?: ReactNode;
   readonly onPreview?: (() => void) | undefined;
   readonly onPublish?: (() => void) | undefined;
   readonly canPublish?: boolean | undefined;
   /** The save text is visually hidden (the row is tight). */
   readonly compactSave: boolean;
-  /** The version history: a link in the row, or an item of the more menu when the row is tight. */
+  /** The version history: an icon link in the row, or an item of the more menu when the row is tight. */
   readonly historyUrl?: string | undefined;
   readonly historyInMenu: boolean;
   /** The CMS link, when the row had no room for it; the more menu lists it. */
   readonly moreCmsUrl?: string | undefined;
+  readonly sample?: MoreMenuProps['sample'];
+  readonly helpUrl?: string | undefined;
+  readonly onOpenShortcuts?: (() => void) | undefined;
 }
 
-/** Undo and redo, the save status, the pickers, Preview (secondary), Publish (the one primary) and more. */
+/**
+ * Screen size, save status, content language, version history, Preview, the more menu, the right
+ * panel toggle and Publish (the one primary action).
+ */
 export function ToolbarRight(props: ToolbarRightProps) {
   const t = useT();
-  const store = useEditor();
-  const canUndo = useEditorState((state) => state.canUndo);
-  const canRedo = useEditorState((state) => state.canRedo);
   const readOnly = useEditorState((state) => state.readOnly);
-  const undoHint = useShortcutHint('edit.undo');
-  const redoHint = useShortcutHint('edit.redo');
-
   return (
-    <div className="bd-toolbar-zone" data-zone="right">
-      <fieldset className="bd-toolbar-group" aria-label={t('toolbar.history')}>
-        <IconButton
-          label={t('shortcut.undo')}
-          hint={undoHint}
-          icon="undo-2"
-          variant="ghost"
-          disabled={!canUndo || readOnly}
-          onClick={() => store.undo()}
-        />
-        <IconButton
-          label={t('shortcut.redo')}
-          hint={redoHint}
-          icon="redo-2"
-          variant="ghost"
-          disabled={!canRedo || readOnly}
-          onClick={() => store.redo()}
-        />
-      </fieldset>
+    <div className="bd-toolbar-cluster" data-zone="right">
+      <BreakpointControl
+        breakpoints={props.breakpoints}
+        breakpoint={props.breakpoint}
+        onChange={props.onBreakpointChange}
+      />
+      <span className="bd-toolbar-divider" aria-hidden="true" />
       <SaveIndicator compact={props.compactSave} />
-      {props.pickers}
+      {props.legacyPickers ?? <LocaleChip onChange={props.onLocaleChange} />}
       {props.historyUrl !== undefined && !props.historyInMenu && (
         <Tooltip content={t('toolbar.versions')}>
           <a
@@ -67,11 +61,29 @@ export function ToolbarRight(props: ToolbarRightProps) {
           </a>
         </Tooltip>
       )}
-      <Button onClick={props.onPreview} disabled={props.onPreview === undefined}>
-        <Icon name="eye" /> {t('toolbar.preview')}
-      </Button>
+      <Tooltip content={t('toolbar.preview.newTab')}>
+        <Button
+          variant="ghost"
+          className="bd-icon-button"
+          aria-label={t('toolbar.preview.page')}
+          onClick={props.onPreview}
+          disabled={props.onPreview === undefined}
+        >
+          <Icon name="eye" />
+        </Button>
+      </Tooltip>
+      <MoreMenu
+        historyUrl={props.historyInMenu ? props.historyUrl : undefined}
+        cmsUrl={props.moreCmsUrl}
+        sample={props.sample}
+        helpUrl={props.helpUrl}
+        onOpenShortcuts={props.onOpenShortcuts}
+      />
+      <PanelToggle side="right" />
       <Button
         variant="primary"
+        className="bd-publish"
+        aria-haspopup="dialog"
         onClick={props.onPublish}
         disabled={
           props.onPublish === undefined ||
@@ -80,13 +92,8 @@ export function ToolbarRight(props: ToolbarRightProps) {
           props.status === 'conflict'
         }
       >
-        <Icon name="arrow-up" /> {t('toolbar.publish')}
+        {t('toolbar.publish')}
       </Button>
-      <ThemeControl />
-      <MoreMenu
-        historyUrl={props.historyInMenu ? props.historyUrl : undefined}
-        cmsUrl={props.moreCmsUrl}
-      />
     </div>
   );
 }

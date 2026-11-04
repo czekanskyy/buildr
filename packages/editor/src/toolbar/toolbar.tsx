@@ -1,7 +1,9 @@
-import { type ReactNode, useRef } from 'react';
+import { type ReactNode, useRef, useState } from 'react';
 import type { BreakpointConfig } from '../app/config.ts';
 import { usePersistenceState } from '../persistence/index.ts';
-import { PanelToggle } from './panel-toggles.tsx';
+import { useEditorState } from '../store/index.ts';
+import { PageOptionsDialog } from './page-options-dialog.tsx';
+import { type SamplePickerProps, useSamples } from './sample-picker.tsx';
 import { ToolbarCentre } from './toolbar-centre.tsx';
 import { ToolbarLeft } from './toolbar-left.tsx';
 import { ToolbarRight } from './toolbar-right.tsx';
@@ -9,24 +11,37 @@ import { useOverflowLevel } from './use-overflow-level.ts';
 import type { Zoom } from './zoom-menu.tsx';
 
 export interface ToolbarProps {
-  /** The document's title, shown after the link back. */
+  /** The document's title, shown in the page chip and renamed in the page options. */
   readonly title: string;
-  /** Saves a new page name (`adapter.rename`); the title is not editable without it. */
+  /** Saves a new page name (`adapter.rename`); the name is read-only without it. */
   readonly onTitleChange?: ((title: string) => Promise<void>) | undefined;
-  /** Draft or published, as a pill next to the title. */
+  /** The page's address, read-only in the page options; the row is left out without it. */
+  readonly slug?: string | undefined;
+  /** Draft or published, as a small chip in the page chip. */
   readonly status?: 'draft' | 'published' | undefined;
   readonly breakpoints: readonly BreakpointConfig[];
   readonly breakpoint: string;
   readonly onBreakpointChange: (id: string) => void;
-  /** The canvas zoom (`host.setZoom`); `fit` when left out. */
+  /** @deprecated The zoom lives in the status bar; ignored. */
   readonly zoom?: Zoom | undefined;
-  /** Changes the canvas zoom; the zoom menu is left out without it. */
+  /** @deprecated The zoom lives in the status bar; ignored. */
   readonly onZoomChange?: ((zoom: Zoom) => void) | undefined;
   /** The page in the CMS's admin (`adapter.cmsUrl`); the link is left out without it. */
   readonly cmsUrl?: string | undefined;
   /** The version history in the CMS; the link is left out without it. */
   readonly historyUrl?: string | undefined;
-  /** The locale and sample pickers, rendered on the right between the save status and Preview. */
+  /** The help page; the Help row of the more menu is left out without it. */
+  readonly helpUrl?: string | undefined;
+  /** Opens the shortcuts dialog from the more menu; without it the shortcut provider's own opener is used. */
+  readonly onOpenShortcuts?: (() => void) | undefined;
+  /** Tells the canvas which content language to render (`CanvasHost.setLocale`). */
+  readonly onLocaleChange?: ((locale: string) => void) | undefined;
+  /** The sample data source (templates); without it there is no sample data. */
+  readonly sample?: SamplePickerProps | undefined;
+  /**
+   * @deprecated The locale and sample pickers of the previous toolbar. While given (and neither
+   * `onLocaleChange` nor `sample` is), they are rendered in place of the locale chip.
+   */
   readonly pickers?: ReactNode;
   /** Flushes the save and opens the preview (PB-091). */
   readonly onPreview?: (() => void) | undefined;
@@ -37,45 +52,45 @@ export interface ToolbarProps {
 }
 
 /**
- * What changes as the row runs out of room, in order (a step is taken only when the content
- * overflows): 1 the version history moves into the more menu, 2 the save text becomes icon only,
- * 3 the link back to the CMS moves into the more menu, 4 the title chip is hidden.
+ * What changes as the row runs out of room, in order (a step is taken only when a zone overflows):
+ * 1 the version history moves into the more menu, 2 the save text becomes icon only, 3 the link
+ * back to the CMS moves into the more menu, 4 the page name and the product name are hidden.
  */
 const COLLAPSE = { versions: 1, saveText: 2, cms: 3, title: 4 } as const;
 
 /**
- * The editor's primary actions (docs/editor.md#toolbar-pb-083) in three zones: the link back, title
- * and status on the left; screen size and zoom in the centre; undo/redo, save status, pickers,
- * Preview, Publish and the more menu on the right. It reads the store and the persistence
- * controller from context; the shortcuts show in the tooltips.
+ * The editor's primary actions (docs/editor.md#toolbar-pb-083) in a `1fr / auto / 1fr` grid. Left:
+ * back, mark, left panel toggle, undo, redo. Centre: the page chip (opens the page options). Right:
+ * screen size, save status, content language, history, Preview, more, right panel toggle, Publish.
+ * It reads the store and the persistence controller from context; shortcuts show in the tooltips.
  */
 export function Toolbar(props: ToolbarProps) {
   const row = useRef<HTMLDivElement>(null);
   const level = useOverflowLevel(row, COLLAPSE.title);
   const status = usePersistenceState((state) => state.status);
+  const readOnly = useEditorState((state) => state.readOnly);
+  const [optionsOpen, setOptionsOpen] = useState(false);
+  const samples = useSamples(props.sample);
   const cmsMoved = level >= COLLAPSE.cms;
+  const legacy =
+    props.pickers !== undefined && props.onLocaleChange === undefined && props.sample === undefined;
 
   return (
     <div className="bd-toolbar-row" ref={row} data-level={level}>
-      <PanelToggle side="left" />
-      <ToolbarLeft
-        title={props.title}
-        onRename={props.onTitleChange}
-        status={props.status}
-        cmsUrl={cmsMoved ? undefined : props.cmsUrl}
-      />
-      <span className="bd-toolbar-spacer" />
+      <ToolbarLeft cmsUrl={cmsMoved ? undefined : props.cmsUrl} />
       <ToolbarCentre
+        title={props.title}
+        status={props.status}
+        open={optionsOpen}
+        onOpen={() => setOptionsOpen(true)}
+      />
+      <ToolbarRight
         breakpoints={props.breakpoints}
         breakpoint={props.breakpoint}
         onBreakpointChange={props.onBreakpointChange}
-        zoom={props.zoom}
-        onZoomChange={props.onZoomChange}
-      />
-      <span className="bd-toolbar-spacer" />
-      <ToolbarRight
-        pickers={props.pickers}
         status={status}
+        onLocaleChange={props.onLocaleChange}
+        legacyPickers={legacy ? props.pickers : undefined}
         onPreview={props.onPreview}
         onPublish={props.onPublish}
         canPublish={props.canPublish}
@@ -83,8 +98,23 @@ export function Toolbar(props: ToolbarProps) {
         historyUrl={props.historyUrl}
         historyInMenu={level >= COLLAPSE.versions}
         moreCmsUrl={cmsMoved ? props.cmsUrl : undefined}
+        sample={
+          samples.samples.length > 0
+            ? { entry: samples.label, onOpen: () => setOptionsOpen(true) }
+            : undefined
+        }
+        helpUrl={props.helpUrl}
+        onOpenShortcuts={props.onOpenShortcuts}
       />
-      <PanelToggle side="right" />
+      <PageOptionsDialog
+        open={optionsOpen}
+        onOpenChange={setOptionsOpen}
+        title={props.title}
+        onRename={props.onTitleChange}
+        slug={props.slug}
+        readOnly={readOnly}
+        samples={samples}
+      />
     </div>
   );
 }

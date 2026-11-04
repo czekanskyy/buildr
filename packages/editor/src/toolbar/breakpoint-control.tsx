@@ -40,7 +40,12 @@ export function BreakpointControl({ breakpoints, breakpoint, onChange }: Breakpo
             (group) => group !== undefined && Object.keys(group).length > 0,
           );
         return (
-          <Tooltip key={item.id} content={`${label} · ${item.width}px`}>
+          <Tooltip
+            key={item.id}
+            content={t('toolbar.device.size')
+              .replace('{name}', label)
+              .replace('{width}', String(item.width))}
+          >
             <Button
               variant="ghost"
               className="bd-segment"

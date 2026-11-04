@@ -1,7 +1,7 @@
 import { useT } from '../messages/index.tsx';
 
-/** The Buildr mark: a rounded tile holding three stacked blocks. Decorative, the name is beside it. */
-export function BrandMark({ size = 24 }: { readonly size?: number }) {
+/** The Buildr mark: two overlapping blocks. Decorative, the name is beside it. */
+export function BrandMark({ size = 22 }: { readonly size?: number }) {
   return (
     <svg
       className="bd-brand-mark"
@@ -11,15 +11,13 @@ export function BrandMark({ size = 24 }: { readonly size?: number }) {
       aria-hidden="true"
       focusable="false"
     >
-      <rect className="bd-brand-tile" width="24" height="24" rx="6" />
-      <rect className="bd-brand-block" x="5" y="5" width="6" height="6" rx="1.5" />
-      <rect className="bd-brand-block" x="13" y="5" width="6" height="6" rx="1.5" />
-      <rect className="bd-brand-block" x="5" y="13" width="14" height="6" rx="1.5" />
+      <rect className="bd-brand-back" x="2" y="11" width="13" height="11" rx="3" />
+      <rect className="bd-brand-front" x="9" y="2" width="13" height="13" rx="3" />
     </svg>
   );
 }
 
-/** The product identity in the top left corner: the mark and the name. */
+/** The product identity: the mark and the name. */
 export function Brand() {
   const t = useT();
   return (

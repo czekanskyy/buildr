@@ -488,31 +488,11 @@
 }
 
 /* Toolbar (PB-083, redesigned in PB-123) */
-.buildr-editor .bd-toolbar-title {
-  flex: none;
-  max-width: 40ch;
-  margin: 0;
-  font-size: var(--bd-text-md);
-  line-height: var(--bd-leading-md);
-  font-weight: var(--bd-weight-medium);
-  letter-spacing: var(--bd-tracking-tight);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.buildr-editor .bd-toolbar-spacer {
-  flex: 1;
-}
-
-.buildr-editor .bd-breakpoints,
-.buildr-editor .bd-toolbar-group {
+.buildr-editor .bd-breakpoints {
   border: 0;
   margin: 0;
-  padding: 0;
   min-width: 0;
   display: inline-flex;
-  gap: var(--bd-space-0);
 }
 
 .buildr-editor .bd-toolbar-link {
@@ -538,47 +518,132 @@
   color: var(--bd-danger);
 }
 
-/* Toolbar zones and collapsing (PB-123). The row is measured by a ResizeObserver, not a media query. */
+/* Toolbar: a 1fr / auto / 1fr grid. The row is measured by a ResizeObserver, not a media query. */
 .buildr-editor .bd-toolbar-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: var(--bd-space-4);
+  gap: var(--bd-space-3);
   flex: 1;
   min-width: 0;
   height: 100%;
   overflow: clip;
 }
 
-.buildr-editor .bd-toolbar-zone {
+.buildr-editor .bd-toolbar-cluster {
   display: flex;
   align-items: center;
   gap: var(--bd-space-1);
-  flex: none;
+  min-width: 0;
   white-space: nowrap;
 }
 
-/* Last step of collapsing: remove the document chip cleanly, never leave a text sliver. */
-.buildr-editor .bd-toolbar-row[data-level="4"] .bd-toolbar-heading,
-.buildr-editor .bd-toolbar-row[data-level="4"] .bd-toolbar-title {
+/* The end zone is pushed right with an auto margin, so overflow runs right, where it is measured. */
+.buildr-editor .bd-toolbar-cluster[data-zone="right"] > :first-child {
+  margin-inline-start: auto;
+}
+
+.buildr-editor .bd-toolbar-divider {
+  flex: none;
+  width: var(--bd-border-width);
+  height: var(--bd-control-xs);
+  margin: 0 var(--bd-space-2);
+  background: var(--bd-toolbar-border);
+}
+
+/* Last step of collapsing: only the icons of the page chip and the mark stay. */
+.buildr-editor .bd-toolbar-row[data-level="4"] .bd-page-chip-title {
   display: none;
 }
 
-.buildr-editor .bd-toolbar-zone > .bd-status-pill {
-  flex: none;
+/* The page chip in the middle of the toolbar. */
+.buildr-editor .bd-toolbar .bd-page-chip {
+  gap: var(--bd-space-2);
+  height: var(--bd-control-md);
+  padding: 0 var(--bd-space-2) 0 var(--bd-space-3);
+  border-color: transparent;
+  background: var(--bd-surface-2);
+  font-weight: var(--bd-weight-medium);
 }
 
-.buildr-editor .bd-status-pill {
-  padding: var(--bd-space-0) var(--bd-space-3);
-  border: var(--bd-border-width) solid var(--bd-toolbar-border);
-  border-radius: var(--bd-radius-pill);
+.buildr-editor .bd-toolbar .bd-page-chip:hover:not(:disabled) {
+  background: var(--bd-toolbar-hover);
+}
+
+.buildr-editor .bd-page-chip .bd-icon {
   color: var(--bd-toolbar-muted);
+}
+
+.buildr-editor .bd-page-chip-title {
+  max-width: 28ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.buildr-editor .bd-page-chip-status {
+  display: inline-flex;
+  align-items: center;
+  height: var(--bd-control-xs);
+  padding: 0 var(--bd-space-2);
+  border-radius: var(--bd-radius-pill);
+  background: var(--bd-warning-soft);
+  color: var(--bd-warning);
   font-size: var(--bd-text-xs);
   line-height: var(--bd-leading-xs);
   font-weight: var(--bd-weight-medium);
 }
 
+.buildr-editor .bd-page-chip-status[data-status="published"] {
+  background: var(--bd-success-soft);
+  color: var(--bd-success);
+}
+
+.buildr-editor .bd-toolbar .bd-locale-chip {
+  gap: var(--bd-space-1);
+  padding: 0 var(--bd-space-2);
+}
+
+.buildr-editor .bd-locale-chip .bd-icon {
+  color: var(--bd-toolbar-muted);
+}
+
+.buildr-editor .bd-locale-code {
+  font-size: var(--bd-text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.buildr-editor .bd-toolbar .bd-publish {
+  margin-inline-start: var(--bd-space-1);
+}
+
+/* The page options dialog. */
+.bd-page-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-space-4);
+}
+
+.bd-page-options-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-space-2);
+  font-size: var(--bd-text-sm);
+  font-weight: var(--bd-weight-medium);
+}
+
 .buildr-editor .bd-toolbar .bd-icon-button {
   min-width: var(--bd-control-md);
+  color: var(--bd-toolbar-muted);
+}
+
+.buildr-editor .bd-toolbar .bd-icon-button:hover:not(:disabled) {
+  color: var(--bd-toolbar-text);
+}
+
+.buildr-editor .bd-toolbar .bd-icon-button[aria-pressed="true"],
+.buildr-editor .bd-toolbar .bd-icon-button[aria-expanded="true"] {
+  background: var(--bd-surface-selected);
+  color: var(--bd-accent);
 }
 
 .buildr-editor .bd-toolbar .bd-toolbar-link {
@@ -752,14 +817,13 @@
   overflow: hidden;
 }
 
-/* Product identity (top left of the toolbar) */
+/* Product identity (the mark and the name, after the back link) */
 .buildr-editor .bd-brand {
   display: inline-flex;
   align-items: center;
-  gap: var(--bd-space-3);
+  gap: var(--bd-space-2);
   flex: none;
-  padding-right: var(--bd-space-4);
-  border-right: var(--bd-border-width) solid var(--bd-toolbar-border);
+  padding: 0 var(--bd-space-2);
   color: var(--bd-toolbar-text);
   font-size: var(--bd-text-lg);
   line-height: var(--bd-leading-lg);
@@ -768,22 +832,22 @@
   user-select: none;
 }
 
-.buildr-editor .bd-brand-tile {
-  fill: var(--bd-primary);
+.buildr-editor .bd-toolbar .bd-brand-mark {
+  width: var(--bd-logo-w);
+  height: var(--bd-logo-h);
 }
 
-.buildr-editor .bd-brand-block {
-  fill: var(--bd-primary-text);
+.buildr-editor .bd-brand-back {
+  fill: var(--bd-toolbar-text);
+}
+
+.buildr-editor .bd-brand-front {
+  fill: var(--bd-accent);
 }
 
 /* The name is the first thing to go when the row runs short. */
 .buildr-editor .bd-toolbar-row[data-level="4"] .bd-brand-name {
   display: none;
-}
-
-.buildr-editor .bd-toolbar-row[data-level="4"] .bd-brand {
-  padding-right: 0;
-  border-right: 0;
 }
 
 /* The page name is a field that reads as a heading until it is hovered or focused. */
@@ -900,4 +964,20 @@
 }
 .buildr-editor .bd-toolbar-zone[data-zone="left"] > .bd-toolbar-title {
   padding-block: var(--bd-space-1);
+}
+
+/* The theme segment of the more options menu. */
+.bd-menu-theme {
+  margin: 0;
+  padding: var(--bd-space-1) var(--bd-space-2);
+  border: 0;
+}
+
+.bd-menu-theme .bd-segmented {
+  display: flex;
+}
+
+.bd-menu-theme .bd-segmented .bd-segment {
+  flex: 1;
+  justify-content: center;
 }

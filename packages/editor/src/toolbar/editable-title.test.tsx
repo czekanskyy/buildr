@@ -63,4 +63,21 @@ describe('EditableTitle', () => {
     await key(input, 'Enter');
     expect(input.value).toBe('Home');
   });
+
+  it('renders as a plain text field in the page options', async () => {
+    const container = document.createElement('div');
+    document.body.append(container);
+    root = createRoot(container);
+    await act(async () =>
+      root?.render(
+        <MessagesProvider locale="en">
+          <EditableTitle title="Home" onRename={async () => undefined} variant="field" id="n" />
+        </MessagesProvider>,
+      ),
+    );
+    const input = container.querySelector('input') as HTMLInputElement;
+    expect(input.id).toBe('n');
+    expect(input.className).toBe('bd-input');
+    expect(input.hasAttribute('size')).toBe(false);
+  });
 });

@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { useT } from '../messages/index.tsx';
-import { type KeyInput, useOptionalShortcutRegistry } from '../shortcuts/index.ts';
-import { Icon, IconButton, Popover } from '../ui/index.ts';
+import {
+  type KeyInput,
+  useOpenShortcuts,
+  useOptionalShortcutRegistry,
+  useShortcutHint,
+} from '../shortcuts/index.ts';
+import { Icon, IconButton, Kbd, Popover } from '../ui/index.ts';
 import { type ThemePreference, useTheme } from './theme.tsx';
 
 export interface MoreMenuProps {
@@ -9,6 +14,12 @@ export interface MoreMenuProps {
   readonly historyUrl?: string | undefined;
   /** The page in the CMS; listed here only when it no longer fits the row. */
   readonly cmsUrl?: string | undefined;
+  /** The sample data row (templates with samples only): the chosen entry's name and how to change it. */
+  readonly sample?: { readonly entry: string | undefined; readonly onOpen: () => void } | undefined;
+  /** The help page; the Help row is left out without it. */
+  readonly helpUrl?: string | undefined;
+  /** Opens the shortcuts dialog directly; without it the provider's own opener, else the key is replayed. */
+  readonly onOpenShortcuts?: (() => void) | undefined;
 }
 
 const THEMES: readonly { value: ThemePreference; icon: 'sun' | 'moon' | 'monitor' }[] = [
@@ -35,17 +46,24 @@ function inputOf(combo: string, platform: 'mac' | 'other'): KeyInput {
 }
 
 /**
- * The `more` menu: the theme switch (hidden when the host fixes the theme), the shortcuts help, and
- * the links the row had no room for. Renders nothing when it would be empty.
+ * The more options menu: the theme segment (hidden when the host fixes the theme), sample data, the
+ * shortcuts dialog with its key, help, and the links the row had no room for. Renders nothing when it
+ * would be empty. There is no block outlines toggle: the editor has no state for it yet.
  */
-export function MoreMenu({ historyUrl, cmsUrl }: MoreMenuProps) {
+export function MoreMenu({ historyUrl, cmsUrl, sample, helpUrl, onOpenShortcuts }: MoreMenuProps) {
   const t = useT();
   const theme = useTheme();
   const registry = useOptionalShortcutRegistry();
+  const fromProvider = useOpenShortcuts();
+  const openShortcuts = onOpenShortcuts ?? fromProvider;
   const [open, setOpen] = useState(false);
   const helpCombo = registry?.keysFor('help.shortcuts')[0];
+  const helpHint = useShortcutHint('help.shortcuts');
   const showTheme = theme !== undefined && !theme.forced;
-  if (historyUrl === undefined && cmsUrl === undefined && helpCombo === undefined && !showTheme) {
+  const hasLinks = cmsUrl !== undefined || historyUrl !== undefined;
+  const hasShortcuts =
+    openShortcuts !== undefined || (registry !== undefined && helpCombo !== undefined);
+  if (!hasLinks && !hasShortcuts && !showTheme && sample === undefined && helpUrl === undefined) {
     return null;
   }
 
@@ -55,13 +73,13 @@ export function MoreMenu({ historyUrl, cmsUrl }: MoreMenuProps) {
       onOpenChange={setOpen}
       align="end"
       contentClassName="bd-menu-popover"
-      label={t('toolbar.more')}
-      trigger={<IconButton label={t('toolbar.more')} icon="ellipsis" variant="ghost" />}
+      label={t('toolbar.moreOptions')}
+      trigger={<IconButton label={t('toolbar.moreOptions')} icon="ellipsis" variant="ghost" />}
     >
       <div className="bd-menu-list">
         {cmsUrl !== undefined && (
           <a className="bd-menu-item" href={cmsUrl}>
-            <Icon name="arrow-left" /> {t('toolbar.back')}
+            <Icon name="arrow-left" /> {t('toolbar.backToCms')}
           </a>
         )}
         {historyUrl !== undefined && (
@@ -69,22 +87,12 @@ export function MoreMenu({ historyUrl, cmsUrl }: MoreMenuProps) {
             <Icon name="history" /> {t('toolbar.versions')}
           </a>
         )}
-        {registry !== undefined && helpCombo !== undefined && (
-          <button
-            type="button"
-            className="bd-menu-item"
-            onClick={() => {
-              setOpen(false);
-              // The help dialog belongs to the shortcut provider, which opens it on its own key.
-              registry.handle(inputOf(helpCombo, registry.platform), { typing: false });
-            }}
-          >
-            <Icon name="keyboard" /> {t('shortcut.title')}
-          </button>
+        {hasLinks && (showTheme || sample !== undefined || hasShortcuts) && (
+          <hr className="bd-menu-separator" />
         )}
         {showTheme && (
-          <fieldset className="bd-menu-group" aria-label={t('toolbar.theme')}>
-            <legend className="bd-menu-label">{t('toolbar.theme')}</legend>
+          <fieldset className="bd-menu-theme" aria-label={t('toolbar.themeLabel')}>
+            <legend className="bd-menu-caption">{t('toolbar.themeLabel')}</legend>
             <div className="bd-segmented">
               {THEMES.map((item) => (
                 <button
@@ -100,6 +108,64 @@ export function MoreMenu({ historyUrl, cmsUrl }: MoreMenuProps) {
               ))}
             </div>
           </fieldset>
+        )}
+        {showTheme && (sample !== undefined || hasShortcuts) && (
+          <hr className="bd-menu-separator" />
+        )}
+        {sample !== undefined && (
+          <button
+            type="button"
+            className="bd-menu-item"
+            aria-haspopup="dialog"
+            onClick={() => {
+              setOpen(false);
+              sample.onOpen();
+            }}
+          >
+            <Icon name="database" />
+            <span className="bd-menu-item-label">{t('toolbar.sampleData')}</span>
+            {sample.entry !== undefined && (
+              <Kbd className="bd-menu-kbd" aria-hidden>
+                {t('toolbar.sampleData.entry').replace('{name}', sample.entry)}
+              </Kbd>
+            )}
+          </button>
+        )}
+        {sample !== undefined && hasShortcuts && <hr className="bd-menu-separator" />}
+        {hasShortcuts && (
+          <button
+            type="button"
+            className="bd-menu-item"
+            aria-haspopup="dialog"
+            aria-keyshortcuts={helpCombo}
+            onClick={() => {
+              setOpen(false);
+              if (openShortcuts !== undefined) {
+                openShortcuts();
+                return;
+              }
+              // Fallback: replay the key. After the menu has left the page, as the shortcut
+              // ignores keys while an overlay is open.
+              if (registry === undefined || helpCombo === undefined) return;
+              setTimeout(() => {
+                registry.handle(inputOf(helpCombo, registry.platform), { typing: false });
+              }, 0);
+            }}
+          >
+            <Icon name="keyboard" />
+            <span className="bd-menu-item-label">{t('toolbar.shortcuts')}</span>
+            {helpHint !== undefined && (
+              <Kbd className="bd-menu-kbd" aria-hidden>
+                {helpHint}
+              </Kbd>
+            )}
+          </button>
+        )}
+        {helpUrl !== undefined && (
+          <a className="bd-menu-item" href={helpUrl} target="_blank" rel="noreferrer">
+            <Icon name="circle-question-mark" />
+            <span className="bd-menu-item-label">{t('toolbar.help')}</span>
+          </a>
         )}
       </div>
     </Popover>
