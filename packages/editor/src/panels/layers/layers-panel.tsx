@@ -395,7 +395,7 @@ export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
         <div
           ref={scroller}
           role="tree"
-          aria-label={t('layers.title')}
+          aria-label={t('structure.title')}
           aria-multiselectable="true"
           aria-activedescendant={
             activeRow !== undefined && activeIndex >= first && activeIndex < last
@@ -538,6 +538,9 @@ function Layer({
       ) : (
         <span className="bd-layer-label">{label}</span>
       )}
+      {node.name !== undefined && meta?.label !== undefined ? (
+        <span className="bd-layer-type">{meta.label}</span>
+      ) : null}
       {row.slot !== 'default' ? <span className="bd-layer-slot">{row.slot}</span> : null}
       {badges.map((badge) => (
         <Tooltip key={badge.key} content={t(badge.key)}>

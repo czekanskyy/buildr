@@ -153,7 +153,7 @@ describe('flattenTree', () => {
 describe('LayersPanel', () => {
   it('is an ARIA tree with names from the manifest and no accessibility violations', async () => {
     await mount();
-    expect(tree().getAttribute('aria-label')).toBe('Layers');
+    expect(tree().getAttribute('aria-label')).toBe('Page structure');
     expect(labels()).toEqual(['page', 'Hero', 'Box']);
     const [, hero] = items();
     expect(hero?.getAttribute('aria-level')).toBe('2');
@@ -161,6 +161,12 @@ describe('LayersPanel', () => {
     expect(hero?.getAttribute('aria-setsize')).toBe('2');
     expect(hero?.getAttribute('aria-expanded')).toBe('false');
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it('shows a muted type label only on a renamed block', async () => {
+    await mount();
+    const types = items().map((item) => item.querySelector('.bd-layer-type')?.textContent ?? null);
+    expect(types).toEqual([null, 'Box', null]);
   });
 
   it('draws an svg icon per row: the named one, or the neutral box, never a letter', async () => {

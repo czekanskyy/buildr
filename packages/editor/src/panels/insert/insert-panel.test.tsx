@@ -19,7 +19,7 @@ import { MessagesProvider } from '../../messages/index.tsx';
 import { createEditorStore, EditorStoreProvider } from '../../store/index.ts';
 import { ToastProvider } from '../../ui/index.ts';
 import { filterItems, paletteItems, safeThumbnail } from './catalog.ts';
-import { InsertPanel } from './insert-panel.tsx';
+import { InsertPanel, type InsertPanelProps } from './insert-panel.tsx';
 
 expect.extend(matchers);
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -95,6 +95,7 @@ let container: HTMLElement;
 let root: Root;
 
 beforeEach(() => {
+  localStorage.clear();
   container = document.createElement('div');
   document.body.append(container);
   root = createRoot(container);
@@ -104,7 +105,13 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
-async function mount(readOnly = false, locale = 'en', reg = registry, man = manifest) {
+async function mount(
+  readOnly = false,
+  locale = 'en',
+  reg = registry,
+  man = manifest,
+  props: InsertPanelProps = {},
+) {
   const store = createEditorStore({
     doc: fixture(),
     registry: reg,
@@ -118,7 +125,7 @@ async function mount(readOnly = false, locale = 'en', reg = registry, man = mani
         <ManifestProvider manifest={man}>
           <EditorStoreProvider store={store}>
             <ToastProvider>
-              <InsertPanel />
+              <InsertPanel {...props} />
             </ToastProvider>
           </EditorStoreProvider>
         </ManifestProvider>
@@ -133,6 +140,19 @@ const button = (label: string) =>
     (b) => b.querySelector('.bd-insert-label')?.textContent === label,
   ) as HTMLElement;
 const click = (label: string) => act(async () => button(label).click());
+const switchMode = (label: string) =>
+  act(async () => {
+    ([...container.querySelectorAll('.bd-segment')] as HTMLElement[])
+      .find((b) => b.textContent === label)
+      ?.click();
+  });
+const typeQuery = (value: string) =>
+  act(async () => {
+    const input = container.querySelector('input') as HTMLInputElement;
+    const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+    set?.call(input, value);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  });
 const notice = () => container.querySelector('.bd-toast-text')?.textContent;
 const children = (store: Awaited<ReturnType<typeof mount>>, id: string) =>
   store.getState().doc.nodes[id]?.slots?.['default'] ?? [];
@@ -200,7 +220,7 @@ describe('category headings', () => {
     await mount(false, 'pl', custom, customManifest);
     expect(headings()).toEqual(['UI', 'CMS', 'Blog']);
     await mount(false, 'pl');
-    expect(headings()).toEqual(['Układ', 'Treść', 'Sections']);
+    expect(headings()).toEqual(['Układ', 'Treść']);
   });
 });
 
@@ -211,7 +231,12 @@ describe('InsertPanel', () => {
     const groups = [...container.querySelectorAll('[role=group]')].map((g) =>
       g.getAttribute('aria-label'),
     );
-    expect(groups).toEqual(['Layout', 'Content', 'Sections']);
+    expect(groups).toEqual(['Layout', 'Content']);
+    await switchMode('Patterns');
+    expect(await axe(container)).toHaveNoViolations();
+    expect(
+      [...container.querySelectorAll('[role=group]')].map((g) => g.getAttribute('aria-label')),
+    ).toEqual(['Sections', 'My patterns']);
     expect(container.querySelector('img')?.getAttribute('src')).toBe('/thumbs/hero.png');
     expect(container.querySelectorAll('img')).toHaveLength(1);
   });
@@ -219,12 +244,15 @@ describe('InsertPanel', () => {
   it('keeps the selection chip in sync without changing the document', async () => {
     const store = await mount();
     const before = store.getState().doc;
-    expect(container.querySelector('.bd-insert-target')).toBeNull();
+    const chip = () => container.querySelector('.bd-insert-target')?.textContent;
+    expect(chip()).toBe('Insert at the end of the page');
+    await act(async () => store.select('boxNode001'));
+    expect(chip()).toBe('Insert after: Box');
     await act(async () => store.select('root'));
-    expect(container.querySelector('.bd-insert-target')?.textContent).toContain('page');
+    expect(chip()).toBe('Insert after: Page');
     expect(store.getState().doc).toBe(before);
     await act(async () => store.clearSelection());
-    expect(container.querySelector('.bd-insert-target')).toBeNull();
+    expect(chip()).toBe('Insert at the end of the page');
   });
 
   it('inserts into the selected container, at the end, and selects the new node', async () => {
@@ -253,6 +281,7 @@ describe('InsertPanel', () => {
   it('inserts a template as one undo step', async () => {
     const store = await mount();
     await act(async () => store.select('boxNode002'));
+    await switchMode('Patterns');
     await click('Hero');
     const [box] = children(store, 'boxNode002');
     const inserted = store.getState().doc.nodes[box as string];
@@ -291,15 +320,15 @@ describe('InsertPanel', () => {
     await type('paragraph');
     expect(container.querySelectorAll('.bd-insert-item')).toHaveLength(1);
     await type('zzzz');
-    expect(container.querySelector('.bd-insert-empty')?.textContent).toBe(
-      'Nothing matches the search.',
+    expect(container.querySelector('.bd-insert-empty')?.textContent).toContain(
+      'No blocks match “zzzz”',
     );
   });
 
   it('is operable with the keyboard alone (real buttons in tab order)', async () => {
     await mount();
     const items = [...container.querySelectorAll('.bd-insert-item')] as HTMLButtonElement[];
-    expect(items.length).toBe(4);
+    expect(items.length).toBe(2);
     for (const item of items) {
       expect(item.tagName).toBe('BUTTON');
       expect(item.tabIndex).toBe(0);
@@ -326,25 +355,13 @@ describe('InsertPanel (PB-125)', () => {
     expect(toggle.querySelector('.bd-insert-count')?.textContent).toBe('1');
     await act(async () => toggle.click());
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(JSON.parse(localStorage.getItem('buildr.editor.insert.collapsed') ?? '[]')).toEqual([
+      'components:layout',
+    ]);
     const list = container.querySelector(`#${toggle.getAttribute('aria-controls')}`) as HTMLElement;
     expect(list.hidden).toBe(true);
     await act(async () => toggle.click());
     expect(list.hidden).toBe(false);
-  });
-
-  it('remembers the list view', async () => {
-    localStorage.removeItem('buildr.editor.insert.view');
-    await mount();
-    expect(container.querySelector('.bd-insert')?.getAttribute('data-view')).toBe('grid');
-    await act(async () => named('List view').click());
-    expect(container.querySelector('.bd-insert')?.getAttribute('data-view')).toBe('list');
-    expect(named('List view').getAttribute('aria-pressed')).toBe('true');
-    expect(localStorage.getItem('buildr.editor.insert.view')).toBe('list');
-    act(() => root.unmount());
-    root = createRoot(container);
-    await mount();
-    expect(container.querySelector('.bd-insert')?.getAttribute('data-view')).toBe('list');
-    localStorage.removeItem('buildr.editor.insert.view');
   });
 
   it('focuses the search on "/" only when no text field has focus', async () => {
@@ -374,6 +391,89 @@ describe('InsertPanel (PB-125)', () => {
     await act(async () => named('Clear search').click());
     expect(input.value).toBe('');
     expect(container.querySelector('.bd-insert-empty')).toBeNull();
+  });
+});
+
+describe('InsertPanel (PB-157)', () => {
+  const RECENT = 'buildr.editor.insert.recent';
+  const groupNames = () =>
+    [...container.querySelectorAll('[role=group]')].map((g) => g.getAttribute('aria-label'));
+  const recentLabels = () =>
+    [
+      ...(container.querySelector('#bd-insert-recent')?.querySelectorAll('.bd-insert-label') ?? []),
+    ].map((l) => l.textContent);
+
+  it('switches between blocks and patterns, uncontrolled', async () => {
+    await mount();
+    expect(container.querySelector('.bd-insert')?.getAttribute('data-mode')).toBe('blocks');
+    await switchMode('Patterns');
+    expect(container.querySelector('.bd-insert')?.getAttribute('data-mode')).toBe('patterns');
+    expect(button('Hero')).toBeDefined();
+    expect(button('Box')).toBeUndefined();
+    expect(container.querySelector('.bd-insert-shell')?.textContent).toBe('No patterns found');
+    expect(container.querySelector('input')?.getAttribute('aria-label')).toBe('Search patterns');
+    await switchMode('Blocks');
+    expect(button('Box')).toBeDefined();
+  });
+
+  it('follows the mode prop and reports a change', async () => {
+    const seen: string[] = [];
+    await mount(false, 'en', registry, manifest, {
+      mode: 'patterns',
+      onModeChange: (m) => seen.push(m),
+    });
+    expect(button('Hero')).toBeDefined();
+    await switchMode('Blocks');
+    expect(seen).toEqual(['blocks']);
+  });
+
+  it('shows search results with a plural count, highlight and category', async () => {
+    await mount();
+    await typeQuery('tex');
+    expect(container.querySelector('.bd-insert-results-count')?.textContent).toBe('1 result');
+    expect(container.querySelector('mark')?.textContent).toBe('Tex');
+    expect(container.querySelector('.bd-insert-result-cat')?.textContent).toBe('Content');
+    expect(container.querySelector('[role=group]')).toBeNull();
+    await typeQuery('o');
+    expect(container.querySelector('.bd-insert-results-count')?.textContent).toBe('2 results');
+  });
+
+  it('offers patterns when a search finds no block', async () => {
+    await mount();
+    await typeQuery('zzzz');
+    await act(async () => (container.querySelector('.bd-insert-link') as HTMLElement).click());
+    expect(container.querySelector('.bd-insert')?.getAttribute('data-mode')).toBe('patterns');
+  });
+
+  it('remembers inserted blocks, newest first, and lists them as a group', async () => {
+    const store = await mount();
+    expect(groupNames()).not.toContain('Recently used');
+    await act(async () => store.select('boxNode001'));
+    await click('Text');
+    await click('Box');
+    expect(groupNames()[0]).toBe('Recently used');
+    expect(recentLabels()).toEqual(['Box', 'Text']);
+    expect(JSON.parse(localStorage.getItem(RECENT) ?? '[]')).toEqual(['buildr/box', 'buildr/text']);
+  });
+
+  it('ignores corrupt or unknown stored recents', async () => {
+    localStorage.setItem(RECENT, '{not json');
+    await mount();
+    expect(groupNames()).not.toContain('Recently used');
+    act(() => root.unmount());
+    root = createRoot(container);
+    localStorage.setItem(RECENT, JSON.stringify(['buildr/text', 7, 'gone/type']));
+    await mount();
+    expect(recentLabels()).toEqual(['Text']);
+  });
+
+  it('restores the collapsed groups', async () => {
+    localStorage.setItem('buildr.editor.insert.collapsed', JSON.stringify(['components:content']));
+    await mount();
+    const toggle = [...container.querySelectorAll('.bd-insert-category-toggle')].find((b) =>
+      b.textContent?.includes('Content'),
+    );
+    expect(toggle?.getAttribute('aria-expanded')).toBe('false');
   });
 });
 
