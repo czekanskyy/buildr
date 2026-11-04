@@ -24,6 +24,23 @@ for (const theme of ['light', 'dark']) {
           ),
         )
         .toBeLessThanOrEqual(0);
+      // The device group never shrinks: every button sits inside its box, clear of the save status.
+      await expect
+        .poll(() =>
+          row.evaluate((el) => {
+            const group = el.querySelector('.bd-breakpoints')?.getBoundingClientRect();
+            const save = el.querySelector('.bd-save-status')?.getBoundingClientRect();
+            const buttons = [...el.querySelectorAll('.bd-breakpoints button')].map((b) =>
+              b.getBoundingClientRect(),
+            );
+            if (!group || !save) return false;
+            const inside = buttons.every(
+              (b) => b.left >= group.left - 0.5 && b.right <= group.right + 0.5,
+            );
+            return inside && buttons.length === 3 && save.left - group.right >= 8;
+          }),
+        )
+        .toBe(true);
       await expect(page.locator('.bd-brand')).toBeInViewport({ ratio: 1 });
       // The panel toggles are there at every width.
       await expect(row.getByRole('button', { name: 'Left panel' })).toBeInViewport({ ratio: 1 });

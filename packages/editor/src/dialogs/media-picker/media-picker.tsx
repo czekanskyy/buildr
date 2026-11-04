@@ -192,7 +192,10 @@ export function MediaPicker(props: MediaPickerProps) {
           </div>
           <aside className="bd-media-side" aria-label={t('media.picker.title')}>
             {preview === undefined ? (
-              <p className="bd-field-hint">{t('media.none')}</p>
+              <div className="bd-media-preview-frame" data-empty="true">
+                <Icon name="image" size="md" />
+                <p className="bd-field-hint">{t('media.none')}</p>
+              </div>
             ) : (
               <>
                 <div className="bd-media-preview-frame">

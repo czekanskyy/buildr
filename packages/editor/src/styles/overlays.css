@@ -368,6 +368,13 @@
   background: var(--bd-surface-2);
   color: var(--bd-text-subtle);
 }
+.bd-dialog .bd-media-preview-frame[data-empty] {
+  flex-direction: column;
+  gap: var(--bd-space-2);
+  border: var(--bd-border-width) dashed var(--bd-border-strong);
+  background: transparent;
+  text-align: center;
+}
 .bd-dialog .bd-media-preview-frame img {
   width: 100%;
   height: 100%;
