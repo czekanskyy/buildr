@@ -12,6 +12,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import type { RemoveRequest } from '../../app/contracts.ts';
 import { componentMeta, useManifest } from '../../app/manifest.tsx';
 import {
   MoveToDialog,
@@ -22,6 +23,7 @@ import {
   useRegisterTree,
 } from '../../dnd/index.ts';
 import { type MessageKey, useT } from '../../messages/index.tsx';
+import { hasDescendants } from '../../shortcuts/navigation.ts';
 import { pathTo, useEditor, useEditorState } from '../../store/index.ts';
 import {
   ComponentIcon,
@@ -48,6 +50,8 @@ const PAD = 4;
 export interface LayersPanelProps {
   /** The component a "Wrap in container" wraps the selection in. */
   readonly wrapperType?: string;
+  /** Hands a removal to the shell (confirmation, Undo toast); without it the nodes are removed at once. */
+  readonly onRemoveRequest?: (request: RemoveRequest) => void;
 }
 
 /** The nodes that have an issue, from the last validation and accessibility run. */
@@ -73,7 +77,7 @@ function useIssueNodes(): ReadonlySet<NodeId> {
  * the store (the canvas and the tree show the same node), with rename, badges and a context menu.
  * Focus stays on the tree and `aria-activedescendant` names the row; the selection follows it.
  */
-export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
+export function LayersPanel({ wrapperType = 'buildr/box', onRemoveRequest }: LayersPanelProps) {
   const t = useT();
   const store = useEditor();
   const manifest = useManifest();
@@ -199,11 +203,17 @@ export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
     run({ type: 'node.setAttr', payload: { id, key: 'name', value: name === '' ? null : name } });
   };
 
+  const removeIds = (ids: readonly NodeId[]) => {
+    if (onRemoveRequest !== undefined)
+      onRemoveRequest({ ids, hasDescendants: hasDescendants(doc, ids) });
+    else run({ type: 'node.remove', payload: { ids } });
+  };
+
   const removable = (ids: readonly NodeId[]) => ids.filter((id) => id !== doc.root);
 
   const remove = () => {
     const ids = removable(selectedIds);
-    if (ids.length > 0) run({ type: 'node.remove', payload: { ids } });
+    if (ids.length > 0) removeIds(ids);
   };
 
   // --- keyboard ---
@@ -370,11 +380,22 @@ export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
         label: t('layers.menu.delete'),
         danger: true,
         disabled: readOnly || ids.length === 0,
-        onSelect: () => run({ type: 'node.remove', payload: { ids } }),
+        onSelect: () => removeIds(ids),
       },
     ];
     // biome-ignore lint/correctness/useExhaustiveDependencies: startRename and removable read the same inputs
-  }, [menuTarget, doc, selectedIds, manifest, wrapperType, readOnly, canDrag, t, run]);
+  }, [
+    menuTarget,
+    doc,
+    selectedIds,
+    manifest,
+    wrapperType,
+    readOnly,
+    canDrag,
+    t,
+    run,
+    onRemoveRequest,
+  ]);
 
   const activeRow = activeIndex >= 0 ? rows[activeIndex] : undefined;
   const rowDomId = (id: NodeId) => `${treeId}-${id}`;

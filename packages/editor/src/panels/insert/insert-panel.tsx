@@ -4,7 +4,7 @@ import {
   instantiateTemplate,
   registryVersions,
 } from '@next-buildr/core';
-import { type PointerEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { type PointerEvent, type RefObject, useEffect, useMemo, useRef, useState } from 'react';
 import type { PaletteMode } from '../../app/contracts.ts';
 import { useManifest } from '../../app/manifest.tsx';
 import { useDragPress } from '../../dnd/index.ts';
@@ -46,6 +46,8 @@ export interface InsertPanelProps {
   /** Blocks or patterns; leave out for a panel that keeps the choice itself. */
   readonly mode?: PaletteMode;
   readonly onModeChange?: (mode: PaletteMode) => void;
+  /** Receives the search input, so the shell can focus it (the `/` shortcut, the empty page's "Add block"). */
+  readonly searchRef?: RefObject<HTMLInputElement | null>;
 }
 
 /**
@@ -54,7 +56,11 @@ export interface InsertPanelProps {
  * position the rules allow: inside the selected container, else after the selection. It never needs
  * drag and drop. When nothing fits the reason is shown instead.
  */
-export function InsertPanel({ mode: modeProp, onModeChange }: InsertPanelProps = {}) {
+export function InsertPanel({
+  mode: modeProp,
+  onModeChange,
+  searchRef: searchRefProp,
+}: InsertPanelProps = {}) {
   const t = useT();
   const plural = usePlural();
   const store = useEditor();
@@ -70,7 +76,8 @@ export function InsertPanel({ mode: modeProp, onModeChange }: InsertPanelProps =
   const mode = modeProp ?? ownMode;
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(readCollapsed);
   const [recent, setRecent] = useState<readonly string[]>(readRecent);
-  const searchRef = useRef<HTMLInputElement>(null);
+  const ownSearchRef = useRef<HTMLInputElement>(null);
+  const searchRef = searchRefProp ?? ownSearchRef;
   const toast = useToast();
 
   const chooseMode = (next: PaletteMode) => {
@@ -113,7 +120,7 @@ export function InsertPanel({ mode: modeProp, onModeChange }: InsertPanelProps =
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, []);
+  }, [searchRef]);
 
   const toggleGroup = (key: string) =>
     setCollapsed((current) => {

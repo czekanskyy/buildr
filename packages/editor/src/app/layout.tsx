@@ -36,6 +36,8 @@ export interface EditorLayoutProps {
   readonly issueCounts?: IssueCounts | undefined;
   /** The right of the status bar: device readout and zoom menu. */
   readonly status?: ReactNode;
+  /** The collapsed right panel's rail (the inspector's tabs as icons); the plain expand button without it. */
+  readonly rightRail?: ReactNode;
   /** The selection path on the left of the status bar. */
   readonly breadcrumbs?: ReactNode;
 }
@@ -142,6 +144,7 @@ export function EditorLayout({
   issueCounts,
   status,
   breadcrumbs,
+  rightRail,
 }: EditorLayoutProps) {
   const t = useT();
   const plural = usePlural();
@@ -350,11 +353,13 @@ export function EditorLayout({
             </div>
             {rail.right && (
               <div className="bd-rail">
-                <IconButton
-                  label={t('inspector.expand')}
-                  icon="panel-right"
-                  onClick={() => expand('right')}
-                />
+                {rightRail ?? (
+                  <IconButton
+                    label={t('inspector.expand')}
+                    icon="panel-right"
+                    onClick={() => expand('right')}
+                  />
+                )}
               </div>
             )}
           </Panel>

@@ -3,9 +3,11 @@ import { canEdit, createIndex } from '@next-buildr/core';
 import type { Command } from '@next-buildr/core/commands';
 import type { KeyboardEvent, ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
+import type { RemoveRequest } from '../../app/contracts.ts';
 import { componentMeta, useManifest } from '../../app/manifest.tsx';
 import { MoveToDialog, useDragAvailable } from '../../dnd/index.ts';
-import { useT } from '../../messages/index.tsx';
+import { interpolate, useT } from '../../messages/index.tsx';
+import { hasDescendants } from '../../shortcuts/navigation.ts';
 import { useEditor, useEditorState, useSelectedNode } from '../../store/index.ts';
 import {
   Button,
@@ -37,6 +39,8 @@ export interface InspectorProps {
   readonly headerActions?: ReactNode;
   /** Shows the "Page settings" action of the empty state. */
   readonly onPageSettings?: () => void;
+  /** Hands a removal to the shell (confirmation, Undo toast); without it the node is removed at once. */
+  readonly onRemoveRequest?: (request: RemoveRequest) => void;
 }
 
 const TABS: readonly { readonly value: InspectorTab; readonly icon: IconName }[] = [
@@ -179,6 +183,7 @@ export function Inspector({
   onTabChange,
   headerActions,
   onPageSettings,
+  onRemoveRequest,
 }: InspectorProps) {
   const t = useT();
   const store = useEditor();
@@ -222,7 +227,14 @@ export function Inspector({
     parent === undefined
       ? undefined
       : (parent.name ?? componentMeta(manifest, parent.type)?.label ?? parent.type);
-  const subtitle = [node.name ?? node.type, parentLabel].filter((x) => x !== undefined).join(' · ');
+  const subtitle = [
+    node.name ?? node.type,
+    parentLabel === undefined
+      ? undefined
+      : interpolate(t('inspector.inBlock'), { name: parentLabel }),
+  ]
+    .filter((x) => x !== undefined)
+    .join(' · ');
   const needle = query.trim().toLowerCase();
   const matches = (label: string) => needle === '' || label.toLowerCase().includes(needle);
 
@@ -382,7 +394,14 @@ export function Inspector({
                   'trash-2',
                   t('menu.delete'),
                   () =>
-                    report(store.dispatch({ type: 'node.remove', payload: { ids: selectedIds } })),
+                    onRemoveRequest !== undefined
+                      ? onRemoveRequest({
+                          ids: selectedIds,
+                          hasDescendants: hasDescendants(doc, selectedIds),
+                        })
+                      : report(
+                          store.dispatch({ type: 'node.remove', payload: { ids: selectedIds } }),
+                        ),
                   true,
                 )}
               </ActionMenu>

@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import type { BreakpointConfig } from '../app/config.ts';
 import { useT } from '../messages/index.tsx';
 import { useEditorState } from '../store/index.ts';
@@ -15,8 +14,6 @@ export interface ToolbarRightProps {
   readonly onBreakpointChange: (id: string) => void;
   readonly status: string;
   readonly onLocaleChange?: ((locale: string) => void) | undefined;
-  /** Replaces the locale chip with the shell's own pickers (the layout before the page chip). */
-  readonly legacyPickers?: ReactNode;
   readonly onPreview?: (() => void) | undefined;
   readonly onPublish?: (() => void) | undefined;
   readonly canPublish?: boolean | undefined;
@@ -48,7 +45,7 @@ export function ToolbarRight(props: ToolbarRightProps) {
       />
       <span className="bd-toolbar-divider" aria-hidden="true" />
       <SaveIndicator compact={props.compactSave} />
-      {props.legacyPickers ?? <LocaleChip onChange={props.onLocaleChange} />}
+      <LocaleChip onChange={props.onLocaleChange} />
       {props.historyUrl !== undefined && !props.historyInMenu && (
         <Tooltip content={t('toolbar.versions')}>
           <a

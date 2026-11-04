@@ -1,4 +1,4 @@
-import { type ReactNode, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import type { BreakpointConfig } from '../app/config.ts';
 import { usePersistenceState } from '../persistence/index.ts';
 import { useEditorState } from '../store/index.ts';
@@ -8,7 +8,6 @@ import { ToolbarCentre } from './toolbar-centre.tsx';
 import { ToolbarLeft } from './toolbar-left.tsx';
 import { ToolbarRight } from './toolbar-right.tsx';
 import { useOverflowLevel } from './use-overflow-level.ts';
-import type { Zoom } from './zoom-menu.tsx';
 
 export interface ToolbarProps {
   /** The document's title, shown in the page chip and renamed in the page options. */
@@ -22,10 +21,6 @@ export interface ToolbarProps {
   readonly breakpoints: readonly BreakpointConfig[];
   readonly breakpoint: string;
   readonly onBreakpointChange: (id: string) => void;
-  /** @deprecated The zoom lives in the status bar; ignored. */
-  readonly zoom?: Zoom | undefined;
-  /** @deprecated The zoom lives in the status bar; ignored. */
-  readonly onZoomChange?: ((zoom: Zoom) => void) | undefined;
   /** The page in the CMS's admin (`adapter.cmsUrl`); the link is left out without it. */
   readonly cmsUrl?: string | undefined;
   /** The version history in the CMS; the link is left out without it. */
@@ -38,11 +33,9 @@ export interface ToolbarProps {
   readonly onLocaleChange?: ((locale: string) => void) | undefined;
   /** The sample data source (templates); without it there is no sample data. */
   readonly sample?: SamplePickerProps | undefined;
-  /**
-   * @deprecated The locale and sample pickers of the previous toolbar. While given (and neither
-   * `onLocaleChange` nor `sample` is), they are rendered in place of the locale chip.
-   */
-  readonly pickers?: ReactNode;
+  /** The page options dialog's state, when the shell controls it (the inspector's "Page settings" opens it too). */
+  readonly pageOptionsOpen?: boolean | undefined;
+  readonly onPageOptionsOpenChange?: ((open: boolean) => void) | undefined;
   /** Flushes the save and opens the preview (PB-091). */
   readonly onPreview?: (() => void) | undefined;
   /** Opens the publish dialog (PB-088). */
@@ -69,11 +62,14 @@ export function Toolbar(props: ToolbarProps) {
   const level = useOverflowLevel(row, COLLAPSE.title);
   const status = usePersistenceState((state) => state.status);
   const readOnly = useEditorState((state) => state.readOnly);
-  const [optionsOpen, setOptionsOpen] = useState(false);
+  const [ownOpen, setOwnOpen] = useState(false);
+  const optionsOpen = props.pageOptionsOpen ?? ownOpen;
+  const setOptionsOpen = (open: boolean) => {
+    setOwnOpen(open);
+    props.onPageOptionsOpenChange?.(open);
+  };
   const samples = useSamples(props.sample);
   const cmsMoved = level >= COLLAPSE.cms;
-  const legacy =
-    props.pickers !== undefined && props.onLocaleChange === undefined && props.sample === undefined;
 
   return (
     <div className="bd-toolbar-row" ref={row} data-level={level}>
@@ -90,7 +86,6 @@ export function Toolbar(props: ToolbarProps) {
         onBreakpointChange={props.onBreakpointChange}
         status={status}
         onLocaleChange={props.onLocaleChange}
-        legacyPickers={legacy ? props.pickers : undefined}
         onPreview={props.onPreview}
         onPublish={props.onPublish}
         canPublish={props.canPublish}

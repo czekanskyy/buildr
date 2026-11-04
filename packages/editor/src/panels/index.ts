@@ -1,4 +1,5 @@
 export { Breadcrumbs } from './breadcrumbs/breadcrumbs.tsx';
+export type { InsertPanelProps } from './insert/index.ts';
 export { InsertPanel, placeInsertion } from './insert/index.ts';
 export * from './inspector/index.ts';
 export * from './issues/index.ts';
@@ -6,3 +7,5 @@ export type { LayerRow } from './layers/flatten.ts';
 export { flattenTree } from './layers/flatten.ts';
 export type { LayersPanelProps } from './layers/layers-panel.tsx';
 export { LayersPanel, ROW_HEIGHT } from './layers/layers-panel.tsx';
+export type { LeftPanelProps } from './left-panel.tsx';
+export { LeftPanel } from './left-panel.tsx';

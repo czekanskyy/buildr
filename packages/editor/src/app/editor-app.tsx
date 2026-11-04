@@ -5,10 +5,18 @@ import type {
   LocaleConfig,
   RegistryMeta,
 } from '@next-buildr/core';
-import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  type ReactNode,
+  type RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { CanvasFrame, type CanvasHost } from '../canvas-host/index.ts';
 import { ClipboardProvider, useClipboardActions } from '../clipboard/index.ts';
-import { MediaLibraryProvider } from '../dialogs/index.ts';
+import { MediaLibraryProvider, RemoveConfirm } from '../dialogs/index.ts';
 import {
   type DragHost,
   DragProvider,
@@ -16,16 +24,21 @@ import {
   useRegisterCanvas,
   useRegisterDragHost,
 } from '../dnd/index.ts';
-import { MessagesProvider, useT } from '../messages/index.tsx';
+import { interpolate, MessagesProvider, useT } from '../messages/index.tsx';
 import {
   Breadcrumbs,
   countIssues,
   InsertPanel,
   Inspector,
   InspectorDataProvider,
+  InspectorRail,
+  type InspectorTab,
   IssuesPanel,
   LayersPanel,
+  LeftPanel,
+  SectionsToggle,
   StyleInspector,
+  StyleSectionsProvider,
   useIssues,
 } from '../panels/index.ts';
 import {
@@ -45,21 +58,16 @@ import {
   EditorStoreProvider,
   LocaleProvider,
   type LocaleStore,
+  useEditor,
   useLocaleState,
 } from '../store/index.ts';
-import {
-  LocaleSwitcher,
-  PublishDialog,
-  SamplePicker,
-  ThemeProvider,
-  Toolbar,
-  useThemePreference,
-  type Zoom,
-} from '../toolbar/index.ts';
-import { PortalContainerProvider, Tabs, ToastProvider, useToast } from '../ui/index.ts';
+import { PublishDialog, ThemeProvider, Toolbar, useThemePreference } from '../toolbar/index.ts';
+import { PortalContainerProvider, ToastProvider, useToast } from '../ui/index.ts';
 import { type BuilderEditorProps, type DocumentRef, resolveConfig } from './config.ts';
+import type { DeviceShortcutKey, LeftPanelTab, PaletteMode, RemoveRequest } from './contracts.ts';
 import { EditorLayout } from './layout.tsx';
-import { ManifestProvider } from './manifest.tsx';
+import { componentMeta, ManifestProvider } from './manifest.tsx';
+import { type ShellPanels, useShellPanels } from './shell-panels.tsx';
 import { SmallScreenNotice, useViewportTooNarrow } from './small-screen.tsx';
 import { StatusInfo } from './status-info.tsx';
 
@@ -201,6 +209,7 @@ function Status({ failed }: { readonly failed: boolean }) {
 function Session(props: EditorAppProps & { readonly ready: Ready }) {
   const { ready, adapter, manifest } = props;
   const config = useMemo(() => resolveConfig(props.config), [props.config]);
+  const bridge = useRef<Bridge>({});
   return (
     <ToastProvider>
       <EditorStoreProvider store={ready.store}>
@@ -210,8 +219,8 @@ function Session(props: EditorAppProps & { readonly ready: Ready }) {
               <MediaLibraryProvider media={adapter.media}>
                 <DragProvider>
                   <ClipboardProvider migrations={props.migrations}>
-                    <Keys overrides={config.shortcuts}>
-                      <Shell {...props} />
+                    <Keys overrides={config.shortcuts} bridge={bridge}>
+                      <Shell {...props} bridge={bridge} />
                     </Keys>
                   </ClipboardProvider>
                 </DragProvider>
@@ -224,16 +233,46 @@ function Session(props: EditorAppProps & { readonly ready: Ready }) {
   );
 }
 
+/**
+ * What the shell registers for the shortcuts: the provider sits above the shell (the clipboard and
+ * the persistence need it), the panels and the removal flow below, so the keys reach them here.
+ */
+interface Bridge {
+  setDevice?: (key: DeviceShortcutKey) => void;
+  togglePanels?: () => void;
+  focusBlockSearch?: () => void;
+  onRemove?: (request: RemoveRequest) => void;
+}
+
 /** The shortcuts, with the actions the clipboard and the persistence provide. */
 function Keys(props: {
   readonly overrides: Readonly<Record<string, string>>;
+  readonly bridge: RefObject<Bridge>;
   readonly children: ReactNode;
 }) {
   const clipboard = useClipboardActions();
   const save = useSaveAction();
   const actions = useMemo(() => ({ ...clipboard, save }), [clipboard, save]);
+  const { bridge } = props;
+  const callbacks = useMemo(
+    () => ({
+      setDevice: (key: DeviceShortcutKey) => bridge.current.setDevice?.(key),
+      togglePanels: () => bridge.current.togglePanels?.(),
+      focusBlockSearch: () => bridge.current.focusBlockSearch?.(),
+    }),
+    [bridge],
+  );
+  const onRemove = useCallback(
+    (request: RemoveRequest) => bridge.current.onRemove?.(request),
+    [bridge],
+  );
   return (
-    <ShortcutProvider overrides={props.overrides} actions={actions}>
+    <ShortcutProvider
+      overrides={props.overrides}
+      actions={actions}
+      callbacks={callbacks}
+      onRemove={onRemove}
+    >
       {props.children}
     </ShortcutProvider>
   );
@@ -261,9 +300,64 @@ function useDataContext(adapter: EditorAppProps['adapter'], ref: DocumentRef) {
   return { schema, context };
 }
 
-function Shell(props: EditorAppProps & { readonly ready: Ready }) {
+/** Hands the shell's panel controls (collapse, tab) to the shell component above the layout. */
+function PanelsTap({ into }: { readonly into: RefObject<ShellPanels | undefined> }) {
+  into.current = useShellPanels();
+  return null;
+}
+
+/** Brings the left panel into view on a tab: out of its rail, or open as an overlay when narrow. */
+function revealLeft(panels: ShellPanels | undefined, tab: LeftPanelTab) {
+  if (panels === undefined) return;
+  panels.setLeftTab?.(tab);
+  if (panels.narrow) {
+    if (!panels.open.left) panels.toggle('left');
+  } else if (panels.collapsed?.left === true) {
+    panels.toggleCollapsed?.('left');
+  }
+}
+
+interface LeftColumnProps {
+  readonly mode: PaletteMode;
+  readonly onModeChange: (mode: PaletteMode) => void;
+  readonly searchRef: RefObject<HTMLInputElement | null>;
+  readonly onRemoveRequest: (request: RemoveRequest) => void;
+}
+
+function LeftColumn({ mode, onModeChange, searchRef, onRemoveRequest }: LeftColumnProps) {
+  const panels = useShellPanels();
+  return (
+    <LeftPanel
+      tab={panels?.leftTab ?? 'blocks'}
+      onTabChange={(next) => panels?.setLeftTab?.(next)}
+      onCollapse={() =>
+        panels?.narrow ? panels.toggle('left') : panels?.toggleCollapsed?.('left')
+      }
+      blocks={<InsertPanel mode={mode} onModeChange={onModeChange} searchRef={searchRef} />}
+      structure={<LayersPanel onRemoveRequest={onRemoveRequest} />}
+    />
+  );
+}
+
+function RightRail(props: {
+  readonly tab: InspectorTab;
+  readonly onTabChange: (tab: InspectorTab) => void;
+}) {
+  const panels = useShellPanels();
+  return (
+    <InspectorRail
+      tab={props.tab}
+      onTabChange={props.onTabChange}
+      onExpand={() => panels?.toggleCollapsed?.('right')}
+    />
+  );
+}
+
+function Shell(
+  props: EditorAppProps & { readonly ready: Ready; readonly bridge: RefObject<Bridge> },
+) {
   const t = useT();
-  const { adapter, documentRef, canvasUrl, manifest, ready } = props;
+  const { adapter, documentRef, canvasUrl, manifest, ready, bridge } = props;
   const config = useMemo(() => resolveConfig(props.config), [props.config]);
   const locales = useLocaleState((state) => state.config);
   const locale = useLocaleState((state) => state.locale);
@@ -271,10 +365,17 @@ function Shell(props: EditorAppProps & { readonly ready: Ready }) {
     () => ({ ...locales, locales: [...locales.locales], intl: { ...locales.intl } }),
     [locales],
   );
+  const store = useEditor();
   const [host, setHost] = useState<CanvasHost | null>(null);
   const [breakpoint, setBreakpoint] = useState(config.breakpoints[0]?.id ?? 'desktop');
-  const [zoom, setZoom] = useState<Zoom>('fit');
   const [publishOpen, setPublishOpen] = useState(false);
+  const [pageOptionsOpen, setPageOptionsOpen] = useState(false);
+  const [inspectorTab, setInspectorTab] = useState<InspectorTab>('content');
+  const [paletteMode, setPaletteMode] = useState<PaletteMode>('blocks');
+  const [removal, setRemoval] = useState<RemoveRequest | null>(null);
+  const [searchFocus, setSearchFocus] = useState(0);
+  const searchRef = useRef<HTMLInputElement>(null);
+  const panelsRef = useRef<ShellPanels | undefined>(undefined);
   const [diagnostics, setDiagnostics] = useState<
     NonNullable<Parameters<typeof IssuesPanel>[0]['canvasDiagnostics']>
   >([]);
@@ -320,7 +421,6 @@ function Shell(props: EditorAppProps & { readonly ready: Ready }) {
     if (host === null) return;
     return host.state.subscribe((state) => {
       setDiagnostics(state.diagnostics as never);
-      setZoom(state.zoom);
     });
   }, [host]);
 
@@ -332,6 +432,75 @@ function Shell(props: EditorAppProps & { readonly ready: Ready }) {
     [host],
   );
 
+  // Removing: a node without blocks inside goes at once, with an Undo toast; one with blocks asks first.
+  const removeNow = (request: RemoveRequest) => {
+    const { doc } = store.getState();
+    const [first] = request.ids;
+    const node = first === undefined ? undefined : doc.nodes[first];
+    const base = node?.name ?? componentMeta(manifest, node?.type ?? '')?.label ?? node?.type ?? '';
+    const name = request.ids.length > 1 ? `${base} +${request.ids.length - 1}` : base;
+    const result = store.dispatch({ type: 'node.remove', payload: { ids: [...request.ids] } });
+    if (!result.ok) {
+      toast.show({ id: 'remove.undo', variant: 'error', message: result.error.message });
+      return;
+    }
+    const version = store.getState().docVersion;
+    toast.show({
+      id: 'remove.undo',
+      variant: 'success',
+      message: interpolate(t('toast.deleted'), { name }),
+      action: {
+        label: t('toast.undo'),
+        onSelect: () => {
+          // Never undo a later, unrelated edit from an old notification.
+          if (store.getState().docVersion === version) store.undo();
+          toast.dismiss('remove.undo');
+        },
+      },
+    });
+  };
+  const requestRemoveRef = useRef((_request: RemoveRequest) => {});
+  requestRemoveRef.current = (request) => {
+    if (request.hasDescendants) setRemoval(request);
+    else removeNow(request);
+  };
+  const requestRemove = useCallback(
+    (request: RemoveRequest) => requestRemoveRef.current(request),
+    [],
+  );
+
+  const focusSearch = () => {
+    revealLeft(panelsRef.current, 'blocks');
+    setPaletteMode('blocks');
+    setSearchFocus((count) => count + 1);
+  };
+  // Once the Blocks tab is mounted and the panel is open, put the caret in the search field.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs once per request
+  useEffect(() => {
+    if (searchFocus === 0) return;
+    searchRef.current?.focus();
+    searchRef.current?.select();
+  }, [searchFocus]);
+
+  bridge.current.setDevice = (key) => {
+    const target = config.breakpoints[Number(key) - 1];
+    if (target !== undefined) changeBreakpoint(target.id);
+  };
+  bridge.current.togglePanels = () => {
+    const panels = panelsRef.current;
+    if (panels === undefined) return;
+    if (panels.narrow) {
+      // Below the overlay breakpoint the panels are overlays: close the open one, else open the left.
+      panels.toggle(panels.open.right ? 'right' : 'left');
+      return;
+    }
+    const anyOpen = panels.collapsed?.left !== true || panels.collapsed?.right !== true;
+    if (anyOpen) panels.collapseAll?.();
+    else panels.expandAll?.();
+  };
+  bridge.current.focusBlockSearch = focusSearch;
+  bridge.current.onRemove = requestRemove;
+
   return (
     <>
       <EditorLayout
@@ -339,37 +508,32 @@ function Shell(props: EditorAppProps & { readonly ready: Ready }) {
           <Toolbar
             title={title}
             onTitleChange={canRename ? changeTitle : undefined}
+            slug={ready.loaded.slug}
             status={ready.loaded.status}
             breakpoints={config.breakpoints}
             breakpoint={breakpoint}
             onBreakpointChange={changeBreakpoint}
-            zoom={zoom}
-            onZoomChange={(next) => host?.setZoom(next)}
             cmsUrl={adapter.cmsUrl?.(documentRef)}
             onPreview={preview.preview}
             onPublish={() => setPublishOpen(true)}
             canPublish={ready.canPublish}
-            pickers={
-              <>
-                <LocaleSwitcher onChange={(next) => host?.setLocale(next)} />
-                <SamplePicker
-                  adapter={adapter}
-                  docRef={documentRef}
-                  onChange={(contextRef) =>
-                    host?.setContextRef(contextRef ?? ready.loaded.contextRef ?? null)
-                  }
-                />
-              </>
-            }
+            onLocaleChange={(next) => host?.setLocale(next)}
+            sample={{
+              adapter,
+              docRef: documentRef,
+              onChange: (contextRef) =>
+                host?.setContextRef(contextRef ?? ready.loaded.contextRef ?? null),
+            }}
+            pageOptionsOpen={pageOptionsOpen}
+            onPageOptionsOpenChange={setPageOptionsOpen}
           />
         }
         left={
-          <Tabs
-            label={t('editor.leftPanel')}
-            items={[
-              { value: 'insert', label: t('insert.title'), content: <InsertPanel /> },
-              { value: 'layers', label: t('layers.title'), content: <LayersPanel /> },
-            ]}
+          <LeftColumn
+            mode={paletteMode}
+            onModeChange={setPaletteMode}
+            searchRef={searchRef}
+            onRemoveRequest={requestRemove}
           />
         }
         center={
@@ -383,6 +547,13 @@ function Shell(props: EditorAppProps & { readonly ready: Ready }) {
               breakpoint={breakpoint}
               contextRef={ready.loaded.contextRef ?? null}
               onHost={setHost}
+              emptyPage={{
+                onAddBlock: focusSearch,
+                onPickPattern: () => {
+                  revealLeft(panelsRef.current, 'blocks');
+                  setPaletteMode('patterns');
+                },
+              }}
               callbacks={{
                 onKeyDown: (event) => {
                   forward({ key: event.key, mods: event.mods });
@@ -391,31 +562,52 @@ function Shell(props: EditorAppProps & { readonly ready: Ready }) {
                   engine.receiveTarget(event.target as never, event.reason as never),
               }}
             />
-            <Breadcrumbs />
           </div>
         }
         right={
           <InspectorDataProvider schema={data.schema} context={data.context}>
-            <Inspector
-              locale={locale}
-              defaultLocale={locales.default}
-              renderStyle={(node) => (
-                <StyleInspector
-                  node={node}
-                  {...(breakpoint === config.breakpoints[0]?.id ? {} : { breakpoint })}
-                />
-              )}
-            />
+            <StyleSectionsProvider>
+              <Inspector
+                locale={locale}
+                defaultLocale={locales.default}
+                tab={inspectorTab}
+                onTabChange={setInspectorTab}
+                headerActions={<SectionsToggle />}
+                onPageSettings={() => setPageOptionsOpen(true)}
+                onRemoveRequest={requestRemove}
+                renderStyle={(node) => (
+                  <StyleInspector
+                    node={node}
+                    {...(breakpoint === config.breakpoints[0]?.id ? {} : { breakpoint })}
+                  />
+                )}
+              />
+            </StyleSectionsProvider>
           </InspectorDataProvider>
         }
+        rightRail={<RightRail tab={inspectorTab} onTabChange={setInspectorTab} />}
+        breadcrumbs={<Breadcrumbs />}
         issues={<IssuesPanel canvasDiagnostics={diagnostics} />}
         issueCounts={issueCounts}
-        status={<StatusInfo host={host} breakpoints={config.breakpoints} breakpoint={breakpoint} />}
+        status={
+          <>
+            <PanelsTap into={panelsRef} />
+            <StatusInfo host={host} breakpoints={config.breakpoints} breakpoint={breakpoint} />
+          </>
+        }
       />
       <PublishDialog
         open={publishOpen}
         onOpenChange={setPublishOpen}
         canvasDiagnostics={diagnostics}
+      />
+      <RemoveConfirm
+        request={removal}
+        onCancel={() => setRemoval(null)}
+        onConfirm={(request) => {
+          setRemoval(null);
+          removeNow(request);
+        }}
       />
       {preview.overlay}
     </>

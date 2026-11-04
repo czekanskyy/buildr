@@ -309,7 +309,7 @@ describe('Toolbar', () => {
   });
 
   it('has no zoom control, which lives in the status bar', async () => {
-    await mount({ onZoomChange: () => undefined, zoom: 'fit' });
+    await mount({});
     expect(byName('Zoom')).toBeUndefined();
   });
 
