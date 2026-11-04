@@ -12,6 +12,7 @@ The approved [template](../design/template/README.md) guides the editor presenta
 | PB-154 | Inspector | PB-151 | Done |
 | PB-155 | Overlays and feedback | PB-151 | Done |
 | PB-156 | Documentation, tests and baseline | PB-152–PB-155 | Done |
+| PB-157 | Template v2 fidelity: every screen, state and control, plus UI-only deferred features | PB-152–PB-156 | In progress |
 
 ## Template mapping
 
@@ -43,6 +44,21 @@ These template features are not implemented in production; some need additional 
 - Delete-section confirmation dialog: the layers menu and Delete/Backspace dispatch `node.remove` directly.
 - Ctrl/Cmd+1/2/3 device shortcuts, Ctrl/Cmd+. panel toggle and Ctrl/Cmd+Shift+O block outlines toggle are absent from the shortcut registry.
 - The template's full shortcut list is not reproduced by the help dialog. Production lists undo/redo (Mod+Z, Mod+Shift+Z / Mod+Y), copy/cut/paste (Mod+C/X/V), duplicate (Mod+D), delete (Delete/Backspace), move (Alt+Up/Down), select all (Mod+A), clear selection (Escape), save (Mod+S) and help (?). `/` focuses palette search separately. Enter and arrow navigation exist in the layers tree, but template canvas Tab/Shift+Tab block traversal, Enter selection and Escape-to-parent behavior are not provided by this registry; Escape clears selection. Mod+J is only a host-override test example, not a default binding.
+
+## PB-157 Template v2 fidelity
+
+PB-151–PB-156 ported tokens and skins; PB-157 rebuilds the structure of every screen to match the template. UI only: no change to the document, commands, schema, canvas protocol, adapters or dependencies.
+
+Acceptance criteria:
+- The screens listed below match the template in light and dark at 1440, 1280 and 1024px, in PL and EN. The only allowed differences are the items still listed as deferred.
+- Toolbar (three zones, page chip, page-options dialog, locale chip, icon Preview, more menu), left panel (Blocks / Patterns / Structure tabs, collapse and rail, target chip, Recently used, flat highlighted search results), status bar with labelled breadcrumbs, issues button and zoom menu, issues drawer inside the stage, inspector header, tabs, sections and widgets, dialogs, toasts and animations follow `docs/design/template`.
+- Delete-section confirmation appears for a node with descendants; a node without descendants is removed at once with an Undo toast. Mod+1/2/3 and Mod+. work while focus is in the editor UI. Escape selects the parent and clears the selection at the top. The shortcuts dialog lists every shortcut that exists. The page-options dialog and the Patterns tab shells exist.
+- No change to `packages/core`, the protocol, adapters or dependencies. Every string comes from the message catalogs. Typecheck, lint, boundaries, unit tests and both e2e suites pass; new axe states pass. The visual baseline is refreshed in the pinned Docker image and every new or changed PNG is reviewed.
+- This section and the deferred list are updated; changesets are added for `@next-buildr/editor` (and `@next-buildr/react` if the canvas overlay chip changes).
+
+Out of scope (stay deferred, need a protocol or API change): the canvas floating block toolbar, the insertion `+` point and the block outlines toggle (with Ctrl/Cmd+Shift+O); key forwarding from the canvas iframe (canvas Tab/Shift+Tab/Enter, Mod+1/2/3 and Mod+. while the canvas has focus); `DocumentAdapter.historyUrl` and the history icon; editor-controlled dark overlay colours inside the canvas; layer visibility and lock; custom and text shadows, filters, transforms, animations, background image and video, arbitrary attributes, classes and CSS; the connection-lost canvas state.
+
+Acceptance screens: nothing selected; button selected with Style tab (Spacing, Colours open); heading Content tab with rich text; Advanced tab; Structure; Blocks with target chip and Recently used; search results; Patterns; both panels collapsed to rails; more menu; locale menu; page options; publish; shortcuts; delete confirm; Undo toast; issues drawer; tablet and mobile frames; 1024px overlay mode; empty page; canvas hover and selection chip; every section of `style-panel.html`.
 
 ## PB-156 verification
 
