@@ -43,11 +43,15 @@ for (const theme of ['light', 'dark']) {
         await title.press('Enter');
         await page.keyboard.press('Escape');
         await page.setViewportSize({ width, height: 768 });
+        // The long title never pushes the toolbar wider: it is cut with an ellipsis, or hidden at the last level.
         await expect
           .poll(() =>
-            page.locator('.bd-page-chip-title').evaluate((el) => el.getClientRects().length),
+            page.locator('.bd-page-chip-title').evaluate((el) => {
+              const rects = el.getClientRects().length;
+              return rects === 0 || el.scrollWidth > el.clientWidth;
+            }),
           )
-          .toBe(0);
+          .toBe(true);
         await expect
           .poll(() => row.evaluate((el) => el.scrollWidth - el.clientWidth))
           .toBeLessThanOrEqual(0);

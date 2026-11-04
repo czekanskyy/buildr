@@ -16,7 +16,7 @@ async function open(page: Page, seed: 'empty' | 'landing', theme: (typeof themes
 }
 
 async function selectHero(page: Page) {
-  await page.getByRole('tab', { name: 'Layers' }).click();
+  await page.getByRole('tab', { name: 'Structure' }).click();
   await page.getByRole('treeitem', { name: /Hero/ }).first().click();
 }
 
@@ -51,9 +51,9 @@ for (const theme of themes) {
 
     test('layers, insert tab and templates', async ({ page }) => {
       await open(page, 'landing', theme);
-      await page.getByRole('heading', { name: 'Templates' }).scrollIntoViewIfNeeded();
+      await page.getByRole('button', { name: 'Patterns', exact: true }).click();
       await expectNoViolations(page);
-      await page.getByRole('tab', { name: 'Layers' }).click();
+      await page.getByRole('tab', { name: 'Structure' }).click();
       await expectNoViolations(page);
     });
 
@@ -66,7 +66,7 @@ for (const theme of themes) {
 
     test('media picker', async ({ page }) => {
       await open(page, 'landing', theme);
-      await page.getByRole('tab', { name: 'Layers' }).click();
+      await page.getByRole('tab', { name: 'Structure' }).click();
       for (let round = 0; round < 6; round++) {
         const closed = page.locator('[role="treeitem"][aria-expanded="false"]');
         if ((await closed.count()) === 0) break;
@@ -83,7 +83,7 @@ for (const theme of themes) {
       await page.getByRole('button', { name: 'Publish' }).click();
       await page.keyboard.press('Escape');
       await expect(page.getByRole('dialog')).toHaveCount(0);
-      await page.getByRole('button', { name: 'Show issues' }).click();
+      await page.locator('.bd-status-btn[aria-controls]').click();
       await expect(page.getByText('Checking the page…')).toHaveCount(0);
       await expectTwoIssueRows(page);
       await expectNoViolations(page);

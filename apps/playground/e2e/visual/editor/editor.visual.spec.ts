@@ -31,7 +31,7 @@ async function open(page: Page, seed: 'empty' | 'landing', theme: (typeof themes
 }
 
 async function expandLayers(page: Page) {
-  await page.getByRole('tab', { name: 'Layers' }).click();
+  await page.getByRole('tab', { name: 'Structure' }).click();
   // Expanding a row adds its children, so look again until every row is open.
   for (let round = 0; round < 6; round++) {
     const closed = page.locator('[role="treeitem"][aria-expanded="false"]');
@@ -41,7 +41,7 @@ async function expandLayers(page: Page) {
 }
 
 async function selectHero(page: Page) {
-  await page.getByRole('tab', { name: 'Layers' }).click();
+  await page.getByRole('tab', { name: 'Structure' }).click();
   await page.getByRole('treeitem', { name: /Hero/ }).first().click();
 }
 
@@ -122,7 +122,7 @@ for (const theme of themes) {
 
       test('insert tab scrolled to templates', async ({ page }) => {
         await open(page, 'landing', theme);
-        await page.getByRole('heading', { name: 'Templates' }).scrollIntoViewIfNeeded();
+        await page.getByRole('button', { name: 'Patterns', exact: true }).click();
         await shot(page, name('insert-templates'));
       });
 
@@ -150,7 +150,7 @@ for (const theme of themes) {
         await page.getByRole('button', { name: 'Publish' }).click();
         await page.keyboard.press('Escape');
         await expect(page.getByRole('dialog')).toHaveCount(0);
-        await page.getByRole('button', { name: 'Show issues' }).click();
+        await page.locator('.bd-status-btn[aria-controls]').click();
         await expect(page.getByText('Checking the page…')).toHaveCount(0);
         await expectTwoIssueRows(page);
         await shot(page, name('issues'));

@@ -6,8 +6,9 @@ test('insert a Hero, edit text, undo, reload', async ({ page }) => {
   await expect(canvas.getByRole('heading', { name: 'Welcome to Buildr' })).toBeVisible();
 
   // Insert a Hero from the palette.
-  await page.getByRole('searchbox', { name: 'Search components and templates' }).fill('hero');
-  await page.getByRole('button', { name: 'Hero', exact: true }).click();
+  await page.getByRole('button', { name: 'Patterns', exact: true }).click();
+  await page.getByRole('textbox', { name: 'Search patterns' }).fill('hero');
+  await page.getByRole('button', { name: /^Insert pattern: .*Hero/ }).click();
   await expect(
     canvas.getByRole('heading', { name: 'A headline that says what you do' }),
   ).toBeVisible();

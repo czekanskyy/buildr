@@ -64,8 +64,9 @@ test('the editor opens a page and the canvas finishes its handshake', async ({ s
 
 test('insert a section, undo and redo, autosave, reload', async ({ scratch }) => {
   const { page, canvas } = await scratch.open();
-  await page.getByRole('searchbox', { name: 'Search components and templates' }).fill('faq');
-  await page.getByRole('button', { name: 'FAQ', exact: true }).first().click();
+  await page.getByRole('button', { name: 'Patterns', exact: true }).click();
+  await page.getByRole('textbox', { name: 'Search patterns' }).fill('faq');
+  await page.getByRole('button', { name: 'Insert pattern: FAQ', exact: true }).click();
   await expect(canvas.getByRole('heading', { name: 'Frequently asked questions' })).toBeVisible();
 
   await page.getByRole('button', { name: 'Undo' }).click();
@@ -137,8 +138,8 @@ test('translating a heading shows the translation on /en, after publishing', asy
   scratch,
 }) => {
   const { page, canvas } = await scratch.open();
-  await page.getByRole('combobox', { name: 'Content language' }).click();
-  await page.getByRole('option', { name: 'en' }).click();
+  await page.getByRole('button', { name: /^Content language/ }).click();
+  await page.locator('.bd-menu-list').getByRole('button', { name: /^en\b/i }).click();
   await canvas
     .getByRole('heading', { name: 'Pages you build yourself, without waiting for a developer' })
     .click();
