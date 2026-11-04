@@ -1,15 +1,19 @@
-export type { ExternalActions } from './actions.ts';
+export type { ExternalActions, HostHooks } from './actions.ts';
 export { bindEditorActions } from './actions.ts';
+export type { ShortcutsDialogProps } from './help.tsx';
+export { ShortcutsDialog } from './help.tsx';
 export type { KeyInput, Platform } from './keys.ts';
 export { comboOf, detectPlatform, displayCombo, isTypingTarget, normalizeCombo } from './keys.ts';
 export type { ShortcutDef } from './map.ts';
 export { applyOverrides, DEFAULT_SHORTCUTS } from './map.ts';
+export { descendantCount, hasDescendants, overlayOpen, parentSelection } from './navigation.ts';
 export type { ShortcutHandler, ShortcutRegistry, ShortcutRegistryOptions } from './registry.ts';
 export { createShortcutRegistry } from './registry.ts';
 export type { ShortcutProviderProps } from './shortcuts.tsx';
 export {
   ShortcutProvider,
   useForwardedKeys,
+  useOpenShortcuts,
   useOptionalShortcutRegistry,
   useShortcutHint,
   useShortcutRegistry,

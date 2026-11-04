@@ -4,7 +4,7 @@ import { normalizeCombo } from './keys.ts';
 export interface ShortcutDef {
   readonly action: string;
   readonly label: MessageKey;
-  readonly group: 'edit' | 'selection' | 'file' | 'help';
+  readonly group: 'general' | 'selection' | 'edit' | 'view';
   /** Canonical combinations (`mod+z`); the first is the one the help dialog shows first. */
   readonly keys: readonly string[];
 }
@@ -18,19 +18,25 @@ const def = (
 
 /** The shortcuts of the MVP (docs/editor.md#keyboard-shortcuts-pb-084). */
 export const DEFAULT_SHORTCUTS: readonly ShortcutDef[] = [
-  def('edit.undo', 'shortcut.undo', 'edit', 'mod+z'),
-  def('edit.redo', 'shortcut.redo', 'edit', 'mod+shift+z', 'mod+y'),
+  def('file.save', 'shortcut.save', 'general', 'mod+s'),
+  def('edit.undo', 'shortcut.undo', 'general', 'mod+z'),
+  def('edit.redo', 'shortcut.redo', 'general', 'mod+shift+z', 'mod+y'),
+  def('ui.findBlock', 'shortcut.findBlock', 'general', '/'),
+  def('help.shortcuts', 'shortcut.help', 'general', 'shift+?'),
+  def('selection.clear', 'shortcut.selectParent', 'selection', 'escape'),
+  def('selection.all', 'shortcut.selectAll', 'selection', 'mod+a'),
+  def('edit.duplicate', 'shortcut.duplicate', 'edit', 'mod+d'),
+  def('edit.delete', 'shortcut.delete', 'edit', 'delete', 'backspace'),
   def('edit.copy', 'shortcut.copy', 'edit', 'mod+c'),
   def('edit.cut', 'shortcut.cut', 'edit', 'mod+x'),
   def('edit.paste', 'shortcut.paste', 'edit', 'mod+v'),
-  def('edit.duplicate', 'shortcut.duplicate', 'edit', 'mod+d'),
-  def('edit.delete', 'shortcut.delete', 'edit', 'delete', 'backspace'),
   def('node.moveUp', 'shortcut.moveUp', 'edit', 'alt+arrowup'),
   def('node.moveDown', 'shortcut.moveDown', 'edit', 'alt+arrowdown'),
-  def('selection.all', 'shortcut.selectAll', 'selection', 'mod+a'),
-  def('selection.clear', 'shortcut.clearSelection', 'selection', 'escape'),
-  def('file.save', 'shortcut.save', 'file', 'mod+s'),
-  def('help.shortcuts', 'shortcut.help', 'help', 'shift+?'),
+  def('ui.device1', 'shortcut.device', 'view', 'mod+1'),
+  def('ui.device2', 'shortcut.device', 'view', 'mod+2'),
+  def('ui.device3', 'shortcut.device', 'view', 'mod+3'),
+  def('ui.panels', 'shortcut.togglePanels', 'view', 'mod+.'),
+  def('ui.guides', 'shortcut.guides', 'view', 'mod+shift+o'),
 ];
 
 /**
