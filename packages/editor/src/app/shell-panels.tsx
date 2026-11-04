@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react';
+import type { LeftPanelTab } from './contracts.ts';
 
 export type PanelSide = 'left' | 'right';
 
@@ -12,6 +13,14 @@ export interface ShellPanels {
   readonly narrow: boolean;
   readonly open: Readonly<Record<PanelSide, boolean>>;
   toggle(side: PanelSide): void;
+  /** Persisted collapse of each side panel (wide layout). */
+  readonly collapsed?: Readonly<Record<PanelSide, boolean>>;
+  toggleCollapsed?(side: PanelSide): void;
+  collapseAll?(): void;
+  expandAll?(): void;
+  /** The active tab of the left panel. */
+  readonly leftTab?: LeftPanelTab;
+  setLeftTab?(tab: LeftPanelTab): void;
 }
 
 export const ShellPanelsContext = createContext<ShellPanels | undefined>(undefined);
