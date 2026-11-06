@@ -59,7 +59,7 @@ pnpm e2e                    # Playwright end-to-end tests
 - Import `react`/`next`/`payload` in `@next-buildr/core`; `next`/`payload` in `@next-buildr/react` and `@next-buildr/components`; `@next-buildr/react` or `@next-buildr/components` in `@next-buildr/editor`; `payload` in `@next-buildr/payload/adapter`.
 - Create global, mutable registries or singletons.
 - Fetch data inside components (use `DataSource` + `prepareRender`).
-- Use `eval`, `new Function`, `dangerouslySetInnerHTML`, or raw CSS/HTML coming from user data.
+- Use `eval`, `new Function`, `dangerouslySetInnerHTML`, or raw CSS/HTML coming from user data. The only exception is ADR-026: the four author-code fields (custom CSS, classes, attributes and the Text HTML mode), written by trusted editors, gated by the host flag `capabilities.authorCode` (default off), and always parsed, scoped and sanitised.
 - Add `Dynamic*` components — dynamic values are handled by `Value<T>`.
 - Store HTML/JSX or runtime state in the document.
 - Modify released migrations (they are immutable — add a new one).
