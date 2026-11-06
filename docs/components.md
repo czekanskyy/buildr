@@ -22,7 +22,7 @@ Each entry below is expanded with full detail once its implementation task lands
 
 - **Layout**: Page, Container, Grid
 - **Content**: Heading, Text, RichText, Link, Button, Icon, List, ListItem, Divider, Badge
-- **Media**: Image
+- **Media**: Image, Video, Iframe
 - **UI**: Card, Accordion, AccordionItem
 - **CMS**: Loop, Pagination
 - **Forms**: Form, Input, Textarea, Select, Checkbox
@@ -46,6 +46,7 @@ Each built-in component has a distinct [lucide](https://lucide.dev) icon (kebab-
 | Input | `text-cursor-input` | Pagination | `ellipsis` |
 | Textarea | `text-align-start` | Form | `clipboard-list` |
 | Checkbox | `square-check` | Select | `square-chevron-down` |
+| Video | `video` | Iframe | `globe` |
 
 ## Layout components
 
@@ -53,7 +54,7 @@ Each built-in component has a distinct [lucide](https://lucide.dev) icon (kebab-
 
 The document root: one per document, never inserted, moved, removed or duplicated (`capabilities.root`). A plain `div` with a `default` slot; landmarks are Containers (`as`), so a page can have several. Its CSS sets the base text colour, surface and body font from tokens.
 
-### Container (`buildr/container`, version 2)
+### Container (`buildr/container`, version 3)
 
 The one box that lays out children; it replaces the former Section and Stack ([ADR-025](adr/ADR-025-retiring-a-component-type.md)). Props:
 
@@ -61,10 +62,12 @@ The one box that lays out children; it replaces the former Section and Stack ([A
 - `as`: the element, `div` by default, or `section`, `header`, `footer`, `main`, `aside`, `nav`, `article`. A landmark should be named with `ariaLabel`; the a11y rules check one `main` and named navigations.
 - `width`: the content column (`sm`, `md`, `lg`, `xl`, from the theme's `container` tokens; default `lg`), or `none` ("No limit").
 - `bleed`: the box spans its parent (a full-width background) and keeps the content to the column with padding.
-- `backgroundImage`: bindable media, drawn as a decorative `<img>` behind the content, through `platform.Image`.
+- `backgroundImage`, `backgroundVideo`, `backgroundPoster`, `backgroundOverlay`: bindable media. The image is a decorative `<img>` behind the content; the video is muted, looping, inline, without controls and `aria-hidden`; the poster (or else the image) is the still. `backgroundOverlay` is an image above the media. Each may be a library asset or an external https URL (see External sources below).
+- `overlayTone` (`none`, `dark`, `light`) and `overlayOpacity` (0 to 1, default 0.5): a scrim drawn from theme tokens, with or without media.
+- `backgroundFit` (`cover`, `contain`), `backgroundPosition` (`center`, `top`, `bottom`, `left`, `right` and the four corners) and `backgroundAttachment` (`scroll`, `fixed`). They are container props because the media are elements; the core `repeat`, `attachment`, `position` and `imageSize` styles still apply to the node's own CSS background. Under `prefers-reduced-motion` the video is hidden so the still shows, and a fixed background scrolls.
 - `role` (`none`, `group`, `list`, plain `div` only: a landmark element keeps its own role; use `group` with an `ariaLabel`, and `list` only with ListItem children) and `ariaLabel` (localizable).
 
-The options reach the CSS as data attributes (`data-display`, `data-width`, `data-bleed`, `data-has-background`). It has the `size` style group, and its content category includes `landmark`. Stored version 1 containers become `display: 'block'`, so they look as before; stored `buildr/section` and `buildr/stack` nodes are rewritten into containers on load (a stack: flex column, no width limit; a section: `bleed` flex column keeping its element, width, image and name).
+The options reach the CSS as data attributes (`data-display`, `data-width`, `data-bleed`, `data-has-background`, `data-has-video`, `data-external-media`). It has the `size` style group, and its content category includes `landmark`. Version 3 only adds props (identity migration). Stored version 1 containers become `display: 'block'`, so they look as before; stored `buildr/section` and `buildr/stack` nodes are rewritten into containers on load (a stack: flex column, no width limit; a section: `bleed` flex column keeping its element, width, image and name).
 
 ### Grid (`buildr/grid`)
 
@@ -74,11 +77,13 @@ A grid container. Columns come from the `layout.columns` style (a whole number 1
 
 ### Heading (`buildr/heading`)
 
-`h1`–`h6`. Props: `text` (bindable, localizable) and `level` (1–6, default 2). The level is the outline; the look is a style: the CSS gives each level a default size from the `fontSize` tokens, and a typography style on the node overrides it, so a small `h2` is possible. A stored level outside 1–6 renders an `h2`. `editor.inlineProp` is `text`. The a11y rules `heading-order` and `empty-heading` apply.
+`h1`–`h6`. Props: `text` (bindable, localizable), `level` (1–6, default 2) and `tag` (`heading` by default = `h{level}`; or `p`, `span`, `div`, `strong`, which render plain text with no heading role, stay out of the outline and are skipped by the heading a11y rules; component version 2, an identity migration because a stored heading without `tag` already means `heading`). The level is the outline; the look is a style: the CSS gives each level a default size from the `fontSize` tokens, and a typography style on the node overrides it, so a small `h2` is possible. A stored level outside 1–6 renders an `h2`. `editor.inlineProp` is `text`. The a11y rules `heading-order` and `empty-heading` apply.
 
 ### Text (`buildr/text`)
 
 A paragraph. Props: `text` (multi-line, bindable, localizable; line breaks are kept, markup is never interpreted) and `as` (`p`, `span`, `small`, `div`; anything else renders `p`). Use `span` inside parents that only take phrasing content (buttons, links). `editor.inlineProp` is `text`.
+
+`mode` (`plain` by default, `rich`, `html`; component version 2, an identity migration because a stored text has no `mode`, which already means plain) picks how the content is written. `rich` reads the `rich` prop (a rich text value, bindable) through `renderRichText`, so it is walked, never parsed. `html` reads the `html` prop (`textarea` with `format: 'html'`, author HTML, ADR-026): it needs the host's `capabilities.authorCode`; `node.setProp` refuses it without that (`command.author-code-not-permitted`), stores the sanitised form (core's `sanitizeHtml`, a `parse5` parse with a tag and attribute allowlist: no scripts, handlers, styles, embeds or `javascript:` URLs, `target="_blank"` links get `rel="noopener noreferrer"`), and the renderer sanitises again and builds React elements with `createElement` (this package has no `dangerouslySetInnerHTML`). Without the capability at render time the Text shows its plain `text`. `rich` and `html` render a `div` (they can hold blocks) whatever `as` says.
 
 ### RichText (`buildr/rich-text`)
 
@@ -111,6 +116,18 @@ Rendering: through `platform.Image` (`next/image` in a Next.js site, a plain `<i
 - **ListItem** (`buildr/list-item`): `text` (bindable, inline-editable) and a slot for more content (a nested list). Only valid inside a List or a Loop; not insertable on its own.
 - **Divider** (`buildr/divider`): an `<hr>`; `decorative` makes it `role="presentation"`.
 - **Badge** (`buildr/badge`): `text` (bindable) and `variant` (`neutral`, `primary`, `success`, `warning`, `danger`); the colour is decoration, so put the meaning in the text.
+
+### Video (`buildr/video`)
+
+A video file from the media library or an external https URL. Props: `video` (bindable media, video), `poster` (media, image), `title` (the accessible name, localizable, required: it is the `aria-label`), `captions` (a WebVTT file), `captionsLanguage`, `captionsLabel`, `controls` (default on), `loop`, `autoplay`, `muted`, `preload` (`none`, `metadata`), `aspectRatio` (`16:9`, `4:3`, `1:1`, `9:16`, `21:9`, `auto`) and `fit`. Autoplay always plays muted and keeps its controls, so it never makes sound and can be paused. Without a valid video it renders nothing, except in the canvas, where an empty frame (`data-empty`) marks the spot.
+
+### Iframe (`buildr/iframe`)
+
+An embedded page. Props: `url` (https only, text), `title` (the accessible name, required) and `aspectRatio`. The frame is always `sandbox="allow-scripts"` (no same-origin, no popups, no top navigation), `referrerpolicy="no-referrer"` and `loading="lazy"`, with no `allow`; nothing in the props widens it. An invalid URL renders nothing; the canvas shows an empty frame marked `data-embed-invalid`.
+
+### External sources ([ADR-028](adr/ADR-028-external-media-and-embeds.md))
+
+A media prop holds either a library reference or `{ external: true, url, mimeType? }`. The renderer checks the latter on every render: https, no credentials, at most 2048 characters, and allowed by the host. The editor's confirmation dialog is feedback only. External media get `data-external-media`; an external `img` also gets `referrerpolicy="no-referrer"`. A `video` or `track` element has no `referrerpolicy` attribute, so an external video, poster or captions track is requested with the page's own referrer policy: a host that allows external video should send a page-level `Referrer-Policy` (for example `no-referrer` or `strict-origin-when-cross-origin`) so the visitor's page URL is not passed to the video host. Hosts restrict sources with `capabilities.externalMediaHosts` (media) and `capabilities.iframeHosts` (iframes): a host and its subdomains; absent means any https host, `[]` none. Only an asset the renderer resolved from `PreparedData.media` is a library asset (the renderer marks it with `markResolvedMedia`, which stored JSON cannot carry); any other object with a `url`, such as a raw value or the snapshot of a reference that was not prepared, is checked like an external source (https and the allowlist) or accepted only as a same-origin path with a single leading `/`. A host list that is present but not an array allows no host. In the canvas an unusable source shows `data-media-invalid` or `data-embed-invalid` with the reason.
 
 ## UI components
 
@@ -166,7 +183,7 @@ import '@next-buildr/components/styles.css';
 const registry = createDefaultRegistry().extend({ components: [MyHero] });
 ```
 
-The registry's manifest (`toManifest(registry.meta)`, what the editor loads) is kept under 60 KB; a test enforces it. Template thumbnails are therefore compact wireframes (one path per tone, a few hundred bytes), and templates keep their responsive overrides to what they need.
+The registry's manifest (`toManifest(registry.meta)`, what the editor loads) is kept under 72 KB (raised from 60 KB by PB-157: container background media, `buildr/video`, `buildr/iframe`); a test enforces it. Template thumbnails are therefore compact wireframes (one path per tone, a few hundred bytes), and templates keep their responsive overrides to what they need.
 
 **The gallery.** `galleryEntries` lists every component in each of its states and every template and variant (`group: 'component' | 'template'`, `of`: the type or template id). Render an entry under a page with `createGalleryDataSource()` and `gallerySampleScopes`; review it at the widths of `FIXTURE_WIDTHS`. The test suite runs every entry through `validateDocument`, `runA11y` (no errors) and, server-rendered into jsdom, `vitest-axe` (colour contrast and page-level rules are switched off there: jsdom has no layout, and an entry is a fragment).
 

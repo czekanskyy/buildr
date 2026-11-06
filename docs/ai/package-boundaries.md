@@ -6,7 +6,7 @@ Mechanically enforced by `pnpm check:boundaries` (dependency-cruiser), not just 
 
 | Package | May import | Must not import |
 |---|---|---|
-| `core` | `zod`, `immer` (only inside `commands/`) | `react`, `react-dom`, `next`, `payload`, ambient `window`/`document` (outside `protocol/`, and only via injected interfaces there), any `@next-buildr/*` package |
+| `core` | `zod`, `immer` (only inside `commands/`), `parse5` (only inside `author/html.ts`, the Text HTML sanitiser, ADR-026) | `react`, `react-dom`, `next`, `payload`, ambient `window`/`document` (outside `protocol/`, and only via injected interfaces there), any `@next-buildr/*` package |
 | `react` | `@next-buildr/core`, `react`, `react-dom` | `next`, `payload`, `@next-buildr/editor`, `@next-buildr/components`, `@next-buildr/next`, `@next-buildr/payload` |
 | `components` | `@next-buildr/core`, `@next-buildr/react`, `react` | `next`, `payload`, `@next-buildr/editor`, `@next-buildr/next`, `@next-buildr/payload` |
 | `editor` | `@next-buildr/core`, `react`, `react-dom`, `zustand`, `@radix-ui/*`, `lexical`, `@tanstack/react-virtual`, `lucide-react` | `@next-buildr/react`, `@next-buildr/components`, `next`, `payload`, `@next-buildr/next`, `@next-buildr/payload` |

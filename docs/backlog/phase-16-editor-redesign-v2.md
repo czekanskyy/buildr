@@ -12,7 +12,7 @@ The approved [template](../design/template/README.md) guides the editor presenta
 | PB-154 | Inspector | PB-151 | Done |
 | PB-155 | Overlays and feedback | PB-151 | Done |
 | PB-156 | Documentation, tests and baseline | PB-152–PB-155 | Done |
-| PB-157 | Editor redesign fidelity: every screen, state and control, plus UI-only deferred features | PB-152–PB-156 | Done |
+| PB-157 | Editor redesign fidelity: every screen, state and control, plus UI-only deferred features | PB-152–PB-156 | In review (reopened 2026-11-05; implemented 2026-11-06, pending user acceptance) |
 
 ## Template mapping
 
@@ -35,14 +35,19 @@ The approved [template](../design/template/README.md) guides the editor presenta
 
 These template features are not implemented in production; some need additional behavior, a model or protocol signal, or work outside the editor package:
 
-- Guide controls; layer visibility and lock toggles. (PB-157 added a page-options dialog the template does not have.)
-- Custom shadow geometry, text shadows, filters and blending, transforms, motion and scroll animations, parallax, and radial gradients.
-- Style-panel background image, video, repeat, attachment and overlay controls (component media props remain available); independent border-side colours and styles; descendant link and button colour controls.
-- Arbitrary attributes, classes and raw CSS.
+- Typography group for card, grid, form, loop and accordion; `page` effects group and `background` group for image, divider and icon.
+- Heading Rich mode (needs a components schema change). Rich mode does not seed `rich` from `text`.
+- Key forwarding from the canvas iframe: Tab/Shift+Tab/Enter, Mod+1/2/3 and Mod+. while the canvas has focus. Canvas Tab block traversal and Enter selection are therefore not available.
+- `DocumentAdapter.historyUrl(ref)` adapter contract, publish address, schedule and `canUnlockTemplates` in `EditorSession` (WP9, payload adapter boundary). The Payload example app cannot unlock layers and does not pass `authorCode` to the editor.
+- Background repeat, attachment and overlay controls in the style panel (container background image and video are available); independent border-side colours and styles; descendant link and button colour controls.
 - Connection-lost canvas state requires a protocol signal. Existing selection and hover overlays remain in `packages/react` and are covered by the baseline; they are not deferred features.
 - “Moje wzorce” saved-selection patterns: the insert palette only lists manifest components and templates; it has no save-selection action or personal pattern library.
-- The Ctrl/Cmd+Shift+O block outlines toggle is absent from the shortcut registry. (PB-157 added Ctrl/Cmd+1/2/3, Ctrl/Cmd+. and the delete confirmation for nodes with descendants.)
-- The template's full shortcut list is not reproduced by the help dialog. Production lists undo/redo (Mod+Z, Mod+Shift+Z / Mod+Y), copy/cut/paste (Mod+C/X/V), duplicate (Mod+D), delete (Delete/Backspace), move (Alt+Up/Down), select all (Mod+A), clear selection (Escape), save (Mod+S) and help (?). `/` focuses palette search separately. Enter and arrow navigation exist in the layers tree, but template canvas Tab/Shift+Tab block traversal, Enter selection and Escape-to-parent behavior are not provided by this registry; Escape clears selection. Mod+J is only a host-override test example, not a default binding.
+- The template's full shortcut list is not reproduced by the help dialog. Production lists undo/redo (Mod+Z, Mod+Shift+Z / Mod+Y), copy/cut/paste (Mod+C/X/V), duplicate (Mod+D), delete (Delete/Backspace), move (Alt+Up/Down), select all (Mod+A), clear selection (Escape), save (Mod+S), help (?), Mod+1/2/3 and Mod+. `/` focuses palette search separately. Escape selects the parent and clears the selection at the top. Mod+J is only a host-override test example, not a default binding.
+- Editor-controlled dark overlay colours inside the canvas; entrance animation preview cannot be replayed; custom CSS errors carry no line numbers.
+- Hardcoded `buildr/*` ids in the Insert panel quick picks, templates and layers wrapper default (should come from manifest metadata).
+- Duplicated external-URL entry (media control and picker URL tab); media dialog drop zone shown only when the adapter supports upload.
+- Preview iframe sandbox uses allow-scripts with allow-same-origin on same-origin previews (hosts should use a separate preview origin). Iframe sandbox is fixed at allow-scripts without allow-same-origin, so some providers may not embed.
+- Manifest size budget raised from 60 KB to 72 KB.
 
 ## PB-157 Template v2 fidelity
 
@@ -55,27 +60,48 @@ Acceptance criteria:
 - No change to `packages/core`, the protocol, adapters or dependencies. Every string comes from the message catalogs. Typecheck, lint, boundaries, unit tests and both e2e suites pass; new axe states pass. The visual baseline is refreshed in the pinned Docker image and every new or changed PNG is reviewed.
 - This section and the deferred list are updated; changesets are added for `@next-buildr/editor` (and `@next-buildr/react` if the canvas overlay chip changes).
 
-Out of scope (stay deferred, need a protocol or API change): the canvas floating block toolbar, the insertion `+` point and the block outlines toggle (with Ctrl/Cmd+Shift+O); key forwarding from the canvas iframe (canvas Tab/Shift+Tab/Enter, Mod+1/2/3 and Mod+. while the canvas has focus); `DocumentAdapter.historyUrl` and the history icon; editor-controlled dark overlay colours inside the canvas; layer visibility and lock; custom and text shadows, filters, transforms, animations, background image and video, arbitrary attributes, classes and CSS; the connection-lost canvas state.
+Out of scope (stay deferred, need a protocol or API change): key forwarding from the canvas iframe (canvas Tab/Shift+Tab/Enter, Mod+1/2/3 and Mod+. while the canvas has focus); `DocumentAdapter.historyUrl` contract (the history button is available through the `historyUrl` prop only); editor-controlled dark overlay colours inside the canvas; the connection-lost canvas state.
 
 Acceptance screens: nothing selected; button selected with Style tab (Spacing, Colours open); heading Content tab with rich text; Advanced tab; Structure; Blocks with target chip and Recently used; search results; Patterns; both panels collapsed to rails; more menu; locale menu; page options; publish; shortcuts; delete confirm; Undo toast; issues drawer; tablet and mobile frames; 1024px overlay mode; empty page; canvas hover and selection chip; every section of `style-panel.html`.
 
 ### PB-157 status and known limitations
 
-Editor redesign fidelity: Done on branch `pb-157/editor-redesign-fidelity`. Scope is fidelity to `docs/design/template` plus the UI-only deferred features; no model, command, protocol or dependency changes.
+Editor redesign fidelity: **In review** on branch `pb-157/editor-redesign-fidelity` (reopened 2026-11-05; implemented 2026-11-06, pending user acceptance). The earlier "Done" was not true: a browser audit found the floating block toolbar, Advanced groups, animations, background types, layer visibility and lock, outlines, history, Help, a 768px tablet frame and narrow-width layout missing or wrong. The scope is full fidelity to `docs/design/template` wherever the architecture rules allow.
+
+Done in this reopening:
+
+- Canvas protocol v2: overlay chips with Polish labels, floating block toolbar, insertion plus point, block outlines, and a heartbeat ping/pong fix. Key forwarding is not done (see below).
+- Responsive shell: toolbar More menu, panel sheets at 1024px and below, 768px tablet frame, 320px minimum width.
+- Layer eye and lock, with structure-lock enforcement and `canUnlock`.
+- Style tab fidelity: Typography, Colours (swatch, HEX and opacity), shadow presets, effects.
+- Animacje (motion group, ADR-027).
+- Zaawansowane: custom CSS, classes and attributes, behind host capability `authorCode` (ADR-026).
+- Text modes Basic, Rich and HTML, with sanitised HTML.
+- Container background image and video from the media library or an external https link, with the warning dialog (ADR-028).
+- New Wideo and Iframe components.
+- Struktura filter and expand/collapse all; media picker tabs.
+- Optional version-history button through the `historyUrl` prop.
+- Polish UI (en/pl catalogs); Docker visual baselines refreshed (editor shots in English, toast in Polish).
+- Tests: unit 5,141; playground e2e 63; example app e2e 43.
 
 Known limitations / not done:
 
-- Shadow cards are read-only because the grammar accepts only a theme token or `none` for `effects.shadow`.
 - The overlay chip tag shows the raw component type id (the payload has no HTML tag).
 - The device label keeps "Desktop · 1280px".
-- The outlines toggle is omitted: there is no guides state and the `toggleGuides` callback is unused.
+- Shadow geometry is limited to presets; custom shadow geometry is deferred.
 - The Help menu item is shown only with `helpUrl`.
 - Pattern category filters are skipped (categories are free-form); the grid / list palette toggle is removed (the template has none).
 - The bind button keeps the Fixed / Data / Formula segmented control; there is no field help "?" (`PropDef` has no help text).
 - Per-field keyword search, number stepper arrows and the hue slider are not done.
 - The multi-node delete toast reads "Block “First +2” deleted" (no plural key).
-- The page-options dialog is invented (the template has none).
-- The floating block toolbar, the "+" insertion point, iframe key forwarding and `DocumentAdapter.historyUrl` need protocol changes; proposed follow-up PB-158.
+- The page-options dialog is not in the template.
+- Key forwarding from the canvas iframe and `DocumentAdapter.historyUrl` need protocol or API changes; proposed follow-up PB-158.
+
+Release notes to flag:
+
+- `changeset status` lists a major bump for all packages, although every PB-157 changeset is minor or patch. Likely cause: the config `fixed` group, probably the peer-dependency rule. Check before release.
+- Canvas protocol v2 is wire-breaking: editor and react must be updated together, but it is filed as minor.
+- Heading version 2 is an identity migration.
 
 ## PB-156 verification
 

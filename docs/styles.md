@@ -19,7 +19,7 @@ export interface StyleDecl {
   spacing?:    { margin?: Box; padding?: Box };
   typography?: { fontFamily?; fontSize?; fontWeight?; lineHeight?; letterSpacing?; textAlign?;
                  textTransform?; fontStyle?; textDecoration?; color? };
-  background?: { color?; gradient?; imagePosition?; imageSize? };  // the background image itself is a component prop (a bindable MediaRef)
+  background?: { color?; gradient?; imagePosition?; imageSize?; repeat?; attachment? };  // the background image itself is a component prop (a bindable MediaRef)
   border?:     { width?: Box; style?; color?; radius?: Corners };
   effects?:    { opacity?; shadow?; transition?; cursor? };
   visibility?: { hidden?: boolean };                               // display: none per breakpoint
@@ -37,7 +37,7 @@ type Box = { top?: StyleValue; right?: StyleValue; bottom?: StyleValue; left?: S
 
 **Representation.** A `StyleValue` is a string or a number. Lengths are strings with a unit (`"16px"`, `"1.5rem"`; the bare `0`/`"0"` is allowed), unitless properties take numbers (`opacity: 0.5`, `zIndex: 10`, `columns: 3`), keywords are exact lowercase strings, and tokens are `$scale.name` (scales: `color space radius shadow fontFamily fontSize fontWeight lineHeight container transition`; a property accepts only the scales its grammar lists). Box properties (`margin`, `padding`, `inset`, `border.width`) are per-side objects and `border.radius` is per-corner (`topLeft topRight bottomRight bottomLeft`). Whether a token exists in the theme is checked against the theme, not by the grammar.
 
-`parseStyleValue(grammar, input, { inheritable })` returns the CSS text to emit, never the input itself: a value is rejected or re-rendered from its parsed parts (`"007px"` becomes `7px`, `#FFF` becomes `#fff`, `rgb(1, 2, 3)` becomes `rgb(1 2 3)`, `$space.4` becomes `var(--b-space-4)`). Before any grammar runs, a string containing `; { }  < > " ' ` @`, control characters, `url(`, `var(`, `calc(`, `expression(`, `image-set(`, `attr(`, `env(`, `!important`, comments or `javascript:` is rejected, and values are limited to 200 characters. Colors accept `#rgb[a]`, `#rrggbb[aa]`, `rgb()`, `hsl()`, `oklch()` with strictly parsed components (named colors are not accepted); gradients accept only `linear-gradient(<angle|to side>, <color> [<n>%], ...)` with 2 to 8 stops; `columns`/`rows`/`columnSpan` take a whole number 1 to 12. `visibility.hidden` compiles to `display: none` when `true` and to nothing when `false`.
+`parseStyleValue(grammar, input, { inheritable })` returns the CSS text to emit, never the input itself: a value is rejected or re-rendered from its parsed parts (`"007px"` becomes `7px`, `#FFF` becomes `#fff`, `rgb(1, 2, 3)` becomes `rgb(1 2 3)`, `$space.4` becomes `var(--b-space-4)`). Before any grammar runs, a string containing `; { }  < > " ' ` @`, control characters, `url(`, `var(`, `calc(`, `expression(`, `image-set(`, `attr(`, `env(`, `!important`, comments or `javascript:` is rejected, and values are limited to 200 characters. Colors accept `#rgb[a]`, `#rrggbb[aa]`, `rgb()`, `hsl()`, `oklch()` with strictly parsed components (named colors are not accepted); gradients accept `radial-gradient(<circle|ellipse> at <position>, <color> [<n>%], ...)` or `linear-gradient(<angle|to side>, <color> [<n>%], ...)` with 2 to 8 stops; `columns`/`rows`/`columnSpan` take a whole number 1 to 12. `visibility.hidden` compiles to `display: none` when `true` and to nothing when `false`.
 
 `nodeStylesSchema` validates `PageNode.styles` (`base`, `bp` with at most 8 breakpoint ids, `state` restricted to properties with `allowInStates`) with unknown keys rejected. Pseudo-state (`state`) overrides are accepted by the schema but compiled only from v0.2; `cq` is not part of the MVP schema.
 
@@ -81,10 +81,76 @@ Tokens are emitted as `@layer buildr.tokens { :root { --b-color-primary: ...; --
 
 ## The compiler (`compileStyles`)
 
-`compileStyles(doc, theme)` → `{ css, hash, diagnostics }` (`@next-buildr/core/styles`). `css` is the layer order, the theme's tokens, then `@layer buildr.nodes { … }`; `hash` is the content hash of `css`.
+`compileStyles(doc, theme, options?)` (`options.capabilities`, see Author code) → `{ css, hash, diagnostics }` (`@next-buildr/core/styles`). `css` is the layer order, the theme's tokens, then `@layer buildr.nodes { … }`; `hash` is the content hash of `css`.
 
 - **Per node**: `compileNodeRules(id, styles, theme)` gives `{ base, state, bp, diagnostics }` with the `.b-<id>` selector — what the canvas uses to keep one `<style>` current node by node. `compileNodeDeclarations` is the same without selectors. Both are memoized on the identity of `styles` and `theme` (`WeakMap`, no shared state), and `compileStyles` is memoized per document, so an edit recompiles only the changed nodes.
 - **Every value is re-parsed** through its property grammar before it is emitted; a value that fails is skipped and reported (`style.invalid-value`), so nothing outside the grammar and no `!important` can reach the output, whatever was validated earlier.
 - **Compound properties**: `Box` and `Corners` become one longhand per side/corner (`margin-top`, `border-top-left-radius`, …); `layout.columns: n` becomes `grid-template-columns: repeat(n, minmax(0, 1fr))`; `visibility.hidden: true` becomes `display: none` (emitted after `layout.display`, so it wins) and `false` emits nothing. Declarations follow the property registry's order, not the order keys were written in.
 - **Breakpoints** come from the theme: one `@media (max-width: <maxWidth + 0.98>px)` block per breakpoint, widest first (desktop-first cascade). A breakpoint id the theme does not define is skipped with `style.unknown-breakpoint`.
 - **Diagnostics** (never thrown): `style.invalid-value`, `style.unknown-property`, `style.not-allowed-in-state`, `style.unknown-token` (warning: the variable is still emitted), `style.unknown-breakpoint`, `style.invalid-node-id` (an id outside `A-Z a-z 0-9 _ -` cannot be a class name and gets no rules). Node diagnostics carry `details.nodeId` and `details.property` (`base.layout.gap`, `bp.tablet.spacing.margin.left`).
+
+## Motion (ADR-027)
+
+The `motion` style group (base and breakpoints, never a pseudo-state) is typed, CSS-only and has no runtime script. Properties: `entrance` (`none`, `fade`, `slide`, `zoom`), `entranceDirection` (`up`, `down`, `left`, `right`), `entranceDuration` and `entranceDelay` (`ms`, up to 5000), `entranceEasing` (`ease`, `ease-in`, `ease-out`, `ease-in-out`, `linear`, `snappy`, `bounce`), `hover` (`none`, `lift`, `grow`, `shrink`, `tilt`) with `hoverDuration`, `scrollReveal` (`none`, `fade`, `slide`, `zoom`; slides up only) and `scrollParallax` (px, 0..200). Everything is an enum or a bounded number that goes back through its grammar before it is emitted.
+
+It compiles inside `@layer buildr.nodes` to shared `@keyframes b-m-*` (only the `from` frame, so the finished state is the node's own style), a time-based entrance with `animation-fill-mode: backwards`, a `transition` plus a `(hover: hover)` rule for hover, and, behind `@supports (animation-timeline: view())`, `animation-timeline: view()` for reveal and parallax. All of it sits inside `@media (prefers-reduced-motion: no-preference)`, so a visitor who asks for less motion gets the static, visible node. A breakpoint can switch motion off (`entrance: none`). The hover transition replaces `effects.transition` on that node. `compileNodeRules` returns the same as `motion: { base, bp }` and `keyframes` (names; `keyframesRule(name)` gives each rule) for the canvas.
+
+## Author code (ADR-026)
+
+Off by default and decided by the host: `CommandEnv.capabilities.authorCode` must be exactly `true` (core fails closed when it is absent, `false` or anything else); `compileStyles(doc, theme, { capabilities })` and `authorNodeAttributes(node, capabilities)` take the same object. Without it the commands refuse (`command.author-code-not-permitted`; removing is always allowed), and a document that carries author code anyway renders without it and reports `author.not-permitted`. `checkAuthorCode(doc, capabilities, registry?)` is the guard for a host's write path.
+
+- **`customCss`** (node field, `node.setAttr`, up to 8000 characters): parsed by a strict in-house reader, never emitted as written. Allowed: style rules (each selector is scoped under `.b-<id>`; a leading `&` is the node itself), `@media` and `@supports` around them, plain declarations and `!important`. Rejected: every other at-rule (`@import`, `@font-face`, `@keyframes`, `@property`, `@layer`, ...), `url()`, `image-set()`, `attr()`, `expression()`, backslash escapes, `<`, `javascript:` and `data:` URLs, `behavior`, `-moz-binding`, nested rules, sibling combinators (`+`, `~`), selectors that name Buildr classes, and limits on rules (100), declarations per rule (50) and value length. It is emitted into `@layer buildr.custom`, after `buildr.nodes`; a rejected part is dropped and reported (`author.css-rejected`), an applied one is noted (`author.css-applied`).
+- **`classes`** (up to 16 tokens, no `b-` or `buildr` prefix) and **`attributes`** (up to 16: `data-*` but not `data-b*` (Buildr's own markers), `aria-*`, `role`, `title`, `lang`, `dir`, `tabindex`, values up to 256 characters without control characters; never `on*`, `style`, `class`, `id` or URL attributes): rendered on the node's root by the renderer.
+- **Text `html`**: see `docs/components.md`. `p.textarea({ format: 'html' })` marks any prop as author HTML.
+
+## Template style controls (PB-157)
+
+All additions use existing `effects` / `background` groups and support base, breakpoint and
+pseudo-state overrides. The styles public entry exports the augmented document interfaces,
+`stylePropertyRegistry` (property ids and serializable grammars), `BLEND_MODES`,
+`STYLE_POSITIONS`, `GRADIENT_TYPES`, `RADIAL_SHAPES`, `BACKGROUND_REPEATS` and
+`BACKGROUND_ATTACHMENTS` for inspector controls. No dependency was added.
+
+| Property ids | Grammar |
+|---|---|
+| `effects.shadowX`, `shadowY`, `shadowSpread`; `textShadowX`, `textShadowY` | px, -1000..1000 |
+| `effects.shadowBlur`, `textShadowBlur` | px, 0..1000 |
+| `effects.shadowColor`, `textShadowColor` | existing validated colour grammar, including `$color` tokens and alpha |
+| `effects.shadowInset` | `inset` or `outset` (enum flag) |
+| `effects.blur`, `backdropBlur` | px, 0..100 |
+| `effects.brightness`, `contrast`, `saturate` | numbers 0..2 (1 = 100%) |
+| `effects.grayscale`, `sepia`, `invert` | numbers 0..1 |
+| `effects.hueRotate`, `rotate` | deg, -360..360 |
+| `effects.translateX`, `translateY` | px, %, rem, -10000..10000 |
+| `effects.scale` | number 0..10 |
+| `effects.skewX`, `skewY` | deg, -89..89 |
+| `effects.transformOrigin` | `STYLE_POSITIONS` |
+| `effects.blendMode` | `BLEND_MODES` |
+| `background.repeat`, `attachment` | `BACKGROUND_REPEATS`, `BACKGROUND_ATTACHMENTS` |
+
+Zero lengths/angles also accept bare zero. Numeric precision follows the existing grammar
+(up to four decimal places). Numbers with units must be strings; unitless values must be numbers.
+Custom box shadow geometry compiles after the unchanged `effects.shadow` token preset, so it
+wins within the same declaration. Missing geometry defaults to 0px, colour to #000, inset to
+outset. Text shadow follows the same defaults without spread/inset. Colour alpha controls shadow
+opacity. Removing all custom keys restores the preset.
+
+Filters compile to one `filter` in order: blur, brightness, contrast, saturate, grayscale,
+sepia, hue-rotate, invert. Backdrop blur produces `backdrop-filter: blur(...)`.
+Transforms compile to one `transform`: translateX, translateY, rotate, scale, skewX, skewY.
+Only set functions are emitted. A compound override at a breakpoint or state replaces that CSS
+compound value; editors should write the full desired compound at that override, including
+unchanged functions. This follows CSS shorthand replacement semantics.
+
+`background.gradient` keeps its string representation: `linear-gradient(...)` selects linear;
+`radial-gradient(circle at top left, #fff, $color.primary 100%)` selects radial. Radial shape is
+`circle|ellipse`, position is `STYLE_POSITIONS`; omitted shape/position defaults to ellipse at
+center. Both types accept 2..8 validated colour stops, optional 0..100% positions. Existing
+linear normalization and output are byte-identical. No arbitrary gradient CSS is accepted.
+
+ADR-014 requires migrations for document-shape / component-prop version changes. These are
+optional values in existing style groups; existing documents and defaults are unchanged, like
+other registry additions, so no schema version or migration is required.
+
+Component follow-up (outside this change): page needs `effects` to show effect controls;
+image, divider and icon need `background` to show background controls. No new group is needed.

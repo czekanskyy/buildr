@@ -32,7 +32,7 @@ export interface BuilderComponentProps<P> {
   slots: Record<SlotName, ReactNode>;
   children?: ReactNode;                                   // = slots.default
   node: { id: NodeId; type: ComponentType };
-  env: { mode: 'production' | 'preview' | 'canvas'; locale: LocaleCode; messages: Record<string, string> };
+  env: { mode: 'production' | 'preview' | 'canvas'; locale: LocaleCode; messages: Record<string, string>; capabilities?: { authorCode?: boolean; externalMediaHosts?: string[]; iframeHosts?: string[] } };
   platform?: Platform;                                    // runtime: 'shared' only (not serializable)
 }
 ```
@@ -67,7 +67,7 @@ With `instrument.lazyChild` set, `renderTree` does not walk into a child: it ask
 
 ## `renderTree` in practice
 
-`renderTree(doc, { registry, data, context, platform, instrument?, messages?, cache?, diagnostics?, devChecks? })` is synchronous and returns a `ReactNode`. It calls no hooks and reads no React context, so it runs identically in an RSC and in the canvas (a test calls every component without a React dispatcher, and another scans the sources).
+`renderTree(doc, { registry, data, context, platform, instrument?, messages?, capabilities?, cache?, diagnostics?, devChecks? })` is synchronous and returns a `ReactNode`. It calls no hooks and reads no React context, so it runs identically in an RSC and in the canvas (a test calls every component without a React dispatcher, and another scans the sources).
 
 Per node, in order:
 
@@ -120,6 +120,12 @@ Any component with a `listSource` prop renders as a loop (the `buildr/loop` comp
 ## The layout reference
 
 `env.layoutRef` is the reference of the document the layout came from (`layoutRef` in `renderDocument`, `RenderTreeOptions` and the `DocumentRenderer` props); it is absent when not given. Components that need to address the layout, such as a form building its action, pass it to the platform (`platform.formAction(env.layoutRef ?? '', node.id)`).
+
+## Author code and motion
+
+The host decides whether author code renders (ADR-026). `renderDocument`, `DocumentRenderer`, `RenderTreeOptions` and `CanvasRuntime` take `capabilities?: { authorCode?: boolean }`. Only an exact `true` enables it; anything else (absent, `false`, a truthy string) is off. With it off, a node's `classes`, `attributes` and `customCss` render nothing: no class or attribute reaches the root element and no `@layer buildr.custom` is emitted (`compileStyles` receives the same capabilities). With it on, components get the classes and allowed attributes through `root` (`authorNodeAttributes` from core drops `on*`, `style` and unsafe URLs; the generated class, the anchor `id` and `data-bid` always win), and `env.capabilities` carries the value to components. The host must pass the same value to the site and to the canvas so the preview matches production. `externalMediaHosts` and `iframeHosts` (ADR-028) are forwarded the same way: `normalizeCapabilities` keeps only arrays of strings (trimmed, lowercased, at most 200 entries of at most 253 characters); a malformed list becomes `[]` (no host), never "any host"; an absent list stays absent.
+
+Motion (ADR-027) needs no capability. It is part of the compiled stylesheet, so the canvas shows entrance, hover and scroll effects in its iframe, and every rule sits inside `@media (prefers-reduced-motion: no-preference)`: a visitor or editor who asks for reduced motion sees the static state.
 
 ## The parent of a node
 

@@ -174,7 +174,7 @@ How styling works: where styles live on a node (base, breakpoints, states), the 
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
-| `group` | string | no | Only the properties of one group: layout, size, spacing, typography, background, border, effects, visibility. |
+| `group` | string | no | Only the properties of one group: layout, size, spacing, typography, background, border, effects, motion, visibility. |
 
 #### `get_data_schema`
 
