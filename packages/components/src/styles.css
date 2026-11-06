@@ -31,3 +31,6 @@
 @import "./textarea/styles.css";
 @import "./select/styles.css";
 @import "./checkbox/styles.css";
+@import "./spacer/styles.css";
+@import "./anchor/styles.css";
+@import "./fieldset/styles.css";

@@ -5,6 +5,8 @@ export { Accordion } from './accordion/definition.ts';
 export { accordionFixtures } from './accordion/fixtures.ts';
 export { AccordionItem } from './accordion-item/definition.ts';
 export { accordionItemFixtures } from './accordion-item/fixtures.ts';
+export { Anchor } from './anchor/definition.ts';
+export { anchorFixtures } from './anchor/fixtures.ts';
 export { BADGE_VARIANTS, Badge } from './badge/definition.ts';
 export { badgeFixtures } from './badge/fixtures.ts';
 export {
@@ -33,6 +35,8 @@ export {
 export { containerFixtures } from './container/fixtures.ts';
 export { Divider } from './divider/definition.ts';
 export { dividerFixtures } from './divider/fixtures.ts';
+export { Fieldset } from './fieldset/definition.ts';
+export { fieldsetFixtures } from './fieldset/fixtures.ts';
 export type { ComponentFixture } from './fixtures.ts';
 export { FIXTURE_WIDTHS } from './fixtures.ts';
 export { Form } from './form/definition.ts';
@@ -86,6 +90,8 @@ export { RichText } from './rich-text/definition.ts';
 export { richTextFixtures } from './rich-text/fixtures.ts';
 export { Select } from './select/definition.ts';
 export { selectFixtures } from './select/fixtures.ts';
+export { Spacer } from './spacer/definition.ts';
+export { spacerFixtures } from './spacer/fixtures.ts';
 export { contentTemplateFixtures, marketingTemplateFixtures } from './templates/fixtures.ts';
 export {
   AuthorBox,

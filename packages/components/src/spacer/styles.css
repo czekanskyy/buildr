@@ -1,0 +1,39 @@
+@layer buildr.components {
+  .bc-spacer {
+    --bc-spacer-size: var(--b-space-4);
+    flex-shrink: 0;
+  }
+  .bc-spacer[data-size="xs"] {
+    --bc-spacer-size: var(--b-space-1);
+  }
+  .bc-spacer[data-size="sm"] {
+    --bc-spacer-size: var(--b-space-2);
+  }
+  .bc-spacer[data-size="lg"] {
+    --bc-spacer-size: var(--b-space-8);
+  }
+  .bc-spacer[data-size="xl"] {
+    --bc-spacer-size: var(--b-space-12);
+  }
+  .bc-spacer[data-size="2xl"] {
+    --bc-spacer-size: var(--b-space-16);
+  }
+  .bc-spacer[data-axis="vertical"] {
+    height: var(--bc-spacer-size);
+  }
+  .bc-spacer[data-axis="horizontal"] {
+    display: inline-block;
+    width: var(--bc-spacer-size);
+  }
+  .bc-spacer[data-canvas] {
+    min-width: var(--b-space-4);
+    min-height: var(--b-space-4);
+    background: repeating-linear-gradient(
+      135deg,
+      transparent,
+      transparent var(--b-space-1),
+      var(--b-color-border) var(--b-space-1),
+      var(--b-color-border) var(--b-space-2)
+    );
+  }
+}

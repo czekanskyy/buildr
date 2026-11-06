@@ -122,6 +122,14 @@ describe('Icon and ComponentIcon', () => {
     expect(container.textContent).toBe('');
   });
 
+  it('resolves the PB-160a manifest icon names without fallback', async () => {
+    const names = ['space', 'hash', 'group'];
+    await show(names.map((icon) => <ComponentIcon key={icon} meta={{ icon }} />));
+    const icons = [...container.querySelectorAll('svg')];
+    expect(icons.map((icon) => icon.getAttribute('data-icon'))).toEqual(names);
+    expect(icons.every((icon) => !icon.hasAttribute('data-fallback'))).toBe(true);
+  });
+
   it('keeps the accessible name of an icon button', async () => {
     await show(<IconButton label="Undo" icon="undo-2" />);
     const button = container.querySelector('button');

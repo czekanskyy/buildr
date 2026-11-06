@@ -7,6 +7,9 @@
 import type { LabelCatalog } from '../../i18n/label-catalog.ts';
 
 const COMPONENTS: Readonly<Record<string, string>> = {
+  'buildr/spacer': 'Odstęp',
+  'buildr/anchor': 'Kotwica',
+  'buildr/fieldset': 'Grupa pól',
   'buildr/page': 'Strona',
   'buildr/container': 'Kontener',
   'buildr/grid': 'Siatka',
@@ -36,6 +39,9 @@ const COMPONENTS: Readonly<Record<string, string>> = {
 };
 
 const DESCRIPTIONS: Readonly<Record<string, string>> = {
+  'buildr/spacer': 'Dodaje pusty odstęp w pionie lub w poziomie.',
+  'buildr/anchor': 'Wyznacza nazwane miejsce docelowe dla odnośników na stronie.',
+  'buildr/fieldset': 'Grupuje pola formularza pod wspólnym tytułem.',
   'buildr/page': 'Korzeń dokumentu. Cała reszta znajduje się w środku.',
   'buildr/accordion': 'Rozwijane sekcje, na przykład pytania i odpowiedzi.',
   'buildr/accordion-item': 'Jedna sekcja akordeonu.',
@@ -163,6 +169,9 @@ const COMMON_PROPS: Readonly<Record<string, string>> = {
 };
 
 const PROPS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  'buildr/spacer': { size: 'Rozmiar', axis: 'Oś' },
+  'buildr/anchor': { name: 'Nazwa' },
+  'buildr/fieldset': { legend: 'Tytuł grupy', disabled: 'Wyłączona' },
   'buildr/link': { label: 'Tekst' },
   'buildr/icon': { name: 'Ikona', label: 'Nazwa dostępna' },
   'buildr/loop': { as: 'Nazwa elementu' },

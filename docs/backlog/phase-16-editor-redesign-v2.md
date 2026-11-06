@@ -13,8 +13,8 @@ The approved [template](../design/template/README.md) guides the editor presenta
 | PB-155 | Overlays and feedback | PB-151 | Done |
 | PB-156 | Documentation, tests and baseline | PB-152–PB-155 | Done |
 | PB-157 | Editor redesign fidelity: every screen, state and control, plus UI-only deferred features | PB-152–PB-156 | Done (reopened 2026-11-05; implemented 2026-11-06; merged in PR #152) |
-| PB-159 | Visual fixes, round 1: Blocks tab (no "Recently used", always-open sections, 2/1 column grid, regrouped palette), square canvas with smaller margins | PB-157 | In review (implemented 2026-11-07; e2e and visual baselines green, pending user acceptance) |
-| PB-160 | New palette blocks: Spacer, Anchor, Carousel, Gallery, Google Maps, Captcha | PB-159 | Proposed (card only) |
+| PB-159 | Visual fixes, round 1: Blocks tab (no "Recently used", always-open sections, 2/1 column grid, regrouped palette), square canvas with smaller margins | PB-157 | Done (merged in PR #153) |
+| PB-160 | New palette blocks: Spacer, Anchor, Carousel, Gallery, Google Maps, Captcha | PB-159 | In progress (PB-160a, Spacer + Anchor + Fieldset, implemented 2026-11-07 on `pb-160a/spacer-anchor-fieldset`, visual baselines pending; PB-160b–d not started) |
 
 ## Template mapping
 
@@ -139,7 +139,7 @@ Missing blocks: Spacer, Anchor, Carousel, Gallery, Google Maps, Captcha. `packag
 
 | Part | Work | Size / risk | Notes |
 |---|---|---|---|
-| PB-160a | Spacer + Anchor | S / normal | |
+| PB-160a | Spacer + Anchor + Fieldset | M / normal | Implemented 2026-11-07 (Sol writer, `reviewer` cross-check in two rounds); Docker visual baselines pending |
 | PB-160b | Carousel + Gallery | L / normal | Two writers on disjoint directories; one integrator owns registry, index, fixtures, `components.md`, editor labels and icons. Sol and `reviewer` cross-check |
 | PB-160c | ADR-029, then Map | M / critical | ADR via planner, `security-reviewer` and Astra; accepted by the user before any code |
 | PB-160d | Captcha | L / critical | Single writer (published API across react, next and payload); depends on 160c and the provider decision |

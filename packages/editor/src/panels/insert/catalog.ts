@@ -138,7 +138,7 @@ export const BLOCK_SECTIONS = [
       'buildr/select',
       'buildr/checkbox',
       'buildr/button',
-      'buildr/label',
+      'buildr/fieldset',
       'buildr/captcha',
     ],
   },
