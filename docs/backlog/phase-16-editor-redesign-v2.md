@@ -12,8 +12,8 @@ The approved [template](../design/template/README.md) guides the editor presenta
 | PB-154 | Inspector | PB-151 | Done |
 | PB-155 | Overlays and feedback | PB-151 | Done |
 | PB-156 | Documentation, tests and baseline | PB-152–PB-155 | Done |
-| PB-157 | Editor redesign fidelity: every screen, state and control, plus UI-only deferred features | PB-152–PB-156 | In review (reopened 2026-11-05; implemented 2026-11-06, pending user acceptance) |
-| PB-159 | Visual fixes, round 1: Blocks tab (no "Recently used", always-open sections, 2/1 column grid, regrouped palette), square canvas with smaller margins | PB-157 | In progress |
+| PB-157 | Editor redesign fidelity: every screen, state and control, plus UI-only deferred features | PB-152–PB-156 | Done (reopened 2026-11-05; implemented 2026-11-06; merged in PR #152) |
+| PB-159 | Visual fixes, round 1: Blocks tab (no "Recently used", always-open sections, 2/1 column grid, regrouped palette), square canvas with smaller margins | PB-157 | In review (implemented 2026-11-07; e2e and visual baselines green, pending user acceptance) |
 | PB-160 | New palette blocks: Spacer, Anchor, Carousel, Gallery, Google Maps, Captcha | PB-159 | Proposed (card only) |
 
 ## Template mapping
@@ -68,7 +68,7 @@ Acceptance screens: nothing selected; button selected with Style tab (Spacing, C
 
 ### PB-157 status and known limitations
 
-Editor redesign fidelity: **In review** on branch `pb-157/editor-redesign-fidelity` (reopened 2026-11-05; implemented 2026-11-06, pending user acceptance). The earlier "Done" was not true: a browser audit found the floating block toolbar, Advanced groups, animations, background types, layer visibility and lock, outlines, history, Help, a 768px tablet frame and narrow-width layout missing or wrong. The scope is full fidelity to `docs/design/template` wherever the architecture rules allow.
+Editor redesign fidelity: **Done** (reopened 2026-11-05; implemented 2026-11-06; merged to `main` in PR #152). The earlier "Done" was not true: a browser audit found the floating block toolbar, Advanced groups, animations, background types, layer visibility and lock, outlines, history, Help, a 768px tablet frame and narrow-width layout missing or wrong. The scope is full fidelity to `docs/design/template` wherever the architecture rules allow.
 
 Done in this reopening:
 
