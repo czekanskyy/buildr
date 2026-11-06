@@ -20,7 +20,16 @@ export const Button = defineComponent({
   contentCategories: ['flow', 'phrasing', 'interactive'],
   props: buttonProps,
   styles: {
-    groups: ['typography', 'spacing', 'background', 'border', 'size', 'effects', 'visibility'],
+    groups: [
+      'typography',
+      'spacing',
+      'background',
+      'border',
+      'size',
+      'effects',
+      'motion',
+      'visibility',
+    ],
   },
   a11y: { element: 'button', requiresName: true },
   editor: { inlineProp: 'label', placeholder: 'Button' },

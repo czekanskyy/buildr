@@ -1,5 +1,6 @@
-import type { BuilderDocument, Diagnostic } from '@next-buildr/core';
+import type { BuilderDocument, Diagnostic, HostCapabilities } from '@next-buildr/core';
 import type { ReactNode } from 'react';
+import { normalizeCapabilities } from './capabilities.ts';
 import { renderChild, renderNode } from './render-node.ts';
 import type { RenderRun, RenderTreeOptions, ResumeState } from './types.ts';
 
@@ -7,6 +8,12 @@ import type { RenderRun, RenderTreeOptions, ResumeState } from './types.ts';
 function inProduction(): boolean {
   const proc = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process;
   return proc?.env?.['NODE_ENV'] === 'production';
+}
+
+/** Fail closed: only the normalized capabilities reach the components' env; none means no key. */
+function capabilitiesOf(options: RenderTreeOptions): { capabilities?: HostCapabilities } {
+  const capabilities = normalizeCapabilities(options.capabilities);
+  return Object.keys(capabilities).length > 0 ? { capabilities } : {};
 }
 
 /**
@@ -29,6 +36,7 @@ export function renderTree(doc: BuilderDocument, options: RenderTreeOptions): Re
       locale: options.context.locale,
       messages: options.messages ?? {},
       ...(options.layoutRef !== undefined ? { layoutRef: options.layoutRef } : {}),
+      ...capabilitiesOf(options),
     },
     devChecks: options.devChecks ?? !inProduction(),
     path: new Set(),
@@ -62,6 +70,7 @@ export function renderNodeAt(
       locale: scoped.context.locale,
       messages: scoped.messages ?? {},
       ...(scoped.layoutRef !== undefined ? { layoutRef: scoped.layoutRef } : {}),
+      ...capabilitiesOf(scoped),
     },
     devChecks: scoped.devChecks ?? !inProduction(),
     path: new Set(resume.path),

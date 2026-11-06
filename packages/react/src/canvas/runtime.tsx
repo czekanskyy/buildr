@@ -7,6 +7,7 @@ import {
   type DataSource,
   type Diagnostic,
   type DragItem,
+  type HostCapabilities,
   type JsonValue,
   type NodeId,
   type PreparedData,
@@ -14,6 +15,7 @@ import {
 } from '@next-buildr/core';
 import {
   createChildTransport,
+  type EditorMessage,
   MAX_DIAGNOSTICS,
   PROTOCOL_VERSION,
 } from '@next-buildr/core/protocol';
@@ -28,6 +30,7 @@ import {
 } from 'react';
 import type { ReactRegistry } from '../define/registry.ts';
 import type { Platform } from '../define/types.ts';
+import { normalizeCapabilities } from '../render/capabilities.ts';
 import { loadDocument } from '../render/pipeline.ts';
 import { BuildrStyles } from '../render/styles.tsx';
 import type { CanvasInstrumentation, ResumeState } from '../render/types.ts';
@@ -37,7 +40,7 @@ import { installForwarding } from './forwarding.ts';
 import { installInlineEdit } from './inline-edit.ts';
 import { installInteractions } from './interactions.ts';
 import { type CanvasEnv, CanvasEnvContext, NodeView } from './node-view.tsx';
-import { createOverlay } from './overlay/overlay.ts';
+import { createOverlay, type Overlay } from './overlay/overlay.ts';
 import { type CanvasStore, createCanvasStore } from './store.ts';
 import type { CanvasTransport } from './types.ts';
 
@@ -58,6 +61,12 @@ export interface CanvasRuntimeProps {
   readonly rendererVersion: string;
   readonly messages?: Readonly<Record<string, string>>;
   readonly cache?: CompileCache;
+  /**
+   * What the host permits (ADR-026), the same value the site is rendered with. Author code (custom
+   * CSS, classes, attributes) shows in the preview only with `authorCode: true`; motion needs no
+   * capability and is always compiled into the canvas stylesheet.
+   */
+  readonly capabilities?: HostCapabilities;
   /**
    * Opens the channel to the editor. It is called when the runtime mounts and the channel is closed
    * when it unmounts (so it works under `StrictMode`); by default a `createChildTransport` on the
@@ -120,6 +129,9 @@ function toWire(d: Diagnostic) {
   };
 }
 
+/** How long the editor may be silent (it pings every 5 s) before the canvas says hello again, in ms. */
+const SILENCE_MS = 12_000;
+
 /**
  * The canvas: the page the editor puts in its iframe (docs/editor.md#the-canvas). It keeps a
  * replica of the editor's document, applies the patches the editor sends, and renders it with the
@@ -130,6 +142,12 @@ function toWire(d: Diagnostic) {
  */
 export function CanvasRuntime(props: CanvasRuntimeProps) {
   const { registry, theme, platform, dataSource, cache, messages } = props;
+  // A boolean, so a host passing a fresh object each render does not rebuild the canvas.
+  const capabilitiesKey = JSON.stringify(normalizeCapabilities(props.capabilities));
+  const capabilities = useMemo<HostCapabilities>(
+    () => normalizeCapabilities(JSON.parse(capabilitiesKey) as HostCapabilities),
+    [capabilitiesKey],
+  );
 
   const [store] = useState(() => createCanvasStore());
   const state = useSyncExternalStore(store.subscribe, store.getState, store.getState);
@@ -141,6 +159,8 @@ export function CanvasRuntime(props: CanvasRuntimeProps) {
   >();
   const readyFor = useRef(0);
   const dndRef = useRef<DndController | null>(null);
+  const overlayRef = useRef<Overlay | null>(null);
+  const viewRef = useRef<Extract<EditorMessage, { type: 'view:set' }>['payload']>({});
   const propsRef = useRef(props);
   propsRef.current = props;
 
@@ -188,6 +208,7 @@ export function CanvasRuntime(props: CanvasRuntimeProps) {
         if (doc === undefined) return;
         inited = true;
         resyncing = false;
+        watch(SILENCE_MS);
         store.init({
           doc,
           version: p.docVersion,
@@ -215,6 +236,18 @@ export function CanvasRuntime(props: CanvasRuntimeProps) {
           resyncing = true;
           transport.send('doc:resync-request', { have: store.getState().version });
         }
+      }),
+      transport.on('ping', (_payload, message) => {
+        watch(SILENCE_MS);
+        transport.reply(message, 'pong', {});
+      }),
+      transport.on('view:set', (p) => {
+        viewRef.current = {
+          ...viewRef.current,
+          ...p,
+          labels: { ...viewRef.current.labels, ...p.labels },
+        };
+        overlayRef.current?.setView(viewRef.current);
       }),
       transport.on('dnd:over', (p) => dndRef.current?.over(p.point, p.item as DragItem)),
       transport.on('dnd:leave', () => dndRef.current?.leave()),
@@ -248,6 +281,22 @@ export function CanvasRuntime(props: CanvasRuntimeProps) {
     };
     hello();
 
+    // An editor that went away and came back (a hot reload, a reconnect) has a fresh host that
+    // waits for a `canvas:hello`: once the editor has been silent, say hello again, until its
+    // pings resume. The editor answers a hello at any time by starting the session over.
+    let watchdog: ReturnType<typeof setTimeout> | undefined;
+    let silentHellos = 0;
+    const watch = (ms: number) => {
+      clearTimeout(watchdog);
+      if (ms === SILENCE_MS) silentHellos = 0;
+      watchdog = setTimeout(() => {
+        if (!inited || silentHellos >= helloAttempts) return;
+        silentHellos += 1;
+        sendHello();
+        watch(Math.max(helloIntervalMs, 2000));
+      }, ms);
+    };
+
     const target =
       propsRef.current.errorTarget === undefined
         ? ((globalThis as { window?: ErrorTargetLike }).window ?? null)
@@ -258,6 +307,7 @@ export function CanvasRuntime(props: CanvasRuntimeProps) {
 
     return () => {
       clearTimeout(timer);
+      clearTimeout(watchdog);
       target?.removeEventListener('error', onError);
       target?.removeEventListener('unhandledrejection', onError);
       for (const off of offs) off();
@@ -292,9 +342,18 @@ export function CanvasRuntime(props: CanvasRuntimeProps) {
       document: doc,
       store,
       onHandleDown: dnd.beginMove,
+      onAction: (payload) => {
+        transport()?.send('intent:action', payload);
+      },
+      onInsert: (payload) => {
+        transport()?.send('intent:insert', payload);
+      },
       labelOf: (type) => propsRef.current.registry.meta.get(type)?.label,
     });
+    overlayRef.current = overlay;
+    overlay.setView(viewRef.current);
     return () => {
+      overlayRef.current = null;
       stop();
       stopInline();
       stopForwarding();
@@ -440,16 +499,17 @@ export function CanvasRuntime(props: CanvasRuntimeProps) {
             platform,
             instrument,
             onNodeError,
+            capabilities,
             ...(messages !== undefined ? { messages } : {}),
             ...(cache !== undefined ? { cache } : {}),
           },
-    [store, registry, data, platform, instrument, onNodeError, messages, cache],
+    [store, registry, data, platform, instrument, onNodeError, messages, cache, capabilities],
   );
 
   const doc = state.doc;
   const styles = useMemo(
-    () => (doc === undefined ? undefined : compileStyles(doc, theme)),
-    [doc, theme],
+    () => (doc === undefined ? undefined : compileStyles(doc, theme, { capabilities })),
+    [doc, theme, capabilities],
   );
   const resume = useMemo<ResumeState>(
     () => ({ context, instance: [], parents: [], path: [] }),

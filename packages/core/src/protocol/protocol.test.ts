@@ -5,9 +5,12 @@ import {
   canvasMessageSchema,
   createMessage,
   editorMessageSchema,
+  MAX_HIDDEN_NODES,
   MAX_PATCH_PATH,
   MAX_PATCHES,
   MAX_SELECTION,
+  MAX_TYPE_LABELS,
+  MAX_VIEW_LABEL_LENGTH,
   MESSAGE_DIRECTION,
   MESSAGE_TYPES,
   type MessageType,
@@ -19,6 +22,7 @@ import {
   parseEditorMessage,
   parseEnvelope,
   parseMessage,
+  viewLabelsSchema,
 } from './index.ts';
 
 const SESSION = 'abcDEF0123456789_-xyz';
@@ -70,7 +74,9 @@ const valid: { [T in MessageType]: PayloadOf<T> } = {
   'dnd:leave': {},
   'scroll:to': { id: ID },
   'mode:set': { mode: 'interact' },
-  'canvas:hello': { protocol: 1, rendererVersion: '0.1.0', manifestHash: 'abc123' },
+  'view:set': { outlines: true, hidden: [ID], theme: 'dark', labels: { toolbar: 'Block tools' } },
+  ping: {},
+  'canvas:hello': { protocol: PROTOCOL_VERSION, rendererVersion: '0.1.0', manifestHash: 'abc123' },
   'canvas:ready': {},
   'doc:resync-request': { have: 5 },
   'node:click': { id: ID, instance: 'loop1:2', modifiers: mods },
@@ -82,6 +88,9 @@ const valid: { [T in MessageType]: PayloadOf<T> } = {
     reason: { code: 'slot-denied', message: 'Not allowed here', params: { slot: 'default' } },
   },
   'intent:move': { ids: [ID], target },
+  'intent:action': { id: ID, action: 'align', value: 'left', point: { x: 10, y: 20 } },
+  'intent:insert': { target, point: { x: 10, y: 20 } },
+  pong: {},
   'key:down': { key: 'z', code: 'KeyZ', mods },
   contextmenu: { id: ID, point: { x: 1, y: 2 } },
   diagnostics: {
@@ -191,7 +200,9 @@ describe('the envelope', () => {
     expect(bad({})).toBe(true);
     expect(bad({ source: 'other' })).toBe(false);
     expect(bad({ source: undefined })).toBe(false);
-    expect(bad({ protocol: 2 })).toBe(false);
+    expect(PROTOCOL_VERSION).toBe(2);
+    expect(bad({ protocol: 1 })).toBe(false);
+    expect(bad({ protocol: 3 })).toBe(false);
     expect(bad({ protocol: '1' })).toBe(false);
     expect(bad({ session: undefined })).toBe(false);
     expect(bad({ session: '' })).toBe(false);
@@ -229,7 +240,7 @@ describe('the envelope', () => {
 
   it('can be read on its own, and lets another protocol version through to be told apart', () => {
     expect(parseEnvelope(envelope('canvas:hello', {})).ok).toBe(true);
-    expect(parseEnvelope(envelope('canvas:hello', {}, { protocol: 2 })).ok).toBe(true);
+    expect(parseEnvelope(envelope('canvas:hello', {}, { protocol: 1 })).ok).toBe(true);
     expect(parseEnvelope(envelope('canvas:hello', {}, { protocol: 0 })).ok).toBe(false);
     expect(parseEnvelope(envelope('canvas:hello', {}, { source: 'x' })).ok).toBe(false);
     expect(parseEnvelope(envelope('canvas:hello', {}, { session: 'no' })).ok).toBe(false);
@@ -253,12 +264,12 @@ describe('the envelope', () => {
 });
 
 describe('the direction of a message', () => {
-  it('lists twelve from the editor and thirteen from the canvas', () => {
-    expect(editorMessageSchema.options).toHaveLength(12);
-    expect(canvasMessageSchema.options).toHaveLength(13);
-    expect(messageSchema.options).toHaveLength(25);
-    expect(MESSAGE_TYPES).toHaveLength(25);
-    expect(new Set(MESSAGE_TYPES).size).toBe(25);
+  it('lists fourteen from the editor and sixteen from the canvas', () => {
+    expect(editorMessageSchema.options).toHaveLength(14);
+    expect(canvasMessageSchema.options).toHaveLength(16);
+    expect(messageSchema.options).toHaveLength(30);
+    expect(MESSAGE_TYPES).toHaveLength(30);
+    expect(new Set(MESSAGE_TYPES).size).toBe(30);
   });
 });
 
@@ -368,6 +379,175 @@ describe('doc:patch', () => {
     );
     expect(
       patch({ from: 0, to: 1, patches: Array.from({ length: MAX_PATCHES + 1 }, () => p) }),
+    ).toBe(false);
+  });
+});
+
+describe('protocol v2 overlay messages', () => {
+  const view = (payload: unknown) => parseEditorMessage(envelope('view:set', payload)).ok;
+  const action = (payload: unknown) => parseCanvasMessage(envelope('intent:action', payload)).ok;
+  const insert = (payload: unknown) => parseCanvasMessage(envelope('intent:insert', payload)).ok;
+
+  it('accepts empty and independent view updates, including clearing hidden nodes', () => {
+    for (const payload of [
+      {},
+      { outlines: false },
+      { hidden: [] },
+      { theme: 'light' },
+      { theme: 'dark' },
+      { labels: {} },
+      { labels: { remove: 'Usuń blok' } },
+    ]) {
+      const result = parseEditorMessage(envelope('view:set', payload));
+      expect(result.ok).toBe(true);
+      if (result.ok) expect(result.value.payload).toEqual(payload);
+    }
+    for (const payload of [
+      { outlines: 1 },
+      { hidden: null },
+      { hidden: ['bad id'] },
+      { theme: 'system' },
+      { labels: null },
+      { doc: doc },
+    ]) {
+      expect(view(payload)).toBe(false);
+    }
+  });
+
+  it('bounds hidden nodes independently of the selection limit', () => {
+    expect(view({ hidden: Array.from({ length: MAX_HIDDEN_NODES }, () => ID) })).toBe(true);
+    expect(view({ hidden: Array.from({ length: MAX_HIDDEN_NODES + 1 }, () => ID) })).toBe(false);
+    expect(view({ hidden: ['root', ID, ID2] })).toBe(true);
+  });
+
+  it('accepts every fixed label key, bounded plain text and translations', () => {
+    expect(view({ labels: { selectParent: 'Wybierz rodzica', insert: 'Add & edit' } })).toBe(true);
+    for (const key of Object.keys(viewLabelsSchema.shape)) {
+      expect(view({ labels: { [key]: 'x'.repeat(MAX_VIEW_LABEL_LENGTH) } }), key).toBe(true);
+      expect(view({ labels: { [key]: 'x'.repeat(MAX_VIEW_LABEL_LENGTH + 1) } }), key).toBe(false);
+    }
+  });
+
+  it('refuses arbitrary label keys, markup, controls, empty or non-text labels', () => {
+    for (const key of ['unknown', '__proto__', 'constructor', 'prototype']) {
+      expect(view({ labels: JSON.parse(`{"${key}":"text"}`) }), key).toBe(false);
+    }
+    for (const text of [
+      '',
+      ' ',
+      '<b>Remove</b>',
+      '<img src=x onerror=alert(1)>',
+      'a>b',
+      'line\nbreak',
+      'tab\there',
+      '\u0000',
+      '\u007f',
+      '\u0085',
+      '\u202eRemove',
+      '\u2028',
+      '\u2029',
+      5,
+      {},
+      null,
+    ]) {
+      expect(view({ labels: { remove: text } }), JSON.stringify(text)).toBe(false);
+    }
+  });
+
+  it('bounds type labels: type id keys, plain text values, at most 128 entries', () => {
+    expect(view({ typeLabels: {} })).toBe(true);
+    expect(view({ typeLabels: { 'buildr/heading': 'Nagłówek' }, scale: 0.62 })).toBe(true);
+    const many = (n: number) =>
+      Object.fromEntries(Array.from({ length: n }, (_, i) => [`app/type-${i}`, 'Typ']));
+    expect(view({ typeLabels: many(MAX_TYPE_LABELS) })).toBe(true);
+    expect(view({ typeLabels: many(MAX_TYPE_LABELS + 1) })).toBe(false);
+    for (const key of ['Heading', 'heading', 'a/b/c', 'buildr/Heading', `x/${'a'.repeat(70)}`]) {
+      expect(view({ typeLabels: JSON.parse(`{"${key}":"Typ"}`) }), key).toBe(false);
+    }
+    for (const text of ['', '<b>x</b>', 'line\nbreak', '‮x', 'x'.repeat(41), 5, null]) {
+      expect(view({ typeLabels: { 'buildr/heading': text } }), JSON.stringify(text)).toBe(false);
+    }
+    const proto = parseEditorMessage(
+      envelope('view:set', { typeLabels: JSON.parse('{"__proto__":"Typ"}') }),
+    );
+    if (proto.ok) {
+      const labels = (proto.value.payload as { typeLabels?: object }).typeLabels ?? {};
+      expect(Object.hasOwn(labels, '__proto__')).toBe(false);
+    }
+    expect(view({ typeLabels: null })).toBe(false);
+    for (const scale of [0, 0.05, 5, Number.NaN, '1'])
+      expect(view({ scale }), String(scale)).toBe(false);
+  });
+
+  it('allows only the enumerated actions and gives only align a required value', () => {
+    for (const name of ['selectParent', 'moveUp', 'moveDown', 'duplicate', 'remove', 'more']) {
+      expect(action({ id: ID, action: name })).toBe(true);
+      expect(action({ id: ID, action: name, value: 'left' })).toBe(false);
+    }
+    for (const value of ['left', 'center', 'right']) {
+      expect(action({ id: 'root', action: 'align', value })).toBe(true);
+    }
+    for (const payload of [
+      { id: ID, action: 'align' },
+      { id: ID, action: 'align', value: 'justify' },
+      { id: ID, action: 'unknown' },
+      { id: ID, action: 'node.setProp' },
+      { id: ID, action: 'remove', command: {} },
+      { id: 'bad id', action: 'remove' },
+      { id: null, action: 'remove' },
+      { action: 'remove' },
+      { id: ID },
+    ]) {
+      expect(action(payload)).toBe(false);
+    }
+  });
+
+  it('requires the existing drop-target shape and bounds every target field', () => {
+    expect(insert({ target })).toBe(true);
+    expect(insert({ target: { parentId: ID, slot: 's'.repeat(64), index: 1_000_000 } })).toBe(true);
+    for (const badTarget of [
+      undefined,
+      null,
+      {},
+      { ...target, parentId: 'bad id' },
+      { ...target, slot: '' },
+      { ...target, slot: 'Bad slot' },
+      { ...target, slot: 's'.repeat(65) },
+      { ...target, index: -1 },
+      { ...target, index: 0.5 },
+      { ...target, index: 1_000_001 },
+      { ...target, index: Number.POSITIVE_INFINITY },
+      { ...target, extra: true },
+    ]) {
+      expect(insert({ target: badTarget }), JSON.stringify(badTarget)).toBe(false);
+    }
+    expect(insert({ target, doc })).toBe(false);
+  });
+
+  it('accepts optional trigger client coordinates, finite and bounded, with no extra keys', () => {
+    for (const base of [
+      { type: 'intent:action', payload: { id: ID, action: 'more' } },
+      { type: 'intent:action', payload: { id: ID, action: 'align', value: 'center' } },
+      { type: 'intent:insert', payload: { target } },
+    ] as const) {
+      const at = (point: unknown) =>
+        parseCanvasMessage(envelope(base.type, { ...base.payload, point })).ok;
+      expect(at({ x: -1_000_000, y: 1_000_000 })).toBe(true);
+      expect(at({ x: 10.5, y: -0.5 })).toBe(true);
+      for (const bad of [Number.NaN, Number.POSITIVE_INFINITY, -1_000_001, 1_000_001, '1']) {
+        expect(at({ x: bad, y: 0 })).toBe(false);
+        expect(at({ x: 0, y: bad })).toBe(false);
+      }
+      for (const point of [null, {}, { x: 1 }, { x: 0, y: 0, extra: 1 }]) {
+        expect(at(point)).toBe(false);
+      }
+    }
+  });
+
+  it('keeps key:down limited to its existing key, code and mods', () => {
+    expect(parseCanvasMessage(envelope('key:down', valid['key:down'])).ok).toBe(true);
+    expect(
+      parseCanvasMessage(envelope('key:down', { ...valid['key:down'], repeat: true })).ok,
     ).toBe(false);
   });
 });
@@ -491,9 +671,13 @@ describe('the small messages', () => {
     expect(canvas('canvas:hello', { protocol: 0, rendererVersion: '1', manifestHash: 'a' })).toBe(
       false,
     );
-    expect(canvas('canvas:hello', { protocol: 1, rendererVersion: '', manifestHash: 'a' })).toBe(
-      false,
-    );
+    expect(
+      canvas('canvas:hello', {
+        protocol: PROTOCOL_VERSION,
+        rendererVersion: '',
+        manifestHash: 'a',
+      }),
+    ).toBe(false);
     expect(canvas('doc:resync-request', { have: -1 })).toBe(false);
   });
 });

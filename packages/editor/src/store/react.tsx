@@ -3,6 +3,7 @@ import { createContext, type ReactNode, useContext } from 'react';
 import { useStore } from 'zustand';
 import { selectChildren, selectIsDirty, selectNode, selectSelectedNode } from './selectors.ts';
 import type { EditorState, EditorStore } from './types.ts';
+import type { ViewState } from './view.ts';
 
 const StoreContext = createContext<EditorStore | undefined>(undefined);
 
@@ -18,6 +19,11 @@ export function useEditor(): EditorStore {
   const store = useContext(StoreContext);
   if (store === undefined) throw new Error('useEditor must be used inside <EditorStoreProvider>');
   return store;
+}
+
+/** The store when there is one; `undefined` outside a `<EditorStoreProvider>`. */
+export function useOptionalEditor(): EditorStore | undefined {
+  return useContext(StoreContext);
 }
 
 /** Subscribes to a part of the state; the component renders again only when that part changes. */
@@ -40,4 +46,8 @@ export function useNodeChildren(id: NodeId, slot: SlotName = 'default'): readonl
 
 export function useIsDirty(): boolean {
   return useEditorState(selectIsDirty);
+}
+
+export function useViewState(): ViewState {
+  return useStore(useEditor().view);
 }

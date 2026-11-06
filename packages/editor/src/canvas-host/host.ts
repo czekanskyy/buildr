@@ -1,5 +1,5 @@
 import type { BuilderDocument, NodeId } from '@next-buildr/core';
-import { s } from '@next-buildr/core';
+import { createIndex, s } from '@next-buildr/core';
 import {
   type CanvasMessage,
   type EditorMessage,
@@ -9,10 +9,12 @@ import {
   PROTOCOL_VERSION,
   type Rejection,
   type Transport,
+  TransportError,
 } from '@next-buildr/core/protocol';
 import { createStore, type StoreApi } from 'zustand/vanilla';
 import type { BreakpointConfig } from '../app/config.ts';
 import type { DocumentChange, EditorStore } from '../store/index.ts';
+import { isNodeStructureLocked, structureLockedIds } from '../store/structure-lock.ts';
 
 type Init = PayloadOf<'editor:init'>;
 type Message<T extends MessageType> = PayloadOf<T>;
@@ -25,6 +27,9 @@ export type CanvasMode = Init['mode'];
 
 /** How long the canvas has to answer with `canvas:hello` before the error screen shows. */
 export const DEFAULT_HANDSHAKE_TIMEOUT_MS = 10_000;
+
+/** How long a `ping` waits for its `pong` before the connection counts as lost. */
+const PONG_TIMEOUT_MS = 15_000;
 
 export type CanvasStatus =
   /** Waiting for the canvas to say hello. */
@@ -65,6 +70,7 @@ export interface CanvasHostState {
   readonly diagnostics: Message<'diagnostics'>['items'];
   /** How many times the canvas has said hello: more than one means it reloaded. */
   readonly connections: number;
+  readonly connectionLost: boolean;
 }
 
 export interface CanvasFrames {
@@ -91,6 +97,8 @@ export interface CanvasHostOptions {
     setTimeout(callback: () => void, ms: number): unknown;
     clearTimeout(handle: unknown): void;
   };
+  readonly onAction?: (event: Message<'intent:action'>) => void;
+  readonly onInsert?: (event: Message<'intent:insert'>) => void;
   readonly onKeyDown?: (event: Message<'key:down'>) => void;
   readonly onContextMenu?: (event: Message<'contextmenu'>) => void;
   readonly onNodeDoubleClick?: (event: Message<'node:dblclick'>) => void;
@@ -98,10 +106,13 @@ export interface CanvasHostOptions {
   readonly onDropTarget?: (event: Message<'dnd:target'>) => void;
   /** A command the canvas asked for was refused (an inline edit on a locked node, a move the rules forbid). */
   readonly onCommandError?: (error: { readonly code: string; readonly message: string }) => void;
+  /** The canvas asked to remove, move or duplicate a block that is locked for structure (a layer "Lock"). */
+  readonly onLocked?: (ids?: readonly NodeId[]) => void;
 }
 
 export interface CanvasHost {
   readonly state: StoreApi<CanvasHostState>;
+  setView(view: Message<'view:set'>): void;
   setBreakpoint(id: string): void;
   setZoom(zoom: 'fit' | number): void;
   setLocale(locale: string): void;
@@ -168,6 +179,7 @@ export function createCanvasHost(options: CanvasHostOptions): CanvasHost {
     mode: options.mode ?? 'edit',
     diagnostics: [],
     connections: 0,
+    connectionLost: false,
   }));
 
   const live = () => {
@@ -232,6 +244,7 @@ export function createCanvasHost(options: CanvasHostOptions): CanvasHost {
     }
   });
 
+  let view: Message<'view:set'> = {};
   const init = () => {
     const host = state.getState();
     const { doc, docVersion, selectedIds } = store.getState();
@@ -249,6 +262,7 @@ export function createCanvasHost(options: CanvasHostOptions): CanvasHost {
       locales: options.locales,
       mode: host.mode,
     });
+    transport.send('view:set', view);
   };
 
   // --- the handshake ---
@@ -266,9 +280,67 @@ export function createCanvasHost(options: CanvasHostOptions): CanvasHost {
     }
   }, timeoutMs);
 
+  // The heartbeat (docs/editor.md#the-postmessage-protocol): a `ping` is a request, so the canvas
+  // answers it with `reply`, which names the ping's id, and only the transport's request path
+  // reads such an answer (a `pong` that answers nothing is dropped as a stale reply). At most one
+  // ping is outstanding; `epoch` makes the answer to a ping of an earlier session count for nothing.
+  let heartbeat: unknown;
+  let outstanding = false;
+  let epoch = 0;
+  const stopHeartbeat = () => {
+    timers.clearTimeout(heartbeat);
+    heartbeat = undefined;
+    outstanding = false;
+    epoch += 1;
+  };
+  const ping = () => {
+    if (!live()) return;
+    heartbeat = timers.setTimeout(ping, 5_000);
+    if (outstanding) return;
+    outstanding = true;
+    const mine = epoch;
+    transport.request('ping', {}, { timeoutMs: PONG_TIMEOUT_MS }).then(
+      (answer) => {
+        if (mine !== epoch) return;
+        outstanding = false;
+        if (answer.type === 'pong') state.setState({ connectionLost: false });
+      },
+      (error: unknown) => {
+        if (mine !== epoch) return;
+        outstanding = false;
+        if (error instanceof TransportError && error.code === 'timeout' && live()) {
+          state.setState({ connectionLost: true });
+        }
+      },
+    );
+  };
+  const allowed = (id: NodeId, aspect: 'structure' | 'style') => {
+    const { doc, readOnly } = store.getState();
+    if (!live() || readOnly || !Object.hasOwn(doc.nodes, id)) return false;
+    const index = createIndex(doc);
+    let current: NodeId | undefined = id;
+    let region = false;
+    while (current !== undefined) {
+      const node = doc.nodes[current];
+      if (node?.lock?.[aspect]) return region;
+      if (node?.region !== undefined) region = true;
+      current = index.parentOf[current];
+    }
+    return true;
+  };
+
   const offs = [
     transport.on('canvas:hello', (payload) => {
       timers.clearTimeout(handshake);
+      stopHeartbeat();
+      // A hello at any time (a canvas that reloaded, or one that never lost its state but found a
+      // new editor) starts the session over: nothing queued for the old one is sent to the new.
+      if (frame !== undefined) {
+        frames.cancel(frame);
+        frame = undefined;
+      }
+      queue = [];
+      resend = false;
       const { protocol, rendererVersion, manifestHash } = payload;
       state.setState((s0) => ({ connections: s0.connections + 1, diagnostics: [] }));
       if (protocol !== PROTOCOL_VERSION) {
@@ -285,11 +357,14 @@ export function createCanvasHost(options: CanvasHostOptions): CanvasHost {
           details: { editor: options.manifestHash, canvas: manifestHash, rendererVersion },
         });
       }
-      state.setState({ status: 'initializing', error: undefined });
+      state.setState({ status: 'initializing', error: undefined, connectionLost: false });
       init();
     }),
     transport.on('canvas:ready', () => {
-      if (state.getState().status === 'initializing') state.setState({ status: 'ready' });
+      if (state.getState().status === 'initializing') {
+        state.setState({ status: 'ready' });
+        ping();
+      }
     }),
     transport.on('doc:resync-request', () => {
       if (!live()) return;
@@ -325,6 +400,11 @@ export function createCanvasHost(options: CanvasHostOptions): CanvasHost {
       if (!result.ok) options.onCommandError?.(result.error);
     }),
     transport.on('intent:move', (payload) => {
+      // Core checks the lock from the parent on; a locked block itself is not moved by the canvas either.
+      if (structureLockedIds(store.getState().doc, payload.ids).length > 0) {
+        options.onLocked?.(payload.ids);
+        return;
+      }
       const result = store.dispatch({
         type: 'node.move',
         payload: {
@@ -335,6 +415,36 @@ export function createCanvasHost(options: CanvasHostOptions): CanvasHost {
         },
       });
       if (!result.ok) options.onCommandError?.(result.error);
+    }),
+    transport.on('intent:action', (payload) => {
+      const { doc } = store.getState();
+      if (!live() || !Object.hasOwn(doc.nodes, payload.id)) return;
+      const changesStructure =
+        payload.action === 'remove' ||
+        payload.action === 'duplicate' ||
+        payload.action === 'moveUp' ||
+        payload.action === 'moveDown';
+      if (changesStructure && payload.id !== doc.root && isNodeStructureLocked(doc, payload.id)) {
+        options.onLocked?.([payload.id]);
+        return;
+      }
+      if (
+        payload.action !== 'selectParent' &&
+        (!allowed(payload.id, payload.action === 'align' ? 'style' : 'structure') ||
+          payload.id === doc.root)
+      )
+        return;
+      options.onAction?.(payload);
+    }),
+    transport.on('intent:insert', (payload) => {
+      const { parentId, slot, index } = payload.target;
+      const { doc } = store.getState();
+      if (!allowed(parentId, 'structure')) return;
+      const children = doc.nodes[parentId]?.slots?.[slot];
+      const meta = store.registry.get(doc.nodes[parentId]?.type ?? '');
+      if (children === undefined && meta?.slots?.[slot] === undefined) return;
+      if (index > (children?.length ?? 0)) return;
+      options.onInsert?.(payload);
     }),
     transport.on('dnd:target', (payload) => options.onDropTarget?.(payload)),
     transport.on('key:down', (payload) => options.onKeyDown?.(payload)),
@@ -352,6 +462,10 @@ export function createCanvasHost(options: CanvasHostOptions): CanvasHost {
 
   return {
     state,
+    setView(next) {
+      view = { ...view, ...next, labels: { ...view.labels, ...next.labels } };
+      if (live()) transport.send('view:set', view);
+    },
     setBreakpoint(id) {
       const found = options.breakpoints.find((b) => b.id === id);
       if (found === undefined) return;
@@ -394,6 +508,7 @@ export function createCanvasHost(options: CanvasHostOptions): CanvasHost {
       });
     },
     destroy() {
+      stopHeartbeat();
       timers.clearTimeout(handshake);
       if (frame !== undefined) frames.cancel(frame);
       offChange();

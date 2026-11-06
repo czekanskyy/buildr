@@ -20,6 +20,7 @@ import type {
 } from '@next-buildr/core/commands';
 import type { StoreApi } from 'zustand/vanilla';
 import type { SelectionMove, SelectMode } from './selection.ts';
+import type { ViewStore } from './view.ts';
 
 /** Findings about the document as it is now, recomputed after it stops changing. */
 export interface ValidationSnapshot {
@@ -83,7 +84,10 @@ export interface EditorStoreOptions {
   /** The command set; the core commands by default. */
   readonly commands?: CommandRegistry;
   readonly generateId?: IdGenerator;
+  /** Lets a lock be weakened (`node.setAttr` `lock`); absent, every unlock is refused (`command.unlock-not-permitted`). */
   readonly canUnlock?: CommandEnv['canUnlock'];
+  /** What the host permits (`authorCode`, ADR-026); the commands refuse author code unless it is exactly `true`. */
+  readonly capabilities?: CommandEnv['capabilities'];
   /** Run `checkInvariants` after every command (a development aid); off by default. */
   readonly checkInvariants?: boolean;
   readonly readOnly?: boolean;
@@ -101,6 +105,11 @@ export interface EditorStoreOptions {
 
 /** The store and what changes it. Every change to the document goes through `dispatch`, `undo`, `redo` or `replaceDocument`. */
 export interface EditorStore extends StoreApi<EditorState> {
+  readonly view: ViewStore;
+  /** Whether the host supplied `canUnlock`; without it a lock, once set, cannot be weakened. */
+  readonly canUnlock: boolean;
+  /** Whether the host permits author code (ADR-026): the Advanced fields and the Text HTML mode are shown and writable. */
+  readonly authorCode: boolean;
   /** The registry the commands run against; the palette asks it what may go where. */
   readonly registry: RegistryMeta;
   /** Runs a command (`execute`) on the document and records it in the history. */

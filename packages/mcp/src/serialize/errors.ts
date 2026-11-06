@@ -233,6 +233,9 @@ export const COMMAND_EXPLAINERS: Readonly<Record<string, CommandExplainer>> = {
     'The change would leave the document inconsistent, so it was not applied.',
   ),
   'command.invalid-patches': plain('Reopen the document and retry.'),
+  'command.author-code-not-permitted': plain(
+    'Custom CSS, classes, attributes and HTML are for trusted editors in the editor; use the style properties and plain or rich text instead.',
+  ),
   'command.cannot-duplicate-root': plain('Duplicate a child of the page instead.'),
   'command.cannot-unwrap-root': plain(),
   'command.cannot-wrap-root': plain('Wrap a child of the page instead.'),

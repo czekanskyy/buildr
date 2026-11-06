@@ -13,6 +13,7 @@ import {
   type EditorMessage,
   type MessageEventLike,
   type PostTarget,
+  PROTOCOL_VERSION,
   type Rejection,
   type Transport,
   type WindowLike,
@@ -186,10 +187,16 @@ function setup(overrides: Partial<CanvasHostOptions> = {}, canvasHash = HASH) {
       'viewport:set',
       'locale:set',
       'mode:set',
+      'view:set',
+      'ping',
     ] as const) {
       child.on(type, (payload) => received.push({ type, payload } as unknown as EditorMessage));
     }
-    child.send('canvas:hello', { protocol: 1, rendererVersion: '1.0.0', manifestHash: hash });
+    child.send('canvas:hello', {
+      protocol: PROTOCOL_VERSION,
+      rendererVersion: '1.0.0',
+      manifestHash: hash,
+    });
     return child;
   };
   return { store, host, connect, frames, clock, received, rejections, editorWindow, canvasWindow };
@@ -234,6 +241,32 @@ describe('the handshake', () => {
     host.destroy();
   });
 
+  it('starts the session over on a hello after init, and clears a lost connection', () => {
+    const { store, host, connect, frames, clock, received } = setup();
+    const child = connect();
+    child.send('canvas:ready', {});
+    clock.fire();
+    host.state.setState({ connectionLost: true });
+    store.dispatch({
+      type: 'node.setProp',
+      payload: { id: 'textNodeA1', prop: 'text', value: s('One') },
+    });
+    received.length = 0;
+    child.send('canvas:hello', {
+      protocol: PROTOCOL_VERSION,
+      rendererVersion: '1.0.0',
+      manifestHash: HASH,
+    });
+    expect(host.state.getState()).toMatchObject({ status: 'initializing', connectionLost: false });
+    expect(host.state.getState().connections).toBe(2);
+    expect(types(received)).toEqual(['editor:init', 'view:set']);
+    frames.run();
+    expect(types(received)).toEqual(['editor:init', 'view:set']);
+    child.send('canvas:ready', {});
+    expect(host.state.getState().status).toBe('ready');
+    host.destroy();
+  });
+
   it('shows a timeout when no canvas answers', () => {
     const { host, clock } = setup();
     clock.fire();
@@ -249,16 +282,16 @@ describe('the handshake', () => {
         source: canvasWindow.handle,
         data: {
           source: 'buildr',
-          protocol: 2,
+          protocol: PROTOCOL_VERSION + 1,
           session: SESSION,
           type: 'canvas:hello',
-          payload: { protocol: 2, rendererVersion: '1', manifestHash: HASH },
+          payload: { protocol: PROTOCOL_VERSION + 1, rendererVersion: '1', manifestHash: HASH },
         },
       });
     }
     expect(host.state.getState().error).toMatchObject({
       kind: 'protocol',
-      details: { editor: 1, canvas: 2 },
+      details: { editor: PROTOCOL_VERSION, canvas: PROTOCOL_VERSION + 1 },
     });
     host.destroy();
   });
@@ -327,7 +360,7 @@ describe('sending changes', () => {
     });
     frames.run();
     connect();
-    expect(types(received)).toEqual(['editor:init']);
+    expect(types(received)).toEqual(['editor:init', 'view:set']);
     expect(received[0]?.payload).toMatchObject({ docVersion: 1 });
     host.destroy();
   });
@@ -390,6 +423,32 @@ describe('what the canvas reports', () => {
     host.destroy();
   });
 
+  it('does not move, remove or duplicate a block that is locked for structure, and says so', () => {
+    const onLocked = vi.fn();
+    const onAction = vi.fn();
+    const { store, host, connect } = setup({ onLocked, onAction });
+    const doc = fixture();
+    store.replaceDocument({
+      ...doc,
+      nodes: {
+        ...doc.nodes,
+        textNodeB1: { ...node('textNodeB1', 'buildr/text'), lock: { structure: true } },
+      },
+    });
+    const child = connect();
+    const before = store.getState().doc;
+    child.send('intent:move', {
+      ids: ['textNodeB1'],
+      target: { parentId: 'boxNode001', slot: 'default', index: 0 },
+    });
+    child.send('intent:action', { id: 'textNodeB1', action: 'remove' });
+    child.send('intent:action', { id: 'textNodeB1', action: 'duplicate' });
+    expect(store.getState().doc).toBe(before);
+    expect(onLocked).toHaveBeenCalledTimes(3);
+    expect(onAction).not.toHaveBeenCalled();
+    host.destroy();
+  });
+
   it('a move intent becomes node.move; a refused command is reported', () => {
     const onCommandError = vi.fn();
     const { store, host, connect } = setup({ onCommandError });
@@ -438,5 +497,141 @@ describe('what the canvas reports', () => {
       error: { kind: 'canvas', message: 'boom' },
     });
     host.destroy();
+  });
+});
+
+describe('protocol v2 view and intents', () => {
+  it('sends cached view on connect and reload, and changes immediately', () => {
+    const { host, connect, received } = setup();
+    host.setView({
+      outlines: true,
+      hidden: ['textNodeA1'],
+      theme: 'dark',
+      labels: { toolbar: 'Tools' },
+    });
+    const child = connect();
+    expect(received.at(-1)).toMatchObject({
+      type: 'view:set',
+      payload: { outlines: true, hidden: ['textNodeA1'], theme: 'dark' },
+    });
+    host.setView({ outlines: false });
+    expect(received.at(-1)).toMatchObject({
+      type: 'view:set',
+      payload: { outlines: false, labels: { toolbar: 'Tools' } },
+    });
+    child.close();
+    received.length = 0;
+    connect();
+    expect(received.at(-1)).toMatchObject({
+      type: 'view:set',
+      payload: { outlines: false, hidden: ['textNodeA1'] },
+    });
+    host.destroy();
+  });
+
+  it('forwards only existing, editable action and insertion targets', () => {
+    const onAction = vi.fn();
+    const onInsert = vi.fn();
+    const { host, connect, store } = setup({ onAction, onInsert });
+    const child = connect();
+    child.send('intent:action', { id: 'textNodeA1', action: 'duplicate' });
+    expect(onAction).toHaveBeenCalledOnce();
+    child.send('intent:action', { id: 'ghostNode1', action: 'duplicate' });
+    child.send('intent:action', { id: 'root', action: 'remove' });
+    const target = { parentId: 'boxNode001', slot: 'default', index: 1 };
+    child.send('intent:insert', { target });
+    expect(onInsert).toHaveBeenCalledWith({ target });
+    child.send('intent:insert', { target: { ...target, index: 3 } });
+    child.send('intent:insert', { target: { ...target, slot: 'missing' } });
+    store.setReadOnly(true);
+    child.send('intent:action', { id: 'textNodeA1', action: 'remove' });
+    child.send('intent:insert', { target });
+    expect(onAction).toHaveBeenCalledOnce();
+    expect(onInsert).toHaveBeenCalledOnce();
+    store.setReadOnly(false);
+    const doc = fixture();
+    store.replaceDocument({
+      ...doc,
+      nodes: {
+        ...doc.nodes,
+        boxNode001: {
+          ...node('boxNode001', 'buildr/box', { slots: { default: ['textNodeA1', 'textNodeB1'] } }),
+          lock: { structure: true, style: true },
+        },
+      },
+    });
+    child.send('intent:action', { id: 'textNodeA1', action: 'duplicate' });
+    child.send('intent:action', { id: 'textNodeA1', action: 'align', value: 'center' });
+    child.send('intent:insert', { target });
+    expect(onAction).toHaveBeenCalledOnce();
+    expect(onInsert).toHaveBeenCalledOnce();
+    host.destroy();
+  });
+
+  const realTimers = {
+    setTimeout: (cb: () => void, ms: number) => setTimeout(cb, ms),
+    clearTimeout: (handle: unknown) => clearTimeout(handle as ReturnType<typeof setTimeout>),
+  };
+
+  it('detects missing pong, recovers, and clears heartbeat timers on destroy', async () => {
+    vi.useFakeTimers();
+    try {
+      const { host, connect, received } = setup({ timers: realTimers });
+      const child = connect();
+      child.send('canvas:ready', {});
+      expect(types(received)).toContain('ping');
+      await vi.advanceTimersByTimeAsync(15_000);
+      expect(host.state.getState().connectionLost).toBe(true);
+      // From now on the canvas answers, as the runtime does: with `reply`, which names the ping's id.
+      child.on('ping', (_payload, message) => child.reply(message, 'pong', {}));
+      await vi.advanceTimersByTimeAsync(20_000);
+      expect(host.state.getState().connectionLost).toBe(false);
+      host.destroy();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('stays connected while the canvas answers every ping, through a second hello', async () => {
+    vi.useFakeTimers();
+    try {
+      const { host, connect } = setup({ timers: realTimers });
+      const child = connect();
+      child.on('ping', (_payload, message) => child.reply(message, 'pong', {}));
+      child.send('canvas:ready', {});
+      await vi.advanceTimersByTimeAsync(40_000);
+      expect(host.state.getState().connectionLost).toBe(false);
+      // The canvas says hello again (its silence watchdog, a second mount): the session starts over.
+      child.send('canvas:hello', {
+        protocol: PROTOCOL_VERSION,
+        rendererVersion: '1.0.0',
+        manifestHash: HASH,
+      });
+      child.send('canvas:ready', {});
+      await vi.advanceTimersByTimeAsync(40_000);
+      expect(host.state.getState().connections).toBe(2);
+      expect(host.state.getState().connectionLost).toBe(false);
+      expect(host.state.getState().status).toBe('ready');
+      host.destroy();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('does not take a pong that answers nothing for a sign of life', async () => {
+    vi.useFakeTimers();
+    try {
+      const { host, connect } = setup({ timers: realTimers });
+      const child = connect();
+      child.on('ping', () => child.send('pong', {}));
+      child.send('canvas:ready', {});
+      await vi.advanceTimersByTimeAsync(15_000);
+      expect(host.state.getState().connectionLost).toBe(true);
+      host.destroy();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

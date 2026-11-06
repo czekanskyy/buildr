@@ -102,11 +102,24 @@ describe('drag and drop in the layers panel', () => {
     expect(move).toBeDefined();
     await act(async () => move?.click());
     const dialog = document.querySelector('[role=dialog]');
-    const into = [...(dialog?.querySelectorAll('button') ?? [])].find((b) =>
+    const into = [...(dialog?.querySelectorAll('[role=option]') ?? [])].find((b) =>
       b.textContent?.includes('Box'),
     );
     expect(into).toBeDefined();
-    await act(async () => into?.click());
+    await act(async () => (into as HTMLElement).click());
+    expect(into?.getAttribute('aria-selected')).toBe('true');
+    // One tab stop in the list; Enter on an option selects it and does not move anything.
+    const options = [...(dialog?.querySelectorAll('[role=option]') ?? [])];
+    expect(options.filter((o) => o.getAttribute('tabindex') === '0')).toHaveLength(1);
+    await act(async () =>
+      into?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })),
+    );
+    expect(store.getState().doc.nodes['boxAAAAAA1']?.slots).toBeUndefined();
+    expect(document.querySelector('[role=dialog]')).not.toBeNull();
+    const confirm = [...(dialog?.querySelectorAll('button') ?? [])].find(
+      (b) => b.textContent === 'Move',
+    );
+    await act(async () => confirm?.click());
     expect(store.getState().doc.nodes['boxAAAAAA1']?.slots?.['default']).toEqual(['leafBBBBB1']);
     expect(store.getState().doc.nodes['root']?.slots?.['default']).toEqual(['boxAAAAAA1']);
   });

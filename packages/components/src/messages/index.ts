@@ -14,6 +14,7 @@ export const BUILT_IN_MESSAGES = {
     'form.sending': 'Sending…',
     'form.success': 'Thank you, your message was sent.',
     'form.error': 'Something went wrong. Please check the form and try again.',
+    'video.captions': 'Captions',
   },
   pl: {
     'link.newTab': 'otwiera się w nowej karcie',
@@ -25,6 +26,7 @@ export const BUILT_IN_MESSAGES = {
     'form.sending': 'Wysyłanie…',
     'form.success': 'Dziękujemy, wiadomość została wysłana.',
     'form.error': 'Coś poszło nie tak. Sprawdź formularz i spróbuj ponownie.',
+    'video.captions': 'Napisy',
   },
 } as const satisfies Readonly<Record<string, Readonly<Record<string, string>>>>;
 

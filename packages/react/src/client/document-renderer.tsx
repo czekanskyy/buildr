@@ -7,6 +7,7 @@ import {
   type DataSource,
   type Diagnostic,
   type DocumentLimits,
+  type HostCapabilities,
   type PreparedData,
   prepareRender,
   type Theme,
@@ -14,6 +15,7 @@ import {
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import type { ReactRegistry } from '../define/registry.ts';
 import type { Platform } from '../define/types.ts';
+import { normalizeCapabilities } from '../render/capabilities.ts';
 import { loadDocument } from '../render/pipeline.ts';
 import { renderTree } from '../render/render-tree.ts';
 import { BuildrStyles } from '../render/styles.tsx';
@@ -36,6 +38,8 @@ export interface DocumentRendererProps {
   readonly messages?: Readonly<Record<string, string>>;
   /** Which document the layout came from; forms use it to find their action. */
   readonly layoutRef?: string;
+  /** What the host permits (ADR-026). Author code renders only with `authorCode: true`. */
+  readonly capabilities?: HostCapabilities;
   readonly currentId?: string | number;
   readonly limits?: DocumentLimits;
   readonly cache?: CompileCache;
@@ -56,6 +60,8 @@ const NO_DATA: PreparedData = { media: {}, queries: {}, collectionsUsed: [], dia
  */
 export function DocumentRenderer(props: DocumentRendererProps) {
   const { document, registry, context, dataSource, currentId, cache, limits } = props;
+  // A string key, so a host passing a fresh capabilities object each render does not re-render.
+  const capabilitiesKey = JSON.stringify(normalizeCapabilities(props.capabilities));
   const loaded = useMemo(
     () => loadDocument(document, registry, limits),
     [document, registry, limits],
@@ -87,13 +93,15 @@ export function DocumentRenderer(props: DocumentRendererProps) {
     const doc = loaded.doc;
     if (doc === undefined || data === undefined) return undefined;
     const diagnostics: Diagnostic[] = [...loaded.diagnostics, ...data.diagnostics];
-    const styles = compileStyles(doc, props.theme);
+    const capabilities = normalizeCapabilities(JSON.parse(capabilitiesKey) as HostCapabilities);
+    const styles = compileStyles(doc, props.theme, { capabilities });
     diagnostics.push(...styles.diagnostics);
     const tree = renderTree(doc, {
       registry,
       data,
       context,
       platform: props.platform,
+      capabilities,
       diagnostics,
       ...(props.messages !== undefined ? { messages: props.messages } : {}),
       ...(props.layoutRef !== undefined ? { layoutRef: props.layoutRef } : {}),
@@ -112,6 +120,7 @@ export function DocumentRenderer(props: DocumentRendererProps) {
     props.messages,
     props.layoutRef,
     props.instrument,
+    capabilitiesKey,
   ]);
 
   const { onDiagnostics } = props;

@@ -49,7 +49,7 @@ describe('every template, against the default registry', () => {
     '%s is valid, accessible and current',
     async (_name, instance) => {
       const document = documentOf(instance);
-      expect(document.components['buildr/container'] ?? 2).toBe(2);
+      expect(document.components['buildr/container'] ?? 3).toBe(3);
       expect(Object.keys(document.components)).not.toContain('buildr/section');
       expect(Object.keys(document.components)).not.toContain('buildr/stack');
 

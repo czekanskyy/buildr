@@ -13,7 +13,7 @@ export const Divider = defineComponent({
   icon: 'separator-horizontal',
   contentCategories: ['flow'],
   props: dividerProps,
-  styles: { groups: ['size', 'spacing', 'border', 'effects', 'visibility'] },
+  styles: { groups: ['size', 'spacing', 'border', 'effects', 'motion', 'visibility'] },
   a11y: { element: 'hr' },
   runtime: 'shared',
   render: DividerView,

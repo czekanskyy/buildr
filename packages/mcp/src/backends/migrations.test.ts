@@ -19,8 +19,11 @@ import { createMemoryBackend } from './memory.ts';
 const ref = { collection: 'pages', id: 'old' };
 const migrations: ComponentMigrations = {
   'buildr/container': {
-    currentVersion: 2,
-    steps: [{ from: 1, to: 2, migrate: (props) => ({ ...props, display: s('block') }) }],
+    currentVersion: 3,
+    steps: [
+      { from: 1, to: 2, migrate: (props) => ({ ...props, display: s('block') }) },
+      { from: 2, to: 3, migrate: (props) => props },
+    ],
   },
 };
 function stored(version = 1, type = 'buildr/container'): BuilderDocument {
@@ -92,7 +95,7 @@ for (const kind of ['memory', 'file'] as const) {
       const tool = createDocumentTools({ store }).find((tool) => tool.name === 'open_document')!;
       const result = await tool.handler(ref, { backend: subject });
       expect(JSON.stringify(result)).toContain('component.version-mismatch');
-      expect(JSON.stringify(result)).toContain('manifest serves version 2');
+      expect(JSON.stringify(result)).toContain('manifest serves version 3');
     });
 
     it('migrates container@1 on load and persists the migrated document on save', async () => {
@@ -101,7 +104,7 @@ for (const kind of ['memory', 'file'] as const) {
       const loaded = await subject.load(ref);
       if (!loaded.ok) throw new Error(loaded.error.message);
       expect(loaded.value.readOnly).not.toBe(true);
-      expect(loaded.value.document.components['buildr/container']).toBe(2);
+      expect(loaded.value.document.components['buildr/container']).toBe(3);
       expect(loaded.value.document.nodes['aaaaaaaa01']?.props).toEqual({
         width: s('md'),
         display: s('block'),
@@ -123,7 +126,7 @@ for (const kind of ['memory', 'file'] as const) {
       const { backend: subject, file } = backend(original, migrations);
       const loaded = await subject.load(ref);
       if (!loaded.ok) throw new Error(loaded.error.message);
-      expect(loaded.value.document.components['buildr/container']).toBe(2);
+      expect(loaded.value.document.components['buildr/container']).toBe(3);
       expect(await subject.publish(ref, 0)).toMatchObject({
         ok: true,
         value: { status: 'published', revision: 1 },
@@ -196,12 +199,12 @@ it('pins inserted trees and templates to the current registry versions', async (
   const session = created.value;
   expect(templateFragment(session.registry, 'buildr/hero', undefined)).toMatchObject({
     ok: true,
-    value: { components: { 'buildr/container': 2 } },
+    value: { components: { 'buildr/container': 3 } },
   });
   const insert = createEditingTools({ store }).find((tool) => tool.name === 'insert_nodes')!;
   for (const input of [{ tree: { type: 'buildr/container' } }, { template: 'buildr/hero' }]) {
     const result = await insert.handler({ sessionId: session.id, ...input }, { backend });
     expect(result.isError).not.toBe(true);
-    expect(session.doc.components['buildr/container']).toBe(2);
+    expect(session.doc.components['buildr/container']).toBe(3);
   }
 });

@@ -5,7 +5,7 @@ import {
   ValidationError,
 } from 'payload';
 import { TEMPLATES_COLLECTION } from '../../data/resolve-layout.ts';
-import { allowed } from '../access.ts';
+import { allowed, authorCodePermitted } from '../access.ts';
 import { describeDiagnostics, processLayout } from '../hooks/process-layout.ts';
 import { configuredLocales } from '../locales.ts';
 import type { ResolvedOptions } from '../options.ts';
@@ -58,12 +58,19 @@ const singleDefault: CollectionBeforeChangeHook = async ({ data, originalDoc, re
 
 /** A stored layout is validated like the builder's: an invalid document never reaches the database. */
 const templateLayoutHook =
-  (options: Pick<ResolvedOptions, 'registry' | 'limits'>): FieldHook =>
-  ({ value, req }) => {
+  (options: Pick<ResolvedOptions, 'registry' | 'limits' | 'authorCode'>): FieldHook =>
+  async ({ value, req, originalDoc, operation }) => {
     if (value === undefined || value === null) return value;
     const result = processLayout(value, {
-      ...options,
+      registry: options.registry,
+      limits: options.limits,
       locales: configuredLocales(req.payload.config),
+      allowAuthorCode: await authorCodePermitted(options, req),
+      // A new template has no stored layout (on a duplicate, `originalDoc` is the source document).
+      previous:
+        operation === 'create'
+          ? undefined
+          : (originalDoc as Record<string, unknown> | undefined)?.['layout'],
     });
     if (!result.ok) {
       throw new ValidationError({

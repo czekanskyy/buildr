@@ -1,7 +1,7 @@
-import type { DragItem, DropTarget, Reason } from '@next-buildr/core';
+import type { DragItem, DropTarget, NodeId, Reason } from '@next-buildr/core';
 import { createStore, type StoreApi } from 'zustand/vanilla';
 import type { LayerRow } from '../panels/layers/flatten.ts';
-import type { EditorStore } from '../store/index.ts';
+import { type EditorStore, structureLockedIds } from '../store/index.ts';
 import { fragmentFor } from './fragment.ts';
 import { type Point, type Rect, rectContains, toCanvasPoint } from './geometry.ts';
 import { type TreeDropResult, treeDropTarget } from './tree-target.ts';
@@ -60,6 +60,8 @@ export interface DragEngineOptions {
   readonly surfaces: DragSurfaces;
   readonly raf?: (callback: () => void) => number;
   readonly caf?: (handle: number) => void;
+  /** Called when a drop is refused because a block in it is locked for structure. */
+  readonly onLocked?: (ids?: readonly NodeId[]) => void;
 }
 
 export interface DragEngine {
@@ -195,6 +197,11 @@ export function createDragEngine(options: DragEngineOptions): DragEngine {
         (id) => id !== snapshot.doc.root && Object.hasOwn(snapshot.doc.nodes, id),
       );
       if (ids.length === 0) return { ok: false, message: 'nothingToMove' };
+      // Core checks the lock from the parent on; a locked block itself stays where it is.
+      if (structureLockedIds(snapshot.doc, ids).length > 0) {
+        options.onLocked?.(ids);
+        return { ok: false, message: 'structureLocked' };
+      }
       const result = store.dispatch({ type: 'node.move', payload: { ids, ...target } });
       return result.ok ? { ok: true } : { ok: false, message: result.error.message };
     }

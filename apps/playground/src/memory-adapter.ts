@@ -3,11 +3,13 @@ import {
   type BuilderDocument,
   type DataContext,
   type LocaleConfig,
+  type MediaAsset,
   registryVersions,
   s,
 } from '@next-buildr/core';
 import type { DocumentAdapter, DocumentRef } from '@next-buildr/editor';
 import { doc } from '@next-buildr/test-utils';
+import { previewHref, previewStorageKey } from './preview-route.ts';
 import { registry } from './registry.ts';
 
 export const PLAYGROUND_LOCALES: LocaleConfig = {
@@ -64,7 +66,73 @@ interface Stored {
 
 const storageKey = (ref: DocumentRef) => `buildr:playground:${ref.collection}:${ref.id}`;
 
+const svg = (fill: string, label: string) =>
+  `data:image/svg+xml,${encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360"><rect width="640" height="360" fill="${fill}"/><text x="320" y="190" font-size="32" text-anchor="middle" fill="#fff" font-family="sans-serif">${label}</text></svg>`,
+  )}`;
+
+/**
+ * A small media library for trying the pickers: two images, two posters and two videos. The video
+ * files are placeholders (the playground ships no binaries); the picker, the stored references and
+ * the poster images work as they do with a real library.
+ */
+export const DEMO_MEDIA: readonly MediaAsset[] = [
+  {
+    id: 'demo-image-1',
+    url: svg('#2f6fed', 'Image 1'),
+    alt: 'Blue demo image',
+    width: 640,
+    height: 360,
+    mimeType: 'image/svg+xml',
+  },
+  {
+    id: 'demo-image-2',
+    url: svg('#1f8a5b', 'Image 2'),
+    alt: 'Green demo image',
+    width: 640,
+    height: 360,
+    mimeType: 'image/svg+xml',
+  },
+  {
+    id: 'demo-poster-1',
+    url: svg('#7a3fd1', 'Poster 1'),
+    alt: 'Demo poster, violet',
+    width: 640,
+    height: 360,
+    mimeType: 'image/svg+xml',
+  },
+  {
+    id: 'demo-poster-2',
+    url: svg('#c2410c', 'Poster 2'),
+    alt: 'Demo poster, orange',
+    width: 640,
+    height: 360,
+    mimeType: 'image/svg+xml',
+  },
+  {
+    id: 'demo-video-1',
+    url: '/media/demo-clip-1.mp4',
+    alt: 'Demo clip 1',
+    width: 1280,
+    height: 720,
+    mimeType: 'video/mp4',
+  },
+  {
+    id: 'demo-video-2',
+    url: '/media/demo-clip-2.webm',
+    alt: 'Demo clip 2',
+    width: 1280,
+    height: 720,
+    mimeType: 'video/webm',
+  },
+];
+
+const mimeMatches = (pattern: string, mimeType: string) =>
+  pattern.endsWith('/*') ? mimeType.startsWith(pattern.slice(0, -1)) : pattern === mimeType;
+
 export interface MemoryAdapterOptions {
+  /** Media the library offers; none unless given (the seeded visual runs keep an empty library). */
+  readonly media?: readonly MediaAsset[] | undefined;
   /** Where documents are kept; `localStorage` unless a test gives another. */
   readonly storage?: Pick<Storage, 'getItem' | 'setItem'> | undefined;
   readonly initial?: () => BuilderDocument;
@@ -167,7 +235,32 @@ export function createMemoryAdapter(options: MemoryAdapterOptions = {}): Documen
       mode: 'preview',
     }),
     listSamples: async () => SAMPLES,
-    media: { search: async () => ({ items: [] }) },
-    previewUrl: (ref) => `/gallery?fixture=hello&ref=${encodeURIComponent(ref.id)}`,
+    media: {
+      search: async ({ text, mimeTypes }) => ({
+        items: (options.media ?? []).filter(
+          (asset) =>
+            (mimeTypes === undefined || mimeTypes.some((m) => mimeMatches(m, asset.mimeType))) &&
+            (text === undefined ||
+              `${asset.alt ?? ''} ${asset.id}`.toLowerCase().includes(text.toLowerCase())),
+        ),
+      }),
+    },
+    previewUrl(ref) {
+      // preparePreview saves pending edits before this call. Copy the adapter's current
+      // document across the iframe boundary, including sessions with storage disabled.
+      const current = memory.get(storageKey(ref)) ?? read(ref);
+      try {
+        globalThis.sessionStorage.removeItem(previewStorageKey(ref));
+        if (current !== undefined) {
+          globalThis.sessionStorage.setItem(
+            previewStorageKey(ref),
+            JSON.stringify(current.document),
+          );
+        }
+      } catch {
+        // The preview reports unavailable when browser storage is blocked.
+      }
+      return previewHref(ref);
+    },
   };
 }

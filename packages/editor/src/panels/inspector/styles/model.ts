@@ -84,7 +84,11 @@ export const layerFor = (breakpoint: string | undefined): StyleLayer => {
 /** The units the property's grammar allows, and nothing else: they are all the unit menu offers. */
 export function unitsOf(def: StylePropertyDef): readonly string[] {
   const grammar = def.grammar;
-  return grammar.kind === 'composite' ? (grammar.length?.units ?? []) : [];
+  return grammar.kind === 'composite'
+    ? (grammar.length?.units ?? []).filter(
+        (unit) => def.group !== 'spacing' || ['px', '%', 'rem', 'vw'].includes(unit),
+      )
+    : [];
 }
 
 /** Whether the grammar takes a bare number (`opacity`, `lineHeight`) rather than only lengths. */
@@ -162,3 +166,96 @@ export function sliderOf(
   const { min, max } = grammar.number;
   return max - min <= 1 ? { min, max, step: 0.01 } : undefined;
 }
+
+/** How a numeric property is edited with a slider: its span, the unit it writes and what it shows. */
+export interface RangeSpec {
+  readonly min: number;
+  readonly max: number;
+  readonly step: number;
+  /** The unit written after the number (`px`, `deg`); empty for a bare number. */
+  readonly unit: string;
+  /** The value the property has while nothing sets it; the slider rests there and the field hints it. */
+  readonly fallback: number;
+  /** Bare numbers shown as a share (`1` as `100%`). */
+  readonly percent?: boolean;
+}
+
+const px = (min: number, max: number, fallback = 0): RangeSpec => ({
+  min,
+  max,
+  step: 1,
+  unit: 'px',
+  fallback,
+});
+const deg = (min: number, max: number): RangeSpec => ({
+  min,
+  max,
+  step: 1,
+  unit: 'deg',
+  fallback: 0,
+});
+const ms = (min: number, max: number, step: number, fallback: number): RangeSpec => ({
+  min,
+  max,
+  step,
+  unit: 'ms',
+  fallback,
+});
+const share = (min: number, max: number, fallback: number): RangeSpec => ({
+  min,
+  max,
+  step: 0.01,
+  unit: '',
+  fallback,
+  percent: true,
+});
+
+/** Sliders of the effects group (docs/design/template: shadow, filters, transforms). */
+export const RANGES: Readonly<Record<string, RangeSpec>> = {
+  'effects.shadowX': px(-40, 40),
+  'effects.shadowY': px(-40, 40),
+  'effects.shadowBlur': px(0, 80),
+  'effects.shadowSpread': px(-40, 40),
+  'effects.textShadowX': px(-10, 10),
+  'effects.textShadowY': px(-10, 10),
+  'effects.textShadowBlur': px(0, 20),
+  'effects.blur': px(0, 20),
+  'effects.backdropBlur': px(0, 40),
+  'effects.brightness': share(0, 2, 1),
+  'effects.contrast': share(0, 2, 1),
+  'effects.saturate': share(0, 2, 1),
+  'effects.grayscale': share(0, 1, 0),
+  'effects.sepia': share(0, 1, 0),
+  'effects.invert': share(0, 1, 0),
+  'effects.hueRotate': deg(-180, 180),
+  'effects.rotate': deg(-180, 180),
+  'effects.skewX': deg(-45, 45),
+  'effects.skewY': deg(-45, 45),
+  'effects.scale': share(0.5, 1.5, 1),
+  'effects.opacity': share(0, 1, 1),
+  // Motion (ADR-027): the defaults are the compiler's (600ms entrance, 200ms hover).
+  'motion.entranceDuration': ms(0, 2000, 50, 600),
+  'motion.entranceDelay': ms(0, 2000, 50, 0),
+  'motion.hoverDuration': ms(0, 1000, 20, 200),
+  'motion.scrollParallax': { min: 0, max: 200, step: 5, unit: 'px', fallback: 0 },
+};
+
+/** What an unset keyword property does, so an empty select can say it instead of showing a dash. */
+export const KEYWORD_DEFAULTS: Readonly<Record<string, string>> = {
+  'effects.blendMode': 'normal',
+  'effects.shadowInset': 'outset',
+  'effects.cursor': 'auto',
+  'effects.transformOrigin': 'center',
+  'motion.entrance': 'none',
+  'motion.entranceEasing': 'ease-out',
+  'motion.hover': 'none',
+  'motion.scrollReveal': 'none',
+};
+
+/** The number a slider position stands for, written as the text the grammar takes. */
+export const rangeText = (spec: RangeSpec, value: number): string =>
+  `${Number(value.toFixed(4))}${spec.unit}`;
+
+/** The text a slider's bubble shows. */
+export const rangeShown = (spec: RangeSpec, value: number): string =>
+  spec.percent === true ? `${Math.round(value * 100)}%` : `${Number(value.toFixed(2))}${spec.unit}`;

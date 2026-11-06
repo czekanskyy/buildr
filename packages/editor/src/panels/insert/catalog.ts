@@ -49,6 +49,19 @@ function templateItem(template: TemplateDefinition): PaletteItem {
 /** A thumbnail is shown only when it is an address of an image, never anything a page could run. */
 export function safeThumbnail(value: string | undefined): string | undefined {
   if (value === undefined) return undefined;
+  if (value.startsWith('data:image/svg+xml,')) {
+    try {
+      const svg = decodeURIComponent(value.slice('data:image/svg+xml,'.length));
+      // Only the manifest wireframe generator's fixed SVG vocabulary is accepted.
+      return /^<svg xmlns='http:\/\/www\.w3\.org\/2000\/svg' viewBox='0 0 160 100'>(?:<path fill='#[0-9a-f]{6}' d='[M0-9 .h/vz-]+'\/>)*<\/svg>$/i.test(
+        svg,
+      )
+        ? value
+        : undefined;
+    } catch {
+      return undefined;
+    }
+  }
   return /^(https?:\/\/|\/(?!\/)|data:image\/(png|jpe?g|gif|webp|avif);)/i.test(value)
     ? value
     : undefined;
@@ -73,6 +86,33 @@ export function paletteItems(manifest: RegistryManifest): {
 export function filterItems(items: readonly PaletteItem[], query: string): PaletteItem[] {
   const words = query.toLowerCase().split(/\s+/).filter(Boolean);
   return items.filter((item) => words.every((word) => item.haystack.includes(word)));
+}
+
+/** The blocks of the "Basic" group, in this order; those the registry lacks are left out. */
+export const BASIC_TYPES: readonly string[] = [
+  'buildr/heading',
+  'buildr/text',
+  'buildr/button',
+  'buildr/image',
+  'buildr/list',
+  'buildr/quote',
+];
+
+/** What "Recently used" shows until something was used: the first three basic blocks. */
+export const DEFAULT_RECENT: readonly string[] = BASIC_TYPES.slice(0, 3);
+
+/** Moves the basic blocks out of their categories into a "basic" group at the top. */
+export function withBasicGroup(groups: readonly PaletteGroup[]): PaletteGroup[] {
+  const all = groups.flatMap((group) => group.items);
+  const basic = BASIC_TYPES.flatMap((type) => all.find((item) => item.id === type) ?? []);
+  if (basic.length === 0) return [...groups];
+  const taken = new Set(basic.map((item) => item.id));
+  return [
+    { category: 'basic', items: basic },
+    ...groups
+      .map((group) => ({ ...group, items: group.items.filter((item) => !taken.has(item.id)) }))
+      .filter((group) => group.items.length > 0),
+  ];
 }
 
 /** The order categories appear in; a category this list does not know follows, alphabetically. */

@@ -1,5 +1,6 @@
 import type { Endpoint } from 'payload';
 import { saveRequestSchema, saveResponseSchema } from '../../contract.ts';
+import { authorCodePermitted } from '../access.ts';
 import { processLayout } from '../hooks/process-layout.ts';
 import { configuredLocales } from '../locales.ts';
 import {
@@ -45,6 +46,8 @@ export const saveEndpoint = (env: EndpointEnv): Endpoint => ({
     const layout = processLayout(parsed.data.document, {
       ...env.options,
       locales: configuredLocales(req.payload.config),
+      allowAuthorCode: await authorCodePermitted(env.options, req),
+      previous: found.value['layout'],
     });
     if (!layout.ok) return invalid(layout.diagnostics);
 

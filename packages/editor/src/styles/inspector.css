@@ -1,0 +1,281 @@
+/* PB-157 WP4: inspector shell (header, tabs, rail, field rows, empty state). Loads after panels.css. */
+
+/* Header: accent-soft icon well, title with a subtitle, actions. */
+.buildr-editor .bd-inspector-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--bd-control-md);
+  height: var(--bd-control-md);
+  border-radius: var(--bd-radius-md);
+  background: var(--bd-accent-soft);
+  color: var(--bd-accent);
+  flex: none;
+}
+.buildr-editor .bd-inspector-titles {
+  flex: 1;
+  min-width: 0;
+}
+.buildr-editor .bd-inspector-subtitle {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--bd-text-xs);
+  line-height: var(--bd-leading-xs);
+  color: var(--bd-text-subtle);
+}
+.buildr-editor .bd-inspector-actions {
+  align-items: center;
+}
+.buildr-editor .bd-inspector-search {
+  flex: none;
+}
+
+/* Tabs fill the width, label and dot sit together. */
+.buildr-editor .bd-inspector .bd-tab {
+  justify-content: center;
+}
+
+/* Collapsed rail: vertical icon tabs. */
+.buildr-editor .bd-inspector-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--bd-space-1);
+  padding: var(--bd-space-2) 0;
+}
+.buildr-editor .bd-inspector-rail-tabs {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--bd-space-1);
+}
+.buildr-editor .bd-inspector-rail-tabs [role="tab"][aria-selected="true"] {
+  background: var(--bd-accent-soft);
+  color: var(--bd-accent);
+}
+
+/* Empty state action. */
+.buildr-editor .bd-inspector-page-settings {
+  margin-top: var(--bd-space-2);
+}
+
+/* Property fields: the label row (label wraps, reset, icon-only value modes) and the control under it.
+   A switch is short enough to sit beside the label. */
+.buildr-editor .bd-field[data-prop][data-layout] {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+.buildr-editor .bd-field[data-prop][data-layout] > .bd-field-head {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+}
+.buildr-editor .bd-field[data-prop][data-layout] > .bd-field-body {
+  display: contents;
+}
+.buildr-editor .bd-field[data-prop][data-layout] > .bd-field-body > .bd-value {
+  display: contents;
+}
+.buildr-editor
+  .bd-field[data-prop][data-layout]
+  > .bd-field-body
+  > .bd-value
+  > :not(.bd-value-modes) {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  min-width: 0;
+}
+.buildr-editor .bd-field[data-prop][data-layout] > .bd-field-body > .bd-value > .bd-value-modes {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+}
+.buildr-editor .bd-field[data-prop][data-layout] .bd-value-modes .bd-segment {
+  min-width: var(--bd-control-sm);
+  padding: 0 var(--bd-space-1);
+}
+/* A switch shares the label's row: label, switch, then the bind modes at the end. */
+.buildr-editor .bd-field[data-prop][data-layout][data-kind="boolean"] {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+}
+.buildr-editor
+  .bd-field[data-prop][data-layout][data-kind="boolean"]
+  > .bd-field-body
+  > .bd-value[data-mode="static"]
+  > :not(.bd-value-modes) {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+}
+.buildr-editor
+  .bd-field[data-prop][data-layout][data-kind="boolean"]
+  > .bd-field-body
+  > .bd-value
+  > .bd-value-modes {
+  grid-column: 3;
+}
+.buildr-editor .bd-field[data-prop][data-layout][data-kind="boolean"] > .bd-field-head {
+  grid-row: 1;
+}
+.buildr-editor .bd-field[data-prop][data-layout] > .bd-field-hint {
+  grid-column: 1 / -1;
+  margin-top: calc(-1 * var(--bd-space-1));
+}
+.buildr-editor .bd-field-label {
+  overflow-wrap: anywhere;
+  white-space: normal;
+  color: var(--bd-text-muted);
+}
+.buildr-editor .bd-field[data-prop]:has(.bd-field-reset) .bd-field-label {
+  color: var(--bd-text);
+}
+
+/* The visibility-condition note. */
+.buildr-editor .bd-field.bd-note {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-space-2);
+  margin: var(--bd-space-2) 0;
+}
+.buildr-editor .bd-note-text {
+  flex: 1;
+  min-width: 0;
+}
+.buildr-editor .bd-note-text p {
+  margin: 0;
+}
+
+/* Template geometry: compact icon, tabs before the inset search. */
+.buildr-editor .bd-inspector-icon {
+  box-sizing: border-box;
+  padding: 0;
+}
+.buildr-editor .bd-inspector-head {
+  padding: var(--bd-space-3) var(--bd-space-4);
+}
+.buildr-editor .bd-inspector-title {
+  font-size: var(--bd-text-lg);
+  line-height: var(--bd-leading-lg);
+}
+.buildr-editor .bd-inspector-search {
+  margin: 0 0 var(--bd-space-3);
+  width: 100%;
+}
+.buildr-editor .bd-advanced-group {
+  padding: var(--bd-space-3) 0;
+  border-bottom: 1px solid var(--bd-border);
+}
+.buildr-editor .bd-advanced-group h4 {
+  margin: 0 0 var(--bd-space-3);
+  font-size: var(--bd-text-sm);
+}
+.buildr-editor .bd-visibility-chips {
+  display: flex;
+  gap: var(--bd-space-1);
+}
+.buildr-editor .bd-advanced-position {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bd-space-3);
+  margin-top: var(--bd-space-2);
+}
+.buildr-editor .bd-advanced-position input {
+  width: 100px;
+}
+
+.buildr-editor .bd-inspector[data-state-controls="false"] .bd-styles > .bd-segmented:first-child {
+  display: none;
+}
+.buildr-editor .bd-visibility-chips .bd-btn {
+  flex: 1;
+  text-transform: capitalize;
+}
+.buildr-editor .bd-visibility-chips [aria-pressed="true"] {
+  color: var(--bd-accent);
+  background: var(--bd-accent-soft);
+}
+
+.buildr-editor .bd-advanced-group > h4 {
+  margin: 0;
+}
+.buildr-editor .bd-advanced-group > h4 button {
+  width: 100%;
+  text-align: left;
+}
+.buildr-editor .bd-advanced-group > div {
+  padding-top: var(--bd-space-3);
+}
+
+/* Author code (ADR-026): code fields, their problems and the attribute rows. */
+.buildr-editor .bd-code {
+  font-family: var(--bd-font-mono);
+  font-size: var(--bd-text-xs);
+  line-height: var(--bd-leading-md);
+}
+.buildr-editor .bd-code-preview {
+  margin: 0;
+  padding: var(--bd-space-2);
+  max-height: 160px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--bd-font-mono);
+  font-size: var(--bd-text-xs);
+  color: var(--bd-text-muted);
+  background: var(--bd-surface-2);
+  border: 1px solid var(--bd-border);
+  border-radius: var(--bd-radius-sm);
+}
+.buildr-editor .bd-author-field,
+.buildr-editor .bd-html-field,
+.buildr-editor .bd-html-note {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-space-2);
+}
+.buildr-editor .bd-author-problems {
+  padding: var(--bd-space-2);
+  font-size: var(--bd-text-xs);
+  color: var(--bd-danger-text);
+  background: var(--bd-danger-soft);
+  border-radius: var(--bd-radius-sm);
+}
+.buildr-editor .bd-author-problems[data-kind="removed"] {
+  color: var(--bd-text);
+  background: var(--bd-warning-soft);
+}
+.buildr-editor .bd-author-problems ul {
+  margin: var(--bd-space-1) 0 0;
+  padding-left: var(--bd-space-4);
+}
+.buildr-editor .bd-author-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-space-2);
+}
+.buildr-editor .bd-author-ok {
+  font-size: var(--bd-text-xs);
+  color: var(--bd-success);
+}
+.buildr-editor .bd-author-attrs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.buildr-editor .bd-author-attr {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: var(--bd-space-1);
+  align-items: center;
+}
+.buildr-editor .bd-author-off {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-space-1);
+}

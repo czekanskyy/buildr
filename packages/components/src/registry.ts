@@ -12,6 +12,7 @@ import { Form } from './form/definition.ts';
 import { Grid } from './grid/definition.ts';
 import { Heading } from './heading/definition.ts';
 import { IconComponent } from './icon/definition.ts';
+import { Iframe } from './iframe/definition.ts';
 import { Image } from './image/definition.ts';
 import { Input } from './input/definition.ts';
 import { Link } from './link/definition.ts';
@@ -25,6 +26,7 @@ import { Select } from './select/definition.ts';
 import { contentTemplates, marketingTemplates } from './templates/index.ts';
 import { Text } from './text/definition.ts';
 import { Textarea } from './textarea/definition.ts';
+import { Video } from './video/definition.ts';
 
 /** Every component of the library, layout first, in the order the inserter lists them. */
 export const defaultComponents: readonly ComponentDefinition[] = [
@@ -37,6 +39,8 @@ export const defaultComponents: readonly ComponentDefinition[] = [
   Button,
   Link,
   Image,
+  Video,
+  Iframe,
   IconComponent,
   List,
   ListItem,

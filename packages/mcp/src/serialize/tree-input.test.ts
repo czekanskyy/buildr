@@ -58,7 +58,7 @@ describe('parseTreeInput', () => {
     const error = failure({ type: 'buildr/heading', props: { txt: 'x' } });
     expect(error.issues[0]).toMatchObject({ path: 'props.txt' });
     expect(error.issues[0]?.message).toContain('Did you mean "text"');
-    expect(error.issues[0]?.validOptions).toEqual(['text', 'level']);
+    expect(error.issues[0]?.validOptions).toEqual(['text', 'level', 'tag']);
   });
 
   it('checks prop values against their kind', () => {

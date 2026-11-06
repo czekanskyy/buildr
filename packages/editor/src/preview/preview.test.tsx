@@ -14,7 +14,7 @@ import { createPersistence, PersistenceProvider } from '../persistence/index.ts'
 import { createEditorStore, EditorStoreProvider } from '../store/index.ts';
 import { ToastProvider } from '../ui/index.ts';
 import { isSafePreviewUrl } from './prepare.ts';
-import { usePreview } from './preview.tsx';
+import { previewSandbox, usePreview } from './preview.tsx';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -162,5 +162,25 @@ describe('preview', () => {
     await run();
     expect(document.querySelector('iframe')).toBeNull();
     expect(container.textContent).toContain('not a web address');
+  });
+});
+
+describe('previewSandbox', () => {
+  const editor = 'https://editor.example/app';
+  it('keeps allow-same-origin only for a preview on the editor origin', () => {
+    expect(previewSandbox('/preview?x=1', editor)).toBe(
+      'allow-scripts allow-same-origin allow-forms allow-popups',
+    );
+    expect(previewSandbox('https://editor.example/preview', editor)).toContain('allow-same-origin');
+  });
+  it('omits it for another origin, another port or an unparseable URL', () => {
+    for (const url of [
+      'https://site.example/p',
+      'https://editor.example:8443/p',
+      'http://editor.example/p',
+    ]) {
+      expect(previewSandbox(url, editor)).toBe('allow-scripts allow-forms allow-popups');
+    }
+    expect(previewSandbox('http://[bad', editor)).toBe('allow-scripts allow-forms allow-popups');
   });
 });

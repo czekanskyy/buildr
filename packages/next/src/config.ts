@@ -1,4 +1,10 @@
-import type { CompileCache, DataContext, DataSource, Theme } from '@next-buildr/core';
+import type {
+  CompileCache,
+  DataContext,
+  DataSource,
+  HostCapabilities,
+  Theme,
+} from '@next-buildr/core';
 import type { Platform, ReactRegistry } from '@next-buildr/react';
 
 export interface BuildrConfigInput {
@@ -13,6 +19,11 @@ export interface BuildrConfigInput {
   readonly onError?: (error: unknown) => void;
   /** Reuses parsed expressions across renders. */
   readonly cache?: CompileCache;
+  /**
+   * What the host permits (ADR-026, ADR-028): `authorCode`, `externalMediaHosts`, `iframeHosts`.
+   * Forwarded to the renderer; off by default. Pass the same value to the editor's canvas.
+   */
+  readonly capabilities?: HostCapabilities;
 }
 
 export type BuildrConfig = Readonly<BuildrConfigInput>;

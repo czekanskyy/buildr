@@ -11,7 +11,15 @@ import {
 } from '@next-buildr/core';
 import { type ReactNode, useEffect, useId, useMemo, useState } from 'react';
 import { type MessageKey, useT } from '../../../messages/index.tsx';
-import { Icon, type IconName, Input, SegmentedControl, Select } from '../../../ui/index.ts';
+import {
+  Icon,
+  IconButton,
+  type IconName,
+  Input,
+  Popover,
+  SegmentedControl,
+  Select,
+} from '../../../ui/index.ts';
 import {
   type BindingStatus,
   bindingOptions,
@@ -83,14 +91,14 @@ export function ValueEditor({
   const t = useT();
   const [pending, setPending] = useState<Mode | null>(null);
   const saved = modeOf(raw);
-  const mode = saved === 'static' && pending !== null ? pending : saved;
+  const mode = pending ?? saved;
   const canBind = def.accepts.length > 0;
 
   if (!canBind) {
     return raw !== undefined && raw.kind !== 'static' ? (
       <ValueChip def={def} value={raw} />
     ) : (
-      <>{staticControl}</>
+      staticControl
     );
   }
 
@@ -111,18 +119,32 @@ export function ValueEditor({
 
   return (
     <div className="bd-value" data-mode={mode}>
-      <SegmentedControl
-        className="bd-value-modes"
-        label={`${label}: ${t('values.mode')}`}
-        value={mode}
-        disabled={disabled}
-        options={modes.map((entry) => ({
-          value: entry.mode,
-          label: t(entry.key),
-          icon: entry.icon,
-        }))}
-        onValueChange={(next) => choose(next as Mode)}
-      />
+      <div className="bd-value-modes">
+        <Popover
+          label={`${label}: ${t('values.mode')}`}
+          trigger={
+            <IconButton
+              variant="ghost"
+              icon="database"
+              label={`${label}: ${t('values.mode')}`}
+              disabled={disabled}
+            />
+          }
+        >
+          <SegmentedControl
+            label={`${label}: ${t('values.mode')}`}
+            value={mode}
+            disabled={disabled}
+            options={modes.map((entry) => ({
+              value: entry.mode,
+              label: t(entry.key),
+              icon: entry.icon,
+              iconOnly: true,
+            }))}
+            onValueChange={(next) => choose(next as Mode)}
+          />
+        </Popover>
+      </div>
       {mode === 'static' ? staticControl : null}
       {mode === 'binding' ? (
         <BindingEditor

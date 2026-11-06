@@ -1,0 +1,871 @@
+/* PB-157 WP5b: Style tab widgets (box model, corners, shadow, pad, slider, colour, reset). Tokens only. */
+.buildr-editor .bd-flabel {
+  color: var(--bd-text-muted);
+  font-size: var(--bd-text-sm);
+  font-weight: var(--bd-weight-medium);
+}
+.buildr-editor .bd-hint {
+  margin: 0;
+  color: var(--bd-text-subtle);
+  font-size: var(--bd-text-xs);
+  line-height: var(--bd-leading-xs);
+}
+
+/* --- reset field ---------------------------------------------------------------------------- */
+.buildr-editor .bd-field-reset.bd-reset {
+  flex: none;
+  opacity: 1;
+  width: var(--bd-control-xs);
+  height: var(--bd-control-xs);
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--bd-text-subtle);
+}
+.buildr-editor .bd-field-reset.bd-reset:hover {
+  background: var(--bd-surface-hover);
+  color: var(--bd-accent);
+}
+.buildr-editor .bd-reset-slot {
+  flex: none;
+  width: var(--bd-control-xs);
+}
+
+/* --- link toggle and unit select ------------------------------------------------------------ */
+.buildr-editor .bd-sides-link[aria-pressed="true"] {
+  background: var(--bd-accent-soft);
+  color: var(--bd-accent);
+}
+.buildr-editor .bd-unit-select {
+  height: var(--bd-control-sm);
+  border-color: transparent;
+  background: var(--bd-surface-2);
+  color: var(--bd-text-subtle);
+  font-weight: var(--bd-weight-medium);
+  cursor: pointer;
+}
+.buildr-editor .bd-unit-select:hover:not(:disabled) {
+  border-color: var(--bd-border-strong);
+  color: var(--bd-text);
+}
+
+/* --- box model: bars, then margin around padding ---------------------------------------------- */
+.buildr-editor .bd-boxmodel {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-space-2);
+}
+.buildr-editor .bd-boxbar .bd-style-head {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-space-1);
+}
+.buildr-editor .bd-boxbar .bd-style-head .bd-field-label {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--bd-space-1);
+}
+.buildr-editor .bd-boxbar .bd-field-label::before {
+  content: "";
+  flex: none;
+  width: var(--bd-boxbar-w);
+  height: var(--bd-boxbar-h);
+  border-radius: var(--bd-radius-xs);
+  background: var(--bd-override);
+}
+.buildr-editor .bd-boxbar[data-kind="padding"] .bd-field-label::before {
+  background: var(--bd-success);
+}
+.buildr-editor .bd-boxbar .bd-source-dot,
+.buildr-editor .bd-boxbar .bd-token-trigger {
+  display: none;
+}
+.buildr-editor .bd-boxbar .bd-style-head > .bd-unit-select {
+  order: 1;
+  width: 56px;
+}
+.buildr-editor .bd-boxbar .bd-style-head > .bd-sides-link {
+  order: 2;
+}
+.buildr-editor .bd-boxbar .bd-style-head > .bd-device-indicator,
+.buildr-editor .bd-boxbar .bd-style-head > .bd-reset-slot,
+.buildr-editor .bd-boxbar .bd-style-head > .bd-reset {
+  order: 3;
+}
+.buildr-editor .bd-style-ring {
+  display: contents;
+}
+.buildr-editor .bd-wbox {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--bd-box-cols);
+  grid-template-rows: var(--bd-box-rows);
+  height: var(--bd-box-h);
+  border: var(--bd-border-width) dashed var(--bd-border-strong);
+  border-radius: var(--bd-radius-md);
+  background: var(--bd-override-soft);
+}
+.buildr-editor .bd-wbox--in {
+  grid-column: 2;
+  grid-row: 2;
+  grid-template-columns: var(--bd-box-in-cols);
+  grid-template-rows: var(--bd-box-in-rows);
+  height: auto;
+  border-style: solid;
+  border-color: var(--bd-success);
+  border-radius: var(--bd-radius-sm);
+  background: var(--bd-success-soft);
+}
+.buildr-editor .bd-wbox > .bd-style-ring {
+  display: contents;
+}
+.buildr-editor .bd-wbox__label {
+  position: absolute;
+  top: var(--bd-space-1);
+  left: var(--bd-space-2);
+  color: var(--bd-override);
+  font-size: var(--bd-box-label-fs);
+  font-weight: var(--bd-weight-semibold);
+}
+.buildr-editor .bd-wbox--in .bd-wbox__label {
+  color: var(--bd-success);
+}
+.buildr-editor .bd-wbox__v {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.buildr-editor .bd-wbox__v[data-at="top"] {
+  grid-column: 2;
+  grid-row: 1;
+}
+.buildr-editor .bd-wbox__v[data-at="right"] {
+  grid-column: 3;
+  grid-row: 2;
+}
+.buildr-editor .bd-wbox__v[data-at="bottom"] {
+  grid-column: 2;
+  grid-row: 3;
+}
+.buildr-editor .bd-wbox__v[data-at="left"] {
+  grid-column: 1;
+  grid-row: 2;
+}
+.buildr-editor .bd-wbox__v .bd-side-field {
+  width: var(--bd-box-v-w);
+}
+.buildr-editor .bd-wbox__v .bd-input {
+  width: 100%;
+  min-height: 0;
+  height: var(--bd-control-xs);
+  padding: 0;
+  border: var(--bd-border-width) solid transparent;
+  border-radius: var(--bd-radius-sm);
+  background: transparent;
+  color: var(--bd-text);
+  font-size: var(--bd-text-xs);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.buildr-editor .bd-wbox__v .bd-input:hover {
+  border-color: var(--bd-border-strong);
+  background: var(--bd-surface);
+}
+.buildr-editor .bd-wbox__v .bd-input:focus {
+  border-color: var(--bd-accent);
+  background: var(--bd-surface);
+  box-shadow: 0 0 0 var(--bd-focus-width) var(--bd-accent-soft);
+}
+.buildr-editor .bd-wbox__v .bd-side-field[data-source="set"] .bd-input {
+  color: var(--bd-accent);
+  font-weight: var(--bd-weight-semibold);
+}
+.buildr-editor .bd-wbox__core {
+  grid-column: 2;
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--bd-border-width) solid var(--bd-border);
+  border-radius: var(--bd-radius-sm);
+  background: var(--bd-surface);
+  color: var(--bd-text-subtle);
+  font-size: var(--bd-box-core-fs);
+}
+
+/* --- corners ---------------------------------------------------------------------------------- */
+.buildr-editor .bd-wcorners {
+  display: grid;
+  grid-template-columns: var(--bd-corners-cols);
+  grid-template-rows: var(--bd-corners-rows);
+  gap: var(--bd-space-1);
+  align-items: center;
+}
+.buildr-editor .bd-wcorners__prev {
+  grid-column: 2;
+  grid-row: 2;
+  height: var(--bd-corners-prev-h);
+  border: var(--bd-focus-width) solid var(--bd-accent);
+  background: var(--bd-accent-soft);
+  transition: border-radius var(--bd-duration-base) var(--bd-ease-standard);
+}
+.buildr-editor .bd-wcorners__v[data-part="topLeft"] {
+  grid-column: 1;
+  grid-row: 1;
+}
+.buildr-editor .bd-wcorners__v[data-part="topRight"] {
+  grid-column: 3;
+  grid-row: 1;
+}
+.buildr-editor .bd-wcorners__v[data-part="bottomLeft"] {
+  grid-column: 1;
+  grid-row: 3;
+}
+.buildr-editor .bd-wcorners__v[data-part="bottomRight"] {
+  grid-column: 3;
+  grid-row: 3;
+}
+
+/* --- alignment pad ---------------------------------------------------------------------------- */
+.buildr-editor .bd-padrow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--bd-space-3);
+}
+.buildr-editor .bd-wpad {
+  display: grid;
+  flex: none;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--bd-space-half);
+  width: var(--bd-pad-w);
+  height: var(--bd-pad-h);
+  padding: var(--bd-space-1);
+  border-radius: var(--bd-radius-md);
+  background: var(--bd-surface-2);
+}
+.buildr-editor .bd-wpad button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--bd-radius-sm);
+  background: transparent;
+  cursor: pointer;
+  transition: background var(--bd-duration-fast) var(--bd-ease-standard);
+}
+.buildr-editor .bd-wpad button::after {
+  content: "";
+  width: var(--bd-pad-w-2);
+  height: var(--bd-pad-h-2);
+  border-radius: var(--bd-radius-pill);
+  background: var(--bd-border-strong);
+  transition: all var(--bd-duration-base) var(--bd-ease-standard);
+}
+.buildr-editor .bd-wpad button:hover:not(:disabled) {
+  background: var(--bd-surface-hover);
+}
+.buildr-editor .bd-wpad button:hover:not(:disabled)::after {
+  background: var(--bd-text-muted);
+}
+.buildr-editor .bd-wpad button:focus-visible {
+  outline: var(--bd-focus-width) solid var(--bd-focus);
+}
+.buildr-editor .bd-wpad button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.buildr-editor .bd-wpad button[aria-checked="true"] {
+  background: var(--bd-surface);
+  box-shadow: var(--bd-elevation-1);
+}
+.buildr-editor .bd-wpad button[aria-checked="true"]::after {
+  width: var(--bd-icon-xs);
+  height: var(--bd-icon-xs);
+  border-radius: var(--bd-radius-xs);
+  background: var(--bd-accent);
+}
+.buildr-editor .bd-wpad--col button[aria-checked="true"]::after {
+  width: var(--bd-pad--col-w);
+  height: var(--bd-pad--col-h);
+}
+.buildr-editor .bd-wpad__caption {
+  min-width: 0;
+  margin: 0;
+  color: var(--bd-text-subtle);
+  font-size: var(--bd-text-xs);
+  line-height: var(--bd-leading-xs);
+}
+.buildr-editor .bd-wpad__caption strong {
+  display: block;
+  margin-bottom: var(--bd-space-1);
+  color: var(--bd-text);
+  font-size: var(--bd-text-sm);
+  line-height: var(--bd-leading-sm);
+  font-weight: var(--bd-weight-medium);
+}
+
+/* --- range slider with a value bubble ------------------------------------------------------- */
+.buildr-editor .bd-slider {
+  position: relative;
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  min-width: 0;
+  height: var(--bd-control-md);
+}
+.buildr-editor .bd-slider input[type="range"] {
+  width: 100%;
+  height: var(--bd-range-h);
+  margin: 0;
+  appearance: none;
+  border-radius: var(--bd-radius-pill);
+  background: linear-gradient(
+    to right,
+    var(--bd-accent) 0 var(--p),
+    var(--bd-surface-hover) var(--p) 100%
+  );
+  outline: none;
+  cursor: pointer;
+}
+.buildr-editor .bd-slider input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: var(--bd-range-w);
+  height: var(--bd-range-h-2);
+  border: var(--bd-focus-width) solid var(--bd-accent);
+  border-radius: var(--bd-radius-pill);
+  background: var(--bd-surface);
+  box-shadow: var(--bd-elevation-1);
+  transition: transform var(--bd-duration-fast) var(--bd-ease-standard);
+}
+.buildr-editor .bd-slider input[type="range"]::-moz-range-thumb {
+  width: var(--bd-icon-xs);
+  height: var(--bd-icon-xs);
+  border: var(--bd-focus-width) solid var(--bd-accent);
+  border-radius: var(--bd-radius-pill);
+  background: var(--bd-surface);
+}
+.buildr-editor .bd-slider input[type="range"]:hover::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+.buildr-editor .bd-slider input[type="range"]:focus-visible::-webkit-slider-thumb {
+  box-shadow: var(--bd-range-sh);
+}
+.buildr-editor .bd-slider input[type="range"]:disabled {
+  background: var(--bd-surface-hover);
+  cursor: not-allowed;
+}
+.buildr-editor .bd-slider__bubble {
+  position: absolute;
+  bottom: var(--bd-range-bubble-bottom);
+  left: var(--p);
+  z-index: var(--bd-z-tooltip);
+  padding: var(--bd-space-half) var(--bd-space-1);
+  border-radius: var(--bd-radius-sm);
+  background: var(--bd-text);
+  color: var(--bd-surface);
+  font-size: var(--bd-text-xs);
+  line-height: var(--bd-leading-xs);
+  font-weight: var(--bd-weight-medium);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: var(--bd-range-bubble-tf);
+  transition:
+    opacity var(--bd-duration-fast) var(--bd-ease-enter),
+    transform var(--bd-duration-fast) var(--bd-ease-enter);
+}
+.buildr-editor .bd-slider:active .bd-slider__bubble,
+.buildr-editor .bd-slider:focus-within .bd-slider__bubble {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+/* The slider shares its row with the number field. */
+.buildr-editor .bd-style-inline:has(.bd-slider) {
+  grid-template-columns: minmax(0, 1fr);
+}
+.buildr-editor .bd-style-inline:has(.bd-slider) > :not(.bd-style-head) {
+  grid-column: 1;
+}
+.buildr-editor .bd-style-value:has(> .bd-slider) {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bd-space-2);
+}
+.buildr-editor .bd-style-value:has(> .bd-slider) > .bd-slider {
+  order: 0;
+}
+.buildr-editor .bd-style-value:has(> .bd-slider) > .bd-style-input {
+  order: 1;
+  flex: 0 0 40%;
+}
+.buildr-editor .bd-style-value:has(> .bd-slider) > .bd-style-error,
+.buildr-editor .bd-style-value:has(> .bd-slider) > .bd-style-source {
+  order: 2;
+  flex: 1 0 100%;
+}
+.buildr-editor .bd-gradient-angle .bd-slider {
+  flex: 1 1 100%;
+}
+
+/* --- colour field: swatch, code, token picker -------------------------------------------------- */
+.buildr-editor .bd-wcolor {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: var(--bd-space-1);
+  min-width: 0;
+  height: var(--bd-control-md);
+  padding-left: var(--bd-space-1);
+  border: var(--bd-border-width) solid transparent;
+  border-radius: var(--bd-radius-md);
+  background: var(--bd-surface-2);
+  color: var(--bd-text);
+}
+.buildr-editor .bd-wcolor:hover {
+  border-color: var(--bd-border-strong);
+}
+.buildr-editor .bd-wcolor:focus-within {
+  border-color: var(--bd-accent);
+  background: var(--bd-surface);
+  box-shadow: 0 0 0 var(--bd-focus-width) var(--bd-accent-soft);
+}
+.buildr-editor .bd-wcolor[data-invalid] {
+  border-color: var(--bd-danger);
+}
+.buildr-editor .bd-wcolor .bd-wcolor__hex {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0 var(--bd-space-1);
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  font-family: var(--font-mono);
+  font-size: var(--bd-text-sm);
+}
+
+/* --- shadow: presets, preview, layer cards ----------------------------------------------------- */
+.buildr-editor .bd-wshadow-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-space-2);
+}
+.buildr-editor .bd-wcards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--bd-space-2);
+}
+.buildr-editor .bd-wcard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--bd-space-1);
+  padding: var(--bd-space-2) var(--bd-space-1);
+  border: var(--bd-border-width) solid var(--bd-border);
+  border-radius: var(--bd-radius-md);
+  background: var(--bd-surface);
+  color: var(--bd-text-muted);
+  font: inherit;
+  font-size: var(--bd-text-xs);
+  line-height: var(--bd-leading-xs);
+  font-weight: var(--bd-weight-medium);
+  cursor: pointer;
+}
+.buildr-editor .bd-wcard:hover:not(:disabled) {
+  border-color: var(--bd-border-strong);
+  color: var(--bd-text);
+}
+.buildr-editor .bd-wcard[aria-checked="true"] {
+  border-color: var(--bd-accent);
+  background: var(--bd-accent-soft);
+  color: var(--bd-accent);
+  box-shadow: inset 0 0 0 var(--bd-border-width) var(--bd-accent);
+}
+.buildr-editor .bd-wcard:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.buildr-editor .bd-shadow-mini {
+  width: var(--bd-control-compact);
+  height: var(--bd-rcard-h);
+  border-radius: var(--bd-radius-xs);
+  background: var(--bd-canvas-page);
+}
+.buildr-editor .bd-shadow-mini[data-elevation="1"] {
+  box-shadow: var(--bd-elevation-1);
+}
+.buildr-editor .bd-shadow-mini[data-elevation="2"] {
+  box-shadow: var(--bd-elevation-2);
+}
+.buildr-editor .bd-shadow-mini[data-elevation="3"] {
+  box-shadow: var(--bd-elevation-3);
+}
+.buildr-editor .bd-shprev {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--bd-shprev-h);
+  border-radius: var(--bd-radius-md);
+  background-color: var(--bd-surface-2);
+  background-image: var(--bd-shprev-background-image);
+  background-size: var(--bd-shprev-bg-size);
+}
+.buildr-editor .bd-shprev span {
+  width: var(--bd-shprev-w);
+  height: var(--bd-shprev-h-2);
+  border-radius: var(--bd-radius-md);
+  background: var(--bd-canvas-page);
+  transition: box-shadow var(--bd-duration-base) var(--bd-ease-standard);
+}
+.buildr-editor .bd-wshadow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-space-2);
+}
+.buildr-editor .bd-wshadow__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-space-2);
+  min-width: 0;
+  margin: 0;
+  padding: var(--bd-space-2);
+  border: var(--bd-border-width) solid var(--bd-border);
+  border-radius: var(--bd-radius-md);
+  background: var(--bd-surface);
+}
+.buildr-editor .bd-wshadow__head {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-space-2);
+}
+.buildr-editor .bd-wshadow__head .bd-flabel {
+  flex: 1;
+}
+.buildr-editor .bd-wshadow__inset {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bd-space-1);
+  color: var(--bd-text-muted);
+  font-size: var(--bd-text-xs);
+}
+.buildr-editor .bd-wshadow__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--bd-space-2);
+}
+.buildr-editor .bd-wshadow__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-space-1);
+  min-width: 0;
+}
+.buildr-editor .bd-wshadow__len {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  border-radius: var(--bd-radius-md);
+  background: var(--bd-surface-2);
+}
+.buildr-editor .bd-wshadow__len .bd-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+}
+.buildr-editor .bd-wshadow__len > span {
+  padding-right: var(--bd-space-2);
+  color: var(--bd-text-subtle);
+  font-size: var(--bd-text-xs);
+}
+.buildr-editor .bd-wshadow__add {
+  align-self: flex-start;
+}
+
+/* PB-157: compact controls use the same geometry as the template. */
+.buildr-editor .bd-style-number {
+  display: flex;
+  min-width: 0;
+  position: relative;
+  width: 100%;
+}
+.buildr-editor .bd-style-number .bd-number-unit {
+  flex: 1;
+  min-width: 0;
+  padding-right: var(--bd-stepper-w);
+}
+.buildr-editor .bd-style-steps {
+  position: absolute;
+  right: 2px;
+  top: 2px;
+  bottom: 2px;
+  display: flex;
+  flex-direction: column;
+  width: 12px;
+}
+.buildr-editor .bd-style-steps button {
+  flex: 1;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--bd-text-muted);
+  font-size: var(--bd-text-xs);
+  line-height: 10px;
+  cursor: pointer;
+}
+/* The template's step chevrons are 10px; the default icon is wider than the 12px stepper and spilled out. */
+.buildr-editor .bd-style-steps button svg {
+  display: block;
+  width: var(--bd-step-w);
+  height: var(--bd-step-h);
+  margin-inline: auto;
+}
+.buildr-editor .bd-wbox__v .bd-number-unit {
+  width: 100%;
+  height: var(--bd-control-xs);
+  border: 0;
+  border-radius: var(--bd-radius-sm);
+  background: transparent;
+  box-shadow: none;
+}
+.buildr-editor .bd-wbox__v .bd-number-unit:focus-within {
+  border: 0;
+  background: var(--bd-surface);
+}
+.buildr-editor .bd-wbox__v .bd-number-unit input {
+  width: 100%;
+  min-height: 0;
+  height: 100%;
+  padding: 0;
+  text-align: center;
+  font-size: var(--bd-text-xs);
+}
+.buildr-editor .bd-wbox__v input::placeholder {
+  color: var(--bd-text);
+  opacity: 1;
+}
+.bd-style-hue {
+  width: 100%;
+  height: 8px;
+  appearance: none;
+  border-radius: 4px;
+  background: var(--bd-hue-gradient);
+}
+.bd-color-popover h4 {
+  margin: 0 0 var(--bd-space-2);
+  font-size: var(--bd-text-sm);
+}
+.buildr-editor .bd-media-disabled {
+  display: flex;
+  gap: var(--bd-space-1);
+}
+.buildr-editor .bd-media-disabled button {
+  flex: 1;
+  min-height: 28px;
+  border: 1px solid var(--bd-border);
+  border-radius: var(--bd-radius-sm);
+  background: var(--bd-surface);
+  color: var(--bd-text-muted);
+}
+
+.buildr-editor .bd-bg-kind__disabled {
+  display: inline-flex;
+  flex: 1;
+}
+
+/* --- PB-157 QA: width mode on one row, unit chevron and stepper not doubled ---------------------- */
+.buildr-editor .bd-style-value > .bd-segmented {
+  flex-wrap: nowrap;
+  width: 100%;
+}
+.buildr-editor .bd-style-value > .bd-segmented .bd-segment {
+  flex: 1 1 0;
+  min-width: 0;
+  white-space: nowrap;
+}
+.buildr-editor .bd-style-number .bd-unit-select {
+  appearance: none;
+  width: auto;
+  min-width: 0;
+  padding-inline: var(--bd-space-1);
+  text-align: center;
+}
+.buildr-editor .bd-style-pair .bd-style-steps {
+  display: none;
+}
+.buildr-editor .bd-style-pair .bd-style-number .bd-number-unit {
+  padding-right: 0;
+}
+
+/* --- PB-157 QA: robust rows at the narrowest inspector (no mid-word breaks, no wrapped units) --- */
+/* Width and height: the width has a three-way mode, so the pair stacks instead of cramping it. */
+.buildr-editor .bd-style-pair:has(.bd-segmented) {
+  grid-template-columns: minmax(0, 1fr);
+}
+.buildr-editor .bd-styles .bd-number-unit,
+.buildr-editor .bd-styles .bd-style-number {
+  flex-wrap: nowrap;
+}
+.buildr-editor .bd-styles .bd-unit-select {
+  flex: none;
+  min-width: var(--bd-control-md);
+  white-space: nowrap;
+}
+.buildr-editor .bd-styles .bd-segment {
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+.buildr-editor .bd-styles .bd-field-label {
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+/* Shadow presets: a 2x2 grid whose labels never break inside a word. */
+.buildr-editor .bd-shadow-presets.bd-wcards {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.buildr-editor .bd-shadow-presets .bd-wcard {
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+/* Layout: the alignment label keeps its words whole and lets the pad drop below when short of room. */
+.buildr-editor .bd-layout-alignment {
+  flex-wrap: wrap;
+}
+.buildr-editor .bd-layout-alignment > .bd-field-label {
+  flex: 1 1 auto;
+  white-space: nowrap;
+}
+.buildr-editor .bd-layout-more {
+  display: flex;
+  flex-direction: column;
+}
+.buildr-editor .bd-layout-more__toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-space-1);
+  width: 100%;
+  height: var(--bd-control-md);
+  padding: 0 var(--bd-space-1);
+  border: 0;
+  border-radius: var(--bd-radius-sm);
+  background: transparent;
+  color: var(--bd-text-muted);
+  font: inherit;
+  font-size: var(--bd-text-sm);
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.buildr-editor .bd-layout-more__toggle:hover {
+  background: var(--bd-surface-hover);
+  color: var(--bd-text);
+}
+.buildr-editor .bd-layout-more__toggle:focus-visible {
+  outline: var(--bd-focus-width) solid var(--bd-focus);
+  outline-offset: var(--bd-focus-width);
+}
+
+/* Colour rows: the opacity reads next to the code. */
+.buildr-editor .bd-wcolor__alpha {
+  flex: none;
+  color: var(--bd-text-muted);
+  font-size: var(--bd-text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- effects: sub headings, folded rows, hinted (unset) values ------------------------------- */
+.buildr-editor .bd-style-sub {
+  display: block;
+  margin-top: var(--bd-space-2);
+  color: var(--bd-text);
+}
+.buildr-editor .bd-disclosure__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-space-3);
+  padding-top: var(--bd-space-2);
+}
+.buildr-editor .bd-disclosure__body[hidden] {
+  display: none;
+}
+.buildr-editor .bd-slider[data-unset] input[type="range"]::-webkit-slider-thumb {
+  border-color: var(--bd-border-strong);
+}
+.buildr-editor .bd-slider[data-unset] input[type="range"]::-moz-range-thumb {
+  border-color: var(--bd-border-strong);
+}
+.buildr-editor .bd-wcolor[data-unset] .bd-wcolor__alpha {
+  color: var(--bd-text-subtle);
+}
+.buildr-editor .bd-wcolor__hex::placeholder {
+  color: var(--bd-text-subtle);
+}
+
+/* --- compact unit control (template): a quiet "px" chip without the native arrow ------------- */
+.buildr-editor .bd-unit-select {
+  appearance: none;
+  min-width: 0;
+  padding-inline: var(--bd-space-2);
+  text-align: center;
+  text-align-last: center;
+  background-image: none;
+}
+.buildr-editor .bd-boxbar .bd-style-head > .bd-unit-select {
+  width: var(--bd-unit-chip-w);
+}
+.buildr-editor .bd-boxbar .bd-field-label {
+  white-space: nowrap;
+  min-width: 0;
+}
+/* A colour row gives the field the wider share, so the code and the opacity both fit. */
+.buildr-editor .bd-style-inline:has(.bd-wcolor) {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+}
+.buildr-editor .bd-wcolor .bd-wcolor__hex {
+  font-size: var(--bd-text-xs);
+}
+
+/* Animations section (ADR-027): ready effects and the easing plot. */
+.buildr-editor .bd-motion-presets {
+  flex-wrap: wrap;
+}
+.buildr-editor .bd-motion-curve {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-space-3);
+  margin: 0;
+  font-size: var(--bd-text-xs);
+  color: var(--bd-text-muted);
+}
+.buildr-editor .bd-motion-curve svg {
+  width: var(--bd-control-lg);
+  height: var(--bd-control-lg);
+  flex: none;
+}
+.buildr-editor .bd-motion-curve__grid {
+  fill: none;
+  stroke: var(--bd-border-strong);
+  stroke-width: 1;
+}
+.buildr-editor .bd-motion-curve__handles {
+  fill: none;
+  stroke: var(--bd-text-subtle);
+  stroke-width: 1;
+  stroke-dasharray: 2 2;
+}
+.buildr-editor .bd-motion-curve__line {
+  fill: none;
+  stroke: var(--bd-accent);
+  stroke-width: 2;
+}

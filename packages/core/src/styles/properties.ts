@@ -8,6 +8,7 @@ export const STYLE_GROUPS = [
   'background',
   'border',
   'effects',
+  'motion',
   'visibility',
 ] as const;
 export type StyleGroup = (typeof STYLE_GROUPS)[number];
@@ -44,6 +45,74 @@ const ABSOLUTE_UNITS: readonly LengthUnit[] = ['px', 'rem', 'em'];
 const SIZE_UNITS: readonly LengthUnit[] = ['px', 'rem', 'em', '%', 'vw', 'vh', 'svh', 'dvh', 'ch'];
 
 const enumOf = (...values: string[]): StyleGrammar => ({ kind: 'composite', keywords: values });
+
+export const BLEND_MODES = [
+  'normal',
+  'multiply',
+  'screen',
+  'overlay',
+  'darken',
+  'lighten',
+  'color-dodge',
+  'color-burn',
+  'hard-light',
+  'soft-light',
+  'difference',
+  'exclusion',
+  'hue',
+  'saturation',
+  'color',
+  'luminosity',
+] as const;
+export const STYLE_POSITIONS = [
+  'center',
+  'top',
+  'bottom',
+  'left',
+  'right',
+  'top left',
+  'top right',
+  'bottom left',
+  'bottom right',
+] as const;
+export const GRADIENT_TYPES = ['linear', 'radial'] as const;
+export const RADIAL_SHAPES = ['circle', 'ellipse'] as const;
+export const BACKGROUND_REPEATS = [
+  'repeat',
+  'no-repeat',
+  'repeat-x',
+  'repeat-y',
+  'space',
+  'round',
+] as const;
+export const BACKGROUND_ATTACHMENTS = ['scroll', 'fixed', 'local'] as const;
+
+// Motion (ADR-027): every value is an enum or a bounded number, so the compiler can emit fixed CSS.
+export const ENTRANCE_EFFECTS = ['none', 'fade', 'slide', 'zoom'] as const;
+export const MOTION_DIRECTIONS = ['up', 'down', 'left', 'right'] as const;
+export const MOTION_EASINGS = [
+  'ease',
+  'ease-in',
+  'ease-out',
+  'ease-in-out',
+  'linear',
+  'snappy',
+  'bounce',
+] as const;
+export const HOVER_EFFECTS = ['none', 'lift', 'grow', 'shrink', 'tilt'] as const;
+export const SCROLL_REVEALS = ['none', 'fade', 'slide', 'zoom'] as const;
+/** Longest delay or duration of an entrance, in milliseconds. */
+export const MAX_MOTION_MS = 5000;
+/** Largest parallax travel (each way), in pixels. */
+export const MAX_PARALLAX_PX = 200;
+const boundedLength = (units: readonly LengthUnit[], min: number, max: number): StyleGrammar => ({
+  kind: 'composite',
+  length: { units, negative: min < 0, min, max },
+});
+const boundedNumber = (min: number, max: number): StyleGrammar => ({
+  kind: 'composite',
+  number: { min, max },
+});
 
 const ALIGN = ['flex-start', 'flex-end', 'center', 'start', 'end'] as const;
 const spaceOrLength = (negative = false, keywords: string[] = []): StyleGrammar => ({
@@ -304,6 +373,12 @@ export const stylePropertyRegistry: Readonly<Record<string, StylePropertyDef>> =
     def('background', 'imageSize', 'background-size', enumOf('cover', 'contain', 'auto'), {
       states: true,
     }),
+    def('background', 'repeat', 'background-repeat', enumOf(...BACKGROUND_REPEATS), {
+      states: true,
+    }),
+    def('background', 'attachment', 'background-attachment', enumOf(...BACKGROUND_ATTACHMENTS), {
+      states: true,
+    }),
     // border
     def(
       'border',
@@ -336,6 +411,49 @@ export const stylePropertyRegistry: Readonly<Record<string, StylePropertyDef>> =
         states: true,
       },
     ),
+    def('effects', 'shadowX', 'box-shadow', boundedLength(['px'], -1000, 1000), { states: true }),
+    def('effects', 'shadowY', 'box-shadow', boundedLength(['px'], -1000, 1000), { states: true }),
+    def('effects', 'shadowBlur', 'box-shadow', boundedLength(['px'], 0, 1000), { states: true }),
+    def('effects', 'shadowSpread', 'box-shadow', boundedLength(['px'], -1000, 1000), {
+      states: true,
+    }),
+    def('effects', 'shadowColor', 'box-shadow', { kind: 'color' }, { states: true }),
+    def('effects', 'shadowInset', 'box-shadow', enumOf('inset', 'outset'), { states: true }),
+    def('effects', 'textShadowX', 'text-shadow', boundedLength(['px'], -1000, 1000), {
+      states: true,
+    }),
+    def('effects', 'textShadowY', 'text-shadow', boundedLength(['px'], -1000, 1000), {
+      states: true,
+    }),
+    def('effects', 'textShadowBlur', 'text-shadow', boundedLength(['px'], 0, 1000), {
+      states: true,
+    }),
+    def('effects', 'textShadowColor', 'text-shadow', { kind: 'color' }, { states: true }),
+    def('effects', 'blur', 'filter', boundedLength(['px'], 0, 100), { states: true }),
+    def('effects', 'brightness', 'filter', boundedNumber(0, 2), { states: true }),
+    def('effects', 'contrast', 'filter', boundedNumber(0, 2), { states: true }),
+    def('effects', 'saturate', 'filter', boundedNumber(0, 2), { states: true }),
+    def('effects', 'grayscale', 'filter', boundedNumber(0, 1), { states: true }),
+    def('effects', 'sepia', 'filter', boundedNumber(0, 1), { states: true }),
+    def('effects', 'hueRotate', 'filter', boundedLength(['deg'], -360, 360), { states: true }),
+    def('effects', 'invert', 'filter', boundedNumber(0, 1), { states: true }),
+    def('effects', 'backdropBlur', 'backdrop-filter', boundedLength(['px'], 0, 100), {
+      states: true,
+    }),
+    def('effects', 'translateX', 'transform', boundedLength(['px', '%', 'rem'], -10000, 10000), {
+      states: true,
+    }),
+    def('effects', 'translateY', 'transform', boundedLength(['px', '%', 'rem'], -10000, 10000), {
+      states: true,
+    }),
+    def('effects', 'rotate', 'transform', boundedLength(['deg'], -360, 360), { states: true }),
+    def('effects', 'scale', 'transform', boundedNumber(0, 10), { states: true }),
+    def('effects', 'skewX', 'transform', boundedLength(['deg'], -89, 89), { states: true }),
+    def('effects', 'skewY', 'transform', boundedLength(['deg'], -89, 89), { states: true }),
+    def('effects', 'transformOrigin', 'transform-origin', enumOf(...STYLE_POSITIONS), {
+      states: true,
+    }),
+    def('effects', 'blendMode', 'mix-blend-mode', enumOf(...BLEND_MODES), { states: true }),
     // effects
     def(
       'effects',
@@ -378,6 +496,26 @@ export const stylePropertyRegistry: Readonly<Record<string, StylePropertyDef>> =
         'zoom-out',
       ),
       { inheritable: true, states: true },
+    ),
+    // motion (ADR-027). Compiled by `compile-motion.ts`; `cssProperty` names the main property.
+    def('motion', 'entrance', 'animation-name', enumOf(...ENTRANCE_EFFECTS)),
+    def('motion', 'entranceDirection', 'animation-name', enumOf(...MOTION_DIRECTIONS)),
+    def(
+      'motion',
+      'entranceDuration',
+      'animation-duration',
+      boundedLength(['ms'], 0, MAX_MOTION_MS),
+    ),
+    def('motion', 'entranceDelay', 'animation-delay', boundedLength(['ms'], 0, MAX_MOTION_MS)),
+    def('motion', 'entranceEasing', 'animation-timing-function', enumOf(...MOTION_EASINGS)),
+    def('motion', 'hover', 'transition', enumOf(...HOVER_EFFECTS)),
+    def('motion', 'hoverDuration', 'transition-duration', boundedLength(['ms'], 0, 2000)),
+    def('motion', 'scrollReveal', 'animation-timeline', enumOf(...SCROLL_REVEALS)),
+    def(
+      'motion',
+      'scrollParallax',
+      'animation-range',
+      boundedLength(['px'], -MAX_PARALLAX_PX, MAX_PARALLAX_PX),
     ),
     // visibility
     def('visibility', 'hidden', 'display', { kind: 'boolean' }),

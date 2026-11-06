@@ -50,7 +50,7 @@ describe('container migrations', () => {
       'buildr/section',
       'buildr/stack',
     ]);
-    expect(Container.meta.version).toBe(2);
+    expect(Container.meta.version).toBe(3);
   });
 
   describe.each(containerMigrationFixtures.map((f) => [f.id, f] as const))(
@@ -105,7 +105,7 @@ describe('container migrations', () => {
       { components: { 'buildr/container': 1, 'buildr/stack': 1, 'buildr/section': 1 } },
     );
     const { doc: after } = load(before);
-    expect(after?.components).toEqual({ 'buildr/page': 1, 'buildr/container': 2 });
+    expect(after?.components).toEqual({ 'buildr/page': 1, 'buildr/container': 3 });
     expect(after?.nodes[nid('c')]?.props?.['display']).toEqual(s('block'));
     expect(after?.nodes[nid('s')]?.props?.['display']).toEqual(s('flex'));
     expect(after?.nodes[nid('x')]?.props?.['display']).toEqual(s('flex'));
@@ -287,7 +287,7 @@ describe('container migrations', () => {
       const { html, diagnostics } = await render(registry, stored(ref), data);
       expect(diagnostics).toEqual([]);
       expect(html).toContain('data-has-background=""');
-      expect(html).toMatch(/<img [^>]*class="bc-container__background"[^>]*>/);
+      expect(html).toMatch(/<img [^>]*class="bc-container__background[ "][^>]*>/);
       expect(html).toMatch(/<img [^>]*src="\/media\/cat\.jpg"[^>]*alt=""/);
     });
 

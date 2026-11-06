@@ -4,9 +4,11 @@ import {
   type StylePropertyDef,
   type Theme,
 } from '@next-buildr/core';
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useContext, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { type MessageKey, useT } from '../../../messages/index.tsx';
 import { IconButton, NumberUnitInput } from '../../../ui/index.ts';
+import { BoxBarsContext } from './box-model.tsx';
 import { unitsOf } from './model.ts';
 import { TokenPicker } from './token-picker.tsx';
 import { useStyleValue } from './use-style-value.ts';
@@ -75,7 +77,7 @@ function SideField(props: SideFieldProps) {
         ariaLabel={label}
         disabled={props.disabled}
         invalid={error !== ''}
-        placeholder="–"
+        placeholder="0"
         onValueChange={field.change}
         onFocus={props.onFocus}
         onBlur={field.blur}
@@ -112,6 +114,7 @@ export interface SidesEditorProps {
  */
 export function SidesEditor(props: SidesEditorProps) {
   const t = useT();
+  const bars = useContext(BoxBarsContext);
   const { def, label, parts, effective, layer, layout } = props;
   const units = unitsOf(def);
   const currentOf = (part: string): string | undefined => {
@@ -224,30 +227,53 @@ export function SidesEditor(props: SidesEditorProps) {
 
   if (layout === 'ring') {
     const [top, right, bottom, left] = parts as [string, string, string, string];
+    // Inside a `BoxModel` the header is drawn in the bar above the diagram.
+    const head = props.renderHead(extras);
+    const slot =
+      bars === undefined ? undefined : bars[def.name === 'padding' ? 'padding' : 'margin'];
+    const inner = props.children === undefined;
+    const cell = (part: string, at: string) => (
+      <span className="bd-wbox__v" data-at={at}>
+        {field(part)}
+      </span>
+    );
     return (
-      <div className="bd-ring" data-property={def.name}>
-        {props.renderHead(extras)}
-        <div className="bd-ring-grid">
-          <div className="bd-ring-top">{field(top)}</div>
-          <div className="bd-ring-left">{field(left)}</div>
-          <div className="bd-ring-center">
-            {props.children ?? <span className="bd-ring-core">{t('style.box.content')}</span>}
-          </div>
-          <div className="bd-ring-right">{field(right)}</div>
-          <div className="bd-ring-bottom">{field(bottom)}</div>
+      <>
+        {bars === undefined
+          ? head
+          : slot === null || slot === undefined
+            ? null
+            : createPortal(head, slot)}
+        <div
+          className={inner ? 'bd-wbox bd-wbox--in' : 'bd-wbox'}
+          data-property={def.name}
+          data-kind={def.name}
+        >
+          <span className="bd-wbox__label">
+            {t(
+              def.name === 'padding'
+                ? 'styleField.spacing.paddingLabel'
+                : 'styleField.spacing.marginLabel',
+            )}
+          </span>
+          {cell(top, 'top')}
+          {cell(right, 'right')}
+          {cell(bottom, 'bottom')}
+          {cell(left, 'left')}
+          {props.children ?? <div className="bd-wbox__core">{t('styleField.spacing.content')}</div>}
         </div>
         {errorLine}
-      </div>
+      </>
     );
   }
 
   return (
     <div className="bd-sides" data-property={def.name} data-shape={def.shape}>
       {props.renderHead(extras)}
-      <div className={def.shape === 'corners' ? 'bd-sides-grid bd-corners-grid' : 'bd-sides-grid'}>
+      <div className={def.shape === 'corners' ? 'bd-wcorners' : 'bd-sides-grid'}>
         {def.shape === 'corners' ? (
           <span
-            className="bd-corners-preview"
+            className="bd-wcorners__prev"
             aria-hidden="true"
             style={Object.fromEntries(
               parts.map((part) => {
@@ -264,14 +290,20 @@ export function SidesEditor(props: SidesEditorProps) {
             )}
           />
         ) : null}
-        {parts.map((part) => (
-          <div key={part} className="bd-sides-cell">
-            {field(part)}
-            <span className="bd-sides-label" aria-hidden="true">
-              {partLabel(part)}
+        {parts.map((part) =>
+          def.shape === 'corners' ? (
+            <span key={part} className="bd-wcorners__v" data-part={part} title={partLabel(part)}>
+              {field(part)}
             </span>
-          </div>
-        ))}
+          ) : (
+            <div key={part} className="bd-sides-cell">
+              {field(part)}
+              <span className="bd-sides-label" aria-hidden="true">
+                {partLabel(part)}
+              </span>
+            </div>
+          ),
+        )}
       </div>
       {errorLine}
     </div>

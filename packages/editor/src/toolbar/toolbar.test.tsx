@@ -1,4 +1,6 @@
 // @vitest-environment jsdom
+
+import type { LocaleConfig } from '@next-buildr/core';
 import {
   type BuilderDocument,
   type ComponentMeta,
@@ -10,6 +12,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { axe } from 'vitest-axe';
 import * as matchers from 'vitest-axe/matchers';
+import { type ShellPanels, ShellPanelsContext } from '../app/shell-panels.tsx';
 import { MessagesProvider } from '../messages/index.tsx';
 import {
   createPersistence,
@@ -18,7 +21,12 @@ import {
   PersistenceProvider,
 } from '../persistence/index.ts';
 import { ShortcutProvider } from '../shortcuts/index.ts';
-import { createEditorStore, EditorStoreProvider } from '../store/index.ts';
+import {
+  createEditorStore,
+  createLocaleStore,
+  EditorStoreProvider,
+  LocaleProvider,
+} from '../store/index.ts';
 import { ToastProvider } from '../ui/index.ts';
 import { ThemeProvider, type ThemeState } from './theme.tsx';
 import { Toolbar, type ToolbarProps } from './toolbar.tsx';
@@ -77,7 +85,12 @@ describe('Toolbar', () => {
 
   async function mount(
     overrides: Partial<ToolbarProps> = {},
-    options: { readOnly?: boolean; theme?: ThemeState } = {},
+    options: {
+      readOnly?: boolean;
+      theme?: ThemeState;
+      locales?: LocaleConfig;
+      panels?: ShellPanels;
+    } = {},
   ) {
     const store = createEditorStore({
       doc: fixture(),
@@ -92,6 +105,14 @@ describe('Toolbar', () => {
       ref: { collection: 'pages', id: '1' },
       revision: 1,
     });
+    const localeStore = createLocaleStore(
+      options.locales ?? {
+        locales: ['en'],
+        default: 'en',
+        fallback: true,
+        intl: { en: 'English' },
+      },
+    );
     const props: ToolbarProps = {
       title: 'Home',
       breakpoints,
@@ -107,9 +128,13 @@ describe('Toolbar', () => {
               <ToastProvider>
                 <PersistenceProvider controller={controller}>
                   <ThemeProvider value={options.theme}>
-                    <div role="toolbar" aria-label="Toolbar">
-                      <Toolbar {...props} />
-                    </div>
+                    <LocaleProvider store={localeStore}>
+                      <ShellPanelsContext.Provider value={options.panels}>
+                        <div role="toolbar" aria-label="Toolbar">
+                          <Toolbar {...props} />
+                        </div>
+                      </ShellPanelsContext.Provider>
+                    </LocaleProvider>
                   </ThemeProvider>
                 </PersistenceProvider>
               </ToastProvider>
@@ -134,7 +159,7 @@ describe('Toolbar', () => {
   it('shows the title and switches the breakpoint', async () => {
     const onBreakpointChange = vi.fn();
     await mount({ onBreakpointChange, breakpoint: 'tablet' });
-    expect(container.querySelector('h1')?.textContent).toBe('Home');
+    expect(byName('Home')?.textContent).toContain('Home');
     expect(byName('Tablet')?.getAttribute('aria-pressed')).toBe('true');
     expect(byName('Desktop')?.getAttribute('aria-pressed')).toBe('false');
     await act(async () => byName('Mobile')?.click());
@@ -202,8 +227,30 @@ describe('Toolbar', () => {
       '/admin/pages/1',
       '/admin/pages/1/versions',
     ]);
-    expect(links[0]?.getAttribute('aria-label')).toBe('Back to CMS');
+    expect(links[0]?.getAttribute('aria-label')).toBe('Back to the CMS panel');
     expect(links[1]?.getAttribute('aria-label')).toBe('Version history');
+  });
+
+  it('hides a version history link that is not a safe web address', async () => {
+    await mount({ historyUrl: 'javascript:alert(1)' });
+    expect(container.querySelector('[aria-label="Version history"]')).toBeNull();
+    await mount({ historyUrl: 'data:text/html,x' });
+    expect(container.querySelector('[aria-label="Version history"]')).toBeNull();
+    await mount({ historyUrl: 'https://cms.test/versions' });
+    expect(container.querySelector('a[aria-label="Version history"]')?.getAttribute('href')).toBe(
+      'https://cms.test/versions',
+    );
+  });
+
+  it('renders a function history as a button that calls it, and nothing without it', async () => {
+    const open = vi.fn();
+    await mount({ historyUrl: open });
+    const button = byName('Version history') as HTMLButtonElement;
+    expect(button.tagName).toBe('BUTTON');
+    await act(async () => button.click());
+    expect(open).toHaveBeenCalledTimes(1);
+    await mount();
+    expect(container.querySelector('[aria-label="Version history"]')).toBeNull();
   });
 
   it('has no accessibility violations', async () => {
@@ -234,7 +281,7 @@ describe('Toolbar', () => {
 
   const menuButtons = () => [...document.querySelectorAll('.bd-menu-list button')];
   const openMore = async () =>
-    act(async () => (byName('More actions') as HTMLButtonElement).click());
+    act(async () => (byName('More options') as HTMLButtonElement).click());
 
   it('shows the breakpoints as icon buttons with the width in the tooltip', async () => {
     await mount({ breakpoint: 'tablet' });
@@ -248,22 +295,7 @@ describe('Toolbar', () => {
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 20));
     });
-    expect(document.querySelector('[role=tooltip]')?.textContent).toContain('Tablet · 820px');
-  });
-
-  it('shows a quick theme action and preserves host-forced themes', async () => {
-    const setPreference = vi.fn();
-    const theme: ThemeState = {
-      preference: 'system',
-      attribute: 'system',
-      forced: false,
-      setPreference,
-    };
-    await mount({}, { theme });
-    await act(async () => byName('Theme: System')?.click());
-    expect(setPreference).toHaveBeenCalledWith('light');
-    await mount({}, { theme: { ...theme, forced: true } });
-    expect(byName('Theme: System')).toBeUndefined();
+    expect(document.querySelector('[role=tooltip]')?.textContent).toContain('Tablet · 820 px');
   });
 
   it('marks device overrides on the selected node without changing the document', async () => {
@@ -295,24 +327,11 @@ describe('Toolbar', () => {
 
   it('shows the status pill of the document', async () => {
     await mount({ status: 'published' });
-    expect(container.querySelector('.bd-status-pill')?.textContent).toBe('Published');
+    expect(container.querySelector('.bd-page-chip-status')?.textContent).toBe('Published');
   });
 
-  it('changes the zoom through the menu', async () => {
-    const onZoomChange = vi.fn();
-    await mount({ onZoomChange, zoom: 'fit' });
-    const trigger = byName('Zoom') as HTMLButtonElement;
-    expect(trigger.getAttribute('aria-label')).toBe('Zoom: Fit');
-    await act(async () => trigger.click());
-    expect(menuButtons().map((b) => b.textContent)).toEqual(['Fit', '50%', '75%', '100%', '125%']);
-    await act(async () =>
-      (menuButtons().find((b) => b.textContent === '75%') as HTMLButtonElement).click(),
-    );
-    expect(onZoomChange).toHaveBeenCalledWith(0.75);
-  });
-
-  it('leaves the zoom menu out without a handler', async () => {
-    await mount();
+  it('has no zoom control, which lives in the status bar', async () => {
+    await mount({});
     expect(byName('Zoom')).toBeUndefined();
   });
 
@@ -358,7 +377,23 @@ describe('Toolbar', () => {
     await openMore();
     const item = menuButtons().find((b) => (b.textContent ?? '').includes('Keyboard shortcuts'));
     await act(async () => (item as HTMLButtonElement).click());
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    });
     expect(document.querySelector('[role=dialog]')?.textContent).toContain('Keyboard shortcuts');
+  });
+
+  it('opens the shortcuts through onOpenShortcuts, not by replaying the key', async () => {
+    const onOpenShortcuts = vi.fn();
+    await mount({ onOpenShortcuts });
+    await openMore();
+    const item = menuButtons().find((b) => (b.textContent ?? '').includes('Keyboard shortcuts'));
+    await act(async () => (item as HTMLButtonElement).click());
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    });
+    expect(onOpenShortcuts).toHaveBeenCalledOnce();
+    expect(document.querySelector('[role=dialog]')).toBeNull();
   });
 
   it('switches the theme from the more menu, unless the host fixed it', async () => {
@@ -371,7 +406,7 @@ describe('Toolbar', () => {
     };
     await mount({}, { theme });
     await openMore();
-    const group = document.querySelector('[aria-label=Theme]');
+    const group = document.querySelector('[aria-label="Editor theme"]');
     const choice = (name: string) =>
       [...(group?.querySelectorAll('button') ?? [])].find((b) => b.textContent?.includes(name));
     expect(choice('System')?.getAttribute('aria-pressed')).toBe('true');
@@ -382,6 +417,193 @@ describe('Toolbar', () => {
     root = createRoot(container);
     await mount({}, { theme: { ...theme, forced: true, preference: 'dark', attribute: 'dark' } });
     await openMore();
-    expect(document.querySelector('[aria-label=Theme]')).toBeNull();
+    expect(document.querySelector('[aria-label="Editor theme"]')).toBeNull();
+  });
+
+  const wait = (ms = 10) =>
+    act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, ms));
+    });
+  const dialog = () =>
+    document.querySelector('[role=dialog][data-state=open]') as HTMLElement | null;
+
+  it('shows the page chip with the status and opens the page options dialog', async () => {
+    await mount({ status: 'draft', slug: 'home' });
+    const chip = byName('page options') as HTMLButtonElement;
+    expect(chip.getAttribute('aria-label')).toBe('Home – page options');
+    expect(chip.getAttribute('aria-haspopup')).toBe('dialog');
+    expect(chip.querySelector('.bd-page-chip-status')?.textContent).toBe('Draft');
+    expect(dialog()).toBeNull();
+    await act(async () => chip.click());
+    expect(dialog()?.textContent).toContain('Page options');
+  });
+
+  it('renames the page from the dialog through the rename path, address read-only', async () => {
+    const onTitleChange = vi.fn(async () => undefined);
+    await mount({ onTitleChange, slug: 'home' });
+    await act(async () => (byName('page options') as HTMLButtonElement).click());
+    const name = dialog()?.querySelector('input[aria-label="Page name"]') as HTMLInputElement;
+    expect(name.value).toBe('Home');
+    await act(async () => name.focus());
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(
+        name,
+        'About',
+      );
+      name.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await act(async () => {
+      name.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    });
+    expect(onTitleChange).toHaveBeenCalledWith('About');
+    const address = [...(dialog()?.querySelectorAll('input') ?? [])].find(
+      (input) => input.value === 'home',
+    );
+    expect(address?.readOnly).toBe(true);
+  });
+
+  it('keeps the name read-only without a rename path and closes the dialog on Done', async () => {
+    await mount({});
+    await act(async () => (byName('page options') as HTMLButtonElement).click());
+    const name = dialog()?.querySelector('input') as HTMLInputElement;
+    expect(name.readOnly).toBe(true);
+    expect(dialog()?.textContent).not.toContain('Address');
+    const done = [...(dialog()?.querySelectorAll('button') ?? [])].find(
+      (b) => b.textContent === 'Done',
+    );
+    await act(async () => done?.click());
+    await wait(50);
+    expect(dialog()).toBeNull();
+  });
+
+  const panelsOf = (overrides: Partial<ShellPanels> = {}): ShellPanels => ({
+    narrow: false,
+    open: { left: false, right: false },
+    toggle: vi.fn(),
+    collapsed: { left: false, right: true },
+    toggleCollapsed: vi.fn(),
+    ...overrides,
+  });
+
+  it('drives the panel collapse from the toggles when the layout is wide', async () => {
+    const panels = panelsOf();
+    await mount({}, { panels });
+    const left = byName('Left panel') as HTMLButtonElement;
+    const right = byName('Inspector panel') as HTMLButtonElement;
+    expect(left.getAttribute('aria-pressed')).toBe('true');
+    expect(right.getAttribute('aria-pressed')).toBe('false');
+    await act(async () => left.click());
+    await act(async () => right.click());
+    expect(panels.toggleCollapsed).toHaveBeenNthCalledWith(1, 'left');
+    expect(panels.toggleCollapsed).toHaveBeenNthCalledWith(2, 'right');
+    expect(panels.toggle).not.toHaveBeenCalled();
+  });
+
+  it('opens the panels as an overlay when the layout is narrow', async () => {
+    const panels = panelsOf({ narrow: true, open: { left: true, right: false } });
+    await mount({}, { panels });
+    expect((byName('Left panel') as HTMLButtonElement).getAttribute('aria-pressed')).toBe('true');
+    await act(async () => (byName('Inspector panel') as HTMLButtonElement).click());
+    expect(panels.toggle).toHaveBeenCalledWith('right');
+    expect(panels.toggleCollapsed).not.toHaveBeenCalled();
+  });
+
+  it('puts undo and redo on the left, and the screen size and Publish on the right', async () => {
+    await mount({ onPublish: () => undefined });
+    const zone = (name: string) => container.querySelector(`[data-zone=${name}]`) as HTMLElement;
+    const names = (el: HTMLElement) =>
+      [...el.querySelectorAll('button')].map((b) => b.getAttribute('aria-label') ?? b.textContent);
+    expect(names(zone('left'))).toEqual(['Undo', 'Redo']);
+    expect(names(zone('centre'))).toEqual(['Home – page options']);
+    const right = names(zone('right'));
+    expect(right.slice(0, 3)).toEqual(['Desktop', 'Tablet', 'Mobile']);
+    expect(right.at(-1)).toBe('Publish');
+    expect(zone('right').querySelector('.bd-publish svg')).toBeNull();
+  });
+
+  const locales: LocaleConfig = {
+    locales: ['en', 'pl'],
+    default: 'en',
+    fallback: true,
+    intl: { en: 'English', pl: 'Polski' },
+  };
+
+  it('switches the content language from the locale chip', async () => {
+    const onLocaleChange = vi.fn();
+    await mount({ onLocaleChange }, { locales });
+    const chip = byName('Content language') as HTMLButtonElement;
+    expect(chip.getAttribute('aria-label')).toBe('Content language: English');
+    expect(chip.textContent).toBe('EN');
+    await act(async () => chip.click());
+    const items = menuButtons();
+    expect(items.map((b) => b.textContent)).toEqual(['EnglishEN', 'PolskiPL']);
+    expect(items[0]?.getAttribute('aria-pressed')).toBe('true');
+    await act(async () => (items[1] as HTMLButtonElement).click());
+    expect(onLocaleChange).toHaveBeenCalledWith('pl');
+    expect((byName('Content language') as HTMLButtonElement).textContent).toBe('PL');
+  });
+
+  it('has no locale chip for a single language', async () => {
+    await mount();
+    expect(byName('Content language')).toBeUndefined();
+  });
+
+  it('lists the more options: theme, shortcuts with its key, no sample data for a page', async () => {
+    const theme: ThemeState = {
+      preference: 'light',
+      attribute: 'light',
+      forced: false,
+      setPreference: () => undefined,
+    };
+    await mount({}, { theme });
+    await openMore();
+    const text = document.querySelector('.bd-menu-list')?.textContent ?? '';
+    expect(text).toContain('Editor theme');
+    expect(text).toContain('Keyboard shortcuts');
+    expect(text).not.toContain('Sample data');
+    const shortcuts = menuButtons().find((b) => b.textContent?.includes('Keyboard shortcuts'));
+    expect(shortcuts?.querySelector('kbd')?.textContent).toBe('Shift+?');
+  });
+
+  it('switches the block outlines from the more options, and Help falls back to the shortcuts', async () => {
+    await mount();
+    await openMore();
+    const outlines = () =>
+      menuButtons().find((b) => b.textContent?.includes('Show block outlines'));
+    expect(outlines()?.querySelector('kbd')?.textContent).toBe('Off');
+    await act(async () => (outlines() as HTMLButtonElement).click());
+    expect(outlines()?.getAttribute('aria-pressed')).toBe('true');
+    expect(outlines()?.querySelector('kbd')?.textContent).toBe('On');
+    expect(menuButtons().some((b) => b.textContent?.includes('Help'))).toBe(true);
+  });
+
+  it('puts the sample data in the page options and lists it in the more options', async () => {
+    const onChange = vi.fn();
+    const adapter = { listSamples: async () => [{ id: 's1', label: 'Spring' }] } as never;
+    const storage = { getItem: () => 's1', setItem: () => undefined };
+    await mount({
+      sample: { adapter, docRef: { collection: 'pages', id: '1' }, onChange, storage },
+    });
+    await wait();
+    expect(onChange).toHaveBeenCalledWith('s1');
+    await openMore();
+    const row = menuButtons().find((b) => b.textContent?.includes('Sample data'));
+    expect(row?.querySelector('kbd')?.textContent).toBe('Entry: Spring');
+    await act(async () => (row as HTMLButtonElement).click());
+    expect(dialog()?.textContent).toContain('Sample data');
+    expect(dialog()?.querySelector('[role=combobox]')?.textContent).toContain('Spring');
+  });
+
+  it('closes the more menu with Escape', async () => {
+    await mount();
+    await openMore();
+    expect(document.querySelector('.bd-menu-list')).not.toBeNull();
+    await act(async () => {
+      document.activeElement?.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+      );
+    });
+    await wait(50);
+    expect(document.querySelector('.bd-menu-list')).toBeNull();
   });
 });

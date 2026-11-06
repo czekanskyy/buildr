@@ -4,8 +4,8 @@ import { expect, type Page } from '@playwright/test';
 export async function showUndoToast(page: Page, locale: 'en' | 'pl' = 'en') {
   const labels =
     locale === 'pl'
-      ? { layers: 'Warstwy', undo: 'Cofnij', dismiss: 'Zamknij powiadomienie' }
-      : { layers: 'Layers', undo: 'Undo', dismiss: 'Dismiss notification' };
+      ? { layers: 'Struktura', undo: 'Cofnij', dismiss: 'Zamknij powiadomienie' }
+      : { layers: 'Structure', undo: 'Undo', dismiss: 'Dismiss notification' };
   await page.getByRole('tab', { name: labels.layers }).click();
   await page.getByRole('treeitem', { name: /Hero/ }).first().click();
   await page.keyboard.press('ControlOrMeta+x');

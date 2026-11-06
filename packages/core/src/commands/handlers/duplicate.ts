@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { authorCodeEnabled } from '../../author/capabilities.ts';
+import { hasAuthorCode } from '../../author/node.ts';
 import { extractFragment, reId } from '../../document/fragment.ts';
 import { DEFAULT_DOCUMENT_LIMITS } from '../../document/limits.ts';
 import type { NodeId, PageNode } from '../../document/types.ts';
@@ -24,7 +26,8 @@ const duplicateSchema = z.strictObject({
  * `node.duplicate` — copies nodes with their subtrees, with fresh ids, right after each
  * original (docs/commands.md). Every copy must pass `canInsert` at its position (slot rules,
  * `slot.max` — also for several copies into one slot —, content model, locks) and the document
- * limits must hold. Copies drop `anchor`, which must stay unique in a document. Selects the copies.
+ * limits must hold. Copies drop `anchor`, which must stay unique in a document. Without
+ * `capabilities.authorCode` a node that carries author code cannot be copied. Selects the copies.
  */
 export const duplicateHandler: CommandHandler<DuplicateCommand> = {
   type: 'node.duplicate',
@@ -53,6 +56,21 @@ export const duplicateHandler: CommandHandler<DuplicateCommand> = {
       const at = env.index.indexOf[id];
       if (parentId === undefined || slot === undefined || at === undefined) continue;
       const fragment = reId(extractFragment(doc, [id]), placeholderIds());
+      // A copy is a new write of whatever author code the original carries (ADR-026): the same
+      // rule as pasting it with `node.insert`.
+      if (
+        !authorCodeEnabled(env.capabilities) &&
+        Object.values(fragment.nodes).some((node) =>
+          hasAuthorCode(node, env.registry.get(node.type)),
+        )
+      ) {
+        return err(
+          commandError(
+            'command.author-code-not-permitted',
+            'This editor is not allowed to copy content with custom CSS, classes, attributes or HTML.',
+          ),
+        );
+      }
       const verdict = canInsert(
         doc,
         env.index,

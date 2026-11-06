@@ -25,7 +25,16 @@ export const List = defineComponent({
     },
   },
   styles: {
-    groups: ['typography', 'spacing', 'background', 'border', 'size', 'effects', 'visibility'],
+    groups: [
+      'typography',
+      'spacing',
+      'background',
+      'border',
+      'size',
+      'effects',
+      'motion',
+      'visibility',
+    ],
   },
   a11y: { element: 'ul' },
   editor: { emptySlotText: { default: 'Add a list item' } },

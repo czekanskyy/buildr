@@ -1,0 +1,32 @@
+export const editor = {
+  'editor.toolbar': 'Toolbar',
+  'editor.leftPanel': 'Insert and layers',
+  'editor.canvas': 'Canvas',
+  'editor.inspector': 'Inspector',
+  'editor.canvas.connecting': 'Connecting to the canvas…',
+  'editor.canvas.frame': 'Page preview',
+  'editor.canvas.reload': 'Reload canvas',
+  'editor.canvas.error.timeout':
+    'The canvas did not answer. Check its URL, its Content-Security-Policy (frame-ancestors) and the origins it allows.',
+  'editor.canvas.error.manifest':
+    'The canvas was built with other components than the editor. Rebuild the canvas or reload the editor.',
+  'editor.canvas.error.protocol':
+    'The canvas and the editor are different versions. Update them together.',
+  'editor.canvas.error.canvas': 'The canvas stopped working.',
+  'editor.issues': 'Issues',
+  'editor.breadcrumbs': 'Selection path',
+  'editor.issues.show': 'Show issues',
+  'editor.issues.hide': 'Hide issues',
+  'editor.resize.left': 'Resize the left panel',
+  'editor.resize.right': 'Resize the right panel',
+  'editor.panels.left': 'Left panel',
+  'editor.panels.right': 'Inspector panel',
+  'editor.status.errors': 'Errors',
+  'editor.status.warnings': 'Warnings',
+  'editor.status.breakpoint': 'Breakpoint',
+  'editor.status.zoom': 'Zoom',
+  'editor.status.fit': 'Fit',
+  'editor.canvas.width': '{name} · {width}px',
+  'editor.canvas.error.title': 'The page preview could not be shown',
+  'editor.canvas.empty': 'This page is still empty',
+} as const;

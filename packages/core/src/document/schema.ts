@@ -48,6 +48,14 @@ export const pageNodeSchema = z.strictObject({
   region: z.string().optional(),
   source: sourceSchema.optional(),
   ext: z.record(z.string(), jsonValueSchema).optional(),
+  // Author code (ADR-026). Bounded here as a structural limit; the precise rules and the
+  // capability gate live in `core/author` and the commands.
+  customCss: z.string().max(8000).optional(),
+  classes: z.array(z.string().min(1).max(64)).max(16).optional(),
+  attributes: z
+    .record(z.string().min(1).max(64), z.string().max(256))
+    .refine((value) => Object.keys(value).length <= 16, { message: 'at most 16 attributes' })
+    .optional(),
 });
 
 /**

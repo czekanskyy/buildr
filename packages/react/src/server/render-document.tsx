@@ -5,12 +5,14 @@ import {
   type DataSource,
   type Diagnostic,
   type DocumentLimits,
+  type HostCapabilities,
   prepareRender,
   type Theme,
 } from '@next-buildr/core';
 import type { ReactNode } from 'react';
 import type { ReactRegistry } from '../define/registry.ts';
 import type { Platform } from '../define/types.ts';
+import { normalizeCapabilities } from '../render/capabilities.ts';
 import { loadDocument } from '../render/pipeline.ts';
 import { renderTree } from '../render/render-tree.ts';
 import { BuildrStyles } from '../render/styles.tsx';
@@ -25,6 +27,8 @@ export interface RenderDocumentOptions {
   readonly messages?: Readonly<Record<string, string>>;
   /** Which document the layout came from; forms use it to find their action. */
   readonly layoutRef?: string;
+  /** What the host permits (ADR-026). Author code (custom CSS, classes, attributes, HTML) renders only with `authorCode: true`. */
+  readonly capabilities?: HostCapabilities;
   /** The id of the document being rendered, so a query can exclude it (`excludeCurrent`). */
   readonly currentId?: string | number;
   readonly limits?: DocumentLimits;
@@ -77,7 +81,8 @@ export async function renderDocument(
   );
   diagnostics.push(...prepared.diagnostics);
 
-  const styles = compileStyles(doc, options.theme);
+  const capabilities = normalizeCapabilities(options.capabilities);
+  const styles = compileStyles(doc, options.theme, { capabilities });
   diagnostics.push(...styles.diagnostics);
 
   const tree = renderTree(doc, {
@@ -85,6 +90,7 @@ export async function renderDocument(
     data: prepared,
     context: options.context,
     platform: options.platform,
+    capabilities,
     diagnostics,
     ...(options.messages !== undefined ? { messages: options.messages } : {}),
     ...(options.layoutRef !== undefined ? { layoutRef: options.layoutRef } : {}),

@@ -3,6 +3,7 @@
 // (see docs/backlog/phase-01-core-document.md onward).
 
 export * from './a11y/index.ts';
+export * from './author/index.ts';
 export * from './data/index.ts';
 export * from './dnd/index.ts';
 export * from './document/index.ts';

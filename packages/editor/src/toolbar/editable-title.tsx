@@ -6,6 +6,9 @@ export interface EditableTitleProps {
   /** Saves a new name; it rejects when the backend refused, and the name then goes back. */
   readonly onRename: (title: string) => Promise<void>;
   readonly disabled?: boolean;
+  /** `field` looks like a text field (the page options dialog); `title` (default) like a heading. */
+  readonly variant?: 'title' | 'field';
+  readonly id?: string;
 }
 
 /** Longest name the backends take (`createDocumentRequestSchema` in the Payload contract). */
@@ -15,7 +18,13 @@ export const MAX_TITLE_LENGTH = 200;
  * The page name as a field that looks like a heading: Enter or leaving it saves, Escape puts the
  * old name back, an empty name is not saved. The field grows with the name.
  */
-export function EditableTitle({ title, onRename, disabled }: EditableTitleProps) {
+export function EditableTitle({
+  title,
+  onRename,
+  disabled,
+  variant = 'title',
+  id,
+}: EditableTitleProps) {
   const t = useT();
   const [draft, setDraft] = useState(title);
   const editing = useRef(false);
@@ -42,10 +51,11 @@ export function EditableTitle({ title, onRename, disabled }: EditableTitleProps)
 
   return (
     <input
-      className="bd-toolbar-title bd-title-input"
+      id={id}
+      className={variant === 'field' ? 'bd-input' : 'bd-toolbar-title bd-title-input'}
       value={draft}
       title={draft}
-      size={Math.min(Math.max(draft.length, 8), 40)}
+      size={variant === 'field' ? undefined : Math.min(Math.max(draft.length, 8), 40)}
       maxLength={MAX_TITLE_LENGTH}
       disabled={disabled === true}
       aria-label={t('toolbar.title.rename')}

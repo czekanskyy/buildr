@@ -1,0 +1,22 @@
+export const toast = {
+  'toast.deletedCount.one': '{count} block deleted',
+  'toast.deletedCount.few': '{count} blocks deleted',
+  'toast.deletedCount.many': '{count} blocks deleted',
+  'toast.deletedCount.other': '{count} blocks deleted',
+  'toast.dismiss': 'Dismiss notification',
+  'toast.region': 'Notifications',
+  'toast.published': 'Published. The page is live now.',
+  'toast.viewPage': 'View page',
+  'toast.undo': 'Undo',
+  'toast.deleted': 'Block “{name}” deleted',
+  'toast.duplicated': 'Block “{name}” duplicated',
+  'toast.moved': 'Block moved',
+  'toast.structureLocked': 'This block is locked. Unlock it in the Structure panel.',
+  'toast.structureLockedFixed': 'This block is locked.',
+  'toast.structureLockedParent':
+    'A block this one sits in is locked. Unlock it in the Structure panel.',
+  'toast.structureLockedParentFixed': 'A block this one sits in is locked.',
+  'toast.copied': 'Block copied. Paste it with {shortcut}.',
+  'toast.saveFailed': 'Could not save. We will try again in {seconds} s.',
+  'toast.retryNow': 'Retry now',
+} as const;

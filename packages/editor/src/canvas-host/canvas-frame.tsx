@@ -1,8 +1,12 @@
 import { createParentTransport } from '@next-buildr/core/protocol';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { BreakpointConfig } from '../app/config.ts';
-import { type MessageKey, useT } from '../messages/index.tsx';
+import type { EmptyPageActions } from '../app/contracts.ts';
+import { useManifest } from '../app/manifest.tsx';
+import { interpolate, type MessageKey, useT } from '../messages/index.tsx';
 import { useEditor, useEditorState } from '../store/index.ts';
+import { useViewState } from '../store/react.tsx';
+import { useTheme } from '../toolbar/theme.tsx';
 import { Button, Icon } from '../ui/index.ts';
 import { type CanvasHost, type CanvasHostOptions, createCanvasHost } from './host.ts';
 
@@ -19,9 +23,18 @@ export interface CanvasFrameProps {
   readonly handshakeTimeoutMs?: number;
   /** Gets the host once the frame is mounted (and `null` when it goes), for the toolbar and the drag-and-drop engine. */
   readonly onHost?: (host: CanvasHost | null) => void;
+  /** The actions of the empty-page state; the buttons show only when it is given. */
+  readonly emptyPage?: EmptyPageActions;
   readonly callbacks?: Pick<
     CanvasHostOptions,
-    'onKeyDown' | 'onContextMenu' | 'onNodeDoubleClick' | 'onDropTarget' | 'onCommandError'
+    | 'onAction'
+    | 'onInsert'
+    | 'onKeyDown'
+    | 'onContextMenu'
+    | 'onNodeDoubleClick'
+    | 'onDropTarget'
+    | 'onCommandError'
+    | 'onLocked'
   >;
 }
 
@@ -79,6 +92,46 @@ const BREAKPOINT_LABELS: Readonly<Record<string, MessageKey>> = {
   mobile: 'toolbar.breakpoint.mobile',
 };
 
+const TYPE_ID = /^[a-z0-9-]+\/[a-z0-9-]+$/;
+const MAX_TYPE_LABELS = 128;
+const MAX_LABEL_UNITS = 40;
+// Mirrors the protocol's label rule: plain text of 1-40 characters, no markup or control characters.
+const UNSAFE = /[<>\p{C}\p{Zl}\p{Zp}]/u;
+
+/**
+ * At most 40 UTF-16 units, as the protocol's `.max(40)` counts, without splitting a surrogate pair
+ * (cutting by code points would let ~21 astral characters through, and the canvas drops the message).
+ */
+export function cutLabel(label: string): string {
+  let cut = '';
+  for (const char of label) {
+    if (cut.length + char.length > MAX_LABEL_UNITS) break;
+    cut += char;
+  }
+  return cut;
+}
+
+/** The localized component names the canvas shows on its chip: only what the protocol accepts, at most 128. */
+export function typeLabelsOf(
+  components: Readonly<Record<string, { readonly label?: string | undefined }>> | undefined,
+): Record<string, string> {
+  const labels: Record<string, string> = {};
+  for (const [type, meta] of Object.entries(components ?? {})) {
+    if (Object.keys(labels).length >= MAX_TYPE_LABELS) break;
+    const label = meta.label?.trim();
+    if (
+      label !== undefined &&
+      label.length > 0 &&
+      type.length <= 64 &&
+      TYPE_ID.test(type) &&
+      !UNSAFE.test(label)
+    ) {
+      labels[type] = cutLabel(label);
+    }
+  }
+  return labels;
+}
+
 /**
  * The canvas iframe, its channel and its status screens. A "Reload canvas" button (or a fatal
  * error) mounts a new frame with a new session; nothing is lost, because the store holds the
@@ -87,6 +140,21 @@ const BREAKPOINT_LABELS: Readonly<Record<string, MessageKey>> = {
 export function CanvasFrame(props: CanvasFrameProps) {
   const t = useT();
   const store = useEditor();
+  const view = useViewState();
+  const theme = useTheme();
+  const manifest = useManifest();
+  const typeLabels = useMemo(() => typeLabelsOf(manifest?.components), [manifest]);
+  const [systemDark, setSystemDark] = useState(false);
+  useEffect(() => {
+    const media = globalThis.matchMedia?.('(prefers-color-scheme: dark)');
+    if (!media) return;
+    const update = () => setSystemDark(media.matches);
+    update();
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
+  const resolvedTheme =
+    theme?.attribute === 'dark' || (theme?.attribute === 'system' && systemDark) ? 'dark' : 'light';
   const empty = useEditorState((state) => {
     const root = state.doc.nodes[state.doc.root];
     return Object.values(root?.slots ?? {}).every((children) => children.length === 0);
@@ -110,7 +178,6 @@ export function CanvasFrame(props: CanvasFrameProps) {
     const frame = iframe.current;
     if (frame === null) return;
     const current = propsRef.current;
-    // biome-ignore lint/style/useConst: assigned below, read by the transport's callback
     let created: CanvasHost | undefined;
     const transport = createParentTransport({
       iframe: frame,
@@ -130,11 +197,14 @@ export function CanvasFrame(props: CanvasFrameProps) {
       ...(current.handshakeTimeoutMs !== undefined
         ? { handshakeTimeoutMs: current.handshakeTimeoutMs }
         : {}),
+      onAction: (event) => propsRef.current.callbacks?.onAction?.(event),
+      onInsert: (event) => propsRef.current.callbacks?.onInsert?.(event),
       onKeyDown: (event) => propsRef.current.callbacks?.onKeyDown?.(event),
       onContextMenu: (event) => propsRef.current.callbacks?.onContextMenu?.(event),
       onNodeDoubleClick: (event) => propsRef.current.callbacks?.onNodeDoubleClick?.(event),
       onDropTarget: (event) => propsRef.current.callbacks?.onDropTarget?.(event),
       onCommandError: (error) => propsRef.current.callbacks?.onCommandError?.(error),
+      onLocked: (ids) => propsRef.current.callbacks?.onLocked?.(ids),
     });
     setHost(created);
     propsRef.current.onHost?.(created);
@@ -144,6 +214,31 @@ export function CanvasFrame(props: CanvasFrameProps) {
       setHost(null);
     };
   }, [store, session, source.origin]);
+
+  useEffect(() => {
+    host?.setView({
+      outlines: view.outlines,
+      hidden: [...view.hiddenIds],
+      theme: resolvedTheme,
+      typeLabels,
+      labels: {
+        toolbar: t('canvas.tools'),
+        selectParent: t('canvas.parent'),
+        selectParentOf: t('canvas.selectParentOf'),
+        drag: t('canvas.drag'),
+        moveUp: t('canvas.moveUp'),
+        moveDown: t('canvas.moveDown'),
+        duplicate: t('canvas.duplicate'),
+        remove: t('canvas.delete'),
+        align: t('canvas.align'),
+        alignLeft: t('canvas.align.left'),
+        alignCenter: t('canvas.align.center'),
+        alignRight: t('canvas.align.right'),
+        more: t('canvas.more'),
+        insert: t('canvas.addHere'),
+      },
+    });
+  }, [host, view.outlines, view.hiddenIds, resolvedTheme, typeLabels, t]);
 
   useEffect(() => {
     const element = wrap.current;
@@ -167,11 +262,16 @@ export function CanvasFrame(props: CanvasFrameProps) {
   const zoom = hostState?.zoom ?? 'fit';
   const metrics = stageMetrics({ width, room: room.width, roomHeight: room.height, zoom });
   const { scale } = metrics;
+  useEffect(() => {
+    host?.setView({ scale });
+  }, [host, scale]);
   const breakpointId = hostState?.breakpoint ?? props.breakpoint;
   const breakpointKey = breakpointId === undefined ? undefined : BREAKPOINT_LABELS[breakpointId];
-  const widthLabel = t('editor.canvas.width')
-    .replace('{name}', breakpointKey !== undefined ? t(breakpointKey) : (breakpointId ?? ''))
-    .replace('{width}', String(width));
+  // The same string as the toolbar's device readout, so the two never spell the width differently.
+  const widthLabel = interpolate(t('toolbar.device.size'), {
+    name: breakpointKey !== undefined ? t(breakpointKey) : (breakpointId ?? ''),
+    width,
+  });
   const status = hostState?.status ?? 'connecting';
   const error = hostState?.error;
 
@@ -182,7 +282,7 @@ export function CanvasFrame(props: CanvasFrameProps) {
       data-status={status}
       aria-busy={status === 'connecting' || status === 'initializing'}
     >
-      <p className="bd-canvas-width">{widthLabel}</p>
+      <p className="bd-canvas-width bd-device-label">{widthLabel}</p>
       <div className="bd-canvas-stage-area" ref={wrap}>
         <div
           className="bd-canvas-stage"
@@ -212,10 +312,25 @@ export function CanvasFrame(props: CanvasFrameProps) {
           <p className="bd-canvas-title">{t('editor.canvas.connecting')}</p>
         </div>
       ) : null}
+      {hostState?.connectionLost ? (
+        <div className="bd-canvas-card bd-canvas-error" role="alert">
+          {t('canvas.connectionLost')}
+        </div>
+      ) : null}
       {status === 'ready' && empty ? (
         <div className="bd-canvas-card bd-canvas-status bd-canvas-empty" role="status">
           <Icon name="monitor-smartphone" size="md" />
           <p className="bd-canvas-title">{t('editor.canvas.empty')}</p>
+          {props.emptyPage !== undefined ? (
+            <div className="bd-canvas-actions">
+              <Button variant="primary" onClick={() => props.emptyPage?.onAddBlock()}>
+                {t('canvas.empty.add')}
+              </Button>
+              <Button onClick={() => props.emptyPage?.onPickPattern()}>
+                {t('canvas.empty.pattern')}
+              </Button>
+            </div>
+          ) : null}
         </div>
       ) : null}
       {status === 'error' && error !== undefined ? (

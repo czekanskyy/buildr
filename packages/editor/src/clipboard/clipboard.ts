@@ -11,7 +11,7 @@ import {
   registryVersions,
   reId,
 } from '@next-buildr/core';
-import type { EditorStore } from '../store/index.ts';
+import { type EditorStore, structureLockedIds } from '../store/index.ts';
 import { type ClipboardError, parseClipboardText, serializeFragment } from './format.ts';
 
 /** The system clipboard as far as the editor needs it; both calls may reject (no permission, no API). */
@@ -186,6 +186,10 @@ export function createClipboard(options: ClipboardOptions): Clipboard {
     copy,
     async cut() {
       if (store.getState().readOnly) return fail({ code: 'readOnly' });
+      // A locked block stays where it is, and the clipboard keeps what it held.
+      if (structureLockedIds(store.getState().doc, copyable(store)).length > 0) {
+        return fail({ code: 'locked' });
+      }
       const copied = await copy();
       if (!copied.ok) return copied;
       const removed = store.dispatch({ type: 'node.remove', payload: { ids: copyable(store) } });

@@ -61,6 +61,17 @@
   --bd-elevation-3: 0 12px 32px rgb(18 19 23 / 14%), 0 0 0 1px #dfe1e7;
   --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  /* the hue spectrum is data, not a theme colour */
+  --bd-hue-gradient: linear-gradient(
+    to right,
+    hsl(0 100% 50%),
+    hsl(60 100% 50%),
+    hsl(120 100% 50%),
+    hsl(180 100% 50%),
+    hsl(240 100% 50%),
+    hsl(300 100% 50%),
+    hsl(360 100% 50%)
+  );
   --bd-text-xs: 11px;
   --bd-leading-xs: 16px;
   --bd-text-sm: 12px;

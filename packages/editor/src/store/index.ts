@@ -14,6 +14,7 @@ export {
   useNode,
   useNodeChildren,
   useSelectedNode,
+  useViewState,
 } from './react.tsx';
 export type { SelectionMove, SelectMode } from './selection.ts';
 export { pathTo, relativeNode } from './selection.ts';
@@ -25,6 +26,11 @@ export {
   selectSelectedNode,
   selectSelectionPath,
 } from './selectors.ts';
+export {
+  isNodeStructureLocked,
+  structureLockedIds,
+  structureLockReason,
+} from './structure-lock.ts';
 export type {
   DispatchOptions,
   DocumentChange,
@@ -33,3 +39,5 @@ export type {
   EditorStoreOptions,
   ValidationSnapshot,
 } from './types.ts';
+export type { ViewState, ViewStore } from './view.ts';
+export { createViewStore } from './view.ts';

@@ -93,14 +93,18 @@ async function signIn(page: Page): Promise<void> {
 /** Opens the page in the visual editor: it renders, shows no errors and lists every node. */
 async function expectEditable(page: Page, built: Built, headline: string): Promise<void> {
   await signIn(page);
+  // The layer tree is virtualized (only the rows in view exist): make the window tall enough
+  // that every node of the page has a row.
+  await page.setViewportSize({ width: 1280, height: 720 + built.nodeCount * 32 });
   await page.goto(`/buildr/edit/pages/${String(built.id)}`);
   const canvas = page.frameLocator('iframe');
   await expect(canvas.getByRole('heading', { name: headline }).first()).toBeVisible();
-  await page.getByRole('button', { name: 'Show issues' }).click();
-  await expect(page.getByRole('button', { name: /^Errors \(0\)/ })).toBeVisible();
+  await page.locator('.bd-status-btn[aria-controls]').click();
+  await expect(page.getByText('Checking the page…')).toHaveCount(0);
+  await expect(page.locator('.bd-issue[data-severity="error"]')).toHaveCount(0);
   // Every node the agent made is a row of the editor's layer tree (the page root included).
-  await page.getByRole('tab', { name: 'Layers' }).click();
-  const layers = page.getByRole('tree', { name: 'Layers' });
+  await page.getByRole('tab', { name: 'Structure' }).click();
+  const layers = page.getByRole('tree', { name: 'Page structure' });
   await expect(layers).toBeVisible();
   const closed = layers.locator('[role=treeitem][aria-expanded=false]');
   for (let step = 0; step < built.nodeCount; step++) {

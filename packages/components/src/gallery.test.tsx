@@ -47,6 +47,8 @@ describe.each(galleryEntries.map((entry) => ({ id: entry.id, entry })))(
       container.innerHTML = html;
       window.document.body.replaceChildren(container);
       const results = await axe(container, {
+        // jsdom cannot message a frame; the frame's own content is the embedded page's concern.
+        iframes: false,
         rules: {
           // jsdom has no layout or stylesheet cascade, so colour contrast cannot be judged here.
           'color-contrast': { enabled: false },

@@ -30,6 +30,7 @@ export function layoutAxisOf(
 function childElements(el: Element): Map<NodeId, Element> {
   const found = new Map<NodeId, Element>();
   for (const child of el.querySelectorAll('[data-bid]')) {
+    if (child.closest('[data-buildr-overlay]') !== null) continue;
     const id = child.getAttribute('data-bid');
     if (id !== null && !found.has(id)) found.set(id, child);
   }
@@ -79,6 +80,7 @@ export function buildHitPath(doc: Document, point: Point, store: CanvasStore): H
     typeof doc.elementsFromPoint === 'function' ? doc.elementsFromPoint(point.x, point.y) : [];
   let el: Element | null = null;
   for (const candidate of hit) {
+    if (candidate.closest('[data-buildr-overlay]') !== null) continue;
     const owner = candidate.closest('[data-bid]');
     if (owner !== null) {
       el = owner;

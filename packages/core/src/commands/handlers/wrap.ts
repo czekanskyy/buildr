@@ -9,6 +9,7 @@ import { valueSchema } from '../../values/schema.ts';
 import type { Value } from '../../values/types.ts';
 import { commandError, fromReason } from '../errors.ts';
 import type { Command, CommandHandler } from '../types.ts';
+import { isHtmlProp, requireHtmlCapability, sanitizedHtmlValue } from './author-code.ts';
 import { checkPropValue } from './props.ts';
 import { placeholderIds, withSlot } from './shared.ts';
 
@@ -113,6 +114,9 @@ export const wrapHandler: CommandHandler<WrapCommand> = {
           commandError('command.unknown-prop', `${wrapperMeta.label} has no "${name}" prop.`),
         );
       }
+      // Author HTML (ADR-026) needs the host capability here as it does in `node.setProp`.
+      const allowed = requireHtmlCapability(def, env.capabilities);
+      if (!allowed.ok) return allowed;
       const checked = checkPropValue(def, value);
       if (!checked.ok) return checked;
     }
@@ -208,10 +212,23 @@ export const wrapHandler: CommandHandler<WrapCommand> = {
 
     let wrapperId = env.generateId();
     while (Object.hasOwn(draft.nodes, wrapperId)) wrapperId = env.generateId();
+    const wrapperDefs = env.registry.get(type)?.props ?? {};
+    // HTML props are stored in their sanitised form (ADR-026), whichever command wrote them.
+    const wrapperProps =
+      props === undefined
+        ? {}
+        : Object.fromEntries(
+            Object.entries(props).map(([name, value]) => [
+              name,
+              isHtmlProp(Object.hasOwn(wrapperDefs, name) ? wrapperDefs[name] : undefined)
+                ? sanitizedHtmlValue(value)
+                : value,
+            ]),
+          );
     const wrapper: PageNode = {
       id: wrapperId,
       type,
-      ...(props !== undefined && Object.keys(props).length > 0 ? { props } : {}),
+      ...(Object.keys(wrapperProps).length > 0 ? { props: wrapperProps } : {}),
       slots: { default: ids },
     };
     draft.nodes[wrapperId] = wrapper as never;

@@ -37,6 +37,7 @@ const registry = createRegistryMeta({
       props: {
         text: p.text({ default: 'Heading' }),
         level: p.number({ min: 1, max: 6, default: 2 }),
+        tag: p.select({ options: ['heading', 'p', 'span', 'div', 'strong'], default: 'heading' }),
       },
     }),
     component('buildr/image', {
@@ -225,6 +226,40 @@ describe('runA11y', () => {
       expect(only('heading-order', headings([1, 2, 1]), { config }).map((i) => i.nodeId)).toEqual([
         ID(3),
       ]);
+    });
+  });
+
+  describe('headings rendered as another tag', () => {
+    it('skips a non-heading tag in heading-order and the layout H1 warning', () => {
+      const config = { expectH1: 'layout' as const };
+      const doc = build([
+        n(1, 'buildr/heading', { level: s(1), tag: s('p') }),
+        n(2, 'buildr/heading', { level: s(4), tag: s('span') }),
+        n(3, 'buildr/heading', { level: s(2) }),
+      ]);
+      expect(only('heading-order', doc, { config })).toEqual([]);
+    });
+    it('still judges a heading whose tag is the default or explicitly heading', () => {
+      const config = { expectH1: 'layout' as const };
+      const doc = build([
+        n(1, 'buildr/heading', { level: s(1), tag: s('heading') }),
+        n(2, 'buildr/heading', { level: s(4) }),
+      ]);
+      expect(only('heading-order', doc, { config }).map((i) => i.nodeId)).toEqual([ID(1), ID(2)]);
+    });
+    it('does not count a non-heading level 1 as the page H1', () => {
+      const config = { expectH1: 'document' as const };
+      const doc = build([n(1, 'buildr/heading', { level: s(1), tag: s('div') })]);
+      expect(only('heading-order', doc, { config })).toHaveLength(1); // no H1 at all
+      const withH1 = build([
+        n(1, 'buildr/heading', { level: s(1) }),
+        n(2, 'buildr/heading', { level: s(1), tag: s('div') }),
+      ]);
+      expect(only('heading-order', withH1, { config })).toEqual([]);
+    });
+    it('skips an empty non-heading in empty-heading', () => {
+      const doc = build([n(1, 'buildr/heading', { text: s(' '), tag: s('p') })]);
+      expect(only('empty-heading', doc)).toEqual([]);
     });
   });
 

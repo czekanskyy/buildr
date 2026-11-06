@@ -48,6 +48,13 @@ export function buildrPlugin(input: BuildrPluginOptions): Plugin {
       'buildrPlugin: forms need the "registry" option (the form schema is derived from it)',
     );
   }
+  // Author code is checked against the registry's html props (ADR-026); without one only a coarse
+  // name check runs, so anything but `false` is refused rather than half enforced.
+  if (options.authorCode !== false && options.registry === undefined) {
+    throw new Error(
+      'buildrPlugin: authorCode needs the "registry" option (the HTML props it checks are read from it)',
+    );
+  }
   const stray = forms.notifyTo.find(
     (address) => !isAllowedRecipient(address, forms.notifyAllowlist),
   );

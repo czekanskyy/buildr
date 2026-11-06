@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { authorCodeEnabled } from '../../author/capabilities.ts';
+import { hasAuthorCode, nodeAuthorFieldError, sanitizeNodeHtml } from '../../author/node.ts';
 import { type BuilderFragment, fragmentSchema, reId } from '../../document/fragment.ts';
 import { DEFAULT_DOCUMENT_LIMITS } from '../../document/limits.ts';
 import type { BuilderDocument, NodeId } from '../../document/types.ts';
@@ -106,6 +108,32 @@ function checkTypes(
   return ok(undefined);
 }
 
+/**
+ * Author code in a pasted or inserted fragment (ADR-026) is held to the same rule as writing it
+ * with `node.setAttr`/`node.setProp`: refused without `capabilities.authorCode`, and checked
+ * against its rules with it.
+ */
+function checkAuthorCode(
+  registry: RegistryMeta,
+  fragment: BuilderFragment,
+  allowed: boolean,
+): Result<void, CommandError> {
+  for (const node of Object.values(fragment.nodes)) {
+    if (!hasAuthorCode(node, registry.get(node.type))) continue;
+    if (!allowed) {
+      return err(
+        commandError(
+          'command.author-code-not-permitted',
+          'This editor is not allowed to insert content with custom CSS, classes, attributes or HTML.',
+        ),
+      );
+    }
+    const problem = nodeAuthorFieldError(node);
+    if (problem !== undefined) return err(commandError('command.invalid-value', problem));
+  }
+  return ok(undefined);
+}
+
 /** An id generator that never returns an id already in `doc` or already handed out. */
 function freshIds(nodes: object, generate: () => string): () => string {
   const used = new Set<string>();
@@ -152,6 +180,8 @@ export const insertHandler: CommandHandler<InsertCommand> = {
     if (!structure.ok) return structure;
     const types = checkTypes(doc, env.registry, fragment);
     if (!types.ok) return types;
+    const author = checkAuthorCode(env.registry, fragment, authorCodeEnabled(env.capabilities));
+    if (!author.ok) return author;
 
     const limits = DEFAULT_DOCUMENT_LIMITS;
     const count = Object.keys(fragment.nodes).length;
@@ -196,7 +226,10 @@ export const insertHandler: CommandHandler<InsertCommand> = {
       ? reId(cmd.payload.fragment, freshIds(draft.nodes, env.generateId))
       : cmd.payload.fragment;
 
-    for (const [id, node] of Object.entries(fragment.nodes)) draft.nodes[id] = node as never;
+    for (const [id, node] of Object.entries(fragment.nodes)) {
+      // HTML props are stored in their sanitised form (ADR-026).
+      draft.nodes[id] = sanitizeNodeHtml(node, env.registry.get(node.type)) as never;
+    }
     for (const [type, version] of Object.entries(fragment.components)) {
       if (draft.components[type] === undefined) draft.components[type] = version;
     }

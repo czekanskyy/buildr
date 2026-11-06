@@ -147,7 +147,35 @@ Rules:
 
 ## Toolbar pattern
 
-Three zones (left: back, title, status pill; centre: segmented breakpoint control and zoom menu; right: history, save status, pickers, Preview, Publish, more). Segmented controls (`.bd-segmented` / `.bd-segment`) use icons with the label and width in the tooltip. Publish is the only primary button; Preview is secondary. Collapse is driven by a `ResizeObserver` on the row, never a media query. Floating layers portal into the editor root so they carry the theme.
+Three zones (PB-157). Left: back to the CMS, brand, left panel toggle, undo and redo, page chip (opens the page-options dialog). Centre: segmented breakpoint control and the zoom menu. Right: save indicator, locale chip, versions, icon-only Preview, more menu, right panel toggle, Publish. The more menu holds back to the CMS, versions, the light / dark / system theme switch, sample data, Shortcuts and Help (Help only with the host's `helpUrl`). Segmented controls (`.bd-segmented` / `.bd-segment`) use icons with the label and width in the tooltip. Publish is the only primary button. Collapse is driven by a `ResizeObserver` on the row (`use-overflow-level.ts`), never a media query. Floating layers portal into the editor root so they carry the theme.
+
+## Editor layout (PB-157)
+
+`app/layout.tsx` renders the toolbar, the body (left panel, stage, right panel) and the status bar.
+
+- **Left panel**: tabs Blocks and Structure, a collapse button, and a rail with one icon per tab when collapsed. Blocks has a Blocks / Patterns switch, the insert target chip, Recently used, collapsible categories and flat highlighted search results; `/` focuses the search. Structure is the layers tree.
+- **Right panel**: the inspector (Content, Style, Advanced tabs); collapsed, its rail shows the tabs as icons.
+- **Panels** resize with splitters and collapse to rails; below 1100px they are overlays.
+- **Stage**: the canvas, the empty-page state and the issues drawer, which opens inside the stage.
+- **Status bar**: labelled breadcrumbs, the issues button with error and warning counts, the zoom menu and save state.
+- **Toasts** (`ui/toast.tsx`): publish, delete and duplicate (with Undo), move, copy, save failure (with Retry now).
+
+## Inspector and style tab (PB-157)
+
+The inspector header shows the selected block; its tabs mark changed settings. Style sections (layout, position, size, spacing, typography, colours, background, border and corners, shadow) are collapsible, remember their open state and have an expand / collapse all toggle. Widgets include segmented controls, box-model and sides editors, a token picker, gradient fields and scrubbable number labels. Shadow cards are read-only: `effects.shadow` accepts only a theme token or `none`. The bind control keeps the Fixed / Data / Formula segmented control.
+
+## Shortcuts (PB-157)
+
+The registry is `shortcuts/map.ts`; the help dialog (`?`) lists every default, grouped General, Selection, Editing and View. Hosts override combinations by action id.
+
+| Group | Shortcuts |
+|---|---|
+| General | Mod+S save, Mod+Z undo, Mod+Shift+Z / Mod+Y redo, `/` search blocks, `?` help |
+| Selection | Escape selects the parent and clears the selection at the top, Mod+A select siblings |
+| Editing | Mod+D duplicate, Delete / Backspace delete, Mod+C / X / V copy, cut, paste, Alt+Up / Down move |
+| View | Mod+1 / 2 / 3 desktop, tablet, phone; Mod+. show or hide panels |
+
+Deleting a block with descendants asks for confirmation; a block without descendants is removed at once with an Undo toast. Shortcuts work while focus is in the editor UI; forwarding from the canvas iframe is deferred. Mod+Shift+O (block outlines) is registered but has no effect, because the editor has no guides state.
 
 ## Do and don't
 

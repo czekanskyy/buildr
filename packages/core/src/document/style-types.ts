@@ -95,6 +95,22 @@ export interface EffectsStyles {
   readonly cursor?: StyleValue | undefined;
 }
 
+/**
+ * Typed motion (ADR-027), compiled to CSS only: an entrance animation, a hover animation and
+ * scroll-linked reveal and parallax. Every value is an enum or a bounded number.
+ */
+export interface MotionStyles {
+  readonly entrance?: StyleValue | undefined;
+  readonly entranceDirection?: StyleValue | undefined;
+  readonly entranceDuration?: StyleValue | undefined;
+  readonly entranceDelay?: StyleValue | undefined;
+  readonly entranceEasing?: StyleValue | undefined;
+  readonly hover?: StyleValue | undefined;
+  readonly hoverDuration?: StyleValue | undefined;
+  readonly scrollReveal?: StyleValue | undefined;
+  readonly scrollParallax?: StyleValue | undefined;
+}
+
 export interface VisibilityStyles {
   /** `display: none` at this breakpoint. */
   readonly hidden?: boolean | undefined;
@@ -109,6 +125,7 @@ export interface StyleDecl {
   readonly background?: BackgroundStyles | undefined;
   readonly border?: BorderStyles | undefined;
   readonly effects?: EffectsStyles | undefined;
+  readonly motion?: MotionStyles | undefined;
   readonly visibility?: VisibilityStyles | undefined;
 }
 

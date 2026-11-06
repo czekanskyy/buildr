@@ -26,6 +26,8 @@ export interface IssueItem {
   readonly fix?: A11yFix | undefined;
   /** The language a finding was made in (`missing-translation`); absent for the ones that do not depend on it. */
   readonly locale?: string | undefined;
+  /** The values a diagnostic carried (`slot`, `recorded`, ...); what a translated message fills in. */
+  readonly details?: Readonly<Record<string, unknown>> | undefined;
 }
 
 const RANK: Record<IssueSeverity, number> = { error: 0, warning: 1, info: 2 };
@@ -65,6 +67,7 @@ export function collectIssues(input: CollectInput): IssueItem[] {
       message: issue.message,
       nodeId: known(nodeOfDiagnostic(issue)),
       blocking: issue.blocking,
+      details: issue.details,
     });
   }
   for (const [index, issue] of (input.a11y ?? []).entries()) {

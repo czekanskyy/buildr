@@ -29,6 +29,7 @@ export type StyleGroupId =
   | 'background'
   | 'border'
   | 'effects'
+  | 'motion'
   | 'visibility';
 
 /** One named slot a component accepts children into (docs/component-registry.md#metadata-vs-implementation). */

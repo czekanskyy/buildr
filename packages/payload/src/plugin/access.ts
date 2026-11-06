@@ -38,6 +38,26 @@ export async function allowed(
   return check === undefined ? true : Boolean(await check({ req }));
 }
 
+/**
+ * Whether the request may save author code (ADR-026): the plugin `authorCode` option, `false` by
+ * default, as a boolean or a function of the request (which sees `req.user`, so it decides what an
+ * unauthenticated Local API call may do). An API-key request never may, whatever the option says
+ * (an agent is not a trusted editor); a function that throws or returns anything but `true` means no.
+ */
+export async function authorCodePermitted(
+  options: Pick<ResolvedOptions, 'authorCode'>,
+  req: PayloadRequest,
+): Promise<boolean> {
+  if (isApiKeyRequest(req)) return false;
+  const setting = options.authorCode;
+  if (typeof setting === 'boolean') return setting;
+  try {
+    return (await setting({ req })) === true;
+  } catch {
+    return false;
+  }
+}
+
 export async function permissionsOf(
   options: Pick<ResolvedOptions, 'access' | 'mcp'>,
   req: PayloadRequest,

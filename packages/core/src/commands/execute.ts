@@ -23,6 +23,7 @@ function handlerEnv(doc: BuilderDocument, env: CommandEnv): HandlerEnv {
     registry: env.registry,
     generateId: env.generateId,
     canUnlock: env.canUnlock,
+    capabilities: env.capabilities,
     get index() {
       return createIndex(doc);
     },

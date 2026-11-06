@@ -28,6 +28,7 @@
   --bd-box-v-w: 36px;
   --bd-boxbar-h: 10px;
   --bd-boxbar-w: 10px;
+  --bd-unit-chip-w: 44px;
   --bd-check-h: 4px;
   --bd-check-tf: rotate(-45deg) translate(1px, -1px) scale(0);
   --bd-check-tf-2: rotate(-45deg) translate(1px, -1px) scale(1);
@@ -39,6 +40,7 @@
   --bd-curve-h: 64px;
   --bd-curve-w: 64px;
   --bd-dialog--wide-w: 760px;
+  --bd-media-side-w: 220px;
   --bd-dialog-head-lh: 24px;
   --bd-dialog-w: 480px;
   --bd-drop-min-h: 88px;
@@ -48,10 +50,11 @@
   --bd-field-h: 6px;
   --bd-field-w: 6px;
   --bd-hue-h: 8px;
+  --bd-stepper-w: 14px;
   --bd-imgpick-thumb-w: 56px;
   --bd-input--area-lh: 18px;
   --bd-input--area-min-h: 96px;
-  --bd-issues-h: 160px;
+  --bd-issues-h: 200px;
   --bd-issues-head-h: 36px;
   --bd-kv-cols: minmax(0, 1fr) minmax(0, 1fr) 24px;
   --bd-logo-h: 22px;

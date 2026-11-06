@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { icons } from 'lucide-react';
+import * as lucideExports from 'lucide-react';
 import { act, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -35,9 +35,17 @@ const show = (node: ReactNode) =>
 
 describe('icon maps', () => {
   it('name only real lucide icons (checked against the lucide-react export list)', () => {
-    const unknown = componentIconNames.filter((name) => !(pascal(name) in icons));
+    const unknown = componentIconNames.filter((name) => !(pascal(name) in lucideExports));
     expect(unknown).toEqual([]);
     expect(componentIconNames.length).toBeGreaterThanOrEqual(60);
+  });
+
+  it('checks every editor map name against lucide exports', () => {
+    const source = readFileSync(join(import.meta.dirname, 'icon.tsx'), 'utf8');
+    const map = source.split('const EDITOR_ICONS = {')[1]?.split('} as const')[0] ?? '';
+    const names = [...map.matchAll(/^ {2}'?([a-z0-9-]+)'?:/gm)].map((match) => match[1] ?? '');
+    expect(names.length).toBeGreaterThan(100);
+    expect(names.filter((name) => !(pascal(name) in lucideExports))).toEqual([]);
   });
 
   it('draws every editor icon, under real lucide names', async () => {
@@ -71,7 +79,7 @@ describe('icon maps', () => {
       'x',
     ];
     await show(names.map((name) => <Icon key={name} name={name} />));
-    expect(names.filter((name) => !(pascal(name) in icons))).toEqual([]);
+    expect(names.filter((name) => !(pascal(name) in lucideExports))).toEqual([]);
     expect(container.querySelectorAll('svg')).toHaveLength(names.length);
   });
 });
@@ -137,5 +145,82 @@ describe('no glyph icons (PB-120)', () => {
       glyph.test(readFileSync(file, 'utf8')),
     );
     expect(offenders).toEqual([]);
+  });
+});
+
+describe('template icons (PB-157)', () => {
+  it('draws the icons the design template adds, under real lucide names', async () => {
+    const names: IconName[] = [
+      'plus',
+      'minus',
+      'save',
+      'send',
+      'upload',
+      'palette',
+      'eye-off',
+      'crosshair',
+      'grip-vertical',
+      'ellipsis-vertical',
+      'chevron-up',
+      'chevrons-left',
+      'chevrons-down-up',
+      'chevrons-up-down',
+      'circle-question-mark',
+      'clipboard-paste',
+      'corner-left-up',
+      'list-filter',
+      'list-tree',
+      'lock-open',
+      'mouse-pointer-2',
+      'pencil-line',
+      'sliders-vertical',
+      'square-check-big',
+      'panel-top',
+      'table',
+      'globe',
+      'play',
+      'eye',
+      'lock',
+      'history',
+      'square-dashed',
+      'arrow-up-left',
+      'arrow-up',
+      'arrow-down',
+      'circle-plus',
+      'copy',
+      'trash-2',
+      'ellipsis',
+      'link',
+      'unlink',
+      'bold',
+      'italic',
+      'underline',
+      'strikethrough',
+      'video',
+      'clock',
+      'sparkles',
+      'droplet',
+      'rotate-cw',
+      'scale',
+      'layers',
+      'panel-left',
+      'panel-right',
+      'tablet',
+      'smartphone',
+      'monitor',
+      'align-start-horizontal',
+      'align-center-horizontal',
+      'align-end-horizontal',
+      'search',
+      'x',
+      'check',
+      'external-link',
+      'move',
+      'blend',
+    ];
+    await show(names.map((name) => <Icon key={name} name={name} />));
+    expect(names.filter((name) => !(pascal(name) in lucideExports))).toEqual([]);
+    expect(container.querySelectorAll('svg')).toHaveLength(names.length);
+    expect(container.querySelector('[data-icon="plus"]')).not.toBeNull();
   });
 });

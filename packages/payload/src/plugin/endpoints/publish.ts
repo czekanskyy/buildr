@@ -1,6 +1,7 @@
 import { type Diagnostic, runA11y } from '@next-buildr/core';
 import type { Endpoint } from 'payload';
 import { publishRequestSchema, publishResponseSchema } from '../../contract.ts';
+import { authorCodePermitted } from '../access.ts';
 import { processLayout } from '../hooks/process-layout.ts';
 import { configuredLocales } from '../locales.ts';
 import {
@@ -45,9 +46,12 @@ export const publishEndpoint = (env: EndpointEnv): Endpoint => ({
     const current = revisionOf(found.value);
     if (parsed.data.baseRevision !== current) return conflict(current);
 
+    // Publishing writes no layout: what is stored passes as it is (a save already vetted its author code).
     const layout = processLayout(found.value['layout'], {
       ...env.options,
       locales: configuredLocales(req.payload.config),
+      allowAuthorCode: await authorCodePermitted(env.options, req),
+      previous: found.value['layout'],
     });
     if (!layout.ok) return invalid(layout.diagnostics);
 

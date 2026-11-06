@@ -131,7 +131,7 @@ describe('buildr/container', () => {
         data,
       );
       expect(html).toContain('data-has-background=""');
-      expect(html).toMatch(/<img [^>]*class="bc-container__background"[^>]*>/);
+      expect(html).toMatch(/<img [^>]*class="bc-container__background[ "][^>]*>/);
       expect(html).toMatch(/<img [^>]*src="\/media\/cat\.jpg"[^>]*alt=""/);
       expect(html.indexOf('bc-container__background')).toBeLessThan(html.indexOf('>probe<'));
     });
@@ -177,11 +177,13 @@ describe('buildr/container', () => {
   describe('metadata', () => {
     const { meta } = Container;
 
-    it('is version 2, a landmark that follows `as`, and takes landmark content', () => {
-      expect(meta.version).toBe(2);
+    it('is version 3, a landmark that follows `as`, and takes landmark content', () => {
+      expect(meta.version).toBe(3);
       expect(meta.a11y).toEqual({ element: 'div', landmark: true });
       expect(meta.contentCategories).toEqual(['flow', 'landmark']);
       expect(meta.styles.groups).toContain('size');
+      // Text colour and typography are inherited by the children, so the container offers them.
+      expect(meta.styles.groups).toContain('typography');
     });
 
     it('labels the block display as a box and the missing width limit as "No limit"', () => {
@@ -366,11 +368,17 @@ describe('buildr/container', () => {
       });
     });
 
-    it('draws the background image behind the content', () => {
-      expect(rule('.bc-container__background')).toMatchObject({
+    it('draws the background media behind the content, clipped to the box', () => {
+      expect(rule('.bc-container__media')).toMatchObject({
         position: 'absolute',
         inset: '0',
         'z-index': '-1',
+        overflow: 'hidden',
+        'pointer-events': 'none',
+      });
+      expect(rule('.bc-container__background')).toMatchObject({
+        position: 'absolute',
+        inset: '0',
         'object-fit': 'cover',
       });
     });

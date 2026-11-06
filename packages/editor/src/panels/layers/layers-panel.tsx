@@ -12,7 +12,9 @@ import {
   useRef,
   useState,
 } from 'react';
+import type { RemoveRequest } from '../../app/contracts.ts';
 import { componentMeta, useManifest } from '../../app/manifest.tsx';
+import { useClipboardActions } from '../../clipboard/index.ts';
 import {
   MoveToDialog,
   useDragAutoscroll,
@@ -22,7 +24,10 @@ import {
   useRegisterTree,
 } from '../../dnd/index.ts';
 import { type MessageKey, useT } from '../../messages/index.tsx';
-import { pathTo, useEditor, useEditorState } from '../../store/index.ts';
+import { useOptionalShortcutRegistry } from '../../shortcuts/index.ts';
+import { hasDescendants } from '../../shortcuts/navigation.ts';
+import { pathTo, structureLockedIds, useEditor, useEditorState } from '../../store/index.ts';
+import { useViewState } from '../../store/react.tsx';
 import {
   ComponentIcon,
   ContextMenu,
@@ -31,12 +36,14 @@ import {
   type IconName,
   Input,
   type MenuItem,
+  SearchField,
   Tooltip,
+  useStructureLockedNotice,
 } from '../../ui/index.ts';
-import { flattenTree, type LayerRow } from './flatten.ts';
+import { filterTree, flattenTree, type LayerRow, nodesWithChildren } from './flatten.ts';
 
 /** Every row is this tall, which is what lets the list render only the rows in view. */
-export const ROW_HEIGHT = 28;
+export const ROW_HEIGHT = 32;
 const OVERSCAN = 6;
 /** Used until the list has been measured (and where nothing is laid out, as in tests). */
 const FALLBACK_HEIGHT = 400;
@@ -48,6 +55,8 @@ const PAD = 4;
 export interface LayersPanelProps {
   /** The component a "Wrap in container" wraps the selection in. */
   readonly wrapperType?: string;
+  /** Hands a removal to the shell (confirmation, Undo toast); without it the nodes are removed at once. */
+  readonly onRemoveRequest?: (request: RemoveRequest) => void;
 }
 
 /** The nodes that have an issue, from the last validation and accessibility run. */
@@ -73,9 +82,32 @@ function useIssueNodes(): ReadonlySet<NodeId> {
  * the store (the canvas and the tree show the same node), with rename, badges and a context menu.
  * Focus stays on the tree and `aria-activedescendant` names the row; the selection follows it.
  */
-export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
+export function LayersPanel(props: LayersPanelProps) {
+  const registry = useOptionalShortcutRegistry();
+  // The editor shell pairs the shortcut and clipboard providers. Standalone trees
+  // still support navigation and commands without requiring either provider.
+  return registry === undefined ? (
+    <LayersPanelBody {...props} />
+  ) : (
+    <ClipboardLayersPanel {...props} />
+  );
+}
+
+function ClipboardLayersPanel(props: LayersPanelProps) {
+  const clipboard = useClipboardActions();
+  return <LayersPanelBody {...props} clipboard={clipboard} />;
+}
+
+function LayersPanelBody({
+  wrapperType = 'buildr/box',
+  onRemoveRequest,
+  clipboard,
+}: LayersPanelProps & {
+  readonly clipboard?: ReturnType<typeof useClipboardActions>;
+}) {
   const t = useT();
   const store = useEditor();
+  const notifyLocked = useStructureLockedNotice();
   const manifest = useManifest();
   const treeId = useId();
   const doc = useEditorState((state) => state.doc);
@@ -84,6 +116,8 @@ export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
   const hoveredId = useEditorState((state) => state.hoveredId);
   const readOnly = useEditorState((state) => state.readOnly);
   const issueNodes = useIssueNodes();
+  const { hiddenIds, toggleHidden } = useViewState();
+  const hiddenSet = useMemo(() => new Set(hiddenIds), [hiddenIds]);
 
   const [expanded, setExpanded] = useState<ReadonlySet<NodeId>>(() => new Set([doc.root]));
   const [renaming, setRenaming] = useState<NodeId | null>(null);
@@ -99,7 +133,27 @@ export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
   const drop = useDragState((state) => (state.over === 'tree' ? state.tree : null));
   const dropTarget = useDragState((state) => (state.over === 'tree' ? state.target : null));
 
-  const rows = useMemo(() => flattenTree(doc, expanded), [doc, expanded]);
+  // The filter keeps the blocks whose name or type contains the text, and their ancestors.
+  const [filter, setFilter] = useState('');
+  const needle = filter.trim().toLocaleLowerCase();
+  const kept = useMemo(
+    () =>
+      needle === ''
+        ? undefined
+        : filterTree(doc, (candidate) =>
+            [candidate.name, componentMeta(manifest, candidate.type)?.label, candidate.type].some(
+              (text) => text?.toLocaleLowerCase().includes(needle) === true,
+            ),
+          ),
+    [doc, manifest, needle],
+  );
+  const rows = useMemo(
+    () =>
+      kept !== undefined && kept.only.size === 0
+        ? []
+        : flattenTree(doc, kept?.open ?? expanded, kept?.only),
+    [doc, expanded, kept],
+  );
   useRegisterTree(() => {
     const element = scroller.current;
     if (element === null) return undefined;
@@ -172,9 +226,15 @@ export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
   const run = useCallback(
     (command: Command, label?: string) => {
       const result = store.dispatch(command, label !== undefined ? { label } : undefined);
-      setNotice(result.ok ? '' : result.error.message);
+      setNotice(
+        result.ok
+          ? ''
+          : result.error.code === 'command.unlock-not-permitted'
+            ? t('layers.unlockNotPermitted')
+            : result.error.message,
+      );
     },
-    [store],
+    [store, t],
   );
 
   const toggle = useCallback((id: NodeId, open?: boolean) => {
@@ -185,6 +245,22 @@ export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
       return next;
     });
   }, []);
+
+  /** Locking is a document attribute (`node.setAttr` `lock`); unlocking may be refused by the host's `canUnlock`. */
+  const toggleLock = useCallback(
+    (id: NodeId) => {
+      const locked = store.getState().doc.nodes[id]?.lock !== undefined;
+      run({
+        type: 'node.setAttr',
+        payload: {
+          id,
+          key: 'lock',
+          value: locked ? null : { structure: true, content: true, style: true },
+        },
+      });
+    },
+    [store, run],
+  );
 
   const startRename = (id: NodeId) => {
     if (!readOnly && id !== doc.root) setRenaming(id);
@@ -199,11 +275,25 @@ export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
     run({ type: 'node.setAttr', payload: { id, key: 'name', value: name === '' ? null : name } });
   };
 
+  /** A block locked for structure (itself or in a locked block) is not removed, moved or duplicated: say why. */
+  const refuseLocked = (ids: readonly NodeId[]): boolean => {
+    if (structureLockedIds(doc, ids).length === 0) return false;
+    notifyLocked(ids);
+    return true;
+  };
+
+  const removeIds = (ids: readonly NodeId[]) => {
+    if (refuseLocked(ids)) return;
+    if (onRemoveRequest !== undefined)
+      onRemoveRequest({ ids, hasDescendants: hasDescendants(doc, ids) });
+    else run({ type: 'node.remove', payload: { ids } });
+  };
+
   const removable = (ids: readonly NodeId[]) => ids.filter((id) => id !== doc.root);
 
   const remove = () => {
     const ids = removable(selectedIds);
-    if (ids.length > 0) run({ type: 'node.remove', payload: { ids } });
+    if (ids.length > 0) removeIds(ids);
   };
 
   // --- keyboard ---
@@ -275,7 +365,7 @@ export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
   const onClick = (event: MouseEvent<HTMLDivElement>) => {
     const id = rowOf(event);
     if (id === undefined) return;
-    if ((event.target as Element).closest('[data-more]') !== null) return;
+    if ((event.target as Element).closest('[data-more], [data-action]') !== null) return;
     if ((event.target as Element).closest('[data-toggle]') !== null) return toggle(id);
     const mode = event.shiftKey ? 'add' : event.ctrlKey || event.metaKey ? 'toggle' : 'replace';
     store.select(id, { mode });
@@ -286,7 +376,8 @@ export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
     if (press === undefined || readOnly || renaming !== null) return;
     const id = rowOf(event);
     if (id === undefined || id === doc.root) return;
-    if ((event.target as Element).closest('[data-toggle], [data-more]') !== null) return;
+    if ((event.target as Element).closest('[data-toggle], [data-more], [data-action]') !== null)
+      return;
     const ids = selected.has(id) ? removable(selectedIds) : [id];
     if (ids.length === 0) return;
     const node = doc.nodes[id];
@@ -301,7 +392,7 @@ export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
     const id = rowOf(event);
     if (
       id !== undefined &&
-      (event.target as Element).closest('[data-toggle], [data-more]') === null
+      (event.target as Element).closest('[data-toggle], [data-more], [data-action]') === null
     ) {
       startRename(id);
     }
@@ -334,7 +425,9 @@ export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
             id: 'move',
             label: t('dnd.moveTo'),
             disabled: readOnly || ids.length === 0,
-            onSelect: () => setMoving(ids),
+            onSelect: () => {
+              if (!refuseLocked(ids)) setMoving(ids);
+            },
           },
         ]
       : [];
@@ -342,41 +435,109 @@ export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
       {
         id: 'rename',
         label: t('layers.menu.rename'),
+        kbd: t('layers.shortcut.rename'),
+        shortcut: 'F2',
+        icon: 'pencil-line',
         disabled: readOnly || isRoot,
         onSelect: () => startRename(menuTarget),
       },
       {
         id: 'duplicate',
         label: t('layers.menu.duplicate'),
+        kbd: t('layers.shortcut.duplicate'),
+        shortcut: 'Control+D',
+        icon: 'copy',
         disabled: readOnly || ids.length === 0,
-        onSelect: () => run({ type: 'node.duplicate', payload: { ids } }),
+        onSelect: () => {
+          if (!refuseLocked(ids)) run({ type: 'node.duplicate', payload: { ids } });
+        },
+      },
+      {
+        id: 'copy',
+        label: t('layers.menu.copy'),
+        kbd: t('layers.shortcut.copy'),
+        shortcut: 'Control+C',
+        icon: 'copy',
+        disabled: clipboard === undefined || ids.length === 0,
+        onSelect: () => {
+          clipboard?.copy?.();
+        },
+      },
+      {
+        id: 'paste',
+        label: t('layers.menu.paste'),
+        kbd: t('layers.shortcut.paste'),
+        shortcut: 'Control+V',
+        icon: 'clipboard-paste',
+        disabled: readOnly || clipboard === undefined,
+        onSelect: () => {
+          clipboard?.paste?.();
+        },
       },
       {
         id: 'wrap',
         label: t('layers.menu.wrap'),
         disabled: readOnly || ids.length === 0 || !canWrap,
-        onSelect: () =>
-          run({ type: 'node.wrap', payload: { ids, wrapper: { type: wrapperType } } }),
+        onSelect: () => {
+          if (!refuseLocked(ids))
+            run({ type: 'node.wrap', payload: { ids, wrapper: { type: wrapperType } } });
+        },
       },
       {
         id: 'unwrap',
         label: t('layers.menu.unwrap'),
         disabled: readOnly || isRoot || target.slots === undefined,
-        onSelect: () => run({ type: 'node.unwrap', payload: { id: menuTarget } }),
+        onSelect: () => {
+          if (!refuseLocked([menuTarget]))
+            run({ type: 'node.unwrap', payload: { id: menuTarget } });
+        },
       },
       ...move,
       {
+        id: 'hide',
+        label: hiddenSet.has(menuTarget) ? t('layers.menu.show') : t('layers.menu.hide'),
+        icon: hiddenSet.has(menuTarget) ? 'eye' : 'eye-off',
+        onSelect: () => toggleHidden(menuTarget),
+      },
+      {
+        id: 'lock',
+        label: target.lock !== undefined ? t('layers.menu.unlock') : t('layers.menu.lock'),
+        icon: target.lock !== undefined ? 'lock-open' : 'lock',
+        disabled: readOnly || isRoot,
+        onSelect: () => toggleLock(menuTarget),
+      },
+      {
         id: 'delete',
         label: t('layers.menu.delete'),
+        kbd: t('layers.shortcut.delete'),
+        shortcut: 'Delete',
+        icon: 'trash-2',
         danger: true,
         disabled: readOnly || ids.length === 0,
-        onSelect: () => run({ type: 'node.remove', payload: { ids } }),
+        onSelect: () => removeIds(ids),
       },
     ];
     // biome-ignore lint/correctness/useExhaustiveDependencies: startRename and removable read the same inputs
-  }, [menuTarget, doc, selectedIds, manifest, wrapperType, readOnly, canDrag, t, run]);
+  }, [
+    menuTarget,
+    doc,
+    selectedIds,
+    manifest,
+    wrapperType,
+    readOnly,
+    canDrag,
+    t,
+    run,
+    onRemoveRequest,
+    notifyLocked,
+    clipboard,
+    hiddenSet,
+    toggleHidden,
+    toggleLock,
+  ]);
 
   const activeRow = activeIndex >= 0 ? rows[activeIndex] : undefined;
+  const filtering = needle !== '';
   const rowDomId = (id: NodeId) => `${treeId}-${id}`;
 
   return (
@@ -390,12 +551,51 @@ export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
         } as CSSProperties
       }
     >
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: the key is handled for the field inside */}
+      <div
+        className="bd-layers-tools"
+        onKeyDown={(event) => {
+          // From the filter field the arrow key goes down into the tree.
+          if (event.key === 'ArrowDown' && event.target instanceof HTMLInputElement) {
+            event.preventDefault();
+            scroller.current?.focus();
+          }
+        }}
+      >
+        <SearchField
+          className="bd-layers-filter"
+          value={filter}
+          onChange={setFilter}
+          label={t('structure.filter')}
+          clearLabel={t('structure.filter.clear')}
+          placeholder={t('structure.filter')}
+        />
+        <IconButton
+          size="sm"
+          icon="chevrons-down-up"
+          label={t('structure.collapseAll')}
+          disabled={filtering}
+          onClick={() => setExpanded(new Set([doc.root]))}
+        />
+        <IconButton
+          size="sm"
+          icon="chevrons-up-down"
+          label={t('structure.expandAll')}
+          disabled={filtering}
+          onClick={() => setExpanded(new Set(nodesWithChildren(doc)))}
+        />
+      </div>
+      {filtering && rows.length === 0 ? (
+        <p className="bd-layers-empty" role="status">
+          {t('structure.noMatch')}
+        </p>
+      ) : null}
       <ContextMenu items={menu} label={t('layers.menu')}>
         {/* biome-ignore lint/a11y/useSemanticElements: an ARIA tree has no native element */}
         <div
           ref={scroller}
           role="tree"
-          aria-label={t('layers.title')}
+          aria-label={t('structure.title')}
           aria-multiselectable="true"
           aria-activedescendant={
             activeRow !== undefined && activeIndex >= first && activeIndex < last
@@ -423,6 +623,10 @@ export function LayersPanel({ wrapperType = 'buildr/box' }: LayersPanelProps) {
                 selected={selected.has(row.id)}
                 hovered={hoveredId === row.id}
                 hasIssue={issueNodes.has(row.id)}
+                hidden={hiddenSet.has(row.id)}
+                readOnly={readOnly}
+                onToggleHidden={() => toggleHidden(row.id)}
+                onToggleLock={() => toggleLock(row.id)}
                 drop={
                   drop !== null && rows[drop.rowIndex]?.id === row.id
                     ? dropTarget === null
@@ -464,6 +668,11 @@ interface LayerProps {
   readonly selected: boolean;
   readonly hovered: boolean;
   readonly hasIssue: boolean;
+  /** Hidden in the editor (the view store; not a document change). */
+  readonly hidden: boolean;
+  readonly readOnly: boolean;
+  readonly onToggleHidden: () => void;
+  readonly onToggleLock: () => void;
   /** Where a drag in progress would drop relative to this row; `denied` where it may not. */
   readonly drop: 'before' | 'inside' | 'after' | 'denied' | undefined;
   readonly renaming: boolean;
@@ -478,6 +687,10 @@ function Layer({
   selected,
   hovered,
   hasIssue,
+  hidden,
+  readOnly,
+  onToggleHidden,
+  onToggleLock,
   drop,
   renaming,
   onRename,
@@ -489,7 +702,6 @@ function Layer({
   const meta = componentMeta(manifest, node.type);
   const label = node.name ?? meta?.label ?? node.type;
   const badges: { key: MessageKey; icon: IconName }[] = [];
-  if (node.lock !== undefined) badges.push({ key: 'layers.badge.lock', icon: 'lock' });
   if (node.visibleIf !== undefined) badges.push({ key: 'layers.badge.visibleIf', icon: 'eye' });
   const bp = node.styles?.bp;
   if (bp !== undefined && Object.keys(bp).length > 0) {
@@ -512,6 +724,8 @@ function Layer({
       className="bd-layer"
       data-selected={selected}
       data-hovered={hovered}
+      data-hidden={hidden || undefined}
+      data-locked={node.lock !== undefined || undefined}
       data-drop={drop}
       style={
         {
@@ -538,7 +752,15 @@ function Layer({
       ) : (
         <span className="bd-layer-label">{label}</span>
       )}
-      {row.slot !== 'default' ? <span className="bd-layer-slot">{row.slot}</span> : null}
+      {node.name !== undefined && meta?.label !== undefined ? (
+        <span className="bd-layer-type">{meta.label}</span>
+      ) : null}
+      {row.multiSlot === true &&
+      row.slot !== 'default' &&
+      row.slot !== 'body' &&
+      row.slot !== 'children' ? (
+        <span className="bd-layer-slot">{row.slot}</span>
+      ) : null}
       {badges.map((badge) => (
         <Tooltip key={badge.key} content={t(badge.key)}>
           <span
@@ -551,25 +773,56 @@ function Layer({
           </span>
         </Tooltip>
       ))}
-      <span className="bd-layer-more" data-more>
-        <IconButton
-          icon="ellipsis"
-          label={t('layers.more')}
-          tabIndex={-1}
-          onClick={(event) => {
-            // The menu is the tree's own context menu: ask for it where the button is.
-            event.stopPropagation();
-            const box = event.currentTarget.getBoundingClientRect();
-            event.currentTarget.dispatchEvent(
-              new MouseEvent('contextmenu', {
-                bubbles: true,
-                cancelable: true,
-                clientX: box.left,
-                clientY: box.bottom,
-              }),
-            );
-          }}
-        />
+      <span className="bd-layer-actions" data-row-actions>
+        <span className="bd-layer-toggles" data-action>
+          <IconButton
+            size="sm"
+            icon={hidden ? 'eye-off' : 'eye'}
+            label={hidden ? t('layers.menu.show') : t('layers.menu.hide')}
+            aria-pressed={hidden}
+            tabIndex={-1}
+            data-state={hidden ? 'on' : 'off'}
+            onClick={(event) => {
+              event.stopPropagation();
+              onToggleHidden();
+            }}
+          />
+          {row.parentId === null ? null : (
+            <IconButton
+              size="sm"
+              icon={node.lock !== undefined ? 'lock' : 'lock-open'}
+              label={node.lock !== undefined ? t('layers.menu.unlock') : t('layers.menu.lock')}
+              aria-pressed={node.lock !== undefined}
+              disabled={readOnly}
+              tabIndex={-1}
+              data-state={node.lock !== undefined ? 'on' : 'off'}
+              onClick={(event) => {
+                event.stopPropagation();
+                onToggleLock();
+              }}
+            />
+          )}
+        </span>
+        <span className="bd-layer-more" data-more>
+          <IconButton
+            icon="ellipsis"
+            label={t('layers.more')}
+            tabIndex={-1}
+            onClick={(event) => {
+              // The menu is the tree's own context menu: ask for it where the button is.
+              event.stopPropagation();
+              const box = event.currentTarget.getBoundingClientRect();
+              event.currentTarget.dispatchEvent(
+                new MouseEvent('contextmenu', {
+                  bubbles: true,
+                  cancelable: true,
+                  clientX: box.left,
+                  clientY: box.bottom,
+                }),
+              );
+            }}
+          />
+        </span>
       </span>
     </div>
   );

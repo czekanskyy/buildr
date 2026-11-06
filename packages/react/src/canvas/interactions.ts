@@ -12,6 +12,7 @@ export interface InteractionOptions {
 /** The `data-bid` element a DOM target is inside, if any. */
 export function nodeElementOf(target: EventTarget | null): HTMLElement | null {
   if (!(target instanceof Element)) return null;
+  if (target.closest('[data-buildr-overlay]') !== null) return null;
   const found = target.closest('[data-bid]');
   return found instanceof HTMLElement ? found : null;
 }
@@ -47,6 +48,7 @@ export function installInteractions(options: InteractionOptions): () => void {
 
   const pointer = (event: MouseEvent, type: 'node:click' | 'node:dblclick') => {
     if (!editing() || event.button !== 0) return;
+    if (event.target instanceof Element && event.target.closest('[data-buildr-overlay]')) return;
     // Inside text being edited a click places the caret: it is the author's, not a selection.
     if (
       type === 'node:click' &&
@@ -83,6 +85,7 @@ export function installInteractions(options: InteractionOptions): () => void {
 
   const onOver = (event: MouseEvent) => {
     if (!editing()) return;
+    if (event.target instanceof Element && event.target.closest('[data-buildr-overlay]')) return;
     const element = nodeElementOf(event.target);
     const instance = element === null ? undefined : instanceOf(element);
     hover(element?.getAttribute('data-bid') ?? null, instance);

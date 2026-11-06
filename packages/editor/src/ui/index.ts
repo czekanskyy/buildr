@@ -12,9 +12,12 @@ export type {
   DialogProps,
   IconButtonProps,
   InputProps,
+  KbdProps,
+  MenuCheckboxItemProps,
   MenuItem,
   NumberUnitInputProps,
   PopoverProps,
+  SearchFieldProps,
   SegmentedControlProps,
   SegmentOption,
   SelectOption,
@@ -33,8 +36,13 @@ export {
   hexOf,
   IconButton,
   Input,
+  Kbd,
+  MenuCheckboxItem,
+  MenuLabel,
+  MenuSeparator,
   NumberUnitInput,
   Popover,
+  SearchField,
   SegmentedControl,
   Select,
   stepNumberText,
@@ -42,5 +50,6 @@ export {
   Toggle,
   Tooltip,
 } from './primitives.tsx';
+export { useStructureLockedNotice } from './structure-locked.ts';
 export type { ToastApi, ToastOptions, ToastVariant } from './toast.tsx';
-export { TOAST_MS, ToastProvider, useToast } from './toast.tsx';
+export { TOAST_MS, ToastProvider, useOptionalToast, useToast } from './toast.tsx';

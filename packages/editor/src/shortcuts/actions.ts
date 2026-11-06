@@ -1,5 +1,7 @@
 import { createIndex, type NodeId } from '@next-buildr/core';
-import type { EditorStore } from '../store/index.ts';
+import type { RemoveRequest, ShortcutCallbacks } from '../app/contracts.ts';
+import { type EditorStore, structureLockedIds } from '../store/index.ts';
+import { hasDescendants, overlayOpen, parentSelection } from './navigation.ts';
 import type { ShortcutRegistry } from './registry.ts';
 
 /** What the editor's own shortcuts need from outside: the actions of other modules (PB-085, PB-087). */
@@ -10,16 +12,42 @@ export interface ExternalActions {
   readonly save?: () => boolean | undefined;
 }
 
+/** The UI-only and removal hooks of the host, read on every key press so they may change between renders. */
+export interface HostHooks {
+  readonly callbacks?: () => Partial<ShortcutCallbacks> | undefined;
+  readonly onRemove?: () => ((request: RemoveRequest) => void) | undefined;
+  /** Whether the UI-only keys may run for the key press being handled (`false` for a key aimed outside the editor). */
+  readonly uiAllowed?: () => boolean;
+  /** Tells the person why a structure-locked block was not removed, moved or duplicated. */
+  readonly onLocked?: () => ((ids?: readonly NodeId[]) => void) | undefined;
+}
+
 /** The selected nodes that can be acted on: the root is never removed, duplicated or moved. */
 function actionable(store: EditorStore): NodeId[] {
   const { doc, selectedIds } = store.getState();
   return selectedIds.filter((id) => id !== doc.root && Object.hasOwn(doc.nodes, id));
 }
 
-function moveSelected(store: EditorStore, delta: -1 | 1): boolean {
+/** True (after saying why) when one of the ids is locked for structure: the key is then taken but nothing changes. */
+function refuseLocked(
+  store: EditorStore,
+  ids: readonly NodeId[],
+  notify?: (ids?: readonly NodeId[]) => void,
+): boolean {
+  if (structureLockedIds(store.getState().doc, ids).length === 0) return false;
+  notify?.(ids);
+  return true;
+}
+
+function moveSelected(
+  store: EditorStore,
+  delta: -1 | 1,
+  notify?: (ids?: readonly NodeId[]) => void,
+): boolean {
   const ids = actionable(store);
   const [id] = ids;
   if (ids.length !== 1 || id === undefined) return false;
+  if (refuseLocked(store, ids, notify)) return true;
   const { doc } = store.getState();
   const index = createIndex(doc);
   const parentId = index.parentOf[id];
@@ -59,26 +87,73 @@ export function bindEditorActions(
   registry: ShortcutRegistry,
   store: EditorStore,
   external: ExternalActions = {},
+  host: HostHooks = {},
 ): () => void {
+  /**
+   * Every shortcut but Escape is left alone while a menu, list or dialog is open: the key belongs to
+   * it (Delete must not remove the node behind a dialog, Ctrl+Z is a text field's own undo).
+   */
+  const bind = (action: string, handler: () => boolean | undefined) =>
+    registry.bind(action, () => (overlayOpen() ? false : handler()));
+  /** A UI-only key: not taken (`false`) outside the editor or when the host gave no callback. */
+  const ui = (pick: (callbacks: Partial<ShortcutCallbacks>) => (() => void) | undefined) => () => {
+    if (host.uiAllowed?.() === false) return false;
+    const run = pick(host.callbacks?.() ?? {});
+    if (run === undefined) return false;
+    run();
+    return true;
+  };
+  const locked = (ids?: readonly NodeId[]) => host.onLocked?.()?.(ids);
+  const device = (key: '1' | '2' | '3') =>
+    ui((callbacks) => callbacks.setDevice && (() => callbacks.setDevice?.(key)));
   const stops = [
-    registry.bind('edit.undo', () => store.undo().ok),
-    registry.bind('edit.redo', () => store.redo().ok),
-    registry.bind('edit.duplicate', () => {
+    bind('edit.undo', () => store.undo().ok),
+    bind('edit.redo', () => store.redo().ok),
+    bind('edit.duplicate', () => {
       const ids = actionable(store);
-      return ids.length > 0 && store.dispatch({ type: 'node.duplicate', payload: { ids } }).ok;
+      if (ids.length === 0) return false;
+      if (refuseLocked(store, ids, locked)) return true;
+      return store.dispatch({ type: 'node.duplicate', payload: { ids } }).ok;
     }),
-    registry.bind('edit.delete', () => {
+    bind('edit.delete', () => {
       const ids = actionable(store);
-      return ids.length > 0 && store.dispatch({ type: 'node.remove', payload: { ids } }).ok;
+      if (ids.length === 0) return false;
+      if (refuseLocked(store, ids, locked)) return true;
+      const onRemove = host.onRemove?.();
+      if (onRemove !== undefined) {
+        onRemove({ ids, hasDescendants: hasDescendants(store.getState().doc, ids) });
+        return true;
+      }
+      return store.dispatch({ type: 'node.remove', payload: { ids } }).ok;
     }),
-    registry.bind('node.moveUp', () => moveSelected(store, -1)),
-    registry.bind('node.moveDown', () => moveSelected(store, 1)),
-    registry.bind('selection.all', () => selectAll(store)),
-    registry.bind('selection.clear', () => {
-      if (store.getState().selectedIds.length === 0) return false;
-      store.clearSelection();
+    bind('node.moveUp', () => moveSelected(store, -1, locked)),
+    bind('node.moveDown', () => moveSelected(store, 1, locked)),
+    bind('selection.all', () => selectAll(store)),
+    // Escape goes up one level and clears at the top level; an open menu or dialog gets it first.
+    bind('selection.clear', () => {
+      if (overlayOpen()) return false;
+      const { doc, selectedIds } = store.getState();
+      if (selectedIds.length === 0) return false;
+      const parent = parentSelection(doc, selectedIds);
+      if (parent === null) store.clearSelection();
+      else store.select(parent);
       return true;
     }),
+    bind('ui.device1', device('1')),
+    bind('ui.device2', device('2')),
+    bind('ui.device3', device('3')),
+    bind(
+      'ui.panels',
+      ui((callbacks) => callbacks.togglePanels && (() => callbacks.togglePanels?.())),
+    ),
+    bind(
+      'ui.guides',
+      ui((callbacks) => callbacks.toggleGuides ?? store.view.getState().toggleOutlines),
+    ),
+    bind(
+      'ui.findBlock',
+      ui((callbacks) => callbacks.focusBlockSearch && (() => callbacks.focusBlockSearch?.())),
+    ),
   ];
   const optional = {
     'edit.copy': external.copy,
@@ -87,7 +162,7 @@ export function bindEditorActions(
     'file.save': external.save,
   } as const;
   for (const [action, handler] of Object.entries(optional)) {
-    if (handler !== undefined) stops.push(registry.bind(action, handler));
+    if (handler !== undefined) stops.push(bind(action, handler));
   }
   return () => {
     for (const stop of stops) stop();

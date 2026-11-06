@@ -14,9 +14,12 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { axe } from 'vitest-axe';
 import * as matchers from 'vitest-axe/matchers';
 import { ManifestProvider } from '../../app/manifest.tsx';
+import { ClipboardProvider } from '../../clipboard/index.ts';
 import { MessagesProvider } from '../../messages/index.tsx';
+import { ShortcutProvider } from '../../shortcuts/index.ts';
 import { createEditorStore, EditorStoreProvider } from '../../store/index.ts';
-import { flattenTree } from './flatten.ts';
+import { ToastProvider } from '../../ui/index.ts';
+import { filterTree, flattenTree } from './flatten.ts';
 import { LayersPanel } from './layers-panel.tsx';
 
 expect.extend(matchers);
@@ -84,8 +87,13 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
-async function mount(doc: BuilderDocument = fixture()) {
+async function mount(
+  doc: BuilderDocument = fixture(),
+  connected = false,
+  canUnlock?: () => boolean,
+) {
   const store = createEditorStore({
+    ...(canUnlock === undefined ? {} : { canUnlock }),
     doc,
     registry,
     generateId: createSeededIdGenerator(9),
@@ -96,7 +104,17 @@ async function mount(doc: BuilderDocument = fixture()) {
       <MessagesProvider locale="en">
         <ManifestProvider manifest={toManifest(registry)}>
           <EditorStoreProvider store={store}>
-            <LayersPanel />
+            {connected ? (
+              <ToastProvider>
+                <ClipboardProvider>
+                  <ShortcutProvider>
+                    <LayersPanel />
+                  </ShortcutProvider>
+                </ClipboardProvider>
+              </ToastProvider>
+            ) : (
+              <LayersPanel />
+            )}
           </EditorStoreProvider>
         </ManifestProvider>
       </MessagesProvider>,
@@ -153,14 +171,23 @@ describe('flattenTree', () => {
 describe('LayersPanel', () => {
   it('is an ARIA tree with names from the manifest and no accessibility violations', async () => {
     await mount();
-    expect(tree().getAttribute('aria-label')).toBe('Layers');
+    expect(tree().getAttribute('aria-label')).toBe('Page structure');
     expect(labels()).toEqual(['page', 'Hero', 'Box']);
     const [, hero] = items();
     expect(hero?.getAttribute('aria-level')).toBe('2');
+    expect(hero?.style.height).toBe('32px');
+    expect(hero?.querySelector('[data-row-actions]')).not.toBeNull();
+    expect(hero?.querySelector('[data-row-actions]')?.querySelectorAll('button')).toHaveLength(3);
     expect(hero?.getAttribute('aria-posinset')).toBe('1');
     expect(hero?.getAttribute('aria-setsize')).toBe('2');
     expect(hero?.getAttribute('aria-expanded')).toBe('false');
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it('shows a muted type label only on a renamed block', async () => {
+    await mount();
+    const types = items().map((item) => item.querySelector('.bd-layer-type')?.textContent ?? null);
+    expect(types).toEqual([null, 'Box', null]);
   });
 
   it('draws an svg icon per row: the named one, or the neutral box, never a letter', async () => {
@@ -179,10 +206,76 @@ describe('LayersPanel', () => {
     );
   });
 
-  it('shows badges with accessible names', async () => {
+  it('shows a locked node as a pressed lock toggle', async () => {
     await mount();
     const [, , locked] = items();
-    expect(locked?.querySelector('[role=img]')?.getAttribute('aria-label')).toBe('Locked');
+    const lock = locked?.querySelector('button[aria-label="Unlock"]');
+    expect(lock?.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('hides a node in the editor through the view store, not the document', async () => {
+    const store = await mount();
+    const before = store.getState().doc;
+    const row = items().find((i) => i.dataset['nodeId'] === 'boxNode001');
+    const eye = row?.querySelector<HTMLButtonElement>('button[aria-label="Hide in editor"]');
+    expect(eye?.getAttribute('aria-pressed')).toBe('false');
+    await act(async () => eye?.click());
+    expect(store.view.getState().hiddenIds).toEqual(['boxNode001']);
+    expect(store.getState().doc).toBe(before);
+    expect(
+      items()
+        .find((i) => i.dataset['nodeId'] === 'boxNode001')
+        ?.querySelector('button[aria-label="Show in editor"]')
+        ?.getAttribute('aria-pressed'),
+    ).toBe('true');
+  });
+
+  it('locks a node with the document command', async () => {
+    const store = await mount();
+    const row = items().find((i) => i.dataset['nodeId'] === 'boxNode001');
+    await act(async () =>
+      row?.querySelector<HTMLButtonElement>('button[aria-label="Lock"]')?.click(),
+    );
+    expect(store.getState().doc.nodes['boxNode001']?.lock).toEqual({
+      structure: true,
+      content: true,
+      style: true,
+    });
+  });
+
+  it('unlocks a locked node when the host allows it', async () => {
+    const store = await mount(fixture(), false, () => true);
+    const row = items().find((i) => i.dataset['nodeId'] === 'boxNode002');
+    await act(async () =>
+      row?.querySelector<HTMLButtonElement>('button[aria-label="Unlock"]')?.click(),
+    );
+    expect(store.getState().doc.nodes['boxNode002']?.lock).toBeUndefined();
+    expect(container.querySelector('.bd-layers-notice')?.textContent).toBe('');
+  });
+
+  it('says so, and keeps the lock, when the host does not allow unlocking', async () => {
+    const store = await mount();
+    const row = items().find((i) => i.dataset['nodeId'] === 'boxNode002');
+    await act(async () =>
+      row?.querySelector<HTMLButtonElement>('button[aria-label="Unlock"]')?.click(),
+    );
+    expect(store.getState().doc.nodes['boxNode002']?.lock).toEqual({ content: true });
+    expect(container.querySelector('.bd-layers-notice')?.textContent).toBe(
+      'You are not allowed to unlock this block.',
+    );
+  });
+
+  it('only points to the Structure panel when unlocking is possible', async () => {
+    const store = await mount(fixture(), true);
+    const row = items().find((i) => i.dataset['nodeId'] === 'boxNode001');
+    await act(async () =>
+      row?.querySelector<HTMLButtonElement>('button[aria-label="Lock"]')?.click(),
+    );
+    await pick(store, 'boxNode001');
+    await act(async () => tree().focus());
+    await press('Delete');
+    expect(container.textContent).toContain('This block is locked.');
+    expect(container.textContent).not.toContain('Unlock it in the Structure panel');
   });
 
   it('is operable with the keyboard alone', async () => {
@@ -218,7 +311,7 @@ describe('LayersPanel', () => {
     await pick(store, 'boxNode002');
     await act(async () => tree().focus());
     await press('F2');
-    const input = container.querySelector('input') as HTMLInputElement;
+    const input = container.querySelector('[role=tree] input') as HTMLInputElement;
     expect(input.getAttribute('aria-label')).toBe('Layer name');
     await act(async () => {
       input.value = 'Footer';
@@ -226,11 +319,11 @@ describe('LayersPanel', () => {
     });
     expect(store.getState().doc.nodes['boxNode002']?.name).toBe('Footer');
     expect(store.getState().undoLabel).toBe('node.setAttr');
-    expect(container.querySelector('input')).toBeNull();
+    expect(container.querySelector('[role=tree] input')).toBeNull();
 
     await press('F2');
     await act(async () => {
-      const again = container.querySelector('input') as HTMLInputElement;
+      const again = container.querySelector('[role=tree] input') as HTMLInputElement;
       again.value = 'Nope';
       again.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     });
@@ -248,6 +341,26 @@ describe('LayersPanel', () => {
     await press('Delete');
     expect(store.getState().doc.nodes['boxNode001']).toBeUndefined();
     expect(labels()).toEqual(['page', 'Box']);
+  });
+
+  it('keeps a locked block in place: Delete and the menu say why and change nothing', async () => {
+    const store = await mount(fixture(), true, () => true);
+    const row = items().find((i) => i.dataset['nodeId'] === 'boxNode001');
+    await act(async () =>
+      row?.querySelector<HTMLButtonElement>('button[aria-label="Lock"]')?.click(),
+    );
+    const locked = store.getState().doc;
+    await pick(store, 'boxNode001');
+    await act(async () => tree().focus());
+    await press('Delete');
+    const message = 'This block is locked. Unlock it in the Structure panel.';
+    expect(container.textContent).toContain(message);
+    expect(store.getState().doc).toBe(locked);
+    // An unlocked sibling still goes.
+    await pick(store, 'boxNode002');
+    await act(async () => tree().focus());
+    await press('Delete');
+    expect(store.getState().doc.nodes['boxNode002']).toBeUndefined();
   });
 
   it('opens the ancestors of a node selected elsewhere, and marks it selected', async () => {
@@ -297,16 +410,58 @@ describe('LayersPanel', () => {
     expect(store.getState().selectedIds).toEqual(['boxNode001']);
     const menu = document.body.querySelector('[role=menu]');
     expect(menu?.getAttribute('aria-label')).toBe('Layer actions');
-    const names = [...(menu?.querySelectorAll('[role=menuitem]') ?? [])].map((i) => i.textContent);
-    expect(names).toEqual(['Rename', 'Duplicate', 'Wrap in container', 'Unwrap', 'Delete']);
+    const names = [...(menu?.querySelectorAll('[role=menuitem]') ?? [])].map(
+      (i) => i.querySelector('.bd-menu-item-label')?.textContent,
+    );
+    expect(names).toEqual([
+      'Rename',
+      'Duplicate',
+      'Copy',
+      'Paste',
+      'Wrap in container',
+      'Unwrap',
+      'Hide in editor',
+      'Lock',
+      'Delete',
+    ]);
 
     const duplicate = [...(menu?.querySelectorAll('[role=menuitem]') ?? [])].find(
-      (i) => i.textContent === 'Duplicate',
+      (i) => i.querySelector('.bd-menu-item-label')?.textContent === 'Duplicate',
     ) as HTMLElement;
     await act(async () => {
       duplicate.click();
     });
     expect(store.getState().doc.nodes['root']?.slots?.['default']).toHaveLength(3);
+  });
+
+  it('copies through the shared clipboard and pastes as an undoable command', async () => {
+    const store = await mount(
+      { ...fixture(), components: { 'buildr/page': 1, 'buildr/box': 1, 'buildr/text': 1 } },
+      true,
+    );
+    const open = async () =>
+      act(async () => {
+        items()
+          .find((i) => i.dataset['nodeId'] === 'boxNode001')
+          ?.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+      });
+    const action = (label: string) =>
+      [...document.querySelectorAll<HTMLElement>('[role=menuitem]')].find(
+        (i) => i.querySelector('.bd-menu-item-label')?.textContent === label,
+      ) as HTMLElement;
+    const before = store.getState().doc;
+    await open();
+    await act(async () => action('Copy').click());
+    expect(store.getState().doc).toBe(before);
+    await open();
+    expect(await axe(document.querySelector('[role=menu]') as HTMLElement)).toHaveNoViolations();
+    await act(async () => action('Paste').click());
+    expect(store.getState().doc.nodes['root']?.slots?.['default']).toHaveLength(3);
+    expect(store.getState().undoLabel).toBe('node.insert');
+    await act(async () => {
+      store.undo();
+    });
+    expect(store.getState().doc).toEqual(before);
   });
 
   it('opens the same context menu from the hover "more" button, without starting a rename', async () => {
@@ -319,7 +474,7 @@ describe('LayersPanel', () => {
     expect(store.getState().selectedIds).toEqual(['boxNode001']);
     const menu = document.body.querySelector('[role=menu]');
     expect(menu?.getAttribute('aria-label')).toBe('Layer actions');
-    expect(container.querySelector('input')).toBeNull();
+    expect(container.querySelector('[role=tree] input')).toBeNull();
   });
 
   it('does not offer changes in a read-only document', async () => {
@@ -330,7 +485,7 @@ describe('LayersPanel', () => {
     await press('Delete');
     await press('F2');
     expect(store.getState().doc.nodes['boxNode001']).toBeDefined();
-    expect(container.querySelector('input')).toBeNull();
+    expect(container.querySelector('[role=tree] input')).toBeNull();
   });
 });
 
@@ -363,7 +518,7 @@ describe('a large document', () => {
     expect(items().length).toBeLessThan(40);
     expect(elapsed).toBeLessThan(500);
     const list = container.querySelector('.bd-layers-list') as HTMLElement;
-    expect(list.style.height).toBe(`${1001 * 28}px`);
+    expect(list.style.height).toBe(`${1001 * 32}px`);
   });
 
   it('scrolls the row of a far selection into view', async () => {
@@ -371,5 +526,65 @@ describe('a large document', () => {
     await act(async () => store.select('n000000900'));
     const present = items().map((i) => i.dataset['nodeId']);
     expect(present).toContain('n000000900');
+  });
+});
+
+describe('structure filter and expand all (PB-157)', () => {
+  const field = () => container.querySelector('.bd-layers-filter input') as HTMLInputElement;
+  const typeFilter = (value: string) =>
+    act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(
+        field(),
+        value,
+      );
+      field().dispatchEvent(new Event('input', { bubbles: true }));
+    });
+  const tool = (label: string) =>
+    container.querySelector(`button[aria-label="${label}"]`) as HTMLButtonElement;
+
+  it('filterTree keeps the ancestors of a match and opens them', () => {
+    const doc = fixture();
+    const { only, open } = filterTree(doc, (n) => n.id === 'textNodeB1');
+    expect([...only].sort()).toEqual(['boxNode001', 'root', 'textNodeB1']);
+    expect(open.has('boxNode001')).toBe(true);
+    const rows = flattenTree(doc, open, only);
+    expect(rows.map((r) => r.id)).toEqual(['root', 'boxNode001', 'textNodeB1']);
+  });
+
+  it('shows only the matching blocks with their ancestors, and says when nothing matches', async () => {
+    await mount();
+    await typeFilter('hero');
+    expect(labels()).toEqual(['page', 'Hero']);
+    await typeFilter('text');
+    expect(labels()).toContain('Hero');
+    expect(items().length).toBe(4);
+    await typeFilter('zzz');
+    expect(items().length).toBe(0);
+    expect(container.querySelector('.bd-layers-empty')?.textContent).toBe(
+      'No blocks match the filter.',
+    );
+    await typeFilter('');
+    expect(container.querySelector('.bd-layers-empty')).toBeNull();
+  });
+
+  it('collapses and expands the whole tree, and is off while filtering', async () => {
+    await mount();
+    await act(async () => tool('Collapse all').click());
+    expect(items().length).toBe(3);
+    await act(async () => tool('Expand all').click());
+    expect(items().length).toBe(5);
+    await typeFilter('a');
+    expect(tool('Expand all').disabled).toBe(true);
+    expect(tool('Collapse all').disabled).toBe(true);
+  });
+
+  it('moves from the filter field into the tree with the down arrow', async () => {
+    await mount();
+    field().focus();
+    await act(async () => {
+      field().dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    });
+    expect(container.contains(document.activeElement)).toBe(true);
+    expect(document.activeElement).not.toBe(field());
   });
 });

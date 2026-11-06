@@ -6,6 +6,7 @@ export type {
   Corners,
   EffectsStyles,
   LayoutStyles,
+  MotionStyles,
   NodeStyles,
   SizeStyles,
   SpacingStyles,

@@ -1,0 +1,18 @@
+export const dnd = {
+  'dnd.notAllowed': 'Cannot be dropped here.',
+  'dnd.ghost.nodes': 'items',
+  'dnd.moveTo': 'Move to…',
+  'dnd.moveTo.title': 'Move to…',
+  'dnd.moveTo.description': 'Choose where to move the selected elements.',
+  'dnd.moveTo.none': 'There is no place the selection can be moved to.',
+  'dnd.moveTo.into': 'Into',
+  'dnd.moveTo.named': 'Move the block “{name}”',
+  'dnd.moveTo.search': 'Search for a place',
+  'dnd.moveTo.searchAria': 'Search for a section or container',
+  'dnd.moveTo.where': 'Where to move',
+  'dnd.moveTo.position': 'Position inside',
+  'dnd.moveTo.start': 'At the start',
+  'dnd.moveTo.end': 'At the end',
+  'dnd.moveTo.current': 'current place',
+  'dnd.moveTo.confirm': 'Move',
+} as const;

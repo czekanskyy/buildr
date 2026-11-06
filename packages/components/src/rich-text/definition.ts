@@ -18,7 +18,16 @@ export const RichText = defineComponent({
   contentCategories: ['flow'],
   props: richTextProps,
   styles: {
-    groups: ['typography', 'spacing', 'background', 'border', 'size', 'effects', 'visibility'],
+    groups: [
+      'typography',
+      'spacing',
+      'background',
+      'border',
+      'size',
+      'effects',
+      'motion',
+      'visibility',
+    ],
   },
   a11y: { element: 'div' },
   editor: { placeholder: 'Write something' },

@@ -6,6 +6,7 @@ const KNOWN = ['layout', 'content', 'media', 'ui', 'forms', 'cms'] as const;
 
 /** The heading of a category: its catalog string, or the title-cased id for a custom category. */
 export function categoryName(t: Translate, category: string): string {
+  if (category === 'basic') return t('blocks.group.basic');
   return (KNOWN as readonly string[]).includes(category)
     ? t(`insert.category.${category}` as MessageKey)
     : titleCase(category);

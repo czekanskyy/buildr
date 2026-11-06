@@ -51,6 +51,7 @@ export async function BuildrPage({
     ...(entry.layoutRef ? { layoutRef: entry.layoutRef } : {}),
     ...(entry.currentId === undefined ? {} : { currentId: entry.currentId }),
     ...(config.cache === undefined ? {} : { cache: config.cache }),
+    ...(config.capabilities === undefined ? {} : { capabilities: config.capabilities }),
     ...(top.size === 0
       ? {}
       : {

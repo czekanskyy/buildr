@@ -143,6 +143,32 @@ describe('dispatch', () => {
   });
 });
 
+describe('unlocking', () => {
+  const lock = (value: Record<string, boolean> | null): Command => ({
+    type: 'node.setAttr',
+    payload: { id: 'boxNode001', key: 'lock', value },
+  });
+  const all = { structure: true, content: true, style: true };
+
+  it('lets a lock be set and removed when the host supplies canUnlock', () => {
+    const store = create({ canUnlock: () => true });
+    expect(store.canUnlock).toBe(true);
+    expect(store.dispatch(lock(all)).ok).toBe(true);
+    expect(store.dispatch(lock(null)).ok).toBe(true);
+    expect(selectNode(store.getState(), 'boxNode001')?.lock).toBeUndefined();
+  });
+
+  it('refuses to remove a lock without canUnlock', () => {
+    const store = create();
+    expect(store.canUnlock).toBe(false);
+    expect(store.dispatch(lock(all)).ok).toBe(true);
+    const result = store.dispatch(lock(null));
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.code).toBe('command.unlock-not-permitted');
+    expect(selectNode(store.getState(), 'boxNode001')?.lock).toEqual(all);
+  });
+});
+
 describe('undo and redo', () => {
   it('go back and forth, with the version always moving forward', () => {
     const store = create();

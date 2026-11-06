@@ -162,7 +162,9 @@ describe('overlay', () => {
     const box = layer?.querySelector('.box.selected') as HTMLElement;
     expect(box.style.left).toBe('10px');
     expect(box.style.top).toBe('100px');
-    expect(box.querySelector('.label')?.textContent).toBe('buildr/section');
+    expect(box.querySelector('.label')?.textContent).toBe('buildr/section \u00b7 div');
+    expect(box.querySelector('.label')?.classList.contains('pop')).toBe(true);
+    expect(layer?.querySelector('.box.hover.container')).toBeNull();
     expect(document.querySelector('[data-buildr-overlay] .box')).toBeNull();
 
     store.update({ selection: [], hover: null });
@@ -170,6 +172,32 @@ describe('overlay', () => {
     expect(layer?.querySelectorAll('.box')).toHaveLength(0);
     overlay.destroy();
     expect(document.querySelector('[data-buildr-overlay]')).toBeNull();
+  });
+
+  it('keeps the chip pop running across a redraw of the same selection', () => {
+    layout();
+    const doc = {
+      schemaVersion: 1,
+      root: 'a',
+      nodes: { a: { id: 'a', type: 'buildr/section' } },
+      components: {},
+    } as never;
+    store.setDocument(doc, 1);
+    let now = 1000;
+    vi.spyOn(window.performance, 'now').mockImplementation(() => now);
+    store.update({ selection: ['a'] });
+    const overlay = createOverlay({ document, store });
+    overlay.refresh();
+    const chip = () => overlay.host.shadowRoot?.querySelector('.label') as HTMLElement;
+    expect(chip().classList.contains('pop')).toBe(true);
+    now = 1060;
+    overlay.refresh();
+    expect(chip().classList.contains('pop')).toBe(true);
+    expect(chip().style.animationDelay).toBe('-60ms');
+    now = 1200;
+    overlay.refresh();
+    expect(chip().classList.contains('pop')).toBe(false);
+    overlay.destroy();
   });
 
   it('opens the collapsed details a selected node is in', () => {

@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { installForwarding, isEditorShortcut } from './forwarding.ts';
+import { installInteractions, nodeElementOf } from './interactions.ts';
 import { createCanvasStore } from './store.ts';
 import type { CanvasTransport } from './types.ts';
 
@@ -55,6 +56,72 @@ describe('isEditorShortcut', () => {
 });
 
 describe('installForwarding', () => {
+  it('lets shadow toolbar clicks reach their action handler without selecting a block', () => {
+    const host = document.createElement('div');
+    host.setAttribute('data-buildr-overlay', '');
+    const button = document.createElement('button');
+    host.attachShadow({ mode: 'open' }).append(button);
+    $('p').append(host);
+    let clicked = false;
+    button.addEventListener('click', () => {
+      clicked = true;
+    });
+    const stopInteractions = installInteractions({ document, store, transport: () => transport });
+    try {
+      const event = new MouseEvent('click', { bubbles: true, composed: true, cancelable: true });
+      button.dispatchEvent(event);
+      expect(event.defaultPrevented).toBe(false);
+      expect(clicked).toBe(true);
+      expect(nodeElementOf(host)).toBeNull();
+      expect(sent).toEqual([]);
+    } finally {
+      stopInteractions();
+    }
+  });
+
+  it('forwards canvas navigation and shell shortcuts', () => {
+    expect(press(document.body, { key: 'Tab' }).defaultPrevented).toBe(false);
+    for (const key of ['Enter', '?']) {
+      expect(press(document.body, { key }).defaultPrevented).toBe(true);
+      expect(press($('p'), { key }).defaultPrevented).toBe(false);
+    }
+    for (const key of ['1', '2', '3', '.']) {
+      expect(press($('p'), { key, metaKey: true }).defaultPrevented).toBe(true);
+    }
+    expect(press($('p'), { key: 'o', ctrlKey: true }).defaultPrevented).toBe(false);
+    expect(press($('p'), { key: 'O', ctrlKey: true, shiftKey: true }).defaultPrevented).toBe(true);
+    expect(sent).toHaveLength(7);
+  });
+
+  it('keeps native toolbar activation and Tab navigation through its shadow root', () => {
+    const host = document.createElement('div');
+    host.setAttribute('data-buildr-overlay', '');
+    const button = document.createElement('button');
+    host.attachShadow({ mode: 'open' }).append(button);
+    document.body.append(host);
+    for (const key of ['Tab', 'Enter', ' ']) {
+      const event = new KeyboardEvent('keydown', {
+        key,
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      });
+      button.dispatchEvent(event);
+      expect(event.defaultPrevented).toBe(false);
+    }
+    expect(sent).toEqual([]);
+    const command = new KeyboardEvent('keydown', {
+      key: 'z',
+      ctrlKey: true,
+      bubbles: true,
+      composed: true,
+      cancelable: true,
+    });
+    button.dispatchEvent(command);
+    expect(command.defaultPrevented).toBe(true);
+    expect(sent).toHaveLength(1);
+  });
+
   it('sends Ctrl+Z to the editor and keeps the browser from acting on it', () => {
     const event = press($('p'), { key: 'z', code: 'KeyZ', ctrlKey: true });
     expect(event.defaultPrevented).toBe(true);

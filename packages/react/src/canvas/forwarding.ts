@@ -9,10 +9,23 @@ export interface ForwardingOptions {
 }
 
 /** Keys the editor gets when pressed alone. */
-const PLAIN_KEYS: ReadonlySet<string> = new Set(['Delete', 'Backspace', 'Escape']);
+const PLAIN_KEYS: ReadonlySet<string> = new Set(['Delete', 'Backspace', 'Escape', 'Enter', '?']);
 
 /** Letters that, with Ctrl or Cmd, are editor shortcuts: undo, redo, copy, cut, paste, duplicate, select all, save. */
-const COMMAND_KEYS: ReadonlySet<string> = new Set(['z', 'y', 'c', 'x', 'v', 'd', 'a', 's']);
+const COMMAND_KEYS: ReadonlySet<string> = new Set([
+  'z',
+  'y',
+  'c',
+  'x',
+  'v',
+  'd',
+  'a',
+  's',
+  '1',
+  '2',
+  '3',
+  '.',
+]);
 
 /**
  * Whether a key press is one the editor handles. Kept short and clear of the browser's own
@@ -23,9 +36,13 @@ export function isEditorShortcut(event: {
   readonly ctrlKey: boolean;
   readonly metaKey: boolean;
   readonly altKey: boolean;
+  readonly shiftKey?: boolean;
 }): boolean {
   const command = event.ctrlKey || event.metaKey;
-  if (command && !event.altKey) return COMMAND_KEYS.has(event.key.toLowerCase());
+  if (command && !event.altKey) {
+    if (event.key.toLowerCase() === 'o') return event.shiftKey === true;
+    return COMMAND_KEYS.has(event.key.toLowerCase());
+  }
   if (event.altKey && !command) return event.key === 'ArrowUp' || event.key === 'ArrowDown';
   if (!command && !event.altKey) return PLAIN_KEYS.has(event.key);
   return false;
@@ -54,6 +71,24 @@ export function installForwarding(options: ForwardingOptions): () => void {
   const onKeyDown = (event: KeyboardEvent) => {
     if (!editing() || event.isComposing || event.defaultPrevented) return;
     if (isTextTarget(event.target) || store.editing() !== null) return;
+    // The shadow host is the retargeted event target: native button activation and focus
+    // traversal belong to the toolbar, while editor commands keep their usual forwarding.
+    if (
+      event.target instanceof Element &&
+      event.target.closest('[data-buildr-overlay]') !== null &&
+      (event.key === 'Tab' || event.key === 'Enter' || event.key === ' ')
+    )
+      return;
+    // Enter and ? are forwarded only when nothing in the page owns them: focus on the body or on
+    // a selected block. A focused page button or <summary> keeps its native behaviour.
+    if (event.key === 'Enter' || event.key === '?') {
+      const target = event.target;
+      const selected =
+        target instanceof Element &&
+        target.hasAttribute('data-bid') &&
+        store.getState().selection.includes(target.getAttribute('data-bid') as never);
+      if (target !== doc.body && target !== doc.documentElement && !selected) return;
+    }
     if (!isEditorShortcut(event)) return;
     event.preventDefault();
     if (event.repeat) return;
@@ -66,6 +101,7 @@ export function installForwarding(options: ForwardingOptions): () => void {
 
   const onContextMenu = (event: MouseEvent) => {
     if (!editing() || isTextTarget(event.target)) return;
+    if (event.target instanceof Element && event.target.closest('[data-buildr-overlay]')) return;
     event.preventDefault();
     const id = nodeElementOf(event.target)?.getAttribute('data-bid') ?? null;
     options.transport()?.send('contextmenu', { id, point: { x: event.clientX, y: event.clientY } });

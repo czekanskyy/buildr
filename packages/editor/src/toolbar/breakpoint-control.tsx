@@ -3,13 +3,13 @@ import { type MessageKey, useT } from '../messages/index.tsx';
 import { useEditorState } from '../store/index.ts';
 import { Button, Icon, type IconName, Tooltip } from '../ui/index.ts';
 
-const BREAKPOINT_LABELS: Readonly<Record<string, MessageKey>> = {
+export const BREAKPOINT_LABELS: Readonly<Record<string, MessageKey>> = {
   desktop: 'toolbar.breakpoint.desktop',
   tablet: 'toolbar.breakpoint.tablet',
   mobile: 'toolbar.breakpoint.mobile',
 };
 
-const BREAKPOINT_ICONS: Readonly<Record<string, IconName>> = {
+export const BREAKPOINT_ICONS: Readonly<Record<string, IconName>> = {
   desktop: 'monitor',
   tablet: 'tablet',
   mobile: 'smartphone',
@@ -40,7 +40,12 @@ export function BreakpointControl({ breakpoints, breakpoint, onChange }: Breakpo
             (group) => group !== undefined && Object.keys(group).length > 0,
           );
         return (
-          <Tooltip key={item.id} content={`${label} · ${item.width}px`}>
+          <Tooltip
+            key={item.id}
+            content={t('toolbar.device.size')
+              .replace('{name}', label)
+              .replace('{width}', String(item.width))}
+          >
             <Button
               variant="ghost"
               className="bd-segment"

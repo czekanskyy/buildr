@@ -64,8 +64,9 @@ test('the editor opens a page and the canvas finishes its handshake', async ({ s
 
 test('insert a section, undo and redo, autosave, reload', async ({ scratch }) => {
   const { page, canvas } = await scratch.open();
-  await page.getByRole('searchbox', { name: 'Search components and templates' }).fill('faq');
-  await page.getByRole('button', { name: 'FAQ', exact: true }).first().click();
+  await page.getByRole('button', { name: 'Patterns', exact: true }).click();
+  await page.getByRole('textbox', { name: 'Search patterns' }).fill('faq');
+  await page.getByRole('button', { name: 'Insert pattern: FAQ', exact: true }).click();
   await expect(canvas.getByRole('heading', { name: 'Frequently asked questions' })).toBeVisible();
 
   await page.getByRole('button', { name: 'Undo' }).click();
@@ -93,8 +94,10 @@ test('a style set on mobile does not leak to desktop', async ({ scratch }) => {
   await heading.click();
   await page.getByRole('button', { name: 'Mobile' }).click();
   await page.getByRole('tab', { name: 'Style' }).click();
-  // A modified section opens itself; only expand it when it is still collapsed.
-  const typography = page.getByRole('button', { name: 'Typography', exact: true });
+  // The section header's name also carries its override chip and "changed" dot ("Typography 1
+  // value for: phone ..."), so match the title as a prefix. Only sections with a default of "open"
+  // (spacing, colours) start expanded: expand this one when it is still collapsed.
+  const typography = page.getByRole('button', { name: /^Typography\b/ });
   if ((await typography.getAttribute('aria-expanded')) === 'false') await typography.click();
   await page
     .getByRole('group', { name: 'Text align' })
@@ -109,7 +112,10 @@ test('a style set on mobile does not leak to desktop', async ({ scratch }) => {
 test('a heading bound to data previews the data and publishes it', async ({ scratch }) => {
   const { page, canvas } = await scratch.open();
   await canvas.getByRole('heading', { name: HEADLINE }).click();
-  await page.getByRole('button', { name: 'Data', exact: true }).first().click();
+  // The value source is a popover opened by an icon button; its modes are icon-only buttons whose
+  // accessible names are "Fixed", "Data" and "Formula".
+  await page.getByRole('button', { name: 'Text: Value source', exact: true }).click();
+  await page.getByRole('button', { name: 'Data', exact: true }).click();
   await page.getByRole('button', { name: /^page.title/ }).click();
   await expect(page.getByText('Bound to data:')).toBeVisible();
   await expect(page.getByText('Preview: Scratch')).toBeVisible();
@@ -137,8 +143,8 @@ test('translating a heading shows the translation on /en, after publishing', asy
   scratch,
 }) => {
   const { page, canvas } = await scratch.open();
-  await page.getByRole('combobox', { name: 'Content language' }).click();
-  await page.getByRole('option', { name: 'en' }).click();
+  await page.getByRole('button', { name: /^Content language/ }).click();
+  await page.locator('.bd-menu-list').getByRole('button', { name: /^en\b/i }).click();
   await canvas
     .getByRole('heading', { name: 'Pages you build yourself, without waiting for a developer' })
     .click();

@@ -1,5 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { doc } from '@next-buildr/test-utils';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createMemoryAdapter, sampleScopes } from './memory-adapter.ts';
+import { parsePreviewRoute, readPreviewDocument } from './preview-route.ts';
 
 const ref = { collection: 'pages', id: 'p' };
 const memoryStorage = () => {
@@ -13,6 +15,26 @@ const memoryStorage = () => {
 };
 
 describe('createMemoryAdapter', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('previews the latest saved draft in a separate frame, even without persistent storage', async () => {
+    const session = { ...memoryStorage(), removeItem: () => undefined };
+    vi.stubGlobal('sessionStorage', session);
+    const adapter = createMemoryAdapter({
+      storage: { getItem: () => null, setItem: () => undefined },
+    });
+    const first = await adapter.load(ref);
+    const edited = doc({
+      children: [
+        { type: 'buildr/heading', props: { text: { kind: 'static', value: 'Edited preview' } } },
+      ],
+    });
+    await adapter.save(ref, { document: edited, baseRevision: first.revision, autosave: false });
+    const url = adapter.previewUrl(ref, { draft: true });
+    expect(url).toBe('/preview?ref=p&collection=pages');
+    expect(parsePreviewRoute(new URL(url, 'http://localhost').search)).toEqual(ref);
+    expect(readPreviewDocument(ref, session)).toEqual(edited);
+  });
   it('saves a document and loads it back at the next revision', async () => {
     const storage = memoryStorage();
     const adapter = createMemoryAdapter({ storage });

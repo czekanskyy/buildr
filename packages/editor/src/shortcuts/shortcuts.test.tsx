@@ -8,12 +8,15 @@ import {
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { RemoveRequest, ShortcutCallbacks } from '../app/contracts.ts';
 import { MessagesProvider } from '../messages/index.tsx';
 import { createEditorStore, EditorStoreProvider } from '../store/index.ts';
+import { ToastProvider } from '../ui/index.ts';
 import { comboOf, displayCombo, isTypingTarget, type KeyInput, normalizeCombo } from './keys.ts';
 import { DEFAULT_SHORTCUTS } from './map.ts';
+import { overlayOpen, parentSelection } from './navigation.ts';
 import { createShortcutRegistry } from './registry.ts';
-import { ShortcutProvider, useForwardedKeys } from './shortcuts.tsx';
+import { ShortcutProvider, useForwardedKeys, useOpenShortcuts } from './shortcuts.tsx';
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -139,6 +142,17 @@ const page: ComponentMeta = {
 };
 const registryMeta = createRegistryMeta({ components: [page, item] });
 
+const nested = (): BuilderDocument => ({
+  schemaVersion: 1,
+  root: 'root',
+  nodes: {
+    root: { id: 'root', type: 'buildr/page', slots: { default: ['secAAAAAA1'] } },
+    secAAAAAA1: { id: 'secAAAAAA1', type: 'buildr/item', slots: { default: ['itemAAAAA1'] } },
+    itemAAAAA1: { id: 'itemAAAAA1', type: 'buildr/item' },
+  },
+  components: {},
+});
+
 const fixture = (): BuilderDocument => ({
   schemaVersion: 1,
   root: 'root',
@@ -171,20 +185,36 @@ describe('ShortcutProvider', () => {
     return <input aria-label="field" />;
   }
 
-  async function mount() {
+  async function mount(
+    extra: {
+      doc?: BuilderDocument;
+      callbacks?: Partial<ShortcutCallbacks>;
+      onRemove?: (request: RemoveRequest) => void;
+      toasts?: boolean;
+    } = {},
+  ) {
     const store = createEditorStore({
-      doc: fixture(),
+      doc: extra.doc ?? fixture(),
       registry: registryMeta,
       generateId: createSeededIdGenerator(5),
       validationDelayMs: null,
+      canUnlock: () => true,
     });
+    const shortcuts = (
+      <ShortcutProvider
+        platform="other"
+        actions={actions}
+        {...(extra.callbacks ? { callbacks: extra.callbacks } : {})}
+        {...(extra.onRemove ? { onRemove: extra.onRemove } : {})}
+      >
+        <Probe />
+      </ShortcutProvider>
+    );
     await act(async () =>
       root.render(
         <MessagesProvider locale="en">
           <EditorStoreProvider store={store}>
-            <ShortcutProvider platform="other" actions={actions}>
-              <Probe />
-            </ShortcutProvider>
+            {extra.toasts ? <ToastProvider>{shortcuts}</ToastProvider> : shortcuts}
           </EditorStoreProvider>
         </MessagesProvider>,
       ),
@@ -220,6 +250,49 @@ describe('ShortcutProvider', () => {
     expect(order(store)).toEqual(['itemAAAAA1', 'itemBBBBB1', 'itemCCCCC1']);
     await key(document.body, { key: 'Z', ctrlKey: true, shiftKey: true });
     expect(order(store)).toEqual(['itemAAAAA1', 'itemCCCCC1']);
+  });
+
+  it('refuses to delete, move or duplicate a block locked for structure, and says why', async () => {
+    const base = fixture();
+    const doc: BuilderDocument = {
+      ...base,
+      nodes: {
+        ...base.nodes,
+        itemBBBBB1: { id: 'itemBBBBB1', type: 'buildr/item', lock: { structure: true } },
+      },
+    };
+    const store = await mount({ doc, toasts: true });
+    const before = order(store);
+    act(() => store.select('itemBBBBB1'));
+    await key(document.body, { key: 'Delete' });
+    expect(container.textContent).toContain(
+      'This block is locked. Unlock it in the Structure panel.',
+    );
+    await key(document.body, { key: 'ArrowUp', altKey: true });
+    await key(document.body, { key: 'ArrowDown', altKey: true });
+    await key(document.body, { key: 'd', ctrlKey: true });
+    expect(order(store)).toEqual(before);
+    expect(Object.keys(store.getState().doc.nodes)).toHaveLength(4);
+    // The neighbour is not locked and still goes.
+    act(() => store.select('itemCCCCC1'));
+    await key(document.body, { key: 'Delete' });
+    expect(order(store)).toEqual(['itemAAAAA1', 'itemBBBBB1']);
+  });
+
+  it('toggles session outlines from UI and forwarded canvas keys', async () => {
+    const store = await mount();
+    container.classList.add('buildr-editor');
+    await key(container, { key: 'O', ctrlKey: true, shiftKey: true });
+    expect(store.view.getState().outlines).toBe(true);
+    act(() => {
+      forwarded(press('O', { ctrl: true, shift: true }));
+    });
+    expect(store.view.getState().outlines).toBe(false);
+    const outside = document.createElement('button');
+    document.body.append(outside);
+    await key(outside, { key: 'O', ctrlKey: true, shiftKey: true });
+    expect(store.view.getState().outlines).toBe(false);
+    expect(store.getState().docVersion).toBe(0);
   });
 
   it('duplicates, moves and clears', async () => {
@@ -301,6 +374,176 @@ describe('ShortcutProvider', () => {
     await key(document.body, { key: '?', shiftKey: true });
     const dialog = document.querySelector('[role=dialog]');
     expect(dialog?.textContent).toContain('Keyboard shortcuts');
-    expect(dialog?.textContent).toContain('Ctrl+Shift+Z');
+    expect(dialog?.textContent).toContain('CtrlShiftZ');
+  });
+
+  const callbacks = () => ({
+    setDevice: vi.fn(),
+    togglePanels: vi.fn(),
+    toggleGuides: vi.fn(),
+    openShortcuts: vi.fn(),
+    focusBlockSearch: vi.fn(),
+  });
+  const openOverlay = (role: string) => {
+    const element = document.createElement('div');
+    element.setAttribute('role', role);
+    element.setAttribute('data-state', 'open');
+    document.body.append(element);
+  };
+
+  it('runs the UI-only shortcuts through the callbacks', async () => {
+    const cb = callbacks();
+    await mount({ callbacks: cb });
+    await key(document.body, { key: '1', ctrlKey: true });
+    await key(document.body, { key: '3', ctrlKey: true });
+    await key(document.body, { key: '.', ctrlKey: true });
+    await key(document.body, { key: 'O', ctrlKey: true, shiftKey: true });
+    await key(document.body, { key: '/' });
+    await key(document.body, { key: '?', shiftKey: true });
+    expect(cb.setDevice.mock.calls).toEqual([['1'], ['3']]);
+    expect(cb.togglePanels).toHaveBeenCalledOnce();
+    expect(cb.toggleGuides).toHaveBeenCalledOnce();
+    expect(cb.focusBlockSearch).toHaveBeenCalledOnce();
+    expect(cb.openShortcuts).toHaveBeenCalledOnce();
+    expect(document.querySelector('[role=dialog]')).toBeNull();
+  });
+
+  it('does nothing and keeps the key without callbacks', async () => {
+    await mount();
+    const event = new KeyboardEvent('keydown', { key: '/', bubbles: true, cancelable: true });
+    await act(async () => {
+      document.body.dispatchEvent(event);
+    });
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it('keeps the UI-only keys out of text fields, dialogs and extra modifiers', async () => {
+    const cb = callbacks();
+    await mount({ callbacks: cb });
+    const field = container.querySelector('input') as HTMLInputElement;
+    await key(field, { key: '/' });
+    await key(field, { key: '1', ctrlKey: true });
+    await key(field, { key: '?', shiftKey: true });
+    await key(document.body, { key: '1', ctrlKey: true, altKey: true });
+    await key(document.body, { key: '/', ctrlKey: true });
+    openOverlay('dialog');
+    await key(document.body, { key: '.', ctrlKey: true });
+    await key(document.body, { key: '/' });
+    expect(cb.setDevice).not.toHaveBeenCalled();
+    expect(cb.focusBlockSearch).not.toHaveBeenCalled();
+    expect(cb.togglePanels).not.toHaveBeenCalled();
+    expect(cb.openShortcuts).not.toHaveBeenCalled();
+  });
+
+  it('selects the parent on Escape and clears at the top level', async () => {
+    const store = await mount({ doc: nested() });
+    act(() => store.select('itemAAAAA1'));
+    await key(document.body, { key: 'Escape' });
+    expect(store.getState().selectedIds).toEqual(['secAAAAAA1']);
+    await key(document.body, { key: 'Escape' });
+    expect(store.getState().selectedIds).toEqual([]);
+  });
+
+  it('leaves Escape to an open menu', async () => {
+    const store = await mount({ doc: nested() });
+    act(() => store.select('itemAAAAA1'));
+    openOverlay('menu');
+    expect(overlayOpen()).toBe(true);
+    await key(document.body, { key: 'Escape' });
+    expect(store.getState().selectedIds).toEqual(['itemAAAAA1']);
+  });
+
+  it('leaves every editing key to an open dialog or menu', async () => {
+    const store = await mount();
+    act(() => store.select('itemBBBBB1'));
+    openOverlay('dialog');
+    await key(document.body, { key: 'Delete' });
+    await key(document.body, { key: 'ArrowUp', altKey: true });
+    await key(document.body, { key: 'd', ctrlKey: true });
+    await key(document.body, { key: 's', ctrlKey: true });
+    expect(order(store)).toEqual(['itemAAAAA1', 'itemBBBBB1', 'itemCCCCC1']);
+    expect(actions.save).not.toHaveBeenCalled();
+    document.querySelector('[role=dialog]')?.remove();
+    const menu = document.createElement('div');
+    menu.setAttribute('role', 'menu');
+    const item = document.createElement('button');
+    menu.append(item);
+    document.body.append(menu);
+    await key(item, { key: 'Delete' });
+    expect(order(store)).toEqual(['itemAAAAA1', 'itemBBBBB1', 'itemCCCCC1']);
+  });
+
+  it('keeps the UI-only keys out of controls outside the editor', async () => {
+    const cb = callbacks();
+    await mount({ callbacks: cb });
+    const outside = document.createElement('button');
+    document.body.append(outside);
+    await key(outside, { key: '/' });
+    await key(outside, { key: '1', ctrlKey: true });
+    expect(cb.focusBlockSearch).not.toHaveBeenCalled();
+    expect(cb.setDevice).not.toHaveBeenCalled();
+    const inside = document.createElement('div');
+    inside.className = 'buildr-editor';
+    const control = document.createElement('button');
+    inside.append(control);
+    document.body.append(inside);
+    await key(control, { key: '/' });
+    expect(cb.focusBlockSearch).toHaveBeenCalledOnce();
+  });
+
+  it('opens the dialog directly through useOpenShortcuts', async () => {
+    let open: (() => void) | undefined;
+    function Opener() {
+      open = useOpenShortcuts();
+      return null;
+    }
+    const store = createEditorStore({
+      doc: fixture(),
+      registry: registryMeta,
+      generateId: createSeededIdGenerator(5),
+      validationDelayMs: null,
+    });
+    await act(async () =>
+      root.render(
+        <MessagesProvider locale="en">
+          <EditorStoreProvider store={store}>
+            <ShortcutProvider platform="other">
+              <Opener />
+            </ShortcutProvider>
+          </EditorStoreProvider>
+        </MessagesProvider>,
+      ),
+    );
+    await act(async () => open?.());
+    expect(document.querySelector('[role=dialog]')?.textContent).toContain('Keyboard shortcuts');
+  });
+
+  it('finds the parent of a node', () => {
+    const doc = nested();
+    expect(parentSelection(doc, ['itemAAAAA1'])).toBe('secAAAAAA1');
+    expect(parentSelection(doc, ['secAAAAAA1'])).toBeNull();
+    expect(parentSelection(doc, [])).toBeNull();
+  });
+
+  it('hands a removal to onRemove with hasDescendants instead of removing', async () => {
+    const onRemove = vi.fn();
+    const store = await mount({ doc: nested(), onRemove });
+    act(() => store.select('secAAAAAA1'));
+    await key(document.body, { key: 'Delete' });
+    expect(onRemove).toHaveBeenLastCalledWith({ ids: ['secAAAAAA1'], hasDescendants: true });
+    act(() => store.select('itemAAAAA1'));
+    await key(document.body, { key: 'Backspace' });
+    expect(onRemove).toHaveBeenLastCalledWith({ ids: ['itemAAAAA1'], hasDescendants: false });
+    expect(Object.keys(store.getState().doc.nodes)).toHaveLength(3);
+  });
+
+  it('shows the four groups and the Mac note in the help dialog', async () => {
+    await mount();
+    await key(document.body, { key: '?', shiftKey: true });
+    const text = document.querySelector('[role=dialog]')?.textContent ?? '';
+    for (const heading of ['General', 'Selection', 'Editing', 'View']) {
+      expect(text).toContain(heading);
+    }
+    expect(text).toContain('On a Mac use Cmd instead of Ctrl.');
   });
 });
