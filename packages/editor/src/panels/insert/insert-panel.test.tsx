@@ -206,6 +206,9 @@ describe('category headings', () => {
       meta('buildr/page', { capabilities: { root: true }, slots: { default: {} } }),
       meta('buildr/alert', { label: 'Alert', category: 'ui' }),
       meta('buildr/faq', { label: 'Faq', category: 'cms' }),
+      meta('buildr/loop', { label: 'Loop', category: 'cms' }),
+      meta('buildr/pagination', { label: 'Pagination', category: 'cms' }),
+      meta('buildr/rich-text', { label: 'Rich text' }),
       meta('buildr/post', { label: 'Post', category: 'blog' }),
     ],
     templates: [],
@@ -214,33 +217,53 @@ describe('category headings', () => {
   const headings = () =>
     [...container.querySelectorAll('[role=group]')].map((g) => g.getAttribute('aria-label'));
 
-  it('names ui and cms in capitals and title-cases a custom category', async () => {
+  it('names ui in capitals, hides cms and title-cases a custom category', async () => {
     await mount(false, 'en', custom, customManifest);
-    expect(headings()).toEqual(['Recently used', 'UI', 'CMS', 'Blog']);
-    expect(container.querySelector('.bd-insert-category-name')?.textContent).toBe('Recently used');
+    expect(headings()).toEqual(['UI', 'Blog']);
+    expect(container.querySelector('.bd-insert-category-name')?.textContent).toBe('UI');
   });
 
-  it('puts the basic blocks in a Basic group at the top, and the defaults in Recently used', async () => {
+  it('hides rich text and all cms blocks from sections and search, keeping custom blocks', async () => {
+    await mount(false, 'en', custom, customManifest);
+    const hidden = ['buildr/rich-text', 'buildr/loop', 'buildr/pagination', 'buildr/faq'];
+    for (const id of hidden) {
+      expect(container.querySelector(`[data-id="${id}"]`)).toBeNull();
+    }
+    expect(button('Post')).toBeDefined();
+    for (const query of ['rich', 'loop', 'pagination', 'faq', 'buildr/']) {
+      await typeQuery(query);
+      for (const id of hidden) {
+        expect(container.querySelector(`[data-id="${id}"]`)).toBeNull();
+      }
+    }
+    await typeQuery('post');
+    expect(button('Post')).toBeDefined();
+  });
+
+  it('renders a shared block in two sections and once in search', async () => {
+    const reg = createRegistryMeta({
+      components: [meta('buildr/button', { label: 'Button' })],
+      templates: [],
+    });
+    await mount(false, 'en', reg, toManifest(reg));
+    expect(headings()).toEqual(['Content', 'Forms']);
+    expect(container.querySelectorAll('[data-id="buildr/button"]')).toHaveLength(2);
+    await typeQuery('button');
+    expect(container.querySelectorAll('[data-id="buildr/button"]')).toHaveLength(1);
+  });
+
+  it('shows mapped content before unmapped categories without recent blocks', async () => {
     await mount();
-    expect(headings()).toEqual(['Recently used', 'Basic', 'Layout']);
-    const basic = container.querySelector('[aria-label="Basic"]') as HTMLElement;
-    expect(basic.querySelector('.bd-insert-category-toggle')?.getAttribute('aria-expanded')).toBe(
-      'true',
-    );
-    expect([...basic.querySelectorAll('.bd-insert-label')].map((l) => l.textContent)).toEqual([
-      'Text',
-    ]);
-    const recent = container.querySelector('#bd-insert-recent') as HTMLElement;
-    expect([...recent.querySelectorAll('.bd-insert-label')].map((l) => l.textContent)).toEqual([
-      'Text',
-    ]);
+    expect(headings()).toEqual(['Content', 'Layout']);
+    expect(container.textContent).not.toContain('Recently used');
+    expect(container.querySelector('#bd-insert-recent')).toBeNull();
   });
 
   it('uses the Polish catalog', async () => {
     await mount(false, 'pl', custom, customManifest);
-    expect(headings()).toEqual(['Ostatnio używane', 'UI', 'CMS', 'Blog']);
+    expect(headings()).toEqual(['UI', 'Blog']);
     await mount(false, 'pl');
-    expect(headings()).toEqual(['Ostatnio używane', 'Podstawowe', 'Układ']);
+    expect(headings()).toEqual(['Tre\u015b\u0107', 'Uk\u0142ad']);
   });
 });
 
@@ -251,7 +274,7 @@ describe('InsertPanel', () => {
     const groups = [...container.querySelectorAll('[role=group]')].map((g) =>
       g.getAttribute('aria-label'),
     );
-    expect(groups).toEqual(['Recently used', 'Basic', 'Layout']);
+    expect(groups).toEqual(['Content', 'Layout']);
     await switchMode('Patterns');
     expect(await axe(container)).toHaveNoViolations();
     expect(
@@ -348,7 +371,7 @@ describe('InsertPanel', () => {
   it('is operable with the keyboard alone (real buttons in tab order)', async () => {
     await mount();
     const items = [...container.querySelectorAll('.bd-insert-item')] as HTMLButtonElement[];
-    expect(items.length).toBe(3);
+    expect(items.length).toBe(2);
     for (const item of items) {
       expect(item.tagName).toBe('BUTTON');
       expect(item.tabIndex).toBe(0);
@@ -366,24 +389,14 @@ describe('InsertPanel (PB-125)', () => {
       (b) => b.getAttribute('aria-label') === name,
     ) as HTMLElement;
 
-  it('starts categories collapsed and toggles their accessible state and remembered choice', async () => {
+  it('keeps every section visible without accordion controls', async () => {
+    localStorage.setItem('buildr.editor.insert.collapsed', '["components:content"]');
     await mount();
-    const toggle = [...container.querySelectorAll('.bd-insert-category-toggle')].find((b) =>
-      b.textContent?.includes('Layout'),
-    ) as HTMLElement;
-    expect(toggle.getAttribute('aria-expanded')).toBe('false');
-    expect(toggle.querySelector('.bd-insert-count')?.textContent).toBe('1');
-    const list = container.querySelector(`#${toggle.getAttribute('aria-controls')}`) as HTMLElement;
-    expect(list.hidden).toBe(true);
-    await act(async () => toggle.click());
-    expect(toggle.getAttribute('aria-expanded')).toBe('true');
-    expect(list.hidden).toBe(false);
-    expect(JSON.parse(localStorage.getItem('buildr.editor.insert.collapsed') ?? '[]')).toEqual([]);
-    await act(async () => toggle.click());
-    expect(list.hidden).toBe(true);
-    expect(JSON.parse(localStorage.getItem('buildr.editor.insert.collapsed') ?? '[]')).toContain(
-      'components:layout',
-    );
+    expect(container.querySelector('.bd-insert-category button')).toBeNull();
+    expect(container.querySelector('[aria-expanded], [aria-controls]')).toBeNull();
+    expect(container.querySelectorAll('.bd-insert-group ul:not([hidden])')).toHaveLength(2);
+    expect(button('Text')).toBeDefined();
+    expect(button('Box')).toBeDefined();
   });
 
   it('focuses the search on "/" only when no text field has focus', async () => {
@@ -417,14 +430,6 @@ describe('InsertPanel (PB-125)', () => {
 });
 
 describe('InsertPanel (PB-157)', () => {
-  const RECENT = 'buildr.editor.insert.recent';
-  const groupNames = () =>
-    [...container.querySelectorAll('[role=group]')].map((g) => g.getAttribute('aria-label'));
-  const recentLabels = () =>
-    [
-      ...(container.querySelector('#bd-insert-recent')?.querySelectorAll('.bd-insert-label') ?? []),
-    ].map((l) => l.textContent);
-
   it('switches between blocks and patterns, uncontrolled', async () => {
     await mount();
     expect(container.querySelector('.bd-insert')?.getAttribute('data-mode')).toBe('blocks');
@@ -467,37 +472,13 @@ describe('InsertPanel (PB-157)', () => {
     expect(container.querySelector('.bd-insert')?.getAttribute('data-mode')).toBe('patterns');
   });
 
-  it('remembers inserted blocks, newest first, and lists them as a group', async () => {
+  it('does not restore or write recently used blocks', async () => {
+    localStorage.setItem('buildr.editor.insert.recent', '["buildr/text"]');
     const store = await mount();
-    expect(groupNames()[0]).toBe('Recently used');
-    expect(recentLabels()).toEqual(['Text']);
     await act(async () => store.select('boxNode001'));
-    await click('Text');
     await click('Box');
-    expect(groupNames()[0]).toBe('Recently used');
-    expect(recentLabels()).toEqual(['Box', 'Text']);
-    expect(JSON.parse(localStorage.getItem(RECENT) ?? '[]')).toEqual(['buildr/box', 'buildr/text']);
-  });
-
-  it('ignores corrupt or unknown stored recents', async () => {
-    localStorage.setItem(RECENT, '{not json');
-    await mount();
-    expect(groupNames()[0]).toBe('Recently used');
-    expect(recentLabels()).toEqual(['Text']);
-    act(() => root.unmount());
-    root = createRoot(container);
-    localStorage.setItem(RECENT, JSON.stringify(['buildr/text', 7, 'gone/type']));
-    await mount();
-    expect(recentLabels()).toEqual(['Text']);
-  });
-
-  it('restores the collapsed groups', async () => {
-    localStorage.setItem('buildr.editor.insert.collapsed', JSON.stringify(['components:basic']));
-    await mount();
-    const toggle = [...container.querySelectorAll('.bd-insert-category-toggle')].find((b) =>
-      b.textContent?.includes('Basic'),
-    );
-    expect(toggle?.getAttribute('aria-expanded')).toBe('false');
+    expect(container.textContent).not.toContain('Recently used');
+    expect(localStorage.getItem('buildr.editor.insert.recent')).toBe('["buildr/text"]');
   });
 });
 
@@ -566,7 +547,7 @@ describe('canvas insertion target', () => {
     expect(children(store, 'boxNode001')[0]).toBe(inserted);
   });
 
-  it('uses the gap for patterns and recent blocks', async () => {
+  it('uses the gap for patterns and blocks', async () => {
     const store = await mount();
     await act(async () => store.select('boxNode002'));
     await click('Text');

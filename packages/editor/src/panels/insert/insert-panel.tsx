@@ -21,20 +21,17 @@ import {
   useToast,
 } from '../../ui/index.ts';
 import {
-  DEFAULT_RECENT,
+  blockSections,
   filterItems,
   groupByCategory,
   type PaletteItem,
   paletteItems,
   safeThumbnail,
-  withBasicGroup,
 } from './catalog.ts';
 import { categoryName } from './category-name.ts';
-import { readCollapsed, readRecent, withRecent, writeCollapsed, writeRecent } from './storage.ts';
 import { placeInsertion } from './target.ts';
 
 const SKELETONS = ['a', 'b', 'c', 'd'] as const;
-const RECENT_ID = 'recent';
 
 /** The label split around the first match of the query, for highlighting. */
 function splitMatch(label: string, query: string): readonly [string, string, string] {
@@ -55,7 +52,7 @@ export interface InsertPanelProps {
 
 /**
  * The block and pattern palette (docs/editor.md#insert): a Blocks / Patterns switch, search, the
- * insert target, "Recently used" and collapsible groups. A click (or Enter) inserts at the first
+ * insert target and always-expanded block sections. A click (or Enter) inserts at the first
  * position the rules allow: inside the selected container, else after the selection. It never needs
  * drag and drop. When nothing fits the reason is shown instead.
  */
@@ -81,19 +78,7 @@ export function InsertPanel({
   const [query, setQuery] = useState('');
   const [ownMode, setOwnMode] = useState<PaletteMode>('blocks');
   const mode = modeProp ?? ownMode;
-  const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(() => {
-    const saved = readCollapsed();
-    return new Set([
-      ...(manifest === undefined
-        ? []
-        : withBasicGroup(groupByCategory(paletteItems(manifest).components))
-            .filter((group) => group.category !== 'basic')
-            .map((group) => `components:${group.category}`)),
-      ...saved,
-    ]);
-  });
   const [patternCategory, setPatternCategory] = useState('all');
-  const [recent, setRecent] = useState<readonly string[]>(readRecent);
   const ownSearchRef = useRef<HTMLInputElement>(null);
   const searchRef = searchRefProp ?? ownSearchRef;
   const toast = useToast();
@@ -150,16 +135,10 @@ export function InsertPanel({
       !searching && source !== undefined
         ? patterns
           ? groupByCategory(source)
-          : withBasicGroup(groupByCategory(source))
+          : blockSections(source)
         : [],
     [searching, source, patterns],
   );
-  const recentItems = useMemo(() => {
-    const byType = new Map((palette?.components ?? []).map((item) => [item.id, item]));
-    const used = recent.flatMap((type) => byType.get(type) ?? []);
-    return used.length > 0 ? used : DEFAULT_RECENT.flatMap((type) => byType.get(type) ?? []);
-  }, [palette, recent]);
-
   const press = useDragPress();
 
   // `/` jumps to the search, unless the keyboard already belongs to a field or an editable region.
@@ -178,14 +157,6 @@ export function InsertPanel({
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [searchRef, store]);
-
-  const toggleGroup = (key: string) =>
-    setCollapsed((current) => {
-      const next = new Set(current);
-      if (!next.delete(key)) next.add(key);
-      writeCollapsed(next);
-      return next;
-    });
 
   const fragmentOf = (item: PaletteItem): BuilderFragment | undefined => {
     const versions = registryVersions(store.registry);
@@ -245,11 +216,6 @@ export function InsertPanel({
       variant: 'success',
       message: t('insert.done.named').replace('{name}', () => item.label),
     });
-    if (item.kind === 'component') {
-      const next = withRecent(recent, item.id);
-      setRecent(next);
-      writeRecent(next);
-    }
     // The command gives the fragment fresh ids; the new node is the one now at the target position.
     const created = store.getState().doc.nodes[parentId]?.slots?.[slot]?.[at];
     if (created !== undefined) store.select(created);
@@ -351,40 +317,18 @@ export function InsertPanel({
     );
   };
 
-  const renderGroup = (
-    key: string,
-    name: string,
-    items: readonly PaletteItem[],
-    kind: 'component' | 'template',
-    empty?: string,
-  ) => {
-    const open = !collapsed.has(key);
-    const listId = `bd-insert-${key.replace(/[^\w-]/g, '-')}`;
-    return (
-      // biome-ignore lint/a11y/useSemanticElements: a fieldset is for form controls; this only names a group of buttons
-      <div key={key} role="group" aria-label={name} className="bd-insert-group">
-        <h4 className="bd-insert-category">
-          <button
-            type="button"
-            className="bd-insert-category-toggle"
-            aria-expanded={open}
-            aria-controls={listId}
-            onClick={() => toggleGroup(key)}
-          >
-            <Icon name={open ? 'chevron-down' : 'chevron-right'} />
-            <span className="bd-insert-category-name">{name}</span>
-            <span className="bd-insert-count">{items.length}</span>
-          </button>
-        </h4>
-        <ul className="bd-insert-list" id={listId} data-kind={kind} hidden={!open}>
-          {items.map((item) => renderTile(item, key))}
-        </ul>
-        {empty !== undefined && items.length === 0 && open ? (
-          <p className="bd-insert-shell">{empty}</p>
-        ) : null}
-      </div>
-    );
-  };
+  const renderGroup = (key: string, name: string, items: readonly PaletteItem[]) => (
+    // biome-ignore lint/a11y/useSemanticElements: names a group of insert buttons
+    <div key={key} role="group" aria-label={name} className="bd-insert-group">
+      <h4 className="bd-insert-category">
+        <span className="bd-insert-category-name">{name}</span>
+        <span className="bd-insert-count">{items.length}</span>
+      </h4>
+      <ul className="bd-insert-list" data-kind="component">
+        {items.map((item) => renderTile(item, key))}
+      </ul>
+    </div>
+  );
 
   const kind = patterns ? 'template' : 'component';
   const label = t(patterns ? 'patterns.search' : 'blocks.search');
@@ -521,23 +465,13 @@ export function InsertPanel({
               <p className="bd-insert-shell">{t('patterns.empty')}</p>
             )
           ) : (
-            <>
-              {renderGroup(
-                RECENT_ID,
-                t('blocks.recent'),
-                recentItems,
-                'component',
-                t('insert.recent.empty'),
-              )}
-              {groups.map((group) =>
-                renderGroup(
-                  `components:${group.category}`,
-                  categoryName(t, group.category),
-                  group.items,
-                  'component',
-                ),
-              )}
-            </>
+            groups.map((group, index) =>
+              renderGroup(
+                `components:${index}:${group.category}`,
+                categoryName(t, group.category),
+                group.items,
+              ),
+            )
           )
         ) : null}
       </div>

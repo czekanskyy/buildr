@@ -126,7 +126,9 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.buildr-editor .bd-insert-category-toggle {
+.buildr-editor .bd-insert-category {
+  display: flex;
+  align-items: center;
   min-height: var(--bd-control-md);
   gap: var(--bd-space-2);
   color: var(--bd-text);
@@ -260,7 +262,7 @@
 .buildr-editor .bd-insert-category {
   margin: 0;
 }
-.buildr-editor .bd-insert-category-toggle {
+.buildr-editor .bd-insert-category {
   height: 40px;
   min-height: 40px;
   padding-inline: var(--bd-space-1);
@@ -336,9 +338,11 @@
   flex: none;
 }
 .buildr-editor .bd-insert .bd-insert-result {
-  height: var(--bd-control-lg);
+  /* Name, category and description stack in three lines, so the row grows instead of overlapping. */
+  height: auto;
+  min-height: var(--bd-control-lg);
   align-items: center;
-  padding: 0 var(--bd-space-2);
+  padding: var(--bd-space-1) var(--bd-space-2);
   border: 0;
   border-radius: var(--bd-radius-md);
   background: transparent;
@@ -396,4 +400,22 @@
 }
 .buildr-editor .bd-layer-slot {
   opacity: 0.8;
+}
+
+/* Two tiles per row at the default sidebar (280px, 248px of content); one once the sidebar is a bit narrower. */
+@container (max-width: 239px) {
+  .buildr-editor .bd-insert-list[data-kind="component"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Long Polish labels ("Tekst sformatowany") wrap to two lines instead of being cut off. */
+.buildr-editor .bd-insert-list[data-kind="component"] .bd-insert-label {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow-wrap: anywhere;
+  text-align: center;
+  white-space: normal;
 }

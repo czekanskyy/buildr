@@ -67,6 +67,9 @@ export function safeThumbnail(value: string | undefined): string | undefined {
     : undefined;
 }
 
+const HIDDEN_TYPES = new Set(['buildr/rich-text']);
+const HIDDEN_CATEGORIES = new Set(['cms']);
+
 /** Components that can be inserted (not root-only, not `insertable: false`) and templates, from the manifest. */
 export function paletteItems(manifest: RegistryManifest): {
   readonly components: readonly PaletteItem[];
@@ -75,7 +78,13 @@ export function paletteItems(manifest: RegistryManifest): {
   const byLabel = (a: PaletteItem, b: PaletteItem) => a.label.localeCompare(b.label);
   return {
     components: Object.values(manifest.components)
-      .filter((meta) => meta.capabilities?.insertable !== false && meta.capabilities?.root !== true)
+      .filter(
+        (meta) =>
+          meta.capabilities?.insertable !== false &&
+          meta.capabilities?.root !== true &&
+          !HIDDEN_TYPES.has(meta.type) &&
+          !HIDDEN_CATEGORIES.has(meta.category),
+      )
       .map(componentItem)
       .sort(byLabel),
     templates: Object.values(manifest.templates).map(templateItem).sort(byLabel),
@@ -88,30 +97,63 @@ export function filterItems(items: readonly PaletteItem[], query: string): Palet
   return items.filter((item) => words.every((word) => item.haystack.includes(word)));
 }
 
-/** The blocks of the "Basic" group, in this order; those the registry lacks are left out. */
-export const BASIC_TYPES: readonly string[] = [
-  'buildr/heading',
-  'buildr/text',
-  'buildr/button',
-  'buildr/image',
-  'buildr/list',
-  'buildr/quote',
-];
+/** Explicit editor sections; unavailable types are skipped without placeholders. */
+export const BLOCK_SECTIONS = [
+  {
+    section: 'layout',
+    types: ['buildr/container', 'buildr/grid', 'buildr/spacer', 'buildr/anchor'],
+  },
+  {
+    section: 'content',
+    types: [
+      'buildr/heading',
+      'buildr/text',
+      'buildr/image',
+      'buildr/list',
+      'buildr/button',
+      'buildr/link',
+      'buildr/badge',
+      'buildr/divider',
+      'buildr/accordion',
+      'buildr/card',
+    ],
+  },
+  {
+    section: 'media',
+    types: [
+      'buildr/carousel',
+      'buildr/gallery',
+      'buildr/icon',
+      'buildr/video',
+      'buildr/iframe',
+      'buildr/google-maps',
+    ],
+  },
+  {
+    section: 'forms',
+    types: [
+      'buildr/form',
+      'buildr/input',
+      'buildr/textarea',
+      'buildr/select',
+      'buildr/checkbox',
+      'buildr/button',
+      'buildr/label',
+      'buildr/captcha',
+    ],
+  },
+] as const;
 
-/** What "Recently used" shows until something was used: the first three basic blocks. */
-export const DEFAULT_RECENT: readonly string[] = BASIC_TYPES.slice(0, 3);
-
-/** Moves the basic blocks out of their categories into a "basic" group at the top. */
-export function withBasicGroup(groups: readonly PaletteGroup[]): PaletteGroup[] {
-  const all = groups.flatMap((group) => group.items);
-  const basic = BASIC_TYPES.flatMap((type) => all.find((item) => item.id === type) ?? []);
-  if (basic.length === 0) return [...groups];
-  const taken = new Set(basic.map((item) => item.id));
+/** Mapped blocks may occur in multiple sections; all remaining blocks retain their categories. */
+export function blockSections(items: readonly PaletteItem[]): PaletteGroup[] {
+  const byType = new Map(items.map((item) => [item.id, item]));
+  const mapped = new Set<string>(BLOCK_SECTIONS.flatMap(({ types }) => [...types]));
   return [
-    { category: 'basic', items: basic },
-    ...groups
-      .map((group) => ({ ...group, items: group.items.filter((item) => !taken.has(item.id)) }))
-      .filter((group) => group.items.length > 0),
+    ...BLOCK_SECTIONS.map(({ section, types }) => ({
+      category: section,
+      items: types.flatMap((type) => byType.get(type) ?? []),
+    })).filter((group) => group.items.length > 0),
+    ...groupByCategory(items.filter((item) => !mapped.has(item.id))),
   ];
 }
 

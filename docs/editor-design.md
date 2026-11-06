@@ -153,7 +153,7 @@ Three zones (PB-157). Left: back to the CMS, brand, left panel toggle, undo and 
 
 `app/layout.tsx` renders the toolbar, the body (left panel, stage, right panel) and the status bar.
 
-- **Left panel**: tabs Blocks and Structure, a collapse button, and a rail with one icon per tab when collapsed. Blocks has a Blocks / Patterns switch, the insert target chip, Recently used, collapsible categories and flat highlighted search results; `/` focuses the search. Structure is the layers tree.
+- **Left panel**: tabs Blocks and Structure, a collapse button, and a rail with one icon per tab when collapsed. Blocks has a Blocks / Patterns switch, the insert target chip, always-open sections (Układ, Treść, Multimedia, Formularze) and flat highlighted search results; `/` focuses the search. Structure is the layers tree.
 - **Right panel**: the inspector (Content, Style, Advanced tabs); collapsed, its rail shows the tabs as icons.
 - **Panels** resize with splitters and collapse to rails; below 1100px they are overlays.
 - **Stage**: the canvas, the empty-page state and the issues drawer, which opens inside the stage.
