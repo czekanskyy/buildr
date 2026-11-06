@@ -24,3 +24,11 @@ export function parseEditorRoute(search: string): EditorRoute {
     ...(uiLocale === 'en' || uiLocale === 'pl' ? { uiLocale } : {}),
   };
 }
+
+/**
+ * Whether the playground permits author code (ADR-026): on by default, `?authorCode=0` turns it
+ * off. The editor and its canvas read the same query, so the preview matches the commands.
+ */
+export function authorCodeFromSearch(search: string): boolean {
+  return new URLSearchParams(search).get('authorCode') !== '0';
+}

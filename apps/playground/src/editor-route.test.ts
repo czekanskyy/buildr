@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseEditorRoute } from './editor-route.ts';
+import { authorCodeFromSearch, parseEditorRoute } from './editor-route.ts';
 
 describe('parseEditorRoute', () => {
   it('reads the seed and the theme', () => {
@@ -28,5 +28,14 @@ describe('parseEditorRoute', () => {
       seed: undefined,
       theme: undefined,
     });
+  });
+});
+
+describe('authorCodeFromSearch', () => {
+  it('is on unless it is switched off with authorCode=0', () => {
+    expect(authorCodeFromSearch('')).toBe(true);
+    expect(authorCodeFromSearch('?seed=landing')).toBe(true);
+    expect(authorCodeFromSearch('?authorCode=1')).toBe(true);
+    expect(authorCodeFromSearch('?authorCode=0')).toBe(false);
   });
 });

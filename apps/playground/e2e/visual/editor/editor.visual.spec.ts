@@ -12,7 +12,7 @@ const sizes = [
 const themes = ['light', 'dark'] as const;
 
 async function open(page: Page, seed: 'empty' | 'landing', theme: (typeof themes)[number]) {
-  await page.goto(`/?seed=${seed}&theme=${theme}`);
+  await page.goto(`/?seed=${seed}&theme=${theme}&uiLocale=en`);
   await expect(page.locator('.buildr-editor')).toHaveAttribute('data-theme', theme);
   await expect(page.locator('.bd-canvas-host')).toHaveAttribute('data-status', 'ready', {
     timeout: 15_000,

@@ -4,7 +4,7 @@ for (const theme of ['light', 'dark']) {
   for (const width of [1024, 1280, 1440]) {
     test(`toolbar fits at ${width}px, ${theme}`, async ({ page }) => {
       await page.setViewportSize({ width, height: 768 });
-      await page.goto(`/?seed=landing&theme=${theme}`);
+      await page.goto(`/?seed=landing&theme=${theme}&uiLocale=en`);
       await expect(page.locator('.bd-canvas-host')).toHaveAttribute('data-status', 'ready', {
         timeout: 15_000,
       });

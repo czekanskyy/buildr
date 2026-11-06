@@ -4,7 +4,7 @@ for (const theme of ['light', 'dark'] as const) {
   for (const width of [1280, 1024]) {
     test(`Style controls fit the inspector at ${width}px, ${theme}`, async ({ page }) => {
       await page.setViewportSize({ width, height: 800 });
-      await page.goto(`/?seed=landing&theme=${theme}`);
+      await page.goto(`/?seed=landing&theme=${theme}&uiLocale=en`);
       await expect(page.locator('.bd-canvas-host')).toHaveAttribute('data-status', 'ready');
       const leftToggle = page.getByRole('button', { name: 'Left panel', exact: true });
       if (await leftToggle.isVisible()) {
@@ -60,8 +60,8 @@ for (const theme of ['light', 'dark'] as const) {
   }
 
   test(`small-screen notice replaces the inspector, ${theme}`, async ({ page }) => {
-    await page.setViewportSize({ width: 800, height: 800 });
-    await page.goto(`/?seed=landing&theme=${theme}`);
+    await page.setViewportSize({ width: 300, height: 800 });
+    await page.goto(`/?seed=landing&theme=${theme}&uiLocale=en`);
     await expect(page.getByRole('alert')).toContainText('The editor needs a bigger screen');
     await expect(page.getByRole('tab', { name: 'Style', exact: true })).toHaveCount(0);
     const fits = await page.getByRole('alert').evaluate((element) => {
