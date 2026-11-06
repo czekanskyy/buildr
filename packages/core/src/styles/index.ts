@@ -1,5 +1,8 @@
-export type { CompiledStyles } from './compile.ts';
+import './extensions.ts';
+
+export type { CompiledStyles, CompileStylesOptions } from './compile.ts';
 export { compileStyles } from './compile.ts';
+export { keyframesRule } from './compile-motion.ts';
 export type { NodeDeclarations, NodeRules } from './compile-node.ts';
 export {
   compileNodeDeclarations,
@@ -19,6 +22,7 @@ export type {
   Corners,
   EffectsStyles,
   LayoutStyles,
+  MotionStyles,
   NodeStyles,
   SizeStyles,
   SpacingStyles,
@@ -30,11 +34,24 @@ export type {
 } from './model.ts';
 export type { StyleGroup, StylePropertyDef, StyleShape } from './properties.ts';
 export {
+  BACKGROUND_ATTACHMENTS,
+  BACKGROUND_REPEATS,
+  BLEND_MODES,
   BOX_SIDES,
   CORNERS,
+  ENTRANCE_EFFECTS,
+  GRADIENT_TYPES,
   getStyleProperty,
+  HOVER_EFFECTS,
+  MAX_MOTION_MS,
+  MAX_PARALLAX_PX,
+  MOTION_DIRECTIONS,
+  MOTION_EASINGS,
   propertiesOfGroup,
+  RADIAL_SHAPES,
+  SCROLL_REVEALS,
   STYLE_GROUPS,
+  STYLE_POSITIONS,
   stylePropertyRegistry,
 } from './properties.ts';
 export {

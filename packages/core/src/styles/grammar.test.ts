@@ -185,7 +185,7 @@ describe('gradient grammar', () => {
   it.each([
     'linear-gradient(#000)',
     'linear-gradient()',
-    'radial-gradient(#000, #fff)',
+    'conic-gradient(#000, #fff)',
     'linear-gradient(400deg, #000, #fff)',
     'linear-gradient(to nowhere, #000, #fff)',
     'linear-gradient(#000, red)',

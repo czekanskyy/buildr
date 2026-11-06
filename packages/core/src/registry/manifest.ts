@@ -18,6 +18,7 @@ const STYLE_GROUP_IDS = [
   'background',
   'border',
   'effects',
+  'motion',
   'visibility',
 ] as const;
 
@@ -121,6 +122,7 @@ const propDefSchema: z.ZodTypeAny = z.lazy(() =>
       ...commonPropShape,
       default: z.string(),
       maxLength: z.number().optional(),
+      format: z.literal('html').optional(),
     }),
     z.strictObject({ kind: z.literal('richText'), ...commonPropShape, default: jsonValueSchema }),
     z.strictObject({

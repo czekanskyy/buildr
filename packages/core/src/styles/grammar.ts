@@ -15,7 +15,20 @@ export const TOKEN_SCALES = [
 ] as const;
 export type TokenScale = (typeof TOKEN_SCALES)[number];
 
-export const LENGTH_UNITS = ['px', 'rem', 'em', '%', 'vw', 'vh', 'svh', 'dvh', 'ch', 'fr'] as const;
+export const LENGTH_UNITS = [
+  'px',
+  'rem',
+  'em',
+  '%',
+  'vw',
+  'vh',
+  'svh',
+  'dvh',
+  'ch',
+  'fr',
+  'deg',
+  'ms',
+] as const;
 export type LengthUnit = (typeof LENGTH_UNITS)[number];
 
 /** Max length of any style value, in characters. */
@@ -36,6 +49,8 @@ export type StyleGrammar =
       readonly length?: {
         readonly units: readonly LengthUnit[];
         readonly negative?: boolean;
+        readonly min?: number;
+        readonly max?: number;
       };
       readonly number?: {
         readonly min: number;
@@ -80,7 +95,7 @@ function fail(message: string, input: unknown): Result<never, Diagnostic> {
 }
 
 const TOKEN = /^\$([A-Za-z]+)\.([a-z0-9]+(?:-[a-z0-9]+)*)$/;
-const LENGTH = /^(-?\d+(?:\.\d{1,4})?)(px|rem|em|%|vw|vh|svh|dvh|ch|fr)$/;
+const LENGTH = /^(-?\d+(?:\.\d{1,4})?)(px|rem|em|%|vw|vh|svh|dvh|ch|fr|deg|ms)$/;
 const NUMBER = /^-?\d+(?:\.\d{1,4})?$/;
 
 function kebab(scale: string): string {
@@ -133,6 +148,8 @@ function parseComposite(
       if (!spec.units.includes(unit)) return undefined;
       if (value < 0 && spec.negative !== true) return undefined;
       if (Math.abs(value) > MAX_MAGNITUDE) return undefined;
+      if (value < (spec.min ?? -MAX_MAGNITUDE) || value > (spec.max ?? MAX_MAGNITUDE))
+        return undefined;
       return `${value === 0 ? 0 : value}${unit}`;
     }
   }
@@ -264,14 +281,25 @@ function splitTopLevel(text: string): string[] | undefined {
 
 function parseGradient(input: string): string | undefined {
   if (input === 'none') return 'none';
-  const match = /^linear-gradient\((.*)\)$/.exec(input);
+  const match = /^(linear|radial)-gradient\((.*)\)$/.exec(input);
   if (match === null) return undefined;
-  const parts = splitTopLevel(match[1] as string);
+  const parts = splitTopLevel(match[2] as string);
   if (parts === undefined) return undefined;
 
+  const radial = match[1] === 'radial';
   let direction = '180deg';
   const first = parts[0] as string;
-  if (DIRECTION.test(first)) {
+  if (radial) {
+    direction = 'ellipse at center';
+    const radialMatch =
+      /^(circle|ellipse)(?: at (center|top|bottom|left|right|top left|top right|bottom left|bottom right))?$/.exec(
+        first,
+      );
+    if (radialMatch !== null) {
+      direction = `${radialMatch[1]} at ${radialMatch[2] ?? 'center'}`;
+      parts.shift();
+    }
+  } else if (DIRECTION.test(first)) {
     direction = first;
     parts.shift();
   } else if (/^-?\d{1,3}(?:\.\d{1,2})?deg$/.test(first)) {
@@ -292,7 +320,7 @@ function parseGradient(input: string): string | undefined {
     if (position !== undefined && Number(position.slice(0, -1)) > 100) return undefined;
     stops.push(position === undefined ? color : `${color} ${position}`);
   }
-  return `linear-gradient(${direction}, ${stops.join(', ')})`;
+  return `${radial ? 'radial' : 'linear'}-gradient(${direction}, ${stops.join(', ')})`;
 }
 
 // --- theme-only grammars (shadow, font stack, transition) -------------------------------------

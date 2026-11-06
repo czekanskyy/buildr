@@ -8,11 +8,16 @@ export {
   dragItemSchema,
   dropTargetSchema,
   MAX_DIAGNOSTICS,
+  MAX_HIDDEN_NODES,
   MAX_INLINE_TEXT,
   MAX_PATCH_PATH,
   MAX_PATCHES,
   MAX_SELECTION,
+  MAX_TYPE_LABELS,
+  MAX_VIEW_LABEL_LENGTH,
   patchSchema,
+  typeLabelsSchema,
+  viewLabelsSchema,
 } from './messages.ts';
 export { assertConcreteOrigin } from './origins.ts';
 export type { ParentTransportOptions } from './parent-transport.ts';

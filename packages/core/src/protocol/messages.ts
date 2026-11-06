@@ -32,6 +32,53 @@ export const MAX_PATCHES = 10_000;
 export const MAX_PATCH_PATH = 24;
 export const MAX_DIAGNOSTICS = 500;
 export const MAX_INLINE_TEXT = 20_000;
+export const MAX_HIDDEN_NODES = 10_000;
+export const MAX_VIEW_LABEL_LENGTH = 40;
+export const MAX_TYPE_LABELS = 128;
+
+// Labels are text for tooltips/ARIA, never markup. Disallow control/format characters as well
+// as angle brackets so invisible controls and HTML cannot cross this UI boundary.
+const viewLabelSchema = z
+  .string()
+  .min(1)
+  .max(MAX_VIEW_LABEL_LENGTH)
+  .regex(/^[^<>\p{Cc}\p{Cf}\u2028\u2029]+$/u)
+  .refine((text) => text.trim().length > 0, { message: 'a label must contain text' });
+
+/** Fixed overlay label keys; partial updates preserve labels omitted by the editor. */
+export const viewLabelsSchema = z
+  .strictObject({
+    toolbar: viewLabelSchema,
+    selectParent: viewLabelSchema,
+    selectParentOf: viewLabelSchema,
+    drag: viewLabelSchema,
+    moveUp: viewLabelSchema,
+    moveDown: viewLabelSchema,
+    duplicate: viewLabelSchema,
+    remove: viewLabelSchema,
+    align: viewLabelSchema,
+    alignLeft: viewLabelSchema,
+    alignCenter: viewLabelSchema,
+    alignRight: viewLabelSchema,
+    more: viewLabelSchema,
+    insert: viewLabelSchema,
+  })
+  .partial();
+
+const typeIdKey = z
+  .string()
+  .max(64)
+  .regex(/^[a-z0-9-]+\/[a-z0-9-]+$/);
+
+/**
+ * The editor's (localized) component names by type id, for the selection chip and the toolbar's
+ * parent button. Text only, bounded like the other labels; the canvas falls back to its own names.
+ */
+export const typeLabelsSchema = z
+  .record(typeIdKey, viewLabelSchema)
+  .refine((labels) => Object.keys(labels).length <= MAX_TYPE_LABELS, {
+    message: `at most ${MAX_TYPE_LABELS} type labels`,
+  });
 
 const viewportSchema = z.strictObject({
   breakpoint: z.string().regex(BREAKPOINT_ID),
@@ -79,7 +126,10 @@ export const patchSchema = z.discriminatedUnion('op', [
 // --- Drag and drop -----------------------------------------------------------------------------
 
 const componentTypeSchema = z.string().regex(/^[a-z0-9-]+\/[a-z0-9-]+$/);
-const slotNameSchema = z.string().regex(/^[a-z][a-zA-Z0-9]*$/);
+const slotNameSchema = z
+  .string()
+  .max(64)
+  .regex(/^[a-z][a-zA-Z0-9]*$/);
 
 /** What is being dragged, as `computeDropTarget` takes it. */
 export const dragItemSchema = z.discriminatedUnion('kind', [
@@ -178,6 +228,19 @@ export const editorMessages = [
   message('dnd:leave', empty),
   message('scroll:to', idPayload),
   message('mode:set', z.strictObject({ mode: modeSchema })),
+  message(
+    'view:set',
+    z.strictObject({
+      outlines: z.boolean().optional(),
+      hidden: z.array(nodeIdSchema).max(MAX_HIDDEN_NODES).optional(),
+      theme: z.enum(['light', 'dark']).optional(),
+      labels: viewLabelsSchema.optional(),
+      typeLabels: typeLabelsSchema.optional(),
+      /** The scale the editor applies to the canvas frame, so the overlay keeps its tools a constant on-screen size. */
+      scale: z.number().finite().min(0.1).max(4).optional(),
+    }),
+  ),
+  message('ping', empty),
 ] as const;
 
 /** Messages the canvas sends to the editor. */
@@ -217,6 +280,27 @@ export const canvasMessages = [
       target: dropTargetSchema,
     }),
   ),
+  message(
+    'intent:action',
+    z.discriminatedUnion('action', [
+      z.strictObject({
+        id: nodeIdSchema,
+        action: z.enum(['selectParent', 'moveUp', 'moveDown', 'duplicate', 'remove', 'more']),
+        point: pointSchema.optional(),
+      }),
+      z.strictObject({
+        id: nodeIdSchema,
+        action: z.literal('align'),
+        value: z.enum(['left', 'center', 'right']),
+        point: pointSchema.optional(),
+      }),
+    ]),
+  ),
+  message(
+    'intent:insert',
+    z.strictObject({ target: dropTargetSchema, point: pointSchema.optional() }),
+  ),
+  message('pong', empty),
   message(
     'key:down',
     z.strictObject({

@@ -15,6 +15,45 @@ import {
  * exactly these keys.
  */
 const SAMPLES: Record<string, [input: unknown, css: string]> = {
+  'motion.entrance': ['slide', 'slide'],
+  'motion.entranceDirection': ['left', 'left'],
+  'motion.entranceDuration': ['600ms', '600ms'],
+  'motion.entranceDelay': ['100ms', '100ms'],
+  'motion.entranceEasing': ['snappy', 'snappy'],
+  'motion.hover': ['lift', 'lift'],
+  'motion.hoverDuration': ['200ms', '200ms'],
+  'motion.scrollReveal': ['fade', 'fade'],
+  'motion.scrollParallax': ['40px', '40px'],
+  'effects.shadowX': ['2px', '2px'],
+  'effects.shadowY': ['2px', '2px'],
+  'effects.shadowBlur': ['2px', '2px'],
+  'effects.shadowSpread': ['2px', '2px'],
+  'effects.textShadowX': ['2px', '2px'],
+  'effects.textShadowY': ['2px', '2px'],
+  'effects.textShadowBlur': ['2px', '2px'],
+  'effects.blur': ['2px', '2px'],
+  'effects.backdropBlur': ['2px', '2px'],
+  'effects.shadowColor': ['#FFF', '#fff'],
+  'effects.textShadowColor': ['#FFF', '#fff'],
+  'effects.brightness': [1, '1'],
+  'effects.contrast': [1, '1'],
+  'effects.saturate': [1, '1'],
+  'effects.grayscale': [1, '1'],
+  'effects.sepia': [1, '1'],
+  'effects.invert': [1, '1'],
+  'effects.scale': [1, '1'],
+  'effects.hueRotate': ['2deg', '2deg'],
+  'effects.rotate': ['2deg', '2deg'],
+  'effects.skewX': ['2deg', '2deg'],
+  'effects.skewY': ['2deg', '2deg'],
+  'effects.translateX': ['2rem', '2rem'],
+  'effects.translateY': ['2rem', '2rem'],
+  'effects.shadowInset': ['inset', 'inset'],
+  'effects.transformOrigin': ['center', 'center'],
+  'effects.blendMode': ['multiply', 'multiply'],
+  'background.repeat': ['repeat-x', 'repeat-x'],
+  'background.attachment': ['fixed', 'fixed'],
+
   'layout.display': ['flex', 'flex'],
   'layout.direction': ['column', 'column'],
   'layout.wrap': ['wrap', 'wrap'],
@@ -142,9 +181,9 @@ describe('style property registry', () => {
     for (const [key, def] of Object.entries(stylePropertyRegistry)) {
       if (!BOX.has(key) && !CORNER.has(key)) expect(def.shape).toBe('value');
     }
-    expect(stylePropertyRegistry['spacing.margin']?.sides?.['top']).toBe('margin-top');
-    expect(stylePropertyRegistry['border.width']?.sides?.['left']).toBe('border-left-width');
-    expect(stylePropertyRegistry['layout.inset']?.sides?.['top']).toBe('top');
+    expect(stylePropertyRegistry['spacing.margin']?.sides?.top).toBe('margin-top');
+    expect(stylePropertyRegistry['border.width']?.sides?.left).toBe('border-left-width');
+    expect(stylePropertyRegistry['layout.inset']?.sides?.top).toBe('top');
   });
 
   it('marks exactly the naturally inherited properties inheritable', () => {

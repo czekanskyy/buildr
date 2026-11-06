@@ -1,5 +1,5 @@
 import type { PageNode } from '../../document/types.ts';
-import type { A11yIssue, A11yRule } from '../types.ts';
+import type { A11yContext, A11yIssue, A11yRule } from '../types.ts';
 import { accessibleName, isBlank, issue, setPropFix } from './helpers.ts';
 
 export const imageAlt: A11yRule = {
@@ -30,6 +30,16 @@ export const imageAlt: A11yRule = {
   },
 };
 
+/**
+ * Whether a `buildr/heading` node renders as a heading. Its optional `tag` prop (default `heading`)
+ * can pick `p`, `span`, ...; such a node is not in the outline, so the heading rules skip it. A tag
+ * that is unknown (bound, or not declared by the component) counts as a heading.
+ */
+function rendersAsHeading(ctx: A11yContext, node: PageNode): boolean {
+  const tag = ctx.text(node, 'tag');
+  return !tag.known || tag.value === '' || tag.value === 'heading';
+}
+
 export const headingOrder: A11yRule = {
   id: 'heading-order',
   severity: 'warning',
@@ -42,6 +52,7 @@ export const headingOrder: A11yRule = {
     const h1s: PageNode[] = [];
 
     for (const node of ctx.nodesFor(this)) {
+      if (!rendersAsHeading(ctx, node)) continue;
       const level = ctx.number(node, 'level');
       if (!level.known) {
         previous = undefined; // cannot tell what came before the next heading
@@ -89,6 +100,7 @@ export const emptyHeading: A11yRule = {
   check(ctx) {
     const out: A11yIssue[] = [];
     for (const node of ctx.nodesFor(this)) {
+      if (!rendersAsHeading(ctx, node)) continue;
       if (ctx.children(node).length > 0) continue;
       const text = ctx.text(node, 'text');
       if (text.known && isBlank(text.value)) {

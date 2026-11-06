@@ -33,7 +33,7 @@ export const envelopeShape = {
 export const envelopeSchema = z.strictObject({
   ...envelopeShape,
   // Any version: a canvas of another version still gets its `canvas:hello` read, so the editor can
-  // tell the person what is wrong instead of dropping the message. Every message then insists on 1.
+  // tell the person what is wrong instead of dropping the message. Full messages require the current version.
   protocol: z.number().int().min(1).max(1_000_000),
   type: z.string().min(1).max(64),
   payload: z.unknown(),

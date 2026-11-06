@@ -11,6 +11,7 @@ import { valueSchema } from '../../values/schema.ts';
 import type { Value } from '../../values/types.ts';
 import { type CommandError, commandError, fromReason } from '../errors.ts';
 import type { Command, CommandHandler, HandlerEnv } from '../types.ts';
+import { isHtmlProp, requireHtmlCapability, sanitizedHtmlValue } from './author-code.ts';
 
 export interface SetPropPayload {
   readonly id: NodeId;
@@ -196,16 +197,22 @@ export const setPropHandler: CommandHandler<SetPropCommand> = {
     const found = target(doc, env, id, prop);
     if (!found.ok) return found;
     const { node, def } = found.value;
+    // Author HTML (ADR-026) is a host capability; core fails closed without it.
+    const allowed = requireHtmlCapability(def, env.capabilities);
+    if (!allowed.ok) return allowed;
     if (locale !== undefined) {
       return checkTranslation(def, node.props?.[prop] as Value | undefined, value);
     }
     return checkPropValue(def, value);
   },
 
-  apply(draft, cmd) {
-    const { id, prop, value, locale } = cmd.payload;
+  apply(draft, cmd, env) {
+    const { id, prop, locale } = cmd.payload;
+    let value = cmd.payload.value;
     const node = draft.nodes[id];
     if (node === undefined) return { affected: [] };
+    const def = env.registry.get(node.type)?.props[prop];
+    if (isHtmlProp(def)) value = sanitizedHtmlValue(value);
     const props = node.props ?? {};
     if (locale === undefined) {
       props[prop] = value as never;

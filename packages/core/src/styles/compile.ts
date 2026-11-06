@@ -1,8 +1,11 @@
+import { authorCodeEnabled, type HostCapabilities } from '../author/capabilities.ts';
+import { compileCustomCss } from '../author/css.ts';
 import { walk } from '../document/traverse.ts';
 import type { BuilderDocument } from '../document/types.ts';
 import { hash } from '../json/hash.ts';
 import type { Diagnostic } from '../result/diagnostic.ts';
-import { compileNodeRules, STYLE_STATES } from './compile-node.ts';
+import { keyframesRule } from './compile-motion.ts';
+import { compileNodeRules, nodeClassName, STYLE_STATES } from './compile-node.ts';
 import type { Theme } from './theme.ts';
 import { compileTokens, LAYER_ORDER_CSS } from './tokens.ts';
 
@@ -29,32 +32,92 @@ function mediaQuery(maxWidth: number): string {
  * define is reported and skipped. Never throws. Memoized per node
  * (on the identity of its `styles`) and per document, so an edit recompiles only what changed.
  */
-const results = new WeakMap<BuilderDocument, WeakMap<Theme, CompiledStyles>>();
+const results = new WeakMap<
+  BuilderDocument,
+  WeakMap<Theme, { off?: CompiledStyles; on?: CompiledStyles }>
+>();
 
-export function compileStyles(doc: BuilderDocument, theme: Theme): CompiledStyles {
-  // Documents are immutable, so the same document and theme always give the same stylesheet.
-  const cached = results.get(doc)?.get(theme);
+export interface CompileStylesOptions {
+  /**
+   * What the host permits. Node `customCss` (ADR-026) is compiled into `@layer buildr.custom`
+   * only when `authorCode` is exactly `true`; without it the field is ignored and reported, so
+   * a document edited outside the commands cannot get custom CSS onto a page.
+   */
+  readonly capabilities?: HostCapabilities | undefined;
+}
+
+export function compileStyles(
+  doc: BuilderDocument,
+  theme: Theme,
+  options: CompileStylesOptions = {},
+): CompiledStyles {
+  // Documents are immutable, so the same document, theme and capability always give the same stylesheet.
+  const author = authorCodeEnabled(options.capabilities);
+  const slot = author ? 'on' : 'off';
+  const cached = results.get(doc)?.get(theme)?.[slot];
   if (cached !== undefined) return cached;
-  const compiled = build(doc, theme);
+  const compiled = build(doc, theme, author);
   let perTheme = results.get(doc);
   if (perTheme === undefined) {
     perTheme = new WeakMap();
     results.set(doc, perTheme);
   }
-  perTheme.set(theme, compiled);
+  const entry = perTheme.get(theme) ?? {};
+  entry[slot] = compiled;
+  perTheme.set(theme, entry);
   return compiled;
 }
 
-function build(doc: BuilderDocument, theme: Theme): CompiledStyles {
+/** A rule that may span several lines, indented line by line. */
+function indent(block: string, prefix: string): string[] {
+  return block.split('\n').map((line) => `${prefix}${line}`);
+}
+
+function build(doc: BuilderDocument, theme: Theme, author: boolean): CompiledStyles {
   const diagnostics: Diagnostic[] = [];
   const base: string[] = [];
   const states: string[] = [];
+  const motion: string[] = [];
+  const keyframes = new Set<string>();
+  const custom: string[] = [];
   const byBreakpoint = new Map<string, string[]>(theme.breakpoints.map((bp) => [bp.id, []]));
 
   for (const node of walk(doc)) {
+    if (typeof node.customCss === 'string') {
+      if (!author) {
+        diagnostics.push({
+          code: 'author.not-permitted',
+          message: `Node "${node.id}" has custom CSS, which this host does not allow; it is ignored.`,
+          severity: 'warning',
+          details: { nodeId: node.id },
+        });
+      } else {
+        const compiled = compileCustomCss(`.${nodeClassName(node.id)}`, node.customCss);
+        for (const message of compiled.errors) {
+          diagnostics.push({
+            code: 'author.css-rejected',
+            message: `Node "${node.id}": ${message}`,
+            severity: 'warning',
+            details: { nodeId: node.id },
+          });
+        }
+        if (compiled.css !== '') {
+          custom.push(compiled.css);
+          // Audit trail (ADR-026): custom CSS is on the page.
+          diagnostics.push({
+            code: 'author.css-applied',
+            message: `Node "${node.id}" has custom CSS.`,
+            severity: 'warning',
+            details: { nodeId: node.id },
+          });
+        }
+      }
+    }
     if (node.styles === undefined || node.styles === null) continue;
     const rules = compileNodeRules(node.id, node.styles, theme);
     diagnostics.push(...rules.diagnostics);
+    for (const name of rules.keyframes) keyframes.add(name);
+    if (rules.motion.base !== undefined) motion.push(rules.motion.base);
     if (rules.base !== undefined) base.push(rules.base);
     for (const name of STYLE_STATES) {
       const stateRule = rules.state[name];
@@ -73,17 +136,31 @@ function build(doc: BuilderDocument, theme: Theme): CompiledStyles {
         bucket.push(css);
       }
     }
+    for (const [id, css] of Object.entries(rules.motion.bp)) {
+      byBreakpoint.get(id)?.push(css);
+    }
   }
 
   const layer: string[] = [...base, ...states].map((rule) => `  ${rule}`);
+  for (const name of [...keyframes].sort()) layer.push(`  ${keyframesRule(name)}`);
+  for (const block of motion) layer.push(...indent(block, '  '));
   for (const bp of theme.breakpoints) {
     const rules = byBreakpoint.get(bp.id) ?? [];
     if (rules.length === 0) continue;
-    layer.push(`  ${mediaQuery(bp.maxWidth)} {`, ...rules.map((rule) => `    ${rule}`), '  }');
+    layer.push(
+      `  ${mediaQuery(bp.maxWidth)} {`,
+      ...rules.flatMap((rule) => indent(rule, '    ')),
+      '  }',
+    );
   }
 
   const parts = [LAYER_ORDER_CSS, compileTokens(theme)];
   if (layer.length > 0) parts.push(`@layer buildr.nodes {\n${layer.join('\n')}\n}`);
+  if (custom.length > 0) {
+    // After `buildr.nodes`, so author rules win over the node's own styles; still inside the `buildr` layer.
+    const lines = custom.flatMap((css) => indent(css, '  '));
+    parts.push(`@layer buildr.custom {\n${lines.join('\n')}\n}`);
+  }
   const css = parts.join('\n');
   return { css, hash: hash(css), diagnostics };
 }

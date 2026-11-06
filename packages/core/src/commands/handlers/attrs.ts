@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { checkAttributes, checkClasses } from '../../author/attributes.ts';
+import { authorCodeEnabled } from '../../author/capabilities.ts';
+import { checkCustomCss } from '../../author/css.ts';
 import { parsePath } from '../../data/path.ts';
 import type { NodeId, PageNode } from '../../document/types.ts';
 import { compileExpression, compileTemplate } from '../../expressions/compile.ts';
@@ -22,13 +25,30 @@ export type SetAttrPayload =
   | { readonly id: NodeId; readonly key: 'anchor'; readonly value: string | null }
   | { readonly id: NodeId; readonly key: 'region'; readonly value: string | null }
   | { readonly id: NodeId; readonly key: 'lock'; readonly value: Lock | null }
-  | { readonly id: NodeId; readonly key: 'visibleIf'; readonly value: Value | null };
+  | { readonly id: NodeId; readonly key: 'visibleIf'; readonly value: Value | null }
+  /** Author code (ADR-026): needs `capabilities.authorCode`, except to remove. */
+  | { readonly id: NodeId; readonly key: 'customCss'; readonly value: string | null }
+  | { readonly id: NodeId; readonly key: 'classes'; readonly value: readonly string[] | null }
+  | {
+      readonly id: NodeId;
+      readonly key: 'attributes';
+      readonly value: Readonly<Record<string, string>> | null;
+    };
 
 export type SetAttrCommand = Command<'node.setAttr', SetAttrPayload>;
 
 const setAttrSchema = z.strictObject({
   id: z.string().min(1).max(64),
-  key: z.enum(['name', 'anchor', 'lock', 'region', 'visibleIf']),
+  key: z.enum([
+    'name',
+    'anchor',
+    'lock',
+    'region',
+    'visibleIf',
+    'customCss',
+    'classes',
+    'attributes',
+  ]),
   value: z.unknown(),
 });
 
@@ -135,6 +155,27 @@ function normalize(
     return ok(Object.keys(parsed.data).length === 0 ? null : parsed.data);
   }
 
+  if (key === 'customCss') {
+    if (value === null) return ok(null);
+    const css = checkCustomCss(value);
+    if (!css.ok) return err(invalid(`customCss: ${css.error}`));
+    return ok(css.value === '' ? null : css.value);
+  }
+
+  if (key === 'classes') {
+    if (value === null) return ok(null);
+    const classes = checkClasses(value);
+    if (!classes.ok) return err(invalid(classes.error));
+    return ok(classes.value.length === 0 ? null : classes.value);
+  }
+
+  if (key === 'attributes') {
+    if (value === null) return ok(null);
+    const attributes = checkAttributes(value);
+    if (!attributes.ok) return err(invalid(attributes.error));
+    return ok(Object.keys(attributes.value).length === 0 ? null : attributes.value);
+  }
+
   // visibleIf
   if (value === null) return ok(null);
   return checkVisibleIf(value);
@@ -144,7 +185,10 @@ function normalize(
  * `node.setAttr` — sets or removes (`value: null`) a node attribute: `name` (layers-panel label,
  * up to 80 characters), `anchor` (an HTML id: `[a-z][a-z0-9-]{0,63}`, unique in the document),
  * `lock` (`{ structure?, content?, style? }`), `region` (an editable region inside a locked
- * subtree) and `visibleIf` (a binding or expression). Errors carry codes (`command.invalid-value`,
+ * subtree), `visibleIf` (a binding or expression) and the author code of ADR-026: `customCss`
+ * (scoped, sanitised CSS), `classes` and `attributes` (allowlisted). Those three fail with
+ * `command.author-code-not-permitted` unless `env.capabilities.authorCode` is `true` (removing is
+ * always allowed) and respect style locks. Errors carry codes (`command.invalid-value`,
  * `command.duplicate-anchor`, `command.unlock-not-permitted`, ...).
  *
  * Locks are a permission matter: switching a lock flag off, or changing a `region` inside a
@@ -170,6 +214,20 @@ export const setAttrHandler: CommandHandler<SetAttrCommand> = {
 
     if (key === 'anchor' || key === 'visibleIf') {
       const editable = canEdit(doc, env.index, id, 'content');
+      if (!editable.ok) return err(fromReason(editable.error));
+    }
+
+    if (key === 'customCss' || key === 'classes' || key === 'attributes') {
+      // Author code (ADR-026): refused unless the host says yes; removing it is always allowed.
+      if (cmd.payload.value !== null && !authorCodeEnabled(env.capabilities)) {
+        return err(
+          commandError(
+            'command.author-code-not-permitted',
+            'This editor is not allowed to write custom CSS, classes or attributes.',
+          ),
+        );
+      }
+      const editable = canEdit(doc, env.index, id, 'style');
       if (!editable.ok) return err(fromReason(editable.error));
     }
 

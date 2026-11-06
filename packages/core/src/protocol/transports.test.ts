@@ -11,6 +11,7 @@ import {
   type MessageType,
   type PayloadOf,
   type PostTarget,
+  PROTOCOL_VERSION,
   parseCanvasMessage,
   type Rejection,
   type Timers,
@@ -142,7 +143,7 @@ const fromCanvas = <T extends MessageType>(type: T, payload: PayloadOf<T>, extra
   ...extra,
 });
 
-const hello = { protocol: 1, rendererVersion: '0.1.0', manifestHash: 'abc' };
+const hello = { protocol: PROTOCOL_VERSION, rendererVersion: '0.1.0', manifestHash: 'abc' };
 const click = { id: ID, modifiers: mods };
 
 /** An event as the editor's window would receive it from the canvas. */
@@ -375,10 +376,10 @@ describe('the editor end: what it drops', () => {
   it('a message of another protocol version, and says which', () => {
     const r = expectDropped(
       (c) =>
-        eventFrom(c, { ...fromCanvas('canvas:hello', { ...hello, protocol: 2 }), protocol: 2 }),
+        eventFrom(c, { ...fromCanvas('canvas:hello', { ...hello, protocol: 1 }), protocol: 1 }),
       'version',
     );
-    expect(r.protocol).toBe(2);
+    expect(r.protocol).toBe(1);
   });
 
   it('a message of a type the protocol does not know, or with a malformed payload', () => {
@@ -442,7 +443,7 @@ describe('the editor end: what it sends', () => {
     expect(canvas.posted[0]?.targetOrigin).toBe(CANVAS);
     expect(canvas.posted[0]?.message).toMatchObject({
       source: 'buildr',
-      protocol: 1,
+      protocol: PROTOCOL_VERSION,
       session: SESSION,
       type: 'selection:set',
       payload: { ids: [ID] },
@@ -816,6 +817,92 @@ describe('the canvas end', () => {
 
 // --- Both ends together -----------------------------------------------------------------------
 
+describe('protocol v2 through the boundary', () => {
+  const editorPayloads = {
+    'view:set': { theme: 'dark', hidden: [ID], labels: { remove: 'Remove' } },
+    ping: {},
+  } as const;
+  const canvasPayloads = {
+    'intent:action': { id: ID, action: 'remove', point: { x: 1, y: 2 } },
+    'intent:insert': { target },
+    pong: {},
+  } as const;
+
+  it.each(Object.keys(editorPayloads) as (keyof typeof editorPayloads)[])(
+    '%s still rejects wrong origin, source, session, v1, invalid payload and direction',
+    (type) => {
+      const { editor, canvas, child, parent, childRejected, rejected } = setup();
+      const handler = vi.fn();
+      child.on(type, handler);
+      const data = createMessage(type, editorPayloads[type], { session: SESSION });
+      const event = { data, origin: EDITOR, source: editor.handle };
+      canvas.dispatch({ ...event, origin: 'https://evil.example.com' });
+      canvas.dispatch({ ...event, source: null });
+      canvas.dispatch({ ...event, data: { ...data, session: 'zzzzzzzzzzzzzzzzzzzz' } });
+      canvas.dispatch({ ...event, data: { ...data, protocol: 1 } });
+      canvas.dispatch({ ...event, data: { ...data, payload: { ...data.payload, extra: true } } });
+      expect(handler).not.toHaveBeenCalled();
+      expect(childRejected.map((r) => r.reason)).toEqual([
+        'origin',
+        'source',
+        'session',
+        'version',
+        'schema',
+      ]);
+      canvas.dispatch(event);
+      expect(handler).toHaveBeenCalledExactlyOnceWith(editorPayloads[type], data);
+      editor.dispatch(eventFrom(canvas, data));
+      expect(rejected.map((r) => r.reason)).toEqual(['direction']);
+      parent.close();
+      child.close();
+    },
+  );
+
+  it.each(Object.keys(canvasPayloads) as (keyof typeof canvasPayloads)[])(
+    '%s still rejects wrong origin, source, session, v1, invalid payload and direction',
+    (type) => {
+      const { editor, canvas, child, parent, rejected, childRejected } = setup();
+      const handler = vi.fn();
+      parent.on(type, handler);
+      const data = createMessage(type, canvasPayloads[type], { session: SESSION });
+      editor.dispatch(eventFrom(canvas, data, { origin: 'https://evil.example.com' }));
+      editor.dispatch(eventFrom(canvas, data, { source: null }));
+      editor.dispatch(eventFrom(canvas, { ...data, session: 'zzzzzzzzzzzzzzzzzzzz' }));
+      editor.dispatch(eventFrom(canvas, { ...data, protocol: 1 }));
+      editor.dispatch(eventFrom(canvas, { ...data, payload: { ...data.payload, extra: true } }));
+      expect(handler).not.toHaveBeenCalled();
+      expect(rejected.map((r) => r.reason)).toEqual([
+        'origin',
+        'source',
+        'session',
+        'version',
+        'schema',
+      ]);
+      editor.dispatch(eventFrom(canvas, data));
+      expect(handler).toHaveBeenCalledExactlyOnceWith(canvasPayloads[type], data);
+      canvas.dispatch({ data, origin: EDITOR, source: editor.handle });
+      expect(childRejected.map((r) => r.reason)).toEqual(['direction']);
+      parent.close();
+      child.close();
+    },
+  );
+
+  it('correlates ping/pong through envelope ids without heartbeat state in core', async () => {
+    const { parent, child, canvas, editor, clock } = setup();
+    child.on('ping', (_payload, message) => {
+      child.reply(message, 'pong', {});
+    });
+    const answer = await parent.request('ping', {}, { timeoutMs: 5000 });
+    expect(answer).toMatchObject({ type: 'pong', payload: {}, protocol: 2 });
+    expect(answer.replyTo).toBe(sentOf(canvas).id);
+    expect(canvas.posted[0]?.targetOrigin).toBe(CANVAS);
+    expect(editor.posted[0]?.targetOrigin).toBe(EDITOR);
+    expect(clock.pending()).toBe(0);
+    parent.close();
+    child.close();
+  });
+});
+
 describe('a handshake, end to end', () => {
   it('goes hello, init, ready, and then edits flow', () => {
     const { editor, canvas } = pair();
@@ -869,7 +956,7 @@ describe('a handshake, end to end', () => {
     child.on('doc:patch', (payload) => log.push(`patch ${payload.from}->${payload.to}`));
 
     child.send('canvas:hello', hello);
-    expect(log).toEqual(['hello 1', 'init v0', 'ready', 'patch 0->1']);
+    expect(log).toEqual(['hello 2', 'init v0', 'ready', 'patch 0->1']);
   });
 
   it('is deaf to a second editor on another origin once it has found the first', () => {

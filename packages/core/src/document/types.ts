@@ -124,6 +124,15 @@ export interface PageNode {
   readonly region?: string;
   /** Provenance from a template (composite). */
   readonly source?: Readonly<{ readonly template: string; readonly version: number }>;
+  /**
+   * Author code (ADR-026): custom CSS scoped to this node. Honoured only when the host sets
+   * `capabilities.authorCode`; always parsed, scoped and sanitised (`core/author`).
+   */
+  readonly customCss?: string;
+  /** Author code (ADR-026): extra class names on the node's root element. */
+  readonly classes?: readonly string[];
+  /** Author code (ADR-026): extra HTML attributes (`data-*`, `aria-*`, `role`, ...) on the root element. */
+  readonly attributes?: Readonly<Record<string, string>>;
   /** Plugin extensions, namespaced keys e.g. `"acme:foo"`. */
   readonly ext?: Readonly<Record<string, JsonValue>>;
 }

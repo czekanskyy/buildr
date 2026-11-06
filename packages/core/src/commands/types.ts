@@ -1,5 +1,6 @@
 import type { Draft, Patch } from 'immer';
 import type { z } from 'zod';
+import type { HostCapabilities } from '../author/capabilities.ts';
 import type { DocumentIndex } from '../document/document-index.ts';
 import type { BuilderDocument, NodeId } from '../document/types.ts';
 import type { IdGenerator } from '../ids/generate-id.ts';
@@ -29,6 +30,8 @@ export interface HandlerEnv {
   readonly registry: RegistryMeta;
   readonly generateId: IdGenerator;
   readonly canUnlock: ((request: UnlockRequest) => boolean) | undefined;
+  /** What the host permits (ADR-026); absent means nothing beyond the defaults, so author code is refused. */
+  readonly capabilities?: HostCapabilities | undefined;
   /** Built on first access (memoized per document), so a handler that does not read it pays nothing. */
   readonly index: DocumentIndex;
 }
@@ -71,6 +74,13 @@ export interface CommandEnv {
    * permission). Absent means no: unlocking is refused unless the host says otherwise.
    */
   readonly canUnlock?: ((request: UnlockRequest) => boolean) | undefined;
+  /**
+   * What the host permits (ADR-026). `authorCode` must be exactly `true` for `node.setAttr` to set
+   * `customCss`, `classes` or `attributes`, for `node.setProp` to set an HTML prop and for
+   * `node.insert` to take a fragment that carries author code. Absent means none of it: core
+   * fails closed.
+   */
+  readonly capabilities?: HostCapabilities | undefined;
   /**
    * Run `checkInvariants` on the result of every command and reject (`command.invariant-violated`)
    * when it reports an error — catches a buggy handler before it corrupts the document. On by

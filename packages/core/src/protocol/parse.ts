@@ -3,6 +3,7 @@ import type { Diagnostic } from '../result/diagnostic.ts';
 import { err, ok, type Result } from '../result/result.ts';
 import { envelopeSchema } from './envelope.ts';
 import { canvasMessages, editorMessages } from './messages.ts';
+import { PROTOCOL_SOURCE, PROTOCOL_VERSION } from './version.ts';
 
 /** A message the editor sends to the canvas. */
 export const editorMessageSchema = z.discriminatedUnion('type', editorMessages);
@@ -115,8 +116,8 @@ export function createMessage<T extends MessageType>(
   options: MessageOptions,
 ): Extract<Message, { type: T }> {
   return {
-    source: 'buildr',
-    protocol: 1,
+    source: PROTOCOL_SOURCE,
+    protocol: PROTOCOL_VERSION,
     session: options.session,
     ...(options.id === undefined ? {} : { id: options.id }),
     ...(options.replyTo === undefined ? {} : { replyTo: options.replyTo }),
