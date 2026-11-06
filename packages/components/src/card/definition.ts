@@ -25,7 +25,16 @@ export const Card = defineComponent({
     actions: { label: 'Actions', allow: ['#interactive'], axis: 'horizontal' },
   },
   styles: {
-    groups: ['layout', 'size', 'spacing', 'background', 'border', 'effects', 'visibility'],
+    groups: [
+      'layout',
+      'size',
+      'spacing',
+      'background',
+      'border',
+      'effects',
+      'motion',
+      'visibility',
+    ],
   },
   a11y: { element: 'article' },
   editor: {

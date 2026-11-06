@@ -35,7 +35,7 @@ function pair(
     ),
     after: doc(
       { children: [after] },
-      { components: { 'buildr/container': 2, 'buildr/page': 1, 'test/probe': 1 } },
+      { components: { 'buildr/container': 3, 'buildr/page': 1, 'test/probe': 1 } },
     ),
   };
 }
@@ -43,7 +43,30 @@ function pair(
 /** A migrated stack or section: always a flex column in these fixtures. */
 const flex = { display: s('flex') };
 
+/** A container stored at version 2: version 3 only added optional background media props. */
+const version2 = (props: Record<string, unknown>, version: number): BuilderDocument =>
+  doc(
+    {
+      children: [
+        { id: nid('c'), type: 'buildr/container', props: props as never, children: [probe('p')] },
+      ],
+    },
+    { components: { 'buildr/container': version, 'buildr/page': 1, 'test/probe': 1 } },
+  );
+
 export const containerMigrationFixtures: readonly ContainerMigrationFixture[] = [
+  {
+    id: 'container-2-to-3',
+    title: 'Container 2 -> 3: a background image is kept, no media is added',
+    before: version2(
+      { width: s('md'), display: s('flex'), backgroundImage: media('m1') as never },
+      2,
+    ),
+    after: version2(
+      { width: s('md'), display: s('flex'), backgroundImage: media('m1') as never },
+      3,
+    ),
+  },
   pair(
     'container-1-to-2',
     'Container 1 -> 2: stays a block',

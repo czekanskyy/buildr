@@ -7,6 +7,7 @@ import * as axeMatchers from 'vitest-axe/matchers';
 import { imageFixtureMedia } from '../image/fixtures.ts';
 import { Page } from '../page/definition.ts';
 import { createRegistry, Probe, render } from '../test-kit.tsx';
+import { videoFixtureMedia } from '../video/fixtures.ts';
 import { CONTAINER_ELEMENTS, Container } from './definition.ts';
 import { containerFixtures } from './fixtures.ts';
 import { containerMigrationFixtures } from './migration-fixtures.ts';
@@ -14,7 +15,7 @@ import { containerMigrationFixtures } from './migration-fixtures.ts';
 expect.extend(axeMatchers);
 
 const registry = createRegistry({ components: [Page, Container, Probe] });
-const data = createMemoryDataSource({ media: imageFixtureMedia });
+const data = createMemoryDataSource({ media: { ...imageFixtureMedia, ...videoFixtureMedia } });
 
 const inPage = (...trees: TreeNode[]) =>
   doc(

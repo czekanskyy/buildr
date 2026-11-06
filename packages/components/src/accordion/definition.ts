@@ -29,7 +29,16 @@ export const Accordion = defineComponent({
     },
   },
   styles: {
-    groups: ['layout', 'size', 'spacing', 'background', 'border', 'effects', 'visibility'],
+    groups: [
+      'layout',
+      'size',
+      'spacing',
+      'background',
+      'border',
+      'effects',
+      'motion',
+      'visibility',
+    ],
   },
   a11y: { element: 'div' },
   editor: { emptySlotText: { default: 'Add an item' } },

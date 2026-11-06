@@ -12,6 +12,7 @@ import { formFixtures } from './form/fixtures.ts';
 import { gridFixtures } from './grid/fixtures.ts';
 import { headingFixtures } from './heading/fixtures.ts';
 import { iconFixtures } from './icon/fixtures.ts';
+import { iframeFixtures } from './iframe/fixtures.ts';
 import { imageFixtureMedia, imageFixtures } from './image/fixtures.ts';
 import { inputFixtures } from './input/fixtures.ts';
 import { linkFixtures } from './link/fixtures.ts';
@@ -26,6 +27,7 @@ import { contentTemplateFixtures, marketingTemplateFixtures } from './templates/
 import { templateSampleCollections, templateSampleScopes } from './templates/sample-data.ts';
 import { textFixtures } from './text/fixtures.ts';
 import { textareaFixtures } from './textarea/fixtures.ts';
+import { videoFixtureMedia, videoFixtures } from './video/fixtures.ts';
 
 /** One thing to look at in the gallery: a component in one state, or a template. */
 export interface GalleryEntry extends ComponentFixture {
@@ -61,6 +63,8 @@ const componentFixtures: readonly (readonly [ComponentType, readonly ComponentFi
   ['buildr/button', buttonFixtures],
   ['buildr/link', linkFixtures],
   ['buildr/image', imageFixtures],
+  ['buildr/video', videoFixtures],
+  ['buildr/iframe', iframeFixtures],
   ['buildr/icon', iconFixtures],
   ['buildr/list', listFixtures],
   ['buildr/list-item', listItemFixtures],
@@ -107,7 +111,7 @@ export const galleryEntries: readonly GalleryEntry[] = [
 export function createGalleryDataSource() {
   return createMemoryDataSource({
     collections: { ...templateSampleCollections },
-    media: imageFixtureMedia,
+    media: { ...imageFixtureMedia, ...videoFixtureMedia },
   });
 }
 

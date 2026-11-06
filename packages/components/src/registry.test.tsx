@@ -34,7 +34,7 @@ describe('the default registry', () => {
     const types = defaultComponents.map((c) => c.meta.type);
     expect(new Set(types).size).toBe(types.length);
     expect([...types].sort()).toEqual([...shippedTypes].sort());
-    expect(types).toHaveLength(24);
+    expect(types).toHaveLength(26);
   });
 
   it('has the fourteen templates: seven marketing, seven blog and product', () => {
@@ -61,8 +61,8 @@ describe('the default registry', () => {
     const b = createDefaultRegistry();
     expect(a).not.toBe(b);
     const extended = a.extend({ components: [] });
-    expect(extended.list()).toHaveLength(24);
-    expect(a.list()).toHaveLength(24);
+    expect(extended.list()).toHaveLength(26);
+    expect(a.list()).toHaveLength(26);
     expect(b.meta.listTemplates()).toHaveLength(14);
   });
 
@@ -70,12 +70,12 @@ describe('the default registry', () => {
     expect(() => registry.extend({ components: [defaultComponents[0] as never] })).toThrow();
   });
 
-  it('has a manifest under 60 KB', () => {
+  it('has a manifest under 72 KB', () => {
     const manifest = toManifest(registry.meta);
     const size = new TextEncoder().encode(JSON.stringify(manifest)).length;
-    expect(Object.keys(manifest.components)).toHaveLength(24);
+    expect(Object.keys(manifest.components)).toHaveLength(26);
     expect(Object.keys(manifest.templates)).toHaveLength(14);
-    expect(size).toBeLessThan(60 * 1024);
+    expect(size).toBeLessThan(72 * 1024);
   });
 
   it('has a manifest that is the same every time, and is plain data', () => {

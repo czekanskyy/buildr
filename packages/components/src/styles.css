@@ -13,6 +13,8 @@
 @import "./button/styles.css";
 @import "./link/styles.css";
 @import "./image/styles.css";
+@import "./video/styles.css";
+@import "./iframe/styles.css";
 @import "./icon/styles.css";
 @import "./list/styles.css";
 @import "./list-item/styles.css";

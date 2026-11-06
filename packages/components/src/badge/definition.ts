@@ -15,7 +15,9 @@ export const Badge = defineComponent({
   icon: 'tag',
   contentCategories: ['flow', 'phrasing'],
   props: badgeProps,
-  styles: { groups: ['typography', 'spacing', 'background', 'border', 'effects', 'visibility'] },
+  styles: {
+    groups: ['typography', 'spacing', 'background', 'border', 'effects', 'motion', 'visibility'],
+  },
   a11y: { element: 'span' },
   editor: { inlineProp: 'text', placeholder: 'Badge' },
   runtime: 'shared',

@@ -1,9 +1,10 @@
-import { runA11y, s } from '@next-buildr/core';
+import { migrateComponents, parseDocument, runA11y, s } from '@next-buildr/core';
+import { doc } from '@next-buildr/test-utils';
 import { describe, expect, it } from 'vitest';
 import { Container } from '../container/definition.ts';
 import { Page } from '../page/definition.ts';
 import { createRegistry, pageWith, problemsOf, render } from '../test-kit.tsx';
-import { HEADING_LEVELS, Heading } from './definition.ts';
+import { HEADING_LEVELS, HEADING_TAGS, Heading } from './definition.ts';
 import { headingFixtures } from './fixtures.ts';
 
 const registry = createRegistry({ components: [Page, Container, Heading] });
@@ -28,6 +29,76 @@ describe('buildr/heading', () => {
     expect(html).toMatch(/<h[1-6] /);
     expect(html).not.toContain('<h0');
     expect(html).not.toContain('<h7');
+  });
+
+  it('renders h{level} for the default and the explicit heading tag', async () => {
+    const dflt = await render(registry, heading({ text: s('Hi'), level: s(3) }));
+    const explicit = await render(
+      registry,
+      heading({ text: s('Hi'), level: s(3), tag: s('heading') }),
+    );
+    expect(dflt.html).toContain('<h3 ');
+    expect(explicit.html).toContain('<h3 ');
+  });
+
+  it.each(HEADING_TAGS.filter((t) => t !== 'heading'))(
+    'renders a %s without heading semantics',
+    async (tag) => {
+      const { html } = await render(registry, heading({ text: s('Hi'), level: s(1), tag: s(tag) }));
+      expect(html).toMatch(new RegExp(`<${tag} class="bc-heading b-[^"]+">Hi</${tag}>`));
+      expect(html).not.toMatch(/<h[1-6]/);
+      expect(html).not.toContain('role=');
+      expect(html).not.toContain('aria-level');
+      expect(html).not.toContain('data-level');
+    },
+  );
+
+  it('falls back to a heading for an unknown stored tag', async () => {
+    const { html } = await render(registry, heading({ text: s('Hi'), tag: s('script') }));
+    expect(html).toContain('<h2 ');
+    expect(html).not.toContain('<script');
+  });
+
+  it('binds the text of a non-heading tag too', async () => {
+    const { html } = await render(
+      registry,
+      heading({ text: { kind: 'binding', path: 'post.title' }, tag: s('p') }),
+      undefined,
+      { post: { title: 'From data' } },
+    );
+    expect(html).toContain('>From data</p>');
+  });
+
+  it('keeps non-heading tags out of the heading rules', () => {
+    const fixture = headingFixtures.find((f) => f.id === 'heading-tags');
+    const issues = runA11y(pageWith(fixture?.tree as never), registry.meta, {
+      config: { expectH1: 'layout' },
+    }).filter((i) => i.ruleId === 'heading-order' || i.ruleId === 'empty-heading');
+    expect(issues).toEqual([]);
+  });
+
+  it('declares tag as an optional select that defaults to heading (version 2)', () => {
+    const tag = Heading.meta.props['tag'];
+    expect(tag?.kind).toBe('select');
+    expect(tag).toMatchObject({ default: 'heading' });
+    expect(Heading.meta.version).toBe(2);
+  });
+
+  it('migrates a version 1 heading to version 2 without changing its props', async () => {
+    const before = doc(
+      {
+        children: [
+          { id: 'headingaaa', type: 'buildr/heading', props: { text: s('Hi'), level: s(3) } },
+        ],
+      },
+      { components: { 'buildr/heading': 1, 'buildr/page': 1 } },
+    );
+    const parsed = parseDocument(structuredClone(before));
+    if (!parsed.ok) throw new Error(JSON.stringify(parsed.error));
+    const migrated = migrateComponents(parsed.value, registry.migrations);
+    expect(migrated.readOnlyReasons).toEqual([]);
+    expect(migrated.doc.components['buildr/heading']).toBe(2);
+    expect(migrated.doc.nodes['headingaaa']?.props).toEqual({ text: s('Hi'), level: s(3) });
   });
 
   it('binds its text', async () => {

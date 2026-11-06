@@ -34,4 +34,16 @@ export const headingFixtures: readonly ComponentFixture[] = [
       } as never,
     },
   },
+  {
+    id: 'heading-tags',
+    title: 'Heading: styled as a heading but rendered as another tag',
+    tree: {
+      type: 'buildr/container',
+      props: { width: s('none') },
+      children: ['p', 'span', 'div', 'strong'].map((tag) => ({
+        type: 'buildr/heading',
+        props: { text: s(`As ${tag}`), level: s(3), tag: s(tag) },
+      })),
+    },
+  },
 ] as const;

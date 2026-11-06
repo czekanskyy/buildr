@@ -1,0 +1,40 @@
+@layer buildr.components {
+  .bc-video {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: contain;
+    background-color: var(--b-color-surface-alt);
+  }
+  .bc-video[data-ratio="4:3"] {
+    aspect-ratio: 4 / 3;
+  }
+  .bc-video[data-ratio="1:1"] {
+    aspect-ratio: 1 / 1;
+  }
+  .bc-video[data-ratio="9:16"] {
+    aspect-ratio: 9 / 16;
+  }
+  .bc-video[data-ratio="21:9"] {
+    aspect-ratio: 21 / 9;
+  }
+  .bc-video[data-ratio="auto"] {
+    aspect-ratio: auto;
+  }
+  .bc-video[data-fit="cover"] {
+    object-fit: cover;
+  }
+
+  .bc-video:focus-visible {
+    outline: 2px solid var(--b-color-primary);
+    outline-offset: 2px;
+  }
+
+  /* The editor's canvas only: where an empty video will go. */
+  .bc-video[data-empty] {
+    min-height: 8rem;
+    border: 1px dashed var(--b-color-border);
+  }
+}

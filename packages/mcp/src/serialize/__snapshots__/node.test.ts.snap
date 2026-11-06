@@ -2,7 +2,9 @@
 
 exports[`describeNode > gives every prop as a Value, styles per layer and the place in the tree 1`] = `
 {
-  "defaults": {},
+  "defaults": {
+    "tag": "heading",
+  },
   "id": "n000000003",
   "label": "Heading",
   "name": "Title",
@@ -34,7 +36,7 @@ exports[`describeNode > renders text with bindings, expressions, translations an
 anchor: hero
 parent: root slot "default" index 0
 props: (all defaults)
-defaults: display="flex", as="div", width="lg", bleed=false, backgroundImage=null, role="none", ariaLabel=""
+defaults: display="flex", as="div", width="lg", bleed=false, backgroundImage=null, backgroundVideo=null, backgroundPoster=null, backgroundOverlay=null, overlayTone="none", overlayOpacity=0.5, backgroundFit="cover", backgroundPosition="center", backgroundAttachment="scroll", role="none", ariaLabel=""
 styles: {"base":{"spacing":{"padding":{"top":"$space.8"}}},"bp":{"md":{"layout":{"gap":8}}}}
 slot default: n000000003(buildr/heading), n000000004(buildr/text), n000000005(buildr/text)"
 `;
@@ -45,5 +47,6 @@ name: "Title"
 parent: n000000002 slot "default" index 0
 props:
   text: static "Welcome" l10n={"pl":"Witamy"}
-  level: static 1"
+  level: static 1
+defaults: tag="heading""
 `;

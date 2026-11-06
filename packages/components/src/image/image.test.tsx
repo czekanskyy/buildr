@@ -265,3 +265,90 @@ describe('image sources', () => {
     expect(objectPosition(undefined)).toBeUndefined();
   });
 });
+
+describe('external image (ADR-028)', () => {
+  const captured: unknown[] = [];
+  const platform: Platform = {
+    Link: () => null,
+    Image: (received) => {
+      captured.push(received);
+      return null;
+    },
+    formAction: () => '',
+  };
+  const view = (
+    image: unknown,
+    extra: Record<string, unknown> = {},
+    env: Record<string, unknown> = {},
+  ) =>
+    ImageView({
+      props: {
+        image,
+        alt: 'A cat',
+        decorative: false,
+        sizes: 'full',
+        fit: 'cover',
+        priority: false,
+        ...extra,
+      } as never,
+      root: { className: 'bc-image b-x' },
+      slots: {},
+      node: { id: 'x', type: 'buildr/image' },
+      env: { mode: 'production', locale: 'en', messages: {}, ...env } as never,
+      platform,
+    }) as { type: unknown; props: Record<string, unknown> } | null;
+
+  it('is a plain lazy img with the author alt and no referrer, never the platform image', () => {
+    const out = view({ external: true, url: 'https://cdn.test/cat.jpg' });
+    expect(out?.type).toBe('img');
+    expect(out?.props).toMatchObject({
+      src: 'https://cdn.test/cat.jpg',
+      alt: 'A cat',
+      loading: 'lazy',
+      referrerPolicy: 'no-referrer',
+      'data-external-media': '',
+    });
+  });
+
+  it('does not take a plain object, or a snapshot, for a library asset', () => {
+    for (const image of [
+      { url: 'http://tracker.evil/p.gif' },
+      { url: '//tracker.evil/p.gif' },
+      { id: 'x', url: 'http://tracker.evil/p.gif', mimeType: 'image/gif' },
+    ]) {
+      expect(view(image), JSON.stringify(image)).toBeNull();
+    }
+    // A same-origin path is still shown, and only the plain facts of the object are used.
+    const out = view({
+      id: 'x',
+      url: '/media/a.png',
+      mimeType: 'image/png',
+      sizes: { s: { url: 'http://tracker.evil/p.gif', width: 100 } },
+      width: 200,
+    });
+    expect(JSON.stringify(out)).not.toContain('tracker.evil');
+    expect(out?.props).toMatchObject({ src: '/media/a.png' });
+  });
+
+  it('is empty for a decorative image', () => {
+    const out = view({ external: true, url: 'https://cdn.test/cat.jpg' }, { decorative: true });
+    expect(out?.props).toMatchObject({ alt: '', role: 'presentation' });
+  });
+
+  it('renders nothing for an unsafe, insecure or disallowed URL', () => {
+    for (const url of [
+      'http://cdn.test/a.jpg',
+      'javascript:alert(1)',
+      'https://u:p@cdn.test/a.jpg',
+    ]) {
+      expect(view({ external: true, url })).toBeNull();
+    }
+    const capabilities = { externalMediaHosts: ['cdn.test'] };
+    expect(
+      view({ external: true, url: 'https://evil.test/a.jpg' }, {}, { capabilities }),
+    ).toBeNull();
+    expect(
+      view({ external: true, url: 'https://cdn.test/a.jpg' }, {}, { capabilities }),
+    ).not.toBeNull();
+  });
+});

@@ -19,7 +19,7 @@ export const Image = defineComponent({
   icon: 'image',
   contentCategories: ['flow', 'phrasing', 'media'],
   props: imageProps,
-  styles: { groups: ['size', 'spacing', 'border', 'effects', 'visibility'] },
+  styles: { groups: ['size', 'spacing', 'border', 'effects', 'motion', 'visibility'] },
   a11y: { element: 'img', requiresName: true },
   editor: { placeholder: 'Choose an image' },
   runtime: 'shared',

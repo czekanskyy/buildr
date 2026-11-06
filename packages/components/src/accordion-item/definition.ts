@@ -15,7 +15,9 @@ export const AccordionItem = defineComponent({
   props: accordionItemProps,
   slots: { default: { label: 'Content', allow: ['#flow'], axis: 'vertical' } },
   capabilities: { insertable: false },
-  styles: { groups: ['spacing', 'background', 'border', 'typography', 'effects', 'visibility'] },
+  styles: {
+    groups: ['spacing', 'background', 'border', 'typography', 'effects', 'motion', 'visibility'],
+  },
   a11y: { element: 'details', requiresName: true },
   editor: {
     inlineProp: 'summary',

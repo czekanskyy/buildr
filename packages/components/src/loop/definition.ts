@@ -24,7 +24,16 @@ export const Loop = defineComponent({
     after: { label: 'After the items', axis: 'vertical' },
   },
   styles: {
-    groups: ['layout', 'size', 'spacing', 'background', 'border', 'effects', 'visibility'],
+    groups: [
+      'layout',
+      'size',
+      'spacing',
+      'background',
+      'border',
+      'effects',
+      'motion',
+      'visibility',
+    ],
   },
   a11y: { element: 'div' },
   editor: {

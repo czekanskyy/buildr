@@ -15,7 +15,9 @@ export const ListItem = defineComponent({
   props: listItemProps,
   slots: { default: { label: 'More content', allow: ['#flow'], axis: 'vertical' } },
   capabilities: { insertable: false },
-  styles: { groups: ['typography', 'spacing', 'background', 'border', 'effects', 'visibility'] },
+  styles: {
+    groups: ['typography', 'spacing', 'background', 'border', 'effects', 'motion', 'visibility'],
+  },
   a11y: { element: 'li' },
   editor: { inlineProp: 'text', placeholder: 'Item' },
   runtime: 'shared',

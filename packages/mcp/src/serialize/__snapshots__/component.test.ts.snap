@@ -94,6 +94,7 @@ exports[`describeComponent over every built-in component > buildr/accordion: JSO
     "background",
     "border",
     "effects",
+    "motion",
     "visibility",
   ],
   "type": "buildr/accordion",
@@ -108,7 +109,7 @@ Props:
 - allowMultiple (boolean) default true [bindable]
 Slots:
 - default: buildr/accordion-item, buildr/loop
-Style groups: layout, size, spacing, background, border, effects, visibility
+Style groups: layout, size, spacing, background, border, effects, motion, visibility
 Renders: div
 Insert into: buildr/page[default]
 Example: {"type":"buildr/accordion","slots":{"default":[{"type":"buildr/accordion-item","props":{"summary":{"kind":"static","value":"Question 1"}}},{"type":"buildr/accordion-item","props":{"summary":{"kind":"static","value":"Question 2"}}},{"type":"buildr/accordion-item","props":{"summary":{"kind":"static","value":"Question 3"}}}]}}"
@@ -202,6 +203,8 @@ exports[`describeComponent over every built-in component > buildr/accordion-item
         "buildr/button",
         "buildr/link",
         "buildr/image",
+        "buildr/video",
+        "buildr/iframe",
         "buildr/icon",
         "buildr/list",
         "buildr/divider",
@@ -226,6 +229,7 @@ exports[`describeComponent over every built-in component > buildr/accordion-item
     "border",
     "typography",
     "effects",
+    "motion",
     "visibility",
   ],
   "type": "buildr/accordion-item",
@@ -240,11 +244,11 @@ Props:
 - summary (text) default "Question" [bindable, localizable]
 - defaultOpen (boolean) default false [bindable]
 Slots:
-- default: buildr/container, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+- default: buildr/container, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/video, buildr/iframe, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
 Note: It cannot be inserted on its own; include it as a child inside a tree of buildr/accordion, buildr/loop.
 Note: It can only be placed directly inside buildr/accordion, buildr/loop.
 Note: It needs an accessible name (text, label or aria-label).
-Style groups: spacing, background, border, typography, effects, visibility
+Style groups: spacing, background, border, typography, effects, motion, visibility
 Renders: details
 Insert into: buildr/page[default]
 Example: {"type":"buildr/accordion","slots":{"default":[{"type":"buildr/accordion-item","props":{"summary":"Question"}}]}}"
@@ -326,6 +330,7 @@ exports[`describeComponent over every built-in component > buildr/badge: JSON de
     "background",
     "border",
     "effects",
+    "motion",
     "visibility",
   ],
   "type": "buildr/badge",
@@ -340,7 +345,7 @@ Props:
 - text (text) default "Badge" [bindable, localizable]
 - variant (select) default "neutral" one of "neutral" | "primary" | "success" | "warning" | "danger"
 Slots: none (a leaf component, it takes no children)
-Style groups: typography, spacing, background, border, effects, visibility
+Style groups: typography, spacing, background, border, effects, motion, visibility
 Renders: span
 Insert into: buildr/page[default]
 Example: {"type":"buildr/badge","props":{"text":"Badge"}}"
@@ -515,6 +520,7 @@ exports[`describeComponent over every built-in component > buildr/button: JSON d
     "border",
     "size",
     "effects",
+    "motion",
     "visibility",
   ],
   "type": "buildr/button",
@@ -537,7 +543,7 @@ Props:
 - newTab (boolean) default false [bindable]
 Slots: none (a leaf component, it takes no children)
 Note: It needs an accessible name (text, label or aria-label).
-Style groups: typography, spacing, background, border, size, effects, visibility
+Style groups: typography, spacing, background, border, size, effects, motion, visibility
 Renders: button
 Insert into: buildr/page[default]
 Example: {"type":"buildr/button","props":{"label":"Button"}}"
@@ -649,6 +655,8 @@ exports[`describeComponent over every built-in component > buildr/card: JSON des
     {
       "allowedChildren": [
         "buildr/image",
+        "buildr/video",
+        "buildr/iframe",
         "buildr/icon",
       ],
       "label": "Media",
@@ -665,6 +673,8 @@ exports[`describeComponent over every built-in component > buildr/card: JSON des
         "buildr/button",
         "buildr/link",
         "buildr/image",
+        "buildr/video",
+        "buildr/iframe",
         "buildr/icon",
         "buildr/list",
         "buildr/divider",
@@ -686,6 +696,7 @@ exports[`describeComponent over every built-in component > buildr/card: JSON des
       "allowedChildren": [
         "buildr/button",
         "buildr/link",
+        "buildr/iframe",
       ],
       "label": "Actions",
       "name": "actions",
@@ -698,6 +709,7 @@ exports[`describeComponent over every built-in component > buildr/card: JSON des
     "background",
     "border",
     "effects",
+    "motion",
     "visibility",
   ],
   "type": "buildr/card",
@@ -715,10 +727,10 @@ Props:
 - variant (select) default "outlined" one of "outlined" | "elevated" | "flat"
 - as (select) default "article" one of "article" | "div"
 Slots:
-- media (max 1): buildr/image, buildr/icon
-- body: buildr/container, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
-- actions: buildr/button, buildr/link
-Style groups: layout, size, spacing, background, border, effects, visibility
+- media (max 1): buildr/image, buildr/video, buildr/iframe, buildr/icon
+- body: buildr/container, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/video, buildr/iframe, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+- actions: buildr/button, buildr/link, buildr/iframe
+Style groups: layout, size, spacing, background, border, effects, motion, visibility
 Renders: article
 Insert into: buildr/page[default]
 Example: {"type":"buildr/card"}"
@@ -887,7 +899,7 @@ exports[`describeComponent over every built-in component > buildr/container: JSO
     "rootOnly": false,
   },
   "category": "layout",
-  "description": "A box for content: a column, row or grid, optionally width-limited, a landmark, or with a background image.",
+  "description": "A box for content: a column, row or grid, optionally width-limited, a landmark, or with a background image or video.",
   "example": {
     "type": "buildr/container",
   },
@@ -905,6 +917,9 @@ exports[`describeComponent over every built-in component > buildr/container: JSO
     "hero",
     "wrapper",
     "grid",
+    "video",
+    "overlay",
+    "background",
   ],
   "label": "Container",
   "notes": [],
@@ -994,6 +1009,126 @@ exports[`describeComponent over every built-in component > buildr/container: JSO
       "required": false,
     },
     {
+      "accept": [
+        "video",
+      ],
+      "bindable": true,
+      "bindsTo": [
+        "media",
+      ],
+      "default": null,
+      "kind": "media",
+      "label": "Background video",
+      "localizable": false,
+      "name": "backgroundVideo",
+      "required": false,
+    },
+    {
+      "accept": [
+        "image",
+      ],
+      "bindable": true,
+      "bindsTo": [
+        "media",
+      ],
+      "default": null,
+      "kind": "media",
+      "label": "Video poster",
+      "localizable": false,
+      "name": "backgroundPoster",
+      "required": false,
+    },
+    {
+      "accept": [
+        "image",
+      ],
+      "bindable": true,
+      "bindsTo": [
+        "media",
+      ],
+      "default": null,
+      "kind": "media",
+      "label": "Overlay image",
+      "localizable": false,
+      "name": "backgroundOverlay",
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": "none",
+      "kind": "select",
+      "label": "Overlay",
+      "localizable": false,
+      "name": "overlayTone",
+      "options": [
+        "none",
+        "dark",
+        "light",
+      ],
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "number",
+      ],
+      "default": 0.5,
+      "kind": "number",
+      "label": "Overlay strength",
+      "localizable": false,
+      "max": 1,
+      "min": 0,
+      "name": "overlayOpacity",
+      "required": false,
+      "step": 0.05,
+    },
+    {
+      "bindable": false,
+      "default": "cover",
+      "kind": "select",
+      "label": "Media fit",
+      "localizable": false,
+      "name": "backgroundFit",
+      "options": [
+        "cover",
+        "contain",
+      ],
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": "center",
+      "kind": "select",
+      "label": "Media position",
+      "localizable": false,
+      "name": "backgroundPosition",
+      "options": [
+        "center",
+        "top",
+        "bottom",
+        "left",
+        "right",
+        "top-left",
+        "top-right",
+        "bottom-left",
+        "bottom-right",
+      ],
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": "scroll",
+      "kind": "select",
+      "label": "Media scrolling",
+      "localizable": false,
+      "name": "backgroundAttachment",
+      "options": [
+        "scroll",
+        "fixed",
+      ],
+      "required": false,
+    },
+    {
       "bindable": false,
       "default": "none",
       "kind": "select",
@@ -1035,6 +1170,8 @@ exports[`describeComponent over every built-in component > buildr/container: JSO
         "buildr/button",
         "buildr/link",
         "buildr/image",
+        "buildr/video",
+        "buildr/iframe",
         "buildr/icon",
         "buildr/list",
         "buildr/divider",
@@ -1057,30 +1194,40 @@ exports[`describeComponent over every built-in component > buildr/container: JSO
     "layout",
     "size",
     "spacing",
+    "typography",
     "background",
     "border",
     "effects",
+    "motion",
     "visibility",
   ],
   "type": "buildr/container",
-  "version": 2,
+  "version": 3,
 }
 `;
 
 exports[`describeComponent over every built-in component > buildr/container: text description 1`] = `
-"buildr/container - Container (layout, v2)
-A box for content: a column, row or grid, optionally width-limited, a landmark, or with a background image.
+"buildr/container - Container (layout, v3)
+A box for content: a column, row or grid, optionally width-limited, a landmark, or with a background image or video.
 Props:
 - display (select) default "flex" one of "flex" | "block" | "grid" | "inline-flex" | "inline-block"
 - as (select) default "div" one of "div" | "section" | "header" | "footer" | "main" | "aside" | "nav" | "article"
 - width (select) default "lg" one of "none" | "sm" | "md" | "lg" | "xl"
 - bleed (boolean) default false [bindable]
 - backgroundImage (media) default null accepts image [bindable]
+- backgroundVideo (media) default null accepts video [bindable]
+- backgroundPoster (media) default null accepts image [bindable]
+- backgroundOverlay (media) default null accepts image [bindable]
+- overlayTone (select) default "none" one of "none" | "dark" | "light"
+- overlayOpacity (number) default 0.5 min 0; max 1 [bindable]
+- backgroundFit (select) default "cover" one of "cover" | "contain"
+- backgroundPosition (select) default "center" one of "center" | "top" | "bottom" | "left" | "right" | "top-left" | "top-right" | "bottom-left" | "bottom-right"
+- backgroundAttachment (select) default "scroll" one of "scroll" | "fixed"
 - role (select) default "none" one of "none" | "group" | "list"
 - ariaLabel (text) default "" [bindable, localizable]
 Slots:
-- default: buildr/container, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
-Style groups: layout, size, spacing, background, border, effects, visibility
+- default: buildr/container, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/video, buildr/iframe, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+Style groups: layout, size, spacing, typography, background, border, effects, motion, visibility
 Renders: div
 Insert into: buildr/page[default]
 Example: {"type":"buildr/container"}"
@@ -1136,6 +1283,7 @@ exports[`describeComponent over every built-in component > buildr/divider: JSON 
     "spacing",
     "border",
     "effects",
+    "motion",
     "visibility",
   ],
   "type": "buildr/divider",
@@ -1149,7 +1297,7 @@ A horizontal rule.
 Props:
 - decorative (boolean) default false [bindable]
 Slots: none (a leaf component, it takes no children)
-Style groups: size, spacing, border, effects, visibility
+Style groups: size, spacing, border, effects, motion, visibility
 Renders: hr
 Insert into: buildr/page[default]
 Example: {"type":"buildr/divider"}"
@@ -1247,6 +1395,8 @@ exports[`describeComponent over every built-in component > buildr/form: JSON des
         "buildr/button",
         "buildr/link",
         "buildr/image",
+        "buildr/video",
+        "buildr/iframe",
         "buildr/icon",
         "buildr/list",
         "buildr/divider",
@@ -1287,7 +1437,7 @@ Props:
 - errorMessage (text) default "" [bindable, localizable]
 - ariaLabel (text) default "" [bindable, localizable]
 Slots:
-- default: buildr/container, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+- default: buildr/container, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/video, buildr/iframe, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
 Style groups: layout, size, spacing, background, border, effects, visibility
 Renders: form
 Insert into: buildr/page[default]
@@ -1354,6 +1504,8 @@ exports[`describeComponent over every built-in component > buildr/grid: JSON des
         "buildr/button",
         "buildr/link",
         "buildr/image",
+        "buildr/video",
+        "buildr/iframe",
         "buildr/icon",
         "buildr/list",
         "buildr/divider",
@@ -1379,6 +1531,7 @@ exports[`describeComponent over every built-in component > buildr/grid: JSON des
     "background",
     "border",
     "effects",
+    "motion",
     "visibility",
   ],
   "type": "buildr/grid",
@@ -1392,8 +1545,8 @@ Lays its children out in columns.
 Props:
 - ariaLabel (text) default "" [bindable, localizable]
 Slots:
-- default: buildr/container, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
-Style groups: layout, size, spacing, background, border, effects, visibility
+- default: buildr/container, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/video, buildr/iframe, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+Style groups: layout, size, spacing, background, border, effects, motion, visibility
 Renders: div
 Insert into: buildr/page[default]
 Example: {"type":"buildr/grid"}"
@@ -1471,6 +1624,22 @@ exports[`describeComponent over every built-in component > buildr/heading: JSON 
       ],
       "required": false,
     },
+    {
+      "bindable": false,
+      "default": "heading",
+      "kind": "select",
+      "label": "Tag",
+      "localizable": false,
+      "name": "tag",
+      "options": [
+        "heading",
+        "p",
+        "span",
+        "div",
+        "strong",
+      ],
+      "required": false,
+    },
   ],
   "styleGroups": [
     "typography",
@@ -1479,22 +1648,24 @@ exports[`describeComponent over every built-in component > buildr/heading: JSON 
     "border",
     "size",
     "effects",
+    "motion",
     "visibility",
   ],
   "type": "buildr/heading",
-  "version": 1,
+  "version": 2,
 }
 `;
 
 exports[`describeComponent over every built-in component > buildr/heading: text description 1`] = `
-"buildr/heading - Heading (content, v1)
+"buildr/heading - Heading (content, v2)
 A title. Its level is the outline; its look is a style.
 Props:
 - text (text) default "Heading" [bindable, localizable]
 - level (select) default 2 one of 1 | 2 | 3 | 4 | 5 | 6
+- tag (select) default "heading" one of "heading" | "p" | "span" | "div" | "strong"
 Slots: none (a leaf component, it takes no children)
 Note: It needs an accessible name (text, label or aria-label).
-Style groups: typography, spacing, background, border, size, effects, visibility
+Style groups: typography, spacing, background, border, size, effects, motion, visibility
 Renders: h1-h6
 Insert into: buildr/page[default]
 Example: {"type":"buildr/heading","props":{"text":"Heading"}}"
@@ -1577,6 +1748,7 @@ exports[`describeComponent over every built-in component > buildr/icon: JSON des
     "spacing",
     "typography",
     "effects",
+    "motion",
     "visibility",
   ],
   "type": "buildr/icon",
@@ -1592,10 +1764,124 @@ Props:
 - label (text) default "" [bindable, localizable]
 - size (select) default "md" one of "sm" | "md" | "lg" | "xl"
 Slots: none (a leaf component, it takes no children)
-Style groups: size, spacing, typography, effects, visibility
+Style groups: size, spacing, typography, effects, motion, visibility
 Renders: svg
 Insert into: buildr/page[default]
 Example: {"type":"buildr/icon"}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/iframe: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "iframe",
+    "requiresName": true,
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": true,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "media",
+  "description": "An embedded external page, such as a map or a form, with an accessible title.",
+  "example": {
+    "type": "buildr/iframe",
+  },
+  "keywords": [
+    "embed",
+    "map",
+    "widget",
+    "external",
+    "frame",
+    "osadz",
+  ],
+  "label": "Iframe",
+  "notes": [
+    "It needs an accessible name (text, label or aria-label).",
+  ],
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+  ],
+  "props": [
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Address (https)",
+      "localizable": true,
+      "name": "url",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Accessible name",
+      "localizable": true,
+      "name": "title",
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": "16:9",
+      "kind": "select",
+      "label": "Aspect ratio",
+      "localizable": false,
+      "name": "aspectRatio",
+      "options": [
+        "16:9",
+        "4:3",
+        "1:1",
+        "9:16",
+        "21:9",
+      ],
+      "required": false,
+    },
+  ],
+  "styleGroups": [
+    "size",
+    "spacing",
+    "border",
+    "effects",
+    "motion",
+    "visibility",
+  ],
+  "type": "buildr/iframe",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/iframe: text description 1`] = `
+"buildr/iframe - Iframe (media, v1)
+An embedded external page, such as a map or a form, with an accessible title.
+Props:
+- url (text) default "" [bindable, localizable]
+- title (text) default "" [bindable, localizable]
+- aspectRatio (select) default "16:9" one of "16:9" | "4:3" | "1:1" | "9:16" | "21:9"
+Slots: none (a leaf component, it takes no children)
+Note: It needs an accessible name (text, label or aria-label).
+Style groups: size, spacing, border, effects, motion, visibility
+Renders: iframe
+Insert into: buildr/page[default]
+Example: {"type":"buildr/iframe"}"
 `;
 
 exports[`describeComponent over every built-in component > buildr/image: JSON description 1`] = `
@@ -1725,6 +2011,7 @@ exports[`describeComponent over every built-in component > buildr/image: JSON de
     "spacing",
     "border",
     "effects",
+    "motion",
     "visibility",
   ],
   "type": "buildr/image",
@@ -1744,7 +2031,7 @@ Props:
 - priority (boolean) default false [bindable]
 Slots: none (a leaf component, it takes no children)
 Note: It needs an accessible name (text, label or aria-label).
-Style groups: size, spacing, border, effects, visibility
+Style groups: size, spacing, border, effects, motion, visibility
 Renders: img
 Insert into: buildr/page[default]
 Example: {"type":"buildr/image"}"
@@ -2052,6 +2339,7 @@ exports[`describeComponent over every built-in component > buildr/link: JSON des
     "background",
     "border",
     "effects",
+    "motion",
     "visibility",
   ],
   "type": "buildr/link",
@@ -2069,7 +2357,7 @@ Props:
 - newTab (boolean) default false [bindable]
 Slots: none (a leaf component, it takes no children)
 Note: It needs an accessible name (text, label or aria-label).
-Style groups: typography, spacing, background, border, effects, visibility
+Style groups: typography, spacing, background, border, effects, motion, visibility
 Renders: a
 Insert into: buildr/page[default]
 Example: {"type":"buildr/link","props":{"label":"Link"}}"
@@ -2184,6 +2472,7 @@ exports[`describeComponent over every built-in component > buildr/list: JSON des
     "border",
     "size",
     "effects",
+    "motion",
     "visibility",
   ],
   "type": "buildr/list",
@@ -2199,7 +2488,7 @@ Props:
 - ariaLabel (text) default "" [bindable, localizable]
 Slots:
 - default: buildr/list-item, buildr/loop
-Style groups: typography, spacing, background, border, size, effects, visibility
+Style groups: typography, spacing, background, border, size, effects, motion, visibility
 Renders: ul
 Insert into: buildr/page[default]
 Example: {"type":"buildr/list","slots":{"default":[{"type":"buildr/list-item","props":{"text":{"kind":"static","value":"Item 1"}}},{"type":"buildr/list-item","props":{"text":{"kind":"static","value":"Item 2"}}},{"type":"buildr/list-item","props":{"text":{"kind":"static","value":"Item 3"}}}]}}"
@@ -2279,6 +2568,8 @@ exports[`describeComponent over every built-in component > buildr/list-item: JSO
         "buildr/button",
         "buildr/link",
         "buildr/image",
+        "buildr/video",
+        "buildr/iframe",
         "buildr/icon",
         "buildr/list",
         "buildr/divider",
@@ -2303,6 +2594,7 @@ exports[`describeComponent over every built-in component > buildr/list-item: JSO
     "background",
     "border",
     "effects",
+    "motion",
     "visibility",
   ],
   "type": "buildr/list-item",
@@ -2316,10 +2608,10 @@ One entry of a list.
 Props:
 - text (text) default "Item" [bindable, localizable]
 Slots:
-- default: buildr/container, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+- default: buildr/container, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/video, buildr/iframe, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
 Note: It cannot be inserted on its own; include it as a child inside a tree of buildr/list, buildr/loop.
 Note: It can only be placed directly inside buildr/list, buildr/loop.
-Style groups: typography, spacing, background, border, effects, visibility
+Style groups: typography, spacing, background, border, effects, motion, visibility
 Renders: li
 Insert into: buildr/page[default]
 Example: {"type":"buildr/list","slots":{"default":[{"type":"buildr/list-item","props":{"text":"Item"}}]}}"
@@ -2412,6 +2704,7 @@ exports[`describeComponent over every built-in component > buildr/loop: JSON des
     "background",
     "border",
     "effects",
+    "motion",
     "visibility",
   ],
   "type": "buildr/loop",
@@ -2429,7 +2722,7 @@ Slots:
 - item: any component
 - empty: any component
 - after: any component
-Style groups: layout, size, spacing, background, border, effects, visibility
+Style groups: layout, size, spacing, background, border, effects, motion, visibility
 Renders: div
 Insert into: buildr/page[default]
 Example: {"type":"buildr/loop"}"
@@ -2471,6 +2764,8 @@ exports[`describeComponent over every built-in component > buildr/page: JSON des
         "buildr/button",
         "buildr/link",
         "buildr/image",
+        "buildr/video",
+        "buildr/iframe",
         "buildr/icon",
         "buildr/list",
         "buildr/divider",
@@ -2504,7 +2799,7 @@ exports[`describeComponent over every built-in component > buildr/page: text des
 The root of a document. Everything else lives inside it.
 Props: none
 Slots:
-- default: buildr/container, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+- default: buildr/container, buildr/grid, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/video, buildr/iframe, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
 Note: This is the document root; it exists once and cannot be inserted.
 Note: It cannot be removed.
 Note: It cannot be moved.
@@ -2686,6 +2981,7 @@ exports[`describeComponent over every built-in component > buildr/rich-text: JSO
     "border",
     "size",
     "effects",
+    "motion",
     "visibility",
   ],
   "type": "buildr/rich-text",
@@ -2699,7 +2995,7 @@ Formatted content: headings, paragraphs, lists, quotes and links.
 Props:
 - content (richText) default null [bindable, localizable]
 Slots: none (a leaf component, it takes no children)
-Style groups: typography, spacing, background, border, size, effects, visibility
+Style groups: typography, spacing, background, border, size, effects, motion, visibility
 Renders: div
 Insert into: buildr/page[default]
 Example: {"type":"buildr/rich-text"}"
@@ -2952,6 +3248,8 @@ exports[`describeComponent over every built-in component > buildr/text: JSON des
     "copy",
     "body",
     "span",
+    "rich text",
+    "html",
   ],
   "label": "Text",
   "notes": [],
@@ -2990,6 +3288,45 @@ exports[`describeComponent over every built-in component > buildr/text: JSON des
       ],
       "required": false,
     },
+    {
+      "bindable": false,
+      "default": "plain",
+      "kind": "select",
+      "label": "Mode",
+      "localizable": false,
+      "name": "mode",
+      "options": [
+        "plain",
+        "rich",
+        "html",
+      ],
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "richText",
+        "string",
+      ],
+      "default": null,
+      "kind": "richText",
+      "label": "Rich text",
+      "localizable": true,
+      "name": "rich",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+      ],
+      "default": "",
+      "kind": "textarea",
+      "label": "HTML",
+      "localizable": true,
+      "name": "html",
+      "required": false,
+    },
   ],
   "styleGroups": [
     "typography",
@@ -2998,21 +3335,25 @@ exports[`describeComponent over every built-in component > buildr/text: JSON des
     "border",
     "size",
     "effects",
+    "motion",
     "visibility",
   ],
   "type": "buildr/text",
-  "version": 1,
+  "version": 2,
 }
 `;
 
 exports[`describeComponent over every built-in component > buildr/text: text description 1`] = `
-"buildr/text - Text (content, v1)
+"buildr/text - Text (content, v2)
 A paragraph or a short piece of text.
 Props:
 - text (textarea) default "" [bindable, localizable]
 - as (select) default "p" one of "p" | "span" | "small" | "div"
+- mode (select) default "plain" one of "plain" | "rich" | "html"
+- rich (richText) default null [bindable, localizable]
+- html (textarea) default "" [bindable, localizable]
 Slots: none (a leaf component, it takes no children)
-Style groups: typography, spacing, background, border, size, effects, visibility
+Style groups: typography, spacing, background, border, size, effects, motion, visibility
 Renders: p
 Insert into: buildr/page[default]
 Example: {"type":"buildr/text","props":{"text":"Write something"}}"
@@ -3212,4 +3553,265 @@ Style groups: size, spacing, typography, background, border, effects, visibility
 Renders: textarea
 Insert into: buildr/page[default] > buildr/form[default]
 Example: {"type":"buildr/textarea","props":{"label":"Label"}}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/video: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "video",
+    "requiresName": true,
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": true,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "media",
+  "description": "A video with an accessible name, optional poster and captions.",
+  "example": {
+    "type": "buildr/video",
+  },
+  "keywords": [
+    "movie",
+    "film",
+    "wideo",
+    "clip",
+    "media",
+    "mp4",
+    "webm",
+  ],
+  "label": "Video",
+  "notes": [
+    "It needs an accessible name (text, label or aria-label).",
+  ],
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+  ],
+  "props": [
+    {
+      "accept": [
+        "video",
+      ],
+      "bindable": true,
+      "bindsTo": [
+        "media",
+      ],
+      "default": null,
+      "kind": "media",
+      "label": "Video",
+      "localizable": false,
+      "name": "video",
+      "required": false,
+    },
+    {
+      "accept": [
+        "image",
+      ],
+      "bindable": true,
+      "bindsTo": [
+        "media",
+      ],
+      "default": null,
+      "kind": "media",
+      "label": "Poster",
+      "localizable": false,
+      "name": "poster",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Accessible name",
+      "localizable": true,
+      "name": "title",
+      "required": false,
+    },
+    {
+      "accept": [
+        "text",
+      ],
+      "bindable": true,
+      "bindsTo": [
+        "media",
+      ],
+      "default": null,
+      "kind": "media",
+      "label": "Captions (WebVTT)",
+      "localizable": false,
+      "name": "captions",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Captions language",
+      "localizable": true,
+      "name": "captionsLanguage",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Captions label",
+      "localizable": true,
+      "name": "captionsLabel",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "boolean",
+      ],
+      "default": true,
+      "kind": "boolean",
+      "label": "Controls",
+      "localizable": false,
+      "name": "controls",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "boolean",
+      ],
+      "default": false,
+      "kind": "boolean",
+      "label": "Loop",
+      "localizable": false,
+      "name": "loop",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "boolean",
+      ],
+      "default": false,
+      "kind": "boolean",
+      "label": "Autoplay (muted)",
+      "localizable": false,
+      "name": "autoplay",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "boolean",
+      ],
+      "default": false,
+      "kind": "boolean",
+      "label": "Muted",
+      "localizable": false,
+      "name": "muted",
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": "metadata",
+      "kind": "select",
+      "label": "Preload",
+      "localizable": false,
+      "name": "preload",
+      "options": [
+        "none",
+        "metadata",
+      ],
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": "16:9",
+      "kind": "select",
+      "label": "Aspect ratio",
+      "localizable": false,
+      "name": "aspectRatio",
+      "options": [
+        "16:9",
+        "4:3",
+        "1:1",
+        "9:16",
+        "21:9",
+        "auto",
+      ],
+      "required": false,
+    },
+    {
+      "bindable": false,
+      "default": "contain",
+      "kind": "select",
+      "label": "Fit",
+      "localizable": false,
+      "name": "fit",
+      "options": [
+        "contain",
+        "cover",
+      ],
+      "required": false,
+    },
+  ],
+  "styleGroups": [
+    "size",
+    "spacing",
+    "border",
+    "effects",
+    "motion",
+    "visibility",
+  ],
+  "type": "buildr/video",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/video: text description 1`] = `
+"buildr/video - Video (media, v1)
+A video with an accessible name, optional poster and captions.
+Props:
+- video (media) default null accepts video [bindable]
+- poster (media) default null accepts image [bindable]
+- title (text) default "" [bindable, localizable]
+- captions (media) default null accepts text [bindable]
+- captionsLanguage (text) default "" [bindable, localizable]
+- captionsLabel (text) default "" [bindable, localizable]
+- controls (boolean) default true [bindable]
+- loop (boolean) default false [bindable]
+- autoplay (boolean) default false [bindable]
+- muted (boolean) default false [bindable]
+- preload (select) default "metadata" one of "none" | "metadata"
+- aspectRatio (select) default "16:9" one of "16:9" | "4:3" | "1:1" | "9:16" | "21:9" | "auto"
+- fit (select) default "contain" one of "contain" | "cover"
+Slots: none (a leaf component, it takes no children)
+Note: It needs an accessible name (text, label or aria-label).
+Style groups: size, spacing, border, effects, motion, visibility
+Renders: video
+Insert into: buildr/page[default]
+Example: {"type":"buildr/video"}"
 `;

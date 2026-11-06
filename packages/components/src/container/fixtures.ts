@@ -14,6 +14,8 @@ const padded = (desktop: string, tablet: string, mobile: string) =>
 
 /** Uses the sample media of the image fixtures (`m1`). */
 const backgroundImage = s({ source: 'fixtures', collection: 'media', id: 'm1' }) as never;
+/** Uses the sample video of the video fixtures (`v1`). */
+const backgroundVideo = s({ source: 'fixtures', collection: 'media', id: 'v1' }) as never;
 
 export const containerFixtures: readonly ComponentFixture[] = [
   {
@@ -125,6 +127,61 @@ export const containerFixtures: readonly ComponentFixture[] = [
         bleed: s(true),
         backgroundImage,
         ariaLabel: s('Hero'),
+      },
+      children: [{ type: 'test/probe' }],
+      styles: padded('4rem', '3rem', '1.5rem'),
+    },
+  },
+  {
+    id: 'container-background-video',
+    title: 'Container: background video with a poster and a dark overlay',
+    tree: {
+      type: 'buildr/container',
+      props: {
+        as: s('section'),
+        bleed: s(true),
+        backgroundVideo,
+        backgroundPoster: backgroundImage,
+        overlayTone: s('dark'),
+        overlayOpacity: s(0.4),
+        ariaLabel: s('Hero video'),
+      },
+      children: [{ type: 'test/probe' }],
+      styles: padded('4rem', '3rem', '1.5rem'),
+    },
+  },
+  {
+    id: 'container-background-fixed',
+    title: 'Container: fixed background image, positioned top left',
+    tree: {
+      type: 'buildr/container',
+      props: {
+        as: s('section'),
+        bleed: s(true),
+        backgroundImage,
+        backgroundFit: s('cover'),
+        backgroundPosition: s('top-left'),
+        backgroundAttachment: s('fixed'),
+        overlayTone: s('light'),
+        ariaLabel: s('Parallax band'),
+      },
+      children: [{ type: 'test/probe' }],
+      styles: padded('4rem', '3rem', '1.5rem'),
+    },
+  },
+  {
+    id: 'container-background-external',
+    title: 'Container: external background image (HTTPS)',
+    tree: {
+      type: 'buildr/container',
+      props: {
+        as: s('section'),
+        bleed: s(true),
+        backgroundImage: s({
+          external: true,
+          url: 'https://images.example.invalid/hero.jpg',
+        }) as never,
+        ariaLabel: s('External hero'),
       },
       children: [{ type: 'test/probe' }],
       styles: padded('4rem', '3rem', '1.5rem'),

@@ -1,0 +1,33 @@
+@layer buildr.components {
+  .bc-iframe {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: 16 / 9;
+    border: 0;
+    background-color: var(--b-color-surface-alt);
+  }
+  .bc-iframe[data-ratio="4:3"] {
+    aspect-ratio: 4 / 3;
+  }
+  .bc-iframe[data-ratio="1:1"] {
+    aspect-ratio: 1 / 1;
+  }
+  .bc-iframe[data-ratio="9:16"] {
+    aspect-ratio: 9 / 16;
+  }
+  .bc-iframe[data-ratio="21:9"] {
+    aspect-ratio: 21 / 9;
+  }
+
+  .bc-iframe:focus-visible {
+    outline: 2px solid var(--b-color-primary);
+    outline-offset: 2px;
+  }
+
+  /* The editor's canvas only: where an empty or invalid frame will go. */
+  .bc-iframe[data-empty] {
+    min-height: 8rem;
+    border: 1px dashed var(--b-color-border);
+  }
+}

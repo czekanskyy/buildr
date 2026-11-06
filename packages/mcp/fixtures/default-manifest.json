@@ -1,5 +1,5 @@
 {
-  "hash": "2bxfcdv2zp2ci",
+  "hash": "3ql2wkkonwf29",
   "components": {
     "buildr/page": {
       "type": "buildr/page",
@@ -38,9 +38,9 @@
     },
     "buildr/container": {
       "type": "buildr/container",
-      "version": 2,
+      "version": 3,
       "label": "Container",
-      "description": "A box for content: a column, row or grid, optionally width-limited, a landmark, or with a background image.",
+      "description": "A box for content: a column, row or grid, optionally width-limited, a landmark, or with a background image or video.",
       "keywords": [
         "width",
         "column",
@@ -54,7 +54,10 @@
         "band",
         "hero",
         "wrapper",
-        "grid"
+        "grid",
+        "video",
+        "overlay",
+        "background"
       ],
       "category": "layout",
       "icon": "square-dashed",
@@ -110,6 +113,99 @@
           "default": null,
           "accept": ["image"]
         },
+        "backgroundVideo": {
+          "kind": "media",
+          "label": "Background video",
+          "bindable": true,
+          "localizable": false,
+          "accepts": ["media"],
+          "default": null,
+          "accept": ["video"]
+        },
+        "backgroundPoster": {
+          "kind": "media",
+          "label": "Video poster",
+          "bindable": true,
+          "localizable": false,
+          "accepts": ["media"],
+          "default": null,
+          "accept": ["image"]
+        },
+        "backgroundOverlay": {
+          "kind": "media",
+          "label": "Overlay image",
+          "localizable": false,
+          "accepts": ["media"],
+          "default": null,
+          "accept": ["image"]
+        },
+        "overlayTone": {
+          "kind": "select",
+          "label": "Overlay",
+          "localizable": false,
+          "accepts": [],
+          "options": ["none", "dark", "light"],
+          "default": "none",
+          "optionLabels": {
+            "none": "None",
+            "dark": "Dark",
+            "light": "Light"
+          }
+        },
+        "overlayOpacity": {
+          "kind": "number",
+          "label": "Overlay strength",
+          "localizable": false,
+          "accepts": ["number"],
+          "default": 0.5,
+          "min": 0,
+          "max": 1,
+          "step": 0.05
+        },
+        "backgroundFit": {
+          "kind": "select",
+          "label": "Media fit",
+          "localizable": false,
+          "accepts": [],
+          "options": ["cover", "contain"],
+          "default": "cover"
+        },
+        "backgroundPosition": {
+          "kind": "select",
+          "label": "Media position",
+          "localizable": false,
+          "accepts": [],
+          "options": [
+            "center",
+            "top",
+            "bottom",
+            "left",
+            "right",
+            "top-left",
+            "top-right",
+            "bottom-left",
+            "bottom-right"
+          ],
+          "default": "center",
+          "optionLabels": {
+            "top-left": "Top left",
+            "top-right": "Top right",
+            "bottom-left": "Bottom left",
+            "bottom-right": "Bottom right"
+          }
+        },
+        "backgroundAttachment": {
+          "kind": "select",
+          "label": "Media scrolling",
+          "localizable": false,
+          "accepts": [],
+          "options": ["scroll", "fixed"],
+          "default": "scroll",
+          "optionLabels": {
+            "scroll": "Scrolls with the page",
+            "fixed": "Fixed"
+          }
+        },
         "role": {
           "kind": "select",
           "label": "Role (plain div only)",
@@ -133,7 +229,17 @@
         }
       },
       "styles": {
-        "groups": ["layout", "size", "spacing", "background", "border", "effects", "visibility"]
+        "groups": [
+          "layout",
+          "size",
+          "spacing",
+          "typography",
+          "background",
+          "border",
+          "effects",
+          "motion",
+          "visibility"
+        ]
       },
       "a11y": {
         "element": "div",
@@ -171,7 +277,16 @@
         }
       },
       "styles": {
-        "groups": ["layout", "size", "spacing", "background", "border", "effects", "visibility"]
+        "groups": [
+          "layout",
+          "size",
+          "spacing",
+          "background",
+          "border",
+          "effects",
+          "motion",
+          "visibility"
+        ]
       },
       "a11y": {
         "element": "div"
@@ -185,7 +300,7 @@
     },
     "buildr/heading": {
       "type": "buildr/heading",
-      "version": 1,
+      "version": 2,
       "label": "Heading",
       "description": "A title. Its level is the outline; its look is a style.",
       "keywords": ["title", "h1", "h2", "headline"],
@@ -208,10 +323,34 @@
           "accepts": [],
           "options": [1, 2, 3, 4, 5, 6],
           "default": 2
+        },
+        "tag": {
+          "kind": "select",
+          "label": "Tag",
+          "localizable": false,
+          "accepts": [],
+          "options": ["heading", "p", "span", "div", "strong"],
+          "default": "heading",
+          "optionLabels": {
+            "heading": "Heading (by level)",
+            "p": "Paragraph",
+            "span": "Span",
+            "div": "Div",
+            "strong": "Bold"
+          }
         }
       },
       "styles": {
-        "groups": ["typography", "spacing", "background", "border", "size", "effects", "visibility"]
+        "groups": [
+          "typography",
+          "spacing",
+          "background",
+          "border",
+          "size",
+          "effects",
+          "motion",
+          "visibility"
+        ]
       },
       "a11y": {
         "element": "h1-h6",
@@ -225,10 +364,10 @@
     },
     "buildr/text": {
       "type": "buildr/text",
-      "version": 1,
+      "version": 2,
       "label": "Text",
       "description": "A paragraph or a short piece of text.",
-      "keywords": ["paragraph", "copy", "body", "span"],
+      "keywords": ["paragraph", "copy", "body", "span", "rich text", "html"],
       "category": "content",
       "icon": "type",
       "contentCategories": ["flow", "phrasing"],
@@ -248,10 +387,49 @@
           "accepts": [],
           "options": ["p", "span", "small", "div"],
           "default": "p"
+        },
+        "mode": {
+          "kind": "select",
+          "label": "Mode",
+          "localizable": false,
+          "accepts": [],
+          "options": ["plain", "rich", "html"],
+          "default": "plain",
+          "optionLabels": {
+            "plain": "Plain text",
+            "rich": "Rich text",
+            "html": "HTML"
+          }
+        },
+        "rich": {
+          "kind": "richText",
+          "label": "Rich text",
+          "bindable": true,
+          "localizable": true,
+          "accepts": ["richText", "string"],
+          "default": null
+        },
+        "html": {
+          "kind": "textarea",
+          "label": "HTML",
+          "bindable": true,
+          "localizable": true,
+          "accepts": ["string"],
+          "default": "",
+          "format": "html"
         }
       },
       "styles": {
-        "groups": ["typography", "spacing", "background", "border", "size", "effects", "visibility"]
+        "groups": [
+          "typography",
+          "spacing",
+          "background",
+          "border",
+          "size",
+          "effects",
+          "motion",
+          "visibility"
+        ]
       },
       "a11y": {
         "element": "p"
@@ -282,7 +460,16 @@
         }
       },
       "styles": {
-        "groups": ["typography", "spacing", "background", "border", "size", "effects", "visibility"]
+        "groups": [
+          "typography",
+          "spacing",
+          "background",
+          "border",
+          "size",
+          "effects",
+          "motion",
+          "visibility"
+        ]
       },
       "a11y": {
         "element": "div"
@@ -373,7 +560,16 @@
         }
       },
       "styles": {
-        "groups": ["typography", "spacing", "background", "border", "size", "effects", "visibility"]
+        "groups": [
+          "typography",
+          "spacing",
+          "background",
+          "border",
+          "size",
+          "effects",
+          "motion",
+          "visibility"
+        ]
       },
       "a11y": {
         "element": "button",
@@ -427,7 +623,15 @@
         }
       },
       "styles": {
-        "groups": ["typography", "spacing", "background", "border", "effects", "visibility"]
+        "groups": [
+          "typography",
+          "spacing",
+          "background",
+          "border",
+          "effects",
+          "motion",
+          "visibility"
+        ]
       },
       "a11y": {
         "element": "a",
@@ -498,7 +702,7 @@
         }
       },
       "styles": {
-        "groups": ["size", "spacing", "border", "effects", "visibility"]
+        "groups": ["size", "spacing", "border", "effects", "motion", "visibility"]
       },
       "a11y": {
         "element": "img",
@@ -506,6 +710,183 @@
       },
       "editor": {
         "placeholder": "Choose an image"
+      },
+      "runtime": "shared"
+    },
+    "buildr/video": {
+      "type": "buildr/video",
+      "version": 1,
+      "label": "Video",
+      "description": "A video with an accessible name, optional poster and captions.",
+      "keywords": ["movie", "film", "wideo", "clip", "media", "mp4", "webm"],
+      "category": "media",
+      "icon": "video",
+      "contentCategories": ["flow", "phrasing", "media"],
+      "props": {
+        "video": {
+          "kind": "media",
+          "label": "Video",
+          "bindable": true,
+          "localizable": false,
+          "accepts": ["media"],
+          "default": null,
+          "accept": ["video"]
+        },
+        "poster": {
+          "kind": "media",
+          "label": "Poster",
+          "bindable": true,
+          "localizable": false,
+          "accepts": ["media"],
+          "default": null,
+          "accept": ["image"]
+        },
+        "title": {
+          "kind": "text",
+          "label": "Accessible name",
+          "bindable": true,
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        },
+        "captions": {
+          "kind": "media",
+          "label": "Captions (WebVTT)",
+          "localizable": false,
+          "accepts": ["media"],
+          "default": null,
+          "accept": ["text"]
+        },
+        "captionsLanguage": {
+          "kind": "text",
+          "label": "Captions language",
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        },
+        "captionsLabel": {
+          "kind": "text",
+          "label": "Captions label",
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        },
+        "controls": {
+          "kind": "boolean",
+          "label": "Controls",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": true
+        },
+        "loop": {
+          "kind": "boolean",
+          "label": "Loop",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": false
+        },
+        "autoplay": {
+          "kind": "boolean",
+          "label": "Autoplay (muted)",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": false
+        },
+        "muted": {
+          "kind": "boolean",
+          "label": "Muted",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": false
+        },
+        "preload": {
+          "kind": "select",
+          "label": "Preload",
+          "localizable": false,
+          "accepts": [],
+          "options": ["none", "metadata"],
+          "default": "metadata",
+          "optionLabels": {
+            "none": "Nothing",
+            "metadata": "Length and first frame"
+          }
+        },
+        "aspectRatio": {
+          "kind": "select",
+          "label": "Aspect ratio",
+          "localizable": false,
+          "accepts": [],
+          "options": ["16:9", "4:3", "1:1", "9:16", "21:9", "auto"],
+          "default": "16:9",
+          "optionLabels": {
+            "auto": "As the video"
+          }
+        },
+        "fit": {
+          "kind": "select",
+          "label": "Fit",
+          "localizable": false,
+          "accepts": [],
+          "options": ["contain", "cover"],
+          "default": "contain"
+        }
+      },
+      "styles": {
+        "groups": ["size", "spacing", "border", "effects", "motion", "visibility"]
+      },
+      "a11y": {
+        "element": "video",
+        "requiresName": true
+      },
+      "editor": {
+        "placeholder": "Choose a video"
+      },
+      "runtime": "shared"
+    },
+    "buildr/iframe": {
+      "type": "buildr/iframe",
+      "version": 1,
+      "label": "Iframe",
+      "description": "An embedded external page, such as a map or a form, with an accessible title.",
+      "keywords": ["embed", "map", "widget", "external", "frame", "osadz"],
+      "category": "media",
+      "icon": "globe",
+      "contentCategories": ["flow", "phrasing", "media", "interactive"],
+      "props": {
+        "url": {
+          "kind": "text",
+          "label": "Address (https)",
+          "bindable": true,
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        },
+        "title": {
+          "kind": "text",
+          "label": "Accessible name",
+          "bindable": true,
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        },
+        "aspectRatio": {
+          "kind": "select",
+          "label": "Aspect ratio",
+          "localizable": false,
+          "accepts": [],
+          "options": ["16:9", "4:3", "1:1", "9:16", "21:9"],
+          "default": "16:9"
+        }
+      },
+      "styles": {
+        "groups": ["size", "spacing", "border", "effects", "motion", "visibility"]
+      },
+      "a11y": {
+        "element": "iframe",
+        "requiresName": true
+      },
+      "editor": {
+        "placeholder": "Enter an address"
       },
       "runtime": "shared"
     },
@@ -543,7 +924,7 @@
         }
       },
       "styles": {
-        "groups": ["size", "spacing", "typography", "effects", "visibility"]
+        "groups": ["size", "spacing", "typography", "effects", "motion", "visibility"]
       },
       "a11y": {
         "element": "svg"
@@ -616,7 +997,16 @@
         }
       },
       "styles": {
-        "groups": ["typography", "spacing", "background", "border", "size", "effects", "visibility"]
+        "groups": [
+          "typography",
+          "spacing",
+          "background",
+          "border",
+          "size",
+          "effects",
+          "motion",
+          "visibility"
+        ]
       },
       "a11y": {
         "element": "ul"
@@ -660,7 +1050,15 @@
         "insertable": false
       },
       "styles": {
-        "groups": ["typography", "spacing", "background", "border", "effects", "visibility"]
+        "groups": [
+          "typography",
+          "spacing",
+          "background",
+          "border",
+          "effects",
+          "motion",
+          "visibility"
+        ]
       },
       "a11y": {
         "element": "li"
@@ -690,7 +1088,7 @@
         }
       },
       "styles": {
-        "groups": ["size", "spacing", "border", "effects", "visibility"]
+        "groups": ["size", "spacing", "border", "effects", "motion", "visibility"]
       },
       "a11y": {
         "element": "hr"
@@ -725,7 +1123,15 @@
         }
       },
       "styles": {
-        "groups": ["typography", "spacing", "background", "border", "effects", "visibility"]
+        "groups": [
+          "typography",
+          "spacing",
+          "background",
+          "border",
+          "effects",
+          "motion",
+          "visibility"
+        ]
       },
       "a11y": {
         "element": "span"
@@ -805,7 +1211,16 @@
         }
       },
       "styles": {
-        "groups": ["layout", "size", "spacing", "background", "border", "effects", "visibility"]
+        "groups": [
+          "layout",
+          "size",
+          "spacing",
+          "background",
+          "border",
+          "effects",
+          "motion",
+          "visibility"
+        ]
       },
       "a11y": {
         "element": "article"
@@ -878,7 +1293,16 @@
         }
       },
       "styles": {
-        "groups": ["layout", "size", "spacing", "background", "border", "effects", "visibility"]
+        "groups": [
+          "layout",
+          "size",
+          "spacing",
+          "background",
+          "border",
+          "effects",
+          "motion",
+          "visibility"
+        ]
       },
       "a11y": {
         "element": "div"
@@ -929,7 +1353,15 @@
         "insertable": false
       },
       "styles": {
-        "groups": ["spacing", "background", "border", "typography", "effects", "visibility"]
+        "groups": [
+          "spacing",
+          "background",
+          "border",
+          "typography",
+          "effects",
+          "motion",
+          "visibility"
+        ]
       },
       "a11y": {
         "element": "details",
@@ -985,7 +1417,16 @@
         }
       },
       "styles": {
-        "groups": ["layout", "size", "spacing", "background", "border", "effects", "visibility"]
+        "groups": [
+          "layout",
+          "size",
+          "spacing",
+          "background",
+          "border",
+          "effects",
+          "motion",
+          "visibility"
+        ]
       },
       "a11y": {
         "element": "div"

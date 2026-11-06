@@ -16,7 +16,9 @@ export const Link = defineComponent({
   icon: 'link',
   contentCategories: ['flow', 'phrasing', 'interactive'],
   props: linkProps,
-  styles: { groups: ['typography', 'spacing', 'background', 'border', 'effects', 'visibility'] },
+  styles: {
+    groups: ['typography', 'spacing', 'background', 'border', 'effects', 'motion', 'visibility'],
+  },
   a11y: { element: 'a', requiresName: true },
   editor: { inlineProp: 'label', placeholder: 'Link' },
   runtime: 'shared',

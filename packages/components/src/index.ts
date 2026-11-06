@@ -20,11 +20,15 @@ export { cardFixtures } from './card/fixtures.ts';
 export { Checkbox } from './checkbox/definition.ts';
 export { checkboxFixtures } from './checkbox/fixtures.ts';
 export {
+  BACKGROUND_ATTACHMENTS,
+  BACKGROUND_FITS,
+  BACKGROUND_POSITIONS,
   CONTAINER_DISPLAYS,
   CONTAINER_ELEMENTS,
   CONTAINER_ROLES,
   CONTAINER_WIDTHS,
   Container,
+  OVERLAY_TONES,
 } from './container/definition.ts';
 export { containerFixtures } from './container/fixtures.ts';
 export { Divider } from './divider/definition.ts';
@@ -43,6 +47,13 @@ export { ICON_SIZES, IconComponent } from './icon/definition.ts';
 export { iconFixtures } from './icon/fixtures.ts';
 export type { IconName, IconNode, IconProps, IconShape } from './icons/index.ts';
 export { hasIcon, ICON_NAMES, ICON_NODES, Icon } from './icons/index.ts';
+export {
+  IFRAME_ASPECT_RATIOS,
+  IFRAME_REFERRER_POLICY,
+  IFRAME_SANDBOX,
+  Iframe,
+} from './iframe/definition.ts';
+export { iframeFixtures } from './iframe/fixtures.ts';
 export { IMAGE_FITS, IMAGE_SIZES, Image } from './image/definition.ts';
 export { imageFixtureMedia, imageFixtures } from './image/fixtures.ts';
 export { INPUT_TYPES, Input } from './input/definition.ts';
@@ -55,6 +66,13 @@ export { ListItem } from './list-item/definition.ts';
 export { listItemFixtures } from './list-item/fixtures.ts';
 export { Loop } from './loop/definition.ts';
 export { loopFixtureCollections, loopFixtures } from './loop/fixtures.ts';
+export type { ExternalMedia, ExternalUrlCheck, ExternalUrlProblem } from './media/external.ts';
+export {
+  checkExternalUrl,
+  EXTERNAL_URL_MAX_LENGTH,
+  hostIsAllowed,
+  isExternalMedia,
+} from './media/external.ts';
 export type { MessageKey } from './messages/index.ts';
 export { BUILT_IN_MESSAGES, message } from './messages/index.ts';
 export { Page } from './page/definition.ts';
@@ -93,3 +111,5 @@ export { textFixtures } from './text/fixtures.ts';
 export { Textarea } from './textarea/definition.ts';
 export { textareaFixtures } from './textarea/fixtures.ts';
 export { defaultTheme } from './theme.ts';
+export { VIDEO_ASPECT_RATIOS, VIDEO_FITS, VIDEO_PRELOADS, Video } from './video/definition.ts';
+export { videoFixtureMedia, videoFixtures } from './video/fixtures.ts';

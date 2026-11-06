@@ -15,7 +15,7 @@ export const IconComponent = defineComponent({
   icon: 'sparkles',
   contentCategories: ['flow', 'phrasing', 'media'],
   props: iconProps,
-  styles: { groups: ['size', 'spacing', 'typography', 'effects', 'visibility'] },
+  styles: { groups: ['size', 'spacing', 'typography', 'effects', 'motion', 'visibility'] },
   a11y: { element: 'svg' },
   runtime: 'shared',
   render: IconView,

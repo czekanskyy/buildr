@@ -18,7 +18,16 @@ export const Grid = defineComponent({
   props: gridProps,
   slots: { default: { label: 'Cells', axis: 'auto' } },
   styles: {
-    groups: ['layout', 'size', 'spacing', 'background', 'border', 'effects', 'visibility'],
+    groups: [
+      'layout',
+      'size',
+      'spacing',
+      'background',
+      'border',
+      'effects',
+      'motion',
+      'visibility',
+    ],
   },
   a11y: { element: 'div' },
   editor: { emptySlotText: { default: 'Drop content here' } },

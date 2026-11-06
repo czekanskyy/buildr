@@ -203,9 +203,9 @@ describe('explainCommandError and explainSessionError', () => {
       commands,
     });
     expect(explained.message).toContain('Command 1 (node.setProp)');
-    expect(explained.message).toContain('Its props are: text, level');
+    expect(explained.message).toContain('Its props are: text, level, tag');
     expect(explained.message).toContain('Nothing was applied.');
-    expect(explained.alternatives).toEqual(['text']);
+    expect(explained.alternatives).toEqual(['text', 'tag']);
     expect(explained.nodeId).toBe(id);
   });
 
@@ -221,7 +221,7 @@ describe('explainCommandError and explainSessionError', () => {
           fragment: {
             format: 'buildr/fragment',
             schemaVersion: 1,
-            components: { 'buildr/heading': 1 },
+            components: { 'buildr/heading': s.registry.get('buildr/heading')?.version ?? 1 },
             roots: ['a000000001'],
             nodes: { a000000001: { id: 'a000000001', type: 'buildr/heading' } },
           },
