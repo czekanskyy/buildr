@@ -11,6 +11,9 @@ import { registry } from './buildr.registry.ts';
 // The write path and the read path of the plugin against the real component library: documents
 // stored before `buildr/section` and `buildr/stack` were retired (ADR-025).
 
+/** The container version this build writes, read from the registry. */
+const currentContainer = registry.meta.get('buildr/container')?.version ?? 0;
+
 const limits = { maxNodes: 5000, maxBytes: 2_000_000 };
 
 /** A page holding a section that holds a stack that holds a heading, all stored at version 1. */
@@ -55,7 +58,7 @@ const fromTheFuture = (): BuilderDocument => {
       root: document.nodes['root']!,
       sec0000001: { id: 'sec0000001', type: 'buildr/container', props: {}, slots: { default: [] } },
     },
-    components: { 'buildr/page': 1, 'buildr/container': 3 },
+    components: { 'buildr/page': 1, 'buildr/container': currentContainer + 1 },
   } as never;
 };
 
@@ -182,7 +185,7 @@ describe('layout writes against the default registry', () => {
       'buildr/heading',
       'buildr/page',
     ]);
-    expect(document.components['buildr/container']).toBe(2);
+    expect(document.components['buildr/container']).toBe(currentContainer);
     expect(document.components).not.toHaveProperty('buildr/section');
     expect(document.components).not.toHaveProperty('buildr/stack');
     expect(document.nodes['sec0000001']?.props?.['bleed']).toEqual(s(true));
@@ -223,7 +226,7 @@ describe('layout reads against the default registry', () => {
     expect(read.body.readOnly).toBeUndefined();
     expect(typesOf(read.body.document)).not.toContain('buildr/section');
     expect(typesOf(read.body.document)).not.toContain('buildr/stack');
-    expect(read.body.document.components['buildr/container']).toBe(2);
+    expect(read.body.document.components['buildr/container']).toBe(currentContainer);
     expect(await stored(id)).toEqual(before);
     expect(await rawRows()).toEqual(rowsBefore);
     expect((before.layout as BuilderDocument).components).toHaveProperty('buildr/section');

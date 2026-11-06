@@ -94,8 +94,10 @@ test('a style set on mobile does not leak to desktop', async ({ scratch }) => {
   await heading.click();
   await page.getByRole('button', { name: 'Mobile' }).click();
   await page.getByRole('tab', { name: 'Style' }).click();
-  // A modified section opens itself; only expand it when it is still collapsed.
-  const typography = page.getByRole('button', { name: 'Typography', exact: true });
+  // The section header's name also carries its override chip and "changed" dot ("Typography 1
+  // value for: phone ..."), so match the title as a prefix. Only sections with a default of "open"
+  // (spacing, colours) start expanded: expand this one when it is still collapsed.
+  const typography = page.getByRole('button', { name: /^Typography\b/ });
   if ((await typography.getAttribute('aria-expanded')) === 'false') await typography.click();
   await page
     .getByRole('group', { name: 'Text align' })
@@ -110,7 +112,10 @@ test('a style set on mobile does not leak to desktop', async ({ scratch }) => {
 test('a heading bound to data previews the data and publishes it', async ({ scratch }) => {
   const { page, canvas } = await scratch.open();
   await canvas.getByRole('heading', { name: HEADLINE }).click();
-  await page.getByRole('button', { name: 'Data', exact: true }).first().click();
+  // The value source is a popover opened by an icon button; its modes are icon-only buttons whose
+  // accessible names are "Fixed", "Data" and "Formula".
+  await page.getByRole('button', { name: 'Text: Value source', exact: true }).click();
+  await page.getByRole('button', { name: 'Data', exact: true }).click();
   await page.getByRole('button', { name: /^page.title/ }).click();
   await expect(page.getByText('Bound to data:')).toBeVisible();
   await expect(page.getByText('Preview: Scratch')).toBeVisible();

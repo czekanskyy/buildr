@@ -89,6 +89,13 @@ export const optionsSchema = z.object({
       notifyTo: [],
       rateLimit: { limit: 5, windowMs: 60_000 },
     }),
+  /**
+   * Whether author code (ADR-026: custom CSS, classes, attributes and Text HTML) may be saved:
+   * `true`, `false` (the default) or a function that decides per request, like `access.*`. It is
+   * never granted to API-key requests. Without it a save that adds or changes author code is
+   * rejected; author code already stored can still be saved unchanged.
+   */
+  authorCode: z.union([z.boolean(), fn<AccessFn>()]).default(false),
   access: z
     .object({
       edit: fn<AccessFn>().optional(),

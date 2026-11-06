@@ -19,7 +19,10 @@ export type ReadLayout =
  * read-only when a component was written by newer code than this build knows (ADR-014).
  * Validation is not repeated here: a stored document was validated when it was written.
  */
-export function readLayout(value: unknown, options: ProcessLayoutOptions): ReadLayout {
+export function readLayout(
+  value: unknown,
+  options: Pick<ProcessLayoutOptions, 'registry' | 'limits'>,
+): ReadLayout {
   if (value === undefined || value === null) {
     return { ok: true, doc: createEmptyDocument(), readOnly: false };
   }
