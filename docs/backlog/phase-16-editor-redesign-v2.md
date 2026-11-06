@@ -121,7 +121,7 @@ Follow-up verification: typecheck (17 tasks), lint (zero errors), boundaries (99
 
 ## PB-160 New palette blocks
 
-Size L (ships as PB-160a–d). Status: **Proposed (card only)**. Depends on PB-157 (ADR-028, `media/external.ts`, Video, Iframe, the Form enhancer) and PB-159 (the regrouped palette Układ / Treść / Multimedia / Formularze, which skips types the registry lacks; adding a type there is a one-line change).
+Size L (ships as PB-160a–d). Status: **Proposed (card only); the five open questions were answered on 2026-11-07, see Decisions**. Depends on PB-157 (ADR-028, `media/external.ts`, Video, Iframe, the Form enhancer) and PB-159 (the regrouped palette Układ / Treść / Multimedia / Formularze, which skips types the registry lacks; adding a type there is a one-line change).
 
 Missing blocks: Spacer, Anchor, Carousel, Gallery, Google Maps, Captcha. `packages/components/src/gallery.ts` is the fixture gallery, not an image gallery. `src/field/` already renders every field's label as a real `<label for>`, so a separate Etykieta block waits for a decision (question 4). The form "Przycisk" reuses `buildr/button`. Every new type starts at `version: 1`; no existing prop shape changes, so no migration. No change to `packages/core`.
 
@@ -158,10 +158,11 @@ Missing blocks: Spacer, Anchor, Carousel, Gallery, Google Maps, Captcha. `packag
 
 Manifest may exceed 72 KB with 8 more types (measure and trim descriptions first). A Loop inside the gallery breaks `ul > li` (use `role="list"` / `role="listitem"`). Enhancers must not cause hydration mismatches. Host CSP must allow Maps and Turnstile (`script-src`, `frame-src`; document it). Maps and Turnstile send the visitor IP to Google and Cloudflare (GDPR). A captcha requirement read from the request could be bypassed. `src/gallery.ts` next to `src/gallery/` invites wrong imports.
 
-### Open questions for the user
+### Decisions (user, 2026-11-07)
 
-1. Captcha provider: Turnstile (recommended), hCaptcha, reCAPTCHA v3, or self-hosted ALTCHA? Reject a captcha form when the server has no secret configured (fail closed)?
-2. Maps source: keyless `/maps?q=…&output=embed` (unofficial, may break) or the official Maps Embed API with a host-supplied key? Accept the wider sandbox for this provider in ADR-029?
-3. Should Maps and Captcha load only after a click or consent by default (GDPR)?
-4. Etykieta: drop it, replace it with a Fieldset (`<fieldset><legend>`) block, or a plain form-text block?
-5. Carousel autoplay: allow it in v1 (always with a pause button), or leave it out?
+1. **Captcha: Cloudflare Turnstile** behind the provider-neutral interface. A form with a captcha is rejected when the server has no secret configured (fail closed).
+2. **Maps: the official Maps Embed API with a host-supplied key** (`Platform.maps.apiKey`, public key restricted by HTTP referrer). Without a key the block renders only the "Otwórz w Mapach Google" link. The wider sandbox for this one provider is accepted in principle; ADR-029 states the exact sandbox string and the user still accepts the ADR before any code (PB-160c). This replaces the keyless `/maps?q=…&output=embed` template in the Design section.
+3. **Consent: Maps and Captcha load only after a click by default** (placeholder with a button). A host that runs its own consent banner may turn the click-to-load step off by an option.
+4. **Etykieta becomes a Fieldset block** (`buildr/fieldset`, `<fieldset><legend>`, category `forms`, `requireAncestor: buildr/form`) and replaces "Etykieta" in the Formularze section. The palette entry for the old label slot is removed from `BLOCK_SECTIONS` when the type lands. Add it to PB-160a or a separate small package (S, normal).
+5. **Carousel: autoplay is in v1**, always with a visible pause/play button, paused on hover and focus, off under `prefers-reduced-motion`, and off in the canvas. Default `autoplay: false`; `interval` has a floor of 3000 ms.
+
