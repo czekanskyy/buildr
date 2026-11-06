@@ -1,7 +1,6 @@
 export const insert = {
   'insert.target.gap': 'Wstaw do: {name} · pozycja {position}',
   'insert.target.clear': 'Wyczyść miejsce wstawiania',
-  'insert.recent.empty': 'Tutaj pojawią się ostatnio używane bloki.',
   'insert.title': 'Wstaw',
   'insert.search': 'Szukaj komponentów i szablonów',
   'insert.empty': 'Nic nie pasuje do wyszukiwania.',

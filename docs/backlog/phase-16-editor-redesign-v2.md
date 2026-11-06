@@ -13,6 +13,8 @@ The approved [template](../design/template/README.md) guides the editor presenta
 | PB-155 | Overlays and feedback | PB-151 | Done |
 | PB-156 | Documentation, tests and baseline | PB-152–PB-155 | Done |
 | PB-157 | Editor redesign fidelity: every screen, state and control, plus UI-only deferred features | PB-152–PB-156 | In review (reopened 2026-11-05; implemented 2026-11-06, pending user acceptance) |
+| PB-159 | Visual fixes, round 1: Blocks tab (no "Recently used", always-open sections, 2/1 column grid, regrouped palette), square canvas with smaller margins | PB-157 | In progress |
+| PB-160 | New palette blocks: Spacer, Anchor, Carousel, Gallery, Google Maps, Captcha | PB-159 | Proposed (card only) |
 
 ## Template mapping
 
@@ -116,3 +118,50 @@ The visual baseline was refreshed cleanly in `mcr.microsoft.com/playwright:v1.63
 PB-152 toolbar follow-up: at the final measured collapse level, the document title chip is hidden completely instead of shrinking to an unreadable sliver. Brand, panel toggles and actions remain visible; wider layouts retain the editable title and ellipsis. Geometry coverage checks both themes at 1024/1280/1440px.
 
 Follow-up verification: typecheck (17 tasks), lint (zero errors), boundaries (998 modules), editor tests (405) and playground E2E (43) pass. Only the two 1024px toolbar PNGs were rewritten in the pinned Docker image with Node 22.23.2 / pnpm 12.11.2; both were opened and reviewed. The subsequent full visual run without updates passes all 71 tests. The initial update command rewrote no files because the difference was below the configured tolerance; the targeted forced refresh wrote each affected baseline once.
+
+## PB-160 New palette blocks
+
+Size L (ships as PB-160a–d). Status: **Proposed (card only)**. Depends on PB-157 (ADR-028, `media/external.ts`, Video, Iframe, the Form enhancer) and PB-159 (the regrouped palette Układ / Treść / Multimedia / Formularze, which skips types the registry lacks; adding a type there is a one-line change).
+
+Missing blocks: Spacer, Anchor, Carousel, Gallery, Google Maps, Captcha. `packages/components/src/gallery.ts` is the fixture gallery, not an image gallery. `src/field/` already renders every field's label as a real `<label for>`, so a separate Etykieta block waits for a decision (question 4). The form "Przycisk" reuses `buildr/button`. Every new type starts at `version: 1`; no existing prop shape changes, so no migration. No change to `packages/core`.
+
+### Design
+
+- **Spacer** `buildr/spacer`: category `layout`, leaf. `size` (xs…2xl, default `md`, theme space tokens), `axis` vertical/horizontal. Renders `<div aria-hidden="true">`; style groups `size` and `visibility`. Canvas shows a hatched band with a minimum hit area.
+- **Anchor** `buildr/anchor`: category `layout`, leaf. `name` matching `^[a-z][a-z0-9-]{0,63}$`, not bindable or localizable (`bc-` prefix reserved). Renders an empty `<span id>` with `scroll-margin-top`. Invalid name renders nothing on the site and a `#name` pill in the canvas. Duplicate ids: first wins (documented); a validation rule and a Link-control picker are follow-ups.
+- **Carousel** `buildr/carousel` + `buildr/carousel-slide` (as accordion and accordion-item): category `media`. Props `ariaLabel`, `showArrows`, `showDots`, `loop`, `autoplay`, `interval`, `slidesPerView`. SSR view is a scroll-snap track (works without JS); a `*.client.tsx` enhancer, as `form/enhancer.client.tsx`, adds prev/next, dots, arrow keys, `inert` on off-screen slides, autoplay with a visible pause button (off in the canvas and under reduced motion). WAI-ARIA APG carousel markup.
+- **Gallery** `buildr/gallery` + `buildr/gallery-item`: category `media`. Items are child nodes (core resolves only top-level `media` props), so a Loop can bind a CMS gallery. Props `ariaLabel`, `columns` 2–6, `aspectRatio`, `lightbox`; item `image`, `alt`, `caption`. Item is a `<figure>` with a link to the full image (opens without JS); the enhancer opens a native `<dialog>` lightbox (focus in and back, Esc, arrows, counter). No new dependency.
+- **Google Maps** `buildr/map`: category `media`, leaf. Props `query`, `zoom`, `mapType`, `title`, `aspectRatio`. The author never supplies a URL: the renderer builds `src` from a fixed provider template with every value `encodeURIComponent`ed; host must allow `www.google.com` in `iframeHosts`. Always renders an "Otwórz w Mapach Google" link. Needs a wider sandbox for this one provider (`allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox`) behind a host flag that is off by default. The canvas never loads Google.
+- **Captcha** `buildr/captcha`: category `forms`, leaf, `requireAncestor: buildr/form`, at most one per form. Proposed provider Cloudflare Turnstile behind a provider-neutral interface, no npm dependency. Public key via a new optional `Platform.captcha {provider, siteKey}`; the secret lives only in host env and the payload plugin option `forms.captcha.secretKey`, never in the document, manifest, platform or editor. The payload forms endpoint decides whether a captcha is required from the published form subtree (never from the request), verifies the token through an injected verifier (5 s timeout, hostname check), strips it before `validateSubmission`, and fails closed. `payload/adapter` does not change.
+- **ADR-029 "Provider embeds and form challenges"** (Proposed): required for Maps and Captcha, because ADR-028 fixes the iframe sandbox at `allow-scripts` and no ADR covers third-party scripts on public pages or a server-side secret. Also refresh the index in `docs/ai/architecture-decisions.md`, which stops at ADR-025.
+
+### Split (one PR each, in this order)
+
+| Part | Work | Size / risk | Notes |
+|---|---|---|---|
+| PB-160a | Spacer + Anchor | S / normal | |
+| PB-160b | Carousel + Gallery | L / normal | Two writers on disjoint directories; one integrator owns registry, index, fixtures, `components.md`, editor labels and icons. Sol and `reviewer` cross-check |
+| PB-160c | ADR-029, then Map | M / critical | ADR via planner, `security-reviewer` and Astra; accepted by the user before any code |
+| PB-160d | Captcha | L / critical | Single writer (published API across react, next and payload); depends on 160c and the provider decision |
+
+### Files
+
+`packages/components/src/{spacer,anchor,carousel,carousel-slide,gallery,gallery-item,map,captcha}/`, `registry.ts`, `index.ts`, `gallery.ts` (fixtures), `messages/`; `packages/editor/src/{messages/pl/componentLabels.ts,ui/icon.tsx}` (after PB-159); 160d only: `packages/react/src/define/types.ts`, `packages/next/src/platform.tsx`, `packages/payload/src/plugin/{endpoints/forms.ts,forms/captcha.ts,options}`; `apps/playground`, `apps/example-next-payload`; docs (`components.md`, `security.md`, `payload.md`, `nextjs.md`, ADR-029).
+
+### Tests and acceptance
+
+- Full component Definition of Done per type: SSR snapshot, root spread, prop validation, bindings, vitest-axe, `scaffold.test.tsx` and `conventions.test-kit.ts`, fixtures at 3 breakpoints, Docker visual baselines. Keyboard tests for carousel and lightbox (focus return). Map: exact `src` per input, encoding, sandbox string, link fallback, disallowed host renders nothing. Captcha: no script in canvas or SSR; payload cases for valid, invalid, missing, reused token, timeout, no config, hostname mismatch, a form without captcha unchanged, token never stored.
+- Without JS: the carousel scrolls, gallery links open images, the map shows its link, a captcha form fails closed. Nothing third-party loads in the canvas or without host opt-in. No core change, no migration.
+- Changesets: components minor, editor patch; for 160d react, next and payload minor. Test, typecheck, lint, `check:boundaries`, e2e and visual pass.
+
+### Risks
+
+Manifest may exceed 72 KB with 8 more types (measure and trim descriptions first). A Loop inside the gallery breaks `ul > li` (use `role="list"` / `role="listitem"`). Enhancers must not cause hydration mismatches. Host CSP must allow Maps and Turnstile (`script-src`, `frame-src`; document it). Maps and Turnstile send the visitor IP to Google and Cloudflare (GDPR). A captcha requirement read from the request could be bypassed. `src/gallery.ts` next to `src/gallery/` invites wrong imports.
+
+### Open questions for the user
+
+1. Captcha provider: Turnstile (recommended), hCaptcha, reCAPTCHA v3, or self-hosted ALTCHA? Reject a captcha form when the server has no secret configured (fail closed)?
+2. Maps source: keyless `/maps?q=…&output=embed` (unofficial, may break) or the official Maps Embed API with a host-supplied key? Accept the wider sandbox for this provider in ADR-029?
+3. Should Maps and Captcha load only after a click or consent by default (GDPR)?
+4. Etykieta: drop it, replace it with a Fieldset (`<fieldset><legend>`) block, or a plain form-text block?
+5. Carousel autoplay: allow it in v1 (always with a pause button), or leave it out?

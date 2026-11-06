@@ -11,7 +11,7 @@
   line-height: var(--bd-leading-xs);
 }
 .buildr-editor .bd-canvas-host .bd-canvas-stage {
-  border-radius: var(--bd-radius-xl);
+  border-radius: 0;
   box-shadow: var(--bd-elevation-1);
 }
 .buildr-editor .bd-canvas-host .bd-canvas-empty {

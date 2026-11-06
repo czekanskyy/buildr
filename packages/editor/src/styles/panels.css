@@ -202,23 +202,6 @@
   font-weight: var(--bd-weight-semibold);
   color: var(--bd-text-muted);
 }
-.buildr-editor .bd-insert-category-toggle {
-  display: flex;
-  align-items: center;
-  gap: var(--bd-space-1);
-  width: 100%;
-  min-height: var(--bd-control-sm);
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  text-align: start;
-  cursor: pointer;
-}
-.buildr-editor .bd-insert-category-toggle:hover {
-  color: var(--bd-text);
-}
 .buildr-editor .bd-insert-category-name {
   flex: 1;
   min-width: 0;
@@ -233,7 +216,7 @@
 }
 .buildr-editor .bd-insert-list {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--bd-space-2);
   margin: 0 0 var(--bd-space-3);
   padding: 0;
@@ -250,9 +233,6 @@
   gap: var(--bd-space-1);
 }
 @container (max-width: 220px) {
-  .buildr-editor .bd-insert[data-view="grid"] .bd-insert-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
   .buildr-editor .bd-insert[data-view="grid"] .bd-insert-list[data-kind="template"] {
     grid-template-columns: minmax(0, 1fr);
   }

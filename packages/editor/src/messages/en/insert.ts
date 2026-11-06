@@ -1,7 +1,6 @@
 export const insert = {
   'insert.target.gap': 'Insert into: {name} · position {position}',
   'insert.target.clear': 'Clear insertion target',
-  'insert.recent.empty': 'Blocks you use will appear here.',
   'insert.title': 'Insert',
   'insert.search': 'Search components and templates',
   'insert.empty': 'Nothing matches the search.',
