@@ -3,6 +3,7 @@ import type {
   CompileCache,
   DataContext,
   Diagnostic,
+  HostCapabilities,
   NodeId,
   PageNode,
   PreparedData,
@@ -58,6 +59,8 @@ export interface RenderTreeOptions {
   readonly messages?: Readonly<Record<string, string>>;
   /** Which document the layout came from (`layoutRef`): what a form's action needs to find its form. */
   readonly layoutRef?: string;
+  /** What the host permits; author code renders only with `authorCode: true` (ADR-026). */
+  readonly capabilities?: HostCapabilities;
   /** Reuses parsed expressions across renders (a cache the caller owns). */
   readonly cache?: CompileCache;
   /**

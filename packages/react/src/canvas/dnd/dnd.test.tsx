@@ -80,6 +80,23 @@ const controller = () =>
   });
 
 describe('buildHitPath', () => {
+  it('ignores overlay descendants even when an overlay is mounted inside a block', () => {
+    const host = document.createElement('div');
+    host.setAttribute('data-buildr-overlay', '');
+    const button = document.createElement('button');
+    button.setAttribute('data-bid', 'node000002');
+    host.append(button);
+    $('node000003').append(host);
+    document.elementsFromPoint = () => [button, host, $('node000003')];
+    expect(buildHitPath(document, { x: 300, y: 50 }, store).map((entry) => entry.nodeId)).toEqual([
+      'node000003',
+      'node000001',
+      'root',
+    ]);
+    document.elementsFromPoint = () => [button, host];
+    expect(buildHitPath(document, { x: 300, y: 50 }, store)).toEqual([]);
+  });
+
   it('lists the nodes under the point from the deepest to the root, with axis and child boxes', () => {
     const path = buildHitPath(document, { x: 300, y: 50 }, store);
     expect(path.map((e) => e.nodeId)).toEqual(['node000003', 'node000001', 'root']);

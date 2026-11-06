@@ -162,7 +162,7 @@ describe('overlay', () => {
     const box = layer?.querySelector('.box.selected') as HTMLElement;
     expect(box.style.left).toBe('10px');
     expect(box.style.top).toBe('100px');
-    expect(box.querySelector('.label')?.textContent).toBe('buildr/section');
+    expect(box.querySelector('.label')?.textContent).toBe('buildr/section \u00b7 div');
     expect(box.querySelector('.label')?.classList.contains('pop')).toBe(true);
     expect(layer?.querySelector('.box.hover.container')).toBeNull();
     expect(document.querySelector('[data-buildr-overlay] .box')).toBeNull();

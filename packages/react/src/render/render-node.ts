@@ -12,6 +12,7 @@ import {
 import { createElement, type ReactNode } from 'react';
 import type { BuilderComponentProps, ComponentDefinition, NodeRoot } from '../define/types.ts';
 import { loopSlots } from './loop.ts';
+import { markResolvedMedia } from './media-trust.ts';
 import { buildRootAttributes } from './root-attrs.ts';
 import type { RenderRun, RenderTreeOptions } from './types.ts';
 
@@ -27,8 +28,11 @@ function nodeDiagnostic(
 
 /**
  * A media prop resolves to a reference (`{ source, collection, id }`); the component should get
- * the asset itself. The asset comes from `PreparedData.media`; without it the reference's own
- * snapshot is the best there is, and without that the reference is left as it was.
+ * the asset itself. The asset comes from `PreparedData.media` and is marked as resolved, which is
+ * what lets a component treat its URL as a library URL (ADR-028). Without it the reference's own
+ * snapshot is the best there is, but the snapshot is author data and stays unmarked: the component
+ * then accepts it only as an HTTPS URL the host allows or a same-origin path. Without a snapshot the
+ * reference is left as it was.
  */
 function withMediaAssets(
   node: PageNode,
@@ -48,7 +52,7 @@ function withMediaAssets(
       : undefined;
     let resolved: JsonValue | undefined;
     if (asset !== undefined) {
-      resolved = JSON.parse(JSON.stringify(asset)) as JsonValue;
+      resolved = markResolvedMedia(JSON.parse(JSON.stringify(asset)) as object) as JsonValue;
     } else if (ref.data.snapshot !== undefined) {
       const { url, alt, width, height, mimeType } = ref.data.snapshot;
       resolved = {
@@ -174,10 +178,14 @@ export function renderNode(id: NodeId, run: RenderRun, bare = false): ReactNode 
     run.path.delete(id);
   }
 
-  const root = buildRootAttributes(node, {
-    ...options.instrument?.rootAttributes?.(node),
-    ...instanceAttributes(node, run),
-  });
+  const root = buildRootAttributes(
+    node,
+    {
+      ...options.instrument?.rootAttributes?.(node),
+      ...instanceAttributes(node, run),
+    },
+    run.env.capabilities,
+  );
   const componentProps: BuilderComponentProps = {
     props: props as BuilderComponentProps['props'],
     root,

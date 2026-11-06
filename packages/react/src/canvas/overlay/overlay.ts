@@ -1,15 +1,25 @@
 import type { NodeId } from '@next-buildr/core';
 import type { CanvasStore } from '../store.ts';
+import {
+  type Action,
+  drawAffordances,
+  type Insert,
+  measureGeometry,
+  toolbarScale,
+  type View,
+} from './affordances.ts';
 import { CHIP_GAP, CHIP_HEIGHT, chipText, placeChip } from './chip.ts';
 import { OVERLAY_STYLE, PAGE_STYLE } from './palette.ts';
 
 export interface OverlayOptions {
+  readonly onAction?: (payload: Action) => void;
+  readonly onInsert?: (payload: Insert) => void;
   readonly document: Document;
   readonly store: CanvasStore;
   /** Warns about a selected node with no `data-bid` element; on outside production by default. */
   readonly warn?: boolean;
   /** The pointer went down on the drag handle of the selected node. */
-  readonly onHandleDown?: (event: PointerEvent) => void;
+  readonly onHandleDown?: (event: PointerEvent) => unknown;
   /** The human label of a component type (`Hero`); the type itself is used when absent. */
   readonly labelOf?: (type: string) => string | undefined;
 }
@@ -19,6 +29,7 @@ export interface Overlay {
   readonly host: HTMLElement;
   /** Draws now instead of on the next frame. */
   refresh(): void;
+  setView(view: View): void;
   destroy(): void;
 }
 
@@ -49,10 +60,12 @@ function inProduction(): boolean {
 }
 
 /** Every element that renders `id`: one, or one per Loop repetition. */
-function elementsOf(doc: Document, id: NodeId): HTMLElement[] {
-  return [...doc.querySelectorAll<HTMLElement>('[data-bid]')].filter(
-    (el) => el.getAttribute('data-bid') === id,
-  );
+function elementsOf(
+  doc: Document,
+  id: NodeId,
+  elements = [...doc.querySelectorAll<HTMLElement>('[data-bid]')],
+): HTMLElement[] {
+  return elements.filter((el) => el.getAttribute('data-bid') === id);
 }
 
 /** Opens the `<details>` a node is inside, so selecting a node in a collapsed one shows it. */
@@ -76,14 +89,16 @@ export function computeBoxes(
   doc: Document,
   store: CanvasStore,
   labelOf?: (type: string) => string | undefined,
+  elements?: HTMLElement[],
+  rects?: Map<HTMLElement, DOMRect>,
 ): Box[] {
   const { selection, hover, doc: replica } = store.getState();
   const root = replica?.root;
   const boxes: Box[] = [];
   const add = (kind: Box['kind'], id: NodeId) => {
-    const elements = elementsOf(doc, id);
-    elements.forEach((el, index) => {
-      const rect = el.getBoundingClientRect();
+    const matches = elementsOf(doc, id, elements);
+    matches.forEach((el, index) => {
+      const rect = rects?.get(el) ?? el.getBoundingClientRect();
       if (rect.width === 0 && rect.height === 0) return;
       const node = store.getNode(id);
       const type = node?.type;
@@ -98,7 +113,9 @@ export function computeBoxes(
           ? { label: labelOf?.(type) ?? type }
           : {}),
         ...(kind === 'selected' && index === 0 && node?.name ? { name: node.name } : {}),
-        ...(kind === 'selected' && index === 0 && type !== undefined ? { tag: type } : {}),
+        ...(kind === 'selected' && index === 0 && type !== undefined
+          ? { tag: el.tagName.toLowerCase() }
+          : {}),
         ...(kind === 'hover' && Object.keys(node?.slots ?? {}).length > 0
           ? { container: true }
           : {}),
@@ -111,6 +128,28 @@ export function computeBoxes(
   if (hover !== null && !selection.includes(hover)) add('hover', hover);
   for (const id of selection) add('selected', id);
   return boxes;
+}
+
+/**
+ * A selected box whose edge sits closer to the viewport edge than its outline reaches (offset and
+ * width, `4 * k`) would have the outline clipped by the viewport; that edge is pulled in so the
+ * outline is drawn whole. An edge that is outside the viewport is the page's own and is left alone.
+ */
+export function keepOutlineVisible(
+  box: Box,
+  win: Pick<Window, 'innerWidth' | 'innerHeight'>,
+  k = 1,
+): Box {
+  const m = 4 * k;
+  const right = box.left + box.width;
+  const bottom = box.top + box.height;
+  const left = box.left >= 0 && box.left < m ? m : box.left;
+  const top = box.top >= 0 && box.top < m ? m : box.top;
+  const r = right <= win.innerWidth && right > win.innerWidth - m ? win.innerWidth - m : right;
+  const b =
+    bottom <= win.innerHeight && bottom > win.innerHeight - m ? win.innerHeight - m : bottom;
+  if (left === box.left && top === box.top && r === right && b === bottom) return box;
+  return { ...box, left, top, width: Math.max(0, r - left), height: Math.max(0, b - top) };
 }
 
 /** Length of the chip's pop-in animation (`bd-pop` in the palette), in ms. */
@@ -152,11 +191,44 @@ export function createOverlay(options: OverlayOptions): Overlay {
   let lastSelection: readonly NodeId[] = [];
   let popStart = Number.NEGATIVE_INFINITY;
   let destroyed = false;
+  let view: View = {};
+  let dragging = false;
+  let hotGap: string | null = null;
+  // A pointer that moves anywhere but over the overlay leaves the hot gap (it may have been rebuilt
+  // under the pointer, so `pointerleave` cannot be relied on).
+  const clearHot = (event: Event) => {
+    if (hotGap !== null && event.target !== host) {
+      hotGap = null;
+      schedule();
+    }
+  };
+  doc.addEventListener('pointermove', clearHot, true);
+  const endDrag = () => {
+    if (dragging) {
+      dragging = false;
+      schedule();
+    }
+  };
+  win.addEventListener('pointerup', endDrag);
+  win.addEventListener('pointercancel', endDrag);
+  win.addEventListener('blur', endDrag);
+  doc.addEventListener('visibilitychange', endDrag);
+  const handleDown = (event: PointerEvent) => {
+    dragging = options.onHandleDown?.(event) === true;
+    schedule();
+  };
+
+  // The editor's localized names win over the registry's own labels.
+  const labelOf = (type: string) =>
+    (view.typeLabels !== undefined && Object.hasOwn(view.typeLabels, type)
+      ? view.typeLabels[type]
+      : undefined) ?? options.labelOf?.(type);
 
   const draw = () => {
     frame = undefined;
     if (destroyed) return;
     const { selection } = store.getState();
+    const elements = [...doc.querySelectorAll<HTMLElement>('[data-bid]')];
 
     // The chip pops in when the selection changes, not on every redraw (a scroll redraws each frame).
     // A redraw during the 160ms pop rebuilds the chip, so the animation resumes where it was.
@@ -165,7 +237,7 @@ export function createOverlay(options: OverlayOptions): Overlay {
       popStart = now;
       lastSelection = selection;
       for (const id of selection) {
-        const first = elementsOf(doc, id)[0];
+        const first = elementsOf(doc, id, elements)[0];
         if (first !== undefined) openAncestorDetails(first);
       }
     }
@@ -175,7 +247,7 @@ export function createOverlay(options: OverlayOptions): Overlay {
     const wanted = new Set<Element>();
     const state = store.getState();
     for (const id of [...state.selection, ...(state.hover === null ? [] : [state.hover])]) {
-      for (const el of elementsOf(doc, id)) wanted.add(el);
+      for (const el of elementsOf(doc, id, elements)) wanted.add(el);
     }
     for (const el of observed) {
       if (!wanted.has(el)) {
@@ -192,7 +264,7 @@ export function createOverlay(options: OverlayOptions): Overlay {
 
     if (warn) {
       for (const id of selection) {
-        if (elementsOf(doc, id).length === 0) {
+        if (elementsOf(doc, id, elements).length === 0) {
           if (!warned.has(id)) {
             warned.add(id);
             console.warn(
@@ -203,13 +275,29 @@ export function createOverlay(options: OverlayOptions): Overlay {
       }
     }
 
-    const boxes = computeBoxes(doc, store, options.labelOf);
+    const alignOpen = shadow.querySelector('.align-menu')?.hasAttribute('hidden') === false;
+    const activeControl = shadow.activeElement?.getAttribute('data-focus-key');
+    const rects = new Map(elements.map((el) => [el, el.getBoundingClientRect()]));
+    const boxes = computeBoxes(doc, store, labelOf, elements, rects);
+    const geometry = measureGeometry(doc, elements, rects);
+    host.dataset['theme'] = view.theme ?? 'light';
+    // The host scales the frame by `scale`; the chrome is drawn at the inverse (`--k`) so the chip,
+    // the outlines and the toolbar keep a constant on-screen size.
+    const k = 1 / toolbarScale(view.scale);
+    host.style.setProperty('--k', String(k));
+    for (const el of elements) {
+      el.toggleAttribute(
+        'data-buildr-dimmed',
+        view.hidden?.includes(el.dataset['bid'] ?? '') ?? false,
+      );
+    }
     const pendingChips: {
       chip: HTMLElement;
       place: (w: number) => ReturnType<typeof placeChip>;
     }[] = [];
     layer.replaceChildren(
-      ...boxes.map((box) => {
+      ...boxes.map((raw) => {
+        const box = raw.kind === 'selected' ? keepOutlineVisible(raw, win, k) : raw;
         const el = doc.createElement('div');
         el.className = `box ${box.kind}${box.primary ? '' : ' secondary'}${
           box.container === true ? ' container' : ''
@@ -244,12 +332,13 @@ export function createOverlay(options: OverlayOptions): Overlay {
             chipWidth,
             viewportWidth: win.innerWidth,
             reservedRight: hasHandle ? CHIP_HEIGHT : 0,
+            unscale: k,
           });
         if (chip !== undefined) {
           // Measured once it is in the page (the box is only attached below, so measure on the layer).
           pendingChips.push({ chip, place });
         }
-        if (hasHandle && options.onHandleDown !== undefined) {
+        if (hasHandle && options.onHandleDown !== undefined && options.onAction === undefined) {
           const handle = doc.createElement('span');
           handle.className = box.top < CHIP_HEIGHT + CHIP_GAP ? 'handle inside' : 'handle';
           if (box.top < 0) handle.style.top = `${-box.top}px`;
@@ -268,6 +357,50 @@ export function createOverlay(options: OverlayOptions): Overlay {
         chip.style.top = `${placed.offsetY}px`;
       }
       chip.style.left = `${placed.offsetX}px`;
+    }
+    if (view.outlines) {
+      for (const block of elements) {
+        const rect = rects.get(block) as DOMRect;
+        const outline = doc.createElement('div');
+        outline.className = 'outline';
+        Object.assign(outline.style, {
+          left: `${rect.left}px`,
+          top: `${rect.top}px`,
+          width: `${rect.width}px`,
+          height: `${rect.height}px`,
+        });
+        layer.prepend(outline);
+      }
+    }
+    if (!dragging)
+      drawAffordances(
+        doc,
+        layer,
+        store,
+        view,
+        options.onAction,
+        options.onInsert,
+        handleDown,
+        geometry,
+        {
+          labelOf,
+          hotGap: {
+            key: hotGap,
+            set: (key) => {
+              hotGap = key;
+            },
+          },
+        },
+      );
+    if (alignOpen) {
+      layer.querySelector('.align-menu')?.removeAttribute('hidden');
+      layer.querySelector('.tool.align')?.setAttribute('aria-expanded', 'true');
+    }
+    if (activeControl) {
+      const control = [...layer.querySelectorAll<HTMLElement>('[data-focus-key]')].find(
+        (el) => el.getAttribute('data-focus-key') === activeControl,
+      );
+      control?.focus({ preventScroll: true });
     }
     const drop = store.getState().drop;
     if (drop !== null) {
@@ -302,6 +435,10 @@ export function createOverlay(options: OverlayOptions): Overlay {
 
   return {
     host,
+    setView: (next) => {
+      view = { ...view, ...next, labels: { ...view.labels, ...next.labels } };
+      schedule();
+    },
     refresh: () => {
       if (frame !== undefined) win.cancelAnimationFrame(frame);
       draw();
@@ -310,6 +447,13 @@ export function createOverlay(options: OverlayOptions): Overlay {
       destroyed = true;
       if (frame !== undefined) win.cancelAnimationFrame(frame);
       unsubscribe();
+      doc.removeEventListener('pointermove', clearHot, true);
+      win.removeEventListener('pointerup', endDrag);
+      win.removeEventListener('pointercancel', endDrag);
+      win.removeEventListener('blur', endDrag);
+      doc.removeEventListener('visibilitychange', endDrag);
+      for (const el of doc.querySelectorAll('[data-buildr-dimmed]'))
+        el.removeAttribute('data-buildr-dimmed');
       win.removeEventListener('scroll', schedule, { capture: true });
       win.removeEventListener('resize', schedule);
       observer?.disconnect();

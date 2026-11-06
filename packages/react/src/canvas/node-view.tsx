@@ -1,6 +1,13 @@
 'use client';
 
-import type { CompileCache, Diagnostic, NodeId, PageNode, PreparedData } from '@next-buildr/core';
+import type {
+  CompileCache,
+  Diagnostic,
+  HostCapabilities,
+  NodeId,
+  PageNode,
+  PreparedData,
+} from '@next-buildr/core';
 import {
   createContext,
   memo,
@@ -25,6 +32,7 @@ export interface CanvasEnv {
   readonly platform: Platform;
   readonly messages?: Readonly<Record<string, string>>;
   readonly cache?: CompileCache;
+  readonly capabilities?: HostCapabilities;
   readonly instrument: CanvasInstrumentation;
   onNodeError(id: NodeId, error: unknown): void;
 }
@@ -90,6 +98,7 @@ function Rendered({ node, resume }: { readonly node: PageNode; readonly resume: 
       diagnostics: collected,
       ...(env.messages !== undefined ? { messages: env.messages } : {}),
       ...(env.cache !== undefined ? { cache: env.cache } : {}),
+      ...(env.capabilities !== undefined ? { capabilities: env.capabilities } : {}),
     };
     return { tree: renderNodeAt(doc, node.id, resume, options), diagnostics: collected };
   }, [doc, node, resume, env]);

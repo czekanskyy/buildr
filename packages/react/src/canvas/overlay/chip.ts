@@ -27,6 +27,12 @@ export interface ChipInput {
   readonly viewportWidth: number;
   /** Width reserved on the right for the drag handle, 0 when there is none. */
   readonly reservedRight?: number;
+  /**
+   * The inverse of the scale the host applies to the frame (`1 / scale`, default 1). The chip is
+   * drawn at that factor, so every on-screen distance here is multiplied by it, and `chipWidth` is
+   * the chip's unscaled width.
+   */
+  readonly unscale?: number;
 }
 
 export interface ChipPlacement {
@@ -48,9 +54,10 @@ export interface ChipPlacement {
  */
 export function placeChip(input: ChipInput): ChipPlacement {
   const { boxLeft, boxTop, chipWidth, viewportWidth } = input;
-  const above = boxTop - CHIP_HEIGHT - CHIP_GAP >= 0;
-  const overflow = boxLeft + chipWidth + (input.reservedRight ?? 0) - viewportWidth;
-  const base = above ? CHIP_OUTSET_X : 0;
+  const k = input.unscale ?? 1;
+  const above = boxTop - (CHIP_HEIGHT + CHIP_GAP) * k >= 0;
+  const overflow = boxLeft + (chipWidth + (input.reservedRight ?? 0)) * k - viewportWidth;
+  const base = above ? CHIP_OUTSET_X * k : 0;
   const wanted = overflow > 0 ? -Math.min(overflow, Math.max(0, boxLeft)) : base;
   const offsetX = Math.max(wanted, -boxLeft) + 0;
   return {

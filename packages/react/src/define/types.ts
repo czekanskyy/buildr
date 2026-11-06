@@ -5,6 +5,7 @@ import type {
   ComponentMigrationStep,
   ComponentReplacement,
   DataContext,
+  HostCapabilities,
   JsonValue,
   LocaleCode,
   NodeId,
@@ -46,6 +47,12 @@ export interface NodeRoot {
   readonly id?: string;
   readonly 'data-bid'?: string;
   readonly 'data-bi'?: number;
+  /** Author attributes (ADR-026); present only when the host enables `authorCode`. */
+  readonly title?: string;
+  readonly role?: string;
+  readonly rel?: string;
+  readonly target?: string;
+  readonly [attribute: `aria-${string}` | `data-${string}`]: string | number | undefined;
 }
 
 /** The container of a node, as a component sees it (`BuilderComponentProps.node.parent`). */
@@ -62,6 +69,11 @@ export interface ComponentEnv {
   readonly locale: LocaleCode;
   /** Built-in strings ("opens in a new tab", form messages) for `locale`. Serializable. */
   readonly messages: Readonly<Record<string, string>>;
+  /**
+   * What the host permits (ADR-026). Absent, or anything but `authorCode: true`, means no author
+   * code is rendered. Serializable.
+   */
+  readonly capabilities?: HostCapabilities;
 }
 
 /** A prop schema: what the `p.*` builders produce. */

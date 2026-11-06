@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CHIP_GAP, CHIP_HEIGHT, chipText, placeChip } from './chip.ts';
+import { keepOutlineVisible } from './overlay.ts';
 import { OVERLAY_STYLE, OVERLAY_VAR_NAMES, OVERLAY_VARS, PAGE_STYLE } from './palette.ts';
 
 describe('placeChip', () => {
@@ -85,15 +86,15 @@ describe('overlay palette', () => {
       expect(OVERLAY_STYLE).toContain(`${name}:`);
       expect(PAGE_STYLE).toContain(`${name}:`);
     }
-    const body = OVERLAY_STYLE.split('\n').slice(2).join('\n');
+    const body = OVERLAY_STYLE.split('\n').slice(3).join('\n');
     expect(body.replace(/#fff\b/g, '')).not.toMatch(/#[0-9a-f]{3,6}\b|rgba?\(/i);
   });
 
   it('draws the template outlines and pops the chip in, except with reduced motion', () => {
     expect(OVERLAY_STYLE).toContain(
-      '.box.selected { outline: 2px solid var(--buildr-accent); outline-offset: 2px; }',
+      '.box.selected { outline: calc(2px * var(--k, 1)) solid var(--buildr-accent); outline-offset: calc(2px * var(--k, 1)); }',
     );
-    expect(OVERLAY_STYLE).toContain('.box.hover { outline: 1px solid');
+    expect(OVERLAY_STYLE).toContain('.box.hover { outline: calc(1px * var(--k, 1)) solid');
     expect(OVERLAY_STYLE).toContain('.box.hover.container');
     expect(OVERLAY_STYLE).toContain('animation: bd-pop');
     expect(OVERLAY_STYLE).toMatch(
@@ -104,5 +105,54 @@ describe('overlay palette', () => {
   it('never affects layout or pointer events of the page', () => {
     expect(OVERLAY_STYLE).toContain('.layer { position: fixed; inset: 0; pointer-events: none;');
     expect(PAGE_STYLE).not.toMatch(/:root|\bbody\b|\bhtml\b/);
+  });
+});
+
+describe('placeChip at a scaled frame', () => {
+  it('needs the chip height and gap in iframe pixels, and flips inside when they do not fit', () => {
+    const base = { boxLeft: 100, chipWidth: 80, viewportWidth: 800 };
+    // At 0.5 the 24px of chip and gap are 48 iframe pixels.
+    expect(placeChip({ ...base, boxTop: 48, unscale: 2 })).toMatchObject({
+      placement: 'above',
+      offsetX: -4,
+    });
+    expect(placeChip({ ...base, boxTop: 47, unscale: 2 })).toMatchObject({
+      placement: 'inside',
+      offsetX: 0,
+    });
+  });
+
+  it('pulls the chip left by its on-screen width, scaled', () => {
+    expect(
+      placeChip({ boxLeft: 700, chipWidth: 100, viewportWidth: 800, boxTop: 200, unscale: 2 })
+        .offsetX,
+    ).toBe(-100);
+  });
+});
+
+describe('keepOutlineVisible', () => {
+  const win = { innerWidth: 800, innerHeight: 600 };
+  const box = (left: number, top: number, width: number, height: number) =>
+    ({ kind: 'selected', primary: true, left, top, width, height }) as const;
+
+  it('pulls an edge that sits within the outline reach inside the viewport', () => {
+    expect(keepOutlineVisible(box(0, 0, 800, 300), win)).toMatchObject({
+      left: 4,
+      top: 4,
+      width: 792,
+      height: 296,
+    });
+    expect(keepOutlineVisible(box(10, 10, 790, 588), win)).toMatchObject({
+      width: 786,
+      height: 586,
+    });
+  });
+
+  it('scales the reach and leaves edges that are well inside or outside alone', () => {
+    expect(keepOutlineVisible(box(0, 50, 100, 100), win, 2)).toMatchObject({ left: 8, width: 92 });
+    const inside = box(20, 20, 100, 100);
+    expect(keepOutlineVisible(inside, win)).toBe(inside);
+    const above = box(20, -200, 100, 300);
+    expect(keepOutlineVisible(above, win)).toBe(above);
   });
 });

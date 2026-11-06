@@ -1,4 +1,11 @@
-import { type DataContext, type DataSource, defaultTheme, p, s } from '@next-buildr/core';
+import {
+  type DataContext,
+  type DataSource,
+  defaultTheme,
+  type HostCapabilities,
+  p,
+  s,
+} from '@next-buildr/core';
 import { createRegistry, defineComponent } from '@next-buildr/react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
@@ -56,8 +63,9 @@ const document = (text: string) => ({
   components: { 'buildr/page': 1, 'test/heading': 1 },
 });
 
-const config = (onError?: (e: unknown) => void) =>
+const config = (onError?: (e: unknown) => void, capabilities?: HostCapabilities) =>
   createBuildrConfig({
+    ...(capabilities ? { capabilities } : {}),
     registry: createRegistry({ components: [Page, Heading] }),
     theme: defaultTheme,
     platform: createNextPlatform(),
@@ -75,6 +83,35 @@ describe('BuildrPage', () => {
     expect(html).toContain('<h1');
     expect(html).toContain('>Hello</h1>');
     expect(html).toContain('<style');
+  });
+
+  it('forwards capabilities to the renderer and keeps them off by default', async () => {
+    const entry = {
+      document: {
+        ...document('x'),
+        nodes: {
+          ...document('x').nodes,
+          hhhhhhhhh1: {
+            id: 'hhhhhhhhh1',
+            type: 'test/heading',
+            props: { text: s('x') },
+            classes: ['hero'],
+          },
+        },
+      },
+      context,
+    };
+    const off = renderToStaticMarkup(<>{await BuildrPage({ config: config(), entry })}</>);
+    expect(off).not.toContain('hero');
+    expect(
+      createBuildrConfig({ ...config(), capabilities: { authorCode: true } }).capabilities,
+    ).toEqual({
+      authorCode: true,
+    });
+    const on = renderToStaticMarkup(
+      <>{await BuildrPage({ config: config(undefined, { authorCode: true }), entry })}</>,
+    );
+    expect(on).toContain('hero');
   });
 
   it('wraps top-level sections in boundaries without changing the output', async () => {

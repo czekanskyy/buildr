@@ -1,5 +1,6 @@
 export type { CanvasInstrumentation } from './instrument.ts';
 export { withNodeIds } from './instrument.ts';
+export { isResolvedMedia, markResolvedMedia } from './media-trust.ts';
 export { renderNodeAt, renderTree } from './render-tree.ts';
 export { buildRootAttributes, componentClassName } from './root-attrs.ts';
 export type { BuildrStylesProps } from './styles.tsx';

@@ -22,7 +22,7 @@ export interface DndController {
   /** `dnd:leave`: it left, or was dropped. */
   leave(): void;
   /** The pointer went down on the overlay's drag handle: move the selection inside the canvas. */
-  beginMove(event: PointerEvent): void;
+  beginMove(event: PointerEvent): boolean;
   destroy(): void;
 }
 
@@ -181,10 +181,10 @@ export function createDndController(options: DndOptions): DndController {
 
   const beginMove = (event: PointerEvent) => {
     const state = store.getState();
-    if (state.mode !== 'edit' || moving !== undefined || state.doc === undefined) return;
+    if (state.mode !== 'edit' || moving !== undefined || state.doc === undefined) return false;
     const root = state.doc.root;
     const ids = state.selection.filter((id) => id !== root && store.getNode(id) !== undefined);
-    if (ids.length === 0) return;
+    if (ids.length === 0) return false;
     event.preventDefault();
     const point = { x: event.clientX, y: event.clientY };
     moving = { ids, point, frame: undefined, outcome: { target: null, view: null } };
@@ -199,6 +199,7 @@ export function createDndController(options: DndOptions): DndController {
     doc.addEventListener('keydown', onKey, true);
     moveTo(point);
     moving.frame = win?.requestAnimationFrame(step);
+    return true;
   };
 
   return {

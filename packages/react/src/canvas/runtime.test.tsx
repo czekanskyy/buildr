@@ -44,17 +44,23 @@ const registry = createRegistry({ components: [Page, Section, Probe, Image] });
 
 /** The canvas's end of the channel, replaced by a double that records what is sent and lets a test speak as the editor. */
 class FakeTransport {
-  readonly sent: { type: string; payload: unknown }[] = [];
+  readonly sent: { type: string; payload: unknown; replyTo?: string }[] = [];
   closed = false;
-  private readonly handlers = new Map<string, Set<(payload: never) => void>>();
+  private readonly handlers = new Map<
+    string,
+    Set<(payload: never, message: { id: string }) => void>
+  >();
 
   send = (type: string, payload: unknown) => {
     this.sent.push({ type, payload });
     return true;
   };
   request = () => Promise.reject(new Error('not used'));
-  reply = () => false;
-  on = (type: string, handler: (payload: never) => void) => {
+  reply = (message: { id: string }, type: string, payload: unknown) => {
+    this.sent.push({ type, payload, replyTo: message.id });
+    return true;
+  };
+  on = (type: string, handler: (payload: never, message: { id: string }) => void) => {
     const set = this.handlers.get(type) ?? new Set();
     set.add(handler);
     this.handlers.set(type, set);
@@ -66,7 +72,8 @@ class FakeTransport {
   };
 
   emit(type: EditorMessage['type'], payload: unknown) {
-    for (const handler of [...(this.handlers.get(type) ?? [])]) handler(payload as never);
+    for (const handler of [...(this.handlers.get(type) ?? [])])
+      handler(payload as never, { id: 'ping-request' });
   }
   of(type: CanvasMessage['type']) {
     return this.sent
@@ -154,7 +161,7 @@ describe('CanvasRuntime: handshake', () => {
     vi.useFakeTimers();
     await mount({ helloIntervalMs: 100 });
     expect(transport.of('canvas:hello')).toEqual([
-      { protocol: 1, rendererVersion: '1.0.0', manifestHash: 'hash' },
+      { protocol: 2, rendererVersion: '1.0.0', manifestHash: 'hash' },
     ]);
     await act(async () => void vi.advanceTimersByTime(250));
     expect(transport.of('canvas:hello')).toHaveLength(3);
@@ -162,6 +169,20 @@ describe('CanvasRuntime: handshake', () => {
     await deliver('editor:init', init(three()));
     await act(async () => void vi.advanceTimersByTime(1000));
     expect(transport.of('canvas:hello')).toHaveLength(3);
+  });
+
+  it('says hello again when the editor goes silent after init, until its pings resume', async () => {
+    vi.useFakeTimers();
+    await mount({ helloIntervalMs: 100 });
+    await deliver('editor:init', init(three()));
+    expect(transport.of('canvas:hello')).toHaveLength(1);
+    await act(async () => void vi.advanceTimersByTime(11_000));
+    expect(transport.of('canvas:hello')).toHaveLength(1);
+    await act(async () => void vi.advanceTimersByTime(2_000));
+    expect(transport.of('canvas:hello')).toHaveLength(2);
+    await deliver('ping', {});
+    await act(async () => void vi.advanceTimersByTime(11_000));
+    expect(transport.of('canvas:hello')).toHaveLength(2);
   });
 
   it('stops repeating after the configured attempts', async () => {
@@ -600,5 +621,70 @@ describe('CanvasRuntime: data', () => {
     await deliver('editor:init', init(withImage('m1')));
     await deliver('locale:set', { locale: 'pl' });
     expect(calls).toHaveLength(2);
+  });
+});
+
+describe('CanvasRuntime: overlay protocol v2', () => {
+  it('answers ping and retains partial view settings across updates', async () => {
+    vi.useFakeTimers();
+    await mount();
+    await deliver('ping', {});
+    expect(transport.of('pong')).toEqual([{}]);
+    expect(transport.sent.find((m) => m.type === 'pong')?.replyTo).toBe('ping-request');
+    await deliver('view:set', { theme: 'dark', labels: { duplicate: 'Duplicate' } });
+    await deliver('view:set', { outlines: true });
+    await deliver('editor:init', init(three()));
+    expect(store.getState().doc).toBeDefined();
+    expect(store.getState().version).toBe(1);
+    await deliver('selection:set', { ids: ['node000002'] });
+    await act(async () => {
+      vi.advanceTimersByTime(32);
+    });
+    const shadow = document.querySelector('[data-buildr-overlay]')?.shadowRoot;
+    const duplicate = shadow?.querySelector<HTMLButtonElement>('[data-control="duplicate"]');
+    expect(duplicate?.getAttribute('aria-label')).toBe('Duplicate');
+    const before = store.getState().doc;
+    duplicate?.click();
+    expect(transport.of('intent:action')).toEqual([{ id: 'node000002', action: 'duplicate' }]);
+    expect(store.getState().doc).toBe(before);
+  });
+});
+
+describe('CanvasRuntime: author code and motion', () => {
+  const authored = (): BuilderDocument =>
+    doc([
+      node(1, 'buildr/text', { text: s('One') }, {
+        classes: ['hero'],
+        customCss: '& { color: red }',
+        styles: { base: { motion: { entrance: 'fade' } } },
+      } as never),
+    ]);
+  const headCss = () =>
+    [...document.head.querySelectorAll('style')].map((e) => e.textContent).join('\n');
+
+  it('compiles motion rules and keyframes into the canvas, behind prefers-reduced-motion', async () => {
+    await mount();
+    await deliver('editor:init', init(authored()));
+    const css = headCss();
+    expect(css).toContain('@keyframes');
+    expect(css).toContain('@media (prefers-reduced-motion: no-preference)');
+  });
+
+  it('shows no author classes or custom CSS unless the host passes authorCode: true', async () => {
+    await mount();
+    await deliver('editor:init', init(authored()));
+    expect(container.querySelector('[data-bid="node000001"]')?.classList.contains('hero')).toBe(
+      false,
+    );
+    expect(headCss()).not.toContain('buildr.custom');
+  });
+
+  it('shows them with the capability on', async () => {
+    await mount({ capabilities: { authorCode: true } });
+    await deliver('editor:init', init(authored()));
+    expect(container.querySelector('[data-bid="node000001"]')?.classList.contains('hero')).toBe(
+      true,
+    );
+    expect(headCss()).toContain('buildr.custom');
   });
 });
