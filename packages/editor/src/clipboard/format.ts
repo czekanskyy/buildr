@@ -15,7 +15,9 @@ export type ClipboardErrorCode =
   | 'unsupported'
   | 'invalid'
   | 'rejected'
-  | 'outdated';
+  | 'outdated'
+  /** A cut of a block locked for structure (a layer "Lock"). */
+  | 'locked';
 
 export interface ClipboardError {
   readonly code: ClipboardErrorCode;

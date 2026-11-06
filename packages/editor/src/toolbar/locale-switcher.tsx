@@ -25,7 +25,10 @@ export function LocaleSwitcher({ onChange }: LocaleSwitcherProps) {
         setLocale(next);
         onChange?.(next);
       }}
-      options={config.locales.map((code) => ({ value: code, label: config.intl[code] ?? code }))}
+      options={config.locales.map((code) => ({
+        value: code,
+        label: config.intl[code] ?? code,
+      }))}
     />
   );
 }

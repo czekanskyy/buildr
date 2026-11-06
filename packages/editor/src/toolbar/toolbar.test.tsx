@@ -231,6 +231,28 @@ describe('Toolbar', () => {
     expect(links[1]?.getAttribute('aria-label')).toBe('Version history');
   });
 
+  it('hides a version history link that is not a safe web address', async () => {
+    await mount({ historyUrl: 'javascript:alert(1)' });
+    expect(container.querySelector('[aria-label="Version history"]')).toBeNull();
+    await mount({ historyUrl: 'data:text/html,x' });
+    expect(container.querySelector('[aria-label="Version history"]')).toBeNull();
+    await mount({ historyUrl: 'https://cms.test/versions' });
+    expect(container.querySelector('a[aria-label="Version history"]')?.getAttribute('href')).toBe(
+      'https://cms.test/versions',
+    );
+  });
+
+  it('renders a function history as a button that calls it, and nothing without it', async () => {
+    const open = vi.fn();
+    await mount({ historyUrl: open });
+    const button = byName('Version history') as HTMLButtonElement;
+    expect(button.tagName).toBe('BUTTON');
+    await act(async () => button.click());
+    expect(open).toHaveBeenCalledTimes(1);
+    await mount();
+    expect(container.querySelector('[aria-label="Version history"]')).toBeNull();
+  });
+
   it('has no accessibility violations', async () => {
     await mount({
       cmsUrl: '/admin',
@@ -541,6 +563,18 @@ describe('Toolbar', () => {
     expect(text).not.toContain('Sample data');
     const shortcuts = menuButtons().find((b) => b.textContent?.includes('Keyboard shortcuts'));
     expect(shortcuts?.querySelector('kbd')?.textContent).toBe('Shift+?');
+  });
+
+  it('switches the block outlines from the more options, and Help falls back to the shortcuts', async () => {
+    await mount();
+    await openMore();
+    const outlines = () =>
+      menuButtons().find((b) => b.textContent?.includes('Show block outlines'));
+    expect(outlines()?.querySelector('kbd')?.textContent).toBe('Off');
+    await act(async () => (outlines() as HTMLButtonElement).click());
+    expect(outlines()?.getAttribute('aria-pressed')).toBe('true');
+    expect(outlines()?.querySelector('kbd')?.textContent).toBe('On');
+    expect(menuButtons().some((b) => b.textContent?.includes('Help'))).toBe(true);
   });
 
   it('puts the sample data in the page options and lists it in the more options', async () => {

@@ -1,9 +1,10 @@
 import type { Diagnostic } from '@next-buildr/core';
 import type { Command } from '@next-buildr/core/commands';
 import { useMemo, useState } from 'react';
-import { useManifest } from '../../app/manifest.tsx';
+import { useManifest, useSourceManifest } from '../../app/manifest.tsx';
 import { useStageSlots } from '../../app/stage-slots.tsx';
-import { useT } from '../../messages/index.tsx';
+import { localizeIssue } from '../../i18n/diagnostics.ts';
+import { useT, useUiLocale } from '../../messages/index.tsx';
 import { useEditor, useEditorState, useLocaleState } from '../../store/index.ts';
 import { Button, Icon, IconButton, type IconName } from '../../ui/index.ts';
 import {
@@ -23,6 +24,11 @@ export interface IssuesPanelProps {
 export function useIssues(canvasDiagnostics?: readonly Diagnostic[]): IssueItem[] {
   const doc = useEditorState((state) => state.doc);
   const validation = useEditorState((state) => state.validation);
+  const intl = useLocaleState((state) => state.config.intl);
+  const t = useT();
+  const uiLocale = useUiLocale();
+  const manifest = useManifest();
+  const source = useSourceManifest();
   return useMemo(
     () =>
       collectIssues({
@@ -30,8 +36,8 @@ export function useIssues(canvasDiagnostics?: readonly Diagnostic[]): IssueItem[
         validation: validation?.issues,
         a11y: validation?.a11y,
         canvas: canvasDiagnostics,
-      }),
-    [doc, validation, canvasDiagnostics],
+      }).map((item) => localizeIssue(item, { t, uiLocale, doc, manifest, source, intl })),
+    [doc, validation, canvasDiagnostics, t, uiLocale, manifest, source, intl],
   );
 }
 
@@ -118,7 +124,11 @@ export function IssuesPanel({ canvasDiagnostics }: IssuesPanelProps) {
           />
         ) : null}
       </header>
-      {!checked ? <p className="bd-field-hint">{t('issues.pending')}</p> : null}
+      {!checked ? (
+        <p className="bd-issues-pending" role="status">
+          {t('issues.pending')}
+        </p>
+      ) : null}
       {checked && items.length === 0 ? (
         <div className="bd-issue bd-issue-ok">
           <Icon name="circle-check" className="bd-issue-ok-icon" />
@@ -127,7 +137,7 @@ export function IssuesPanel({ canvasDiagnostics }: IssuesPanelProps) {
       ) : null}
       {rest.length > 0 ? <ul className="bd-issues-list">{rest.map(row)}</ul> : null}
       {groups.map((group) => (
-        <details key={group.locale} className="bd-issues-group" data-locale={group.locale} open>
+        <details key={group.locale} className="bd-issues-group" data-locale={group.locale}>
           <summary>
             {t('issues.missingTranslations')}: {config.intl[group.locale] ?? group.locale} (
             {group.items.length})

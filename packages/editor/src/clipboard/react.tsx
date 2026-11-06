@@ -3,7 +3,7 @@ import { createContext, type ReactNode, useContext, useMemo } from 'react';
 import { type MessageKey, useT } from '../messages/index.tsx';
 import type { ExternalActions } from '../shortcuts/index.ts';
 import { useEditor } from '../store/index.ts';
-import { TOAST_MS, usePortalContainer, useToast } from '../ui/index.ts';
+import { TOAST_MS, usePortalContainer, useStructureLockedNotice, useToast } from '../ui/index.ts';
 import {
   browserClipboard,
   type Clipboard,
@@ -27,6 +27,7 @@ const MESSAGES: Readonly<Record<ClipboardError['code'], MessageKey>> = {
   invalid: 'clipboard.error.invalid',
   rejected: 'clipboard.error.rejected',
   outdated: 'clipboard.outdated',
+  locked: 'toast.structureLocked',
 };
 
 export function useClipboard(): Clipboard {
@@ -67,6 +68,7 @@ export function ClipboardProvider(props: {
 }) {
   const store = useEditor();
   const t = useT();
+  const notifyLocked = useStructureLockedNotice();
   const toast = useToast();
   const portalContainer = usePortalContainer();
   const io = props.io ?? browserClipboard();
@@ -117,6 +119,11 @@ export function ClipboardProvider(props: {
         return;
       }
       const { error } = result;
+      if (error.code === 'locked') {
+        toast.dismiss('clipboard');
+        notifyLocked(store.getState().selectedIds);
+        return;
+      }
       toast.show({
         id: 'clipboard',
         variant:
@@ -128,7 +135,7 @@ export function ClipboardProvider(props: {
         duration: NOTICE_MS,
       });
     },
-    [toast, t],
+    [toast, t, notifyLocked, store],
   );
 
   return (

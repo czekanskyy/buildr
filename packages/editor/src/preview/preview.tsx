@@ -4,6 +4,26 @@ import { type DocumentAdapter, type DocumentRef, usePersistence } from '../persi
 import { Button } from '../ui/index.ts';
 import { preparePreview } from './prepare.ts';
 
+/**
+ * The preview frame's sandbox. `allow-same-origin` is kept only for a preview served from the
+ * editor's own origin (the playground's `/preview` reads the draft from `sessionStorage`, which a
+ * sandboxed, opaque origin cannot). A preview on another origin has its own storage and needs no
+ * access to the editor's, so the flag is left out; with both `allow-scripts` and
+ * `allow-same-origin` a same-origin page could otherwise remove its own sandbox.
+ */
+export function previewSandbox(url: string, base?: string): string {
+  const flags = ['allow-scripts', 'allow-forms', 'allow-popups'];
+  try {
+    const here = base ?? globalThis.location?.href;
+    if (here !== undefined && new URL(url, here).origin === new URL(here).origin) {
+      flags.splice(1, 0, 'allow-same-origin');
+    }
+  } catch {
+    // An unparseable URL is treated as foreign: no same-origin access.
+  }
+  return flags.join(' ');
+}
+
 export interface PreviewOverlayProps {
   readonly url: string;
   readonly onExit: () => void;
@@ -31,7 +51,7 @@ export function PreviewOverlay({ url, onExit }: PreviewOverlayProps) {
         className="bd-preview-frame"
         title={t('preview.frame')}
         src={url}
-        sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+        sandbox={previewSandbox(url)}
         referrerPolicy="no-referrer"
       />
     </div>

@@ -1,7 +1,8 @@
 import { resolveTokenRef, type Theme } from '@next-buildr/core';
 import { type CSSProperties, type KeyboardEvent, type ReactNode, useRef, useState } from 'react';
 import { interpolate, useT } from '../../../messages/index.tsx';
-import { ColorInput, IconButton, Input } from '../../../ui/index.ts';
+import { IconButton, Input } from '../../../ui/index.ts';
+import { StyleColorInput as ColorInput } from './color-input.tsx';
 
 // --- radio keyboard navigation ---------------------------------------------------------------------
 
@@ -157,14 +158,22 @@ export function RangeSlider(props: {
   readonly label: string;
   readonly disabled: boolean;
   readonly unit?: string;
+  /** What the bubble and the spoken value show for a position; the value and unit by default. */
+  readonly format?: (value: number) => string;
+  /** The slider rests at a fallback while no value is set: shown dimmed. */
+  readonly unset?: boolean;
   readonly onChange: (text: string) => void;
 }) {
   const span = props.max - props.min;
   const clamped = Math.min(props.max, Math.max(props.min, props.value));
   const share = span > 0 ? ((clamped - props.min) / span) * 100 : 0;
-  const text = `${props.value}${props.unit ?? ''}`;
+  const text = props.format?.(props.value) ?? `${props.value}${props.unit ?? ''}`;
   return (
-    <div className="bd-slider" style={{ '--p': `${share}%` } as CSSProperties}>
+    <div
+      className="bd-slider"
+      data-unset={props.unset === true ? '' : undefined}
+      style={{ '--p': `${share}%` } as CSSProperties}
+    >
       <input
         type="range"
         aria-label={props.label}
@@ -184,6 +193,17 @@ export function RangeSlider(props: {
 }
 
 // --- colour field --------------------------------------------------------------------------------
+
+/** The opacity (0-100) a painted colour carries: 100 for a plain colour, `undefined` for no colour. */
+function alphaOf(color: string | undefined): number | undefined {
+  const text = color?.trim();
+  if (text === undefined || text === '') return undefined;
+  if (/^#[0-9a-f]{8}$/i.test(text))
+    return Math.round((Number.parseInt(text.slice(7), 16) / 255) * 100);
+  if (/^#[0-9a-f]{4}$/i.test(text))
+    return Math.round((Number.parseInt(text.slice(4) + text.slice(4), 16) / 255) * 100);
+  return 100;
+}
 
 /**
  * The colour control: a swatch that opens the palette popover, the colour as text (a hex code or a
@@ -206,11 +226,20 @@ export function ColorField(props: {
   readonly onSwatch: (value: string) => void;
   readonly onBlur?: () => void;
   readonly trailing?: ReactNode;
+  /** The colour that applies while none is set (the theme's text colour): hinted, never stored. */
+  readonly fallback?: { readonly text: string; readonly color: string } | undefined;
 }) {
+  const t = useT();
+  const unset = props.text.trim() === '' && props.fallback !== undefined;
+  const alpha = alphaOf(unset ? props.fallback?.color : props.swatch);
   return (
-    <span className="bd-wcolor" data-invalid={props.invalid === true ? '' : undefined}>
+    <span
+      className="bd-wcolor"
+      data-invalid={props.invalid === true ? '' : undefined}
+      data-unset={unset ? '' : undefined}
+    >
       <ColorInput
-        color={props.swatch}
+        color={unset ? props.fallback?.color : props.swatch}
         palette={Object.entries(props.theme.tokens.color).map(([name, color]) => ({
           label: name,
           color,
@@ -224,6 +253,7 @@ export function ColorField(props: {
         {...(props.id !== undefined ? { id: props.id } : {})}
         className="bd-wcolor__hex"
         value={props.text}
+        placeholder={props.fallback?.text ?? t('styleField.color.unset')}
         disabled={props.disabled}
         aria-invalid={props.invalid === true}
         aria-describedby={props.describedBy}
@@ -233,6 +263,7 @@ export function ColorField(props: {
         onChange={(event) => props.onText(event.target.value)}
         {...(props.onBlur !== undefined ? { onBlur: props.onBlur } : {})}
       />
+      {alpha !== undefined ? <span className="bd-wcolor__alpha">{alpha}%</span> : null}
       {props.trailing}
     </span>
   );
@@ -551,7 +582,15 @@ export function ShadowPresets(props: {
               style={paint !== undefined ? { boxShadow: paint } : undefined}
               aria-hidden="true"
             />
-            {value === 'none' ? t('style.shadow.none') : value.slice('$shadow.'.length)}
+            {value === 'none'
+              ? t('style.shadow.none')
+              : value === '$shadow.sm'
+                ? t('styleField.shadow.soft')
+                : value === '$shadow.md'
+                  ? t('styleField.shadow.medium')
+                  : value === '$shadow.lg'
+                    ? t('styleField.shadow.strong')
+                    : value.slice('$shadow.'.length)}
           </button>
         );
       })}
@@ -570,6 +609,8 @@ export function ShadowEditor(props: {
   readonly disabled: boolean;
   readonly onPick: (value: string) => void;
   readonly onCustom?: ((value: string) => void) | undefined;
+  /** Draw the layer cards (default). The Style tab edits the geometry with sliders instead. */
+  readonly layers?: boolean;
 }) {
   const paint = paintOf(props.theme, props.value);
   return (
@@ -583,12 +624,14 @@ export function ShadowEditor(props: {
       <div className="bd-shprev" aria-hidden="true">
         <span style={paint !== undefined ? { boxShadow: paint } : undefined} />
       </div>
-      <ShadowLayers
-        theme={props.theme}
-        value={props.value}
-        disabled={props.disabled}
-        onChange={props.onCustom}
-      />
+      {props.layers === false ? null : (
+        <ShadowLayers
+          theme={props.theme}
+          value={props.value}
+          disabled={props.disabled}
+          onChange={props.onCustom}
+        />
+      )}
     </div>
   );
 }

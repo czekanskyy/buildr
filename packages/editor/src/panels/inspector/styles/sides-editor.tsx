@@ -77,7 +77,7 @@ function SideField(props: SideFieldProps) {
         ariaLabel={label}
         disabled={props.disabled}
         invalid={error !== ''}
-        placeholder="–"
+        placeholder="0"
         onValueChange={field.change}
         onFocus={props.onFocus}
         onBlur={field.blur}

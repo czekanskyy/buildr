@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import type { BreakpointConfig } from '../app/config.ts';
+import { useShellPanels } from '../app/shell-panels.tsx';
 import { usePersistenceState } from '../persistence/index.ts';
 import { useEditorState } from '../store/index.ts';
 import { PageOptionsDialog } from './page-options-dialog.tsx';
@@ -23,8 +24,8 @@ export interface ToolbarProps {
   readonly onBreakpointChange: (id: string) => void;
   /** The page in the CMS's admin (`adapter.cmsUrl`); the link is left out without it. */
   readonly cmsUrl?: string | undefined;
-  /** The version history in the CMS; the link is left out without it. */
-  readonly historyUrl?: string | undefined;
+  /** The version history: an address (a link) or a function (a button); the icon is left out without it. */
+  readonly historyUrl?: string | (() => void) | undefined;
   /** The help page; the Help row of the more menu is left out without it. */
   readonly helpUrl?: string | undefined;
   /** Opens the shortcuts dialog from the more menu; without it the shortcut provider's own opener is used. */
@@ -69,11 +70,15 @@ export function Toolbar(props: ToolbarProps) {
     props.onPageOptionsOpenChange?.(open);
   };
   const samples = useSamples(props.sample);
-  const cmsMoved = level >= COLLAPSE.cms;
+  // A phone-wide editor (the layout says so) collapses the row by design, not by measuring.
+  const panels = useShellPanels();
+  const compact = panels?.compact === true;
+  const tight = panels?.tight === true;
+  const cmsMoved = compact || level >= COLLAPSE.cms;
 
   return (
-    <div className="bd-toolbar-row" ref={row} data-level={level}>
-      <ToolbarLeft cmsUrl={cmsMoved ? undefined : props.cmsUrl} />
+    <div className="bd-toolbar-row" ref={row} data-level={level} data-compact={compact}>
+      <ToolbarLeft cmsUrl={cmsMoved ? undefined : props.cmsUrl} compact={compact} />
       <ToolbarCentre
         title={props.title}
         status={props.status}
@@ -89,9 +94,11 @@ export function Toolbar(props: ToolbarProps) {
         onPreview={props.onPreview}
         onPublish={props.onPublish}
         canPublish={props.canPublish}
-        compactSave={level >= COLLAPSE.saveText}
+        compactSave={compact || level >= COLLAPSE.saveText}
+        compact={compact}
+        tight={tight}
         historyUrl={props.historyUrl}
-        historyInMenu={level >= COLLAPSE.versions}
+        historyInMenu={compact || level >= COLLAPSE.versions}
         moreCmsUrl={cmsMoved ? props.cmsUrl : undefined}
         sample={
           samples.samples.length > 0

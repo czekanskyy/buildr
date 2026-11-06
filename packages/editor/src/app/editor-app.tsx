@@ -5,6 +5,7 @@ import type {
   LocaleConfig,
   RegistryMeta,
 } from '@next-buildr/core';
+import { authorCodeEnabled, createIndex, type NodeId } from '@next-buildr/core';
 import {
   type ReactNode,
   type RefObject,
@@ -24,7 +25,7 @@ import {
   useRegisterCanvas,
   useRegisterDragHost,
 } from '../dnd/index.ts';
-import { interpolate, MessagesProvider, useT } from '../messages/index.tsx';
+import { interpolate, MessagesProvider, usePlural, useT } from '../messages/index.tsx';
 import {
   Breadcrumbs,
   countIssues,
@@ -49,20 +50,31 @@ import {
   PersistenceProvider,
   useSaveAction,
 } from '../persistence/index.ts';
-import { usePreview } from '../preview/index.ts';
+import { isSafePreviewUrl, usePreview } from '../preview/index.ts';
 import { ShortcutProvider, useForwardedKeys } from '../shortcuts/index.ts';
+import { hasDescendants } from '../shortcuts/navigation.ts';
 import {
   createEditorStore,
   createLocaleStore,
   type EditorStore,
   EditorStoreProvider,
+  isNodeStructureLocked,
   LocaleProvider,
   type LocaleStore,
+  structureLockedIds,
   useEditor,
+  useEditorState,
   useLocaleState,
 } from '../store/index.ts';
+import { useViewState } from '../store/react.tsx';
 import { PublishDialog, ThemeProvider, Toolbar, useThemePreference } from '../toolbar/index.ts';
-import { PortalContainerProvider, ToastProvider, useToast } from '../ui/index.ts';
+import {
+  Icon,
+  PortalContainerProvider,
+  ToastProvider,
+  useStructureLockedNotice,
+  useToast,
+} from '../ui/index.ts';
 import { type BuilderEditorProps, type DocumentRef, resolveConfig } from './config.ts';
 import type { DeviceShortcutKey, LeftPanelTab, PaletteMode, RemoveRequest } from './contracts.ts';
 import { EditorLayout } from './layout.tsx';
@@ -120,6 +132,16 @@ export function EditorApp(props: EditorAppProps) {
   const blocked = narrow === true && phase.kind !== 'ready';
   const waiting = narrow === undefined && phase.kind !== 'ready';
   const refKey = `${documentRef.collection}:${documentRef.id}`;
+  // The host's `canUnlock` is read at the moment of an unlock, so a new function never reloads the editor.
+  const canUnlockRef = useRef(props.canUnlock);
+  canUnlockRef.current = props.canUnlock;
+  const hasCanUnlock = props.canUnlock !== undefined;
+  // ADR-026: only an explicit `true` permits author code; the prop wins over `config.capabilities`.
+  const authorCode = authorCodeEnabled(props.capabilities ?? config.capabilities);
+  const unlockFromHost = useCallback<NonNullable<BuilderEditorProps['canUnlock']>>(
+    (request) => canUnlockRef.current?.(request) === true,
+    [],
+  );
   // biome-ignore lint/correctness/useExhaustiveDependencies: `documentRef` is identified by `refKey`
   useEffect(() => {
     if (blocked || waiting) return;
@@ -134,6 +156,8 @@ export function EditorApp(props: EditorAppProps) {
         if (cancelled) return;
         const locales = props.locales ?? session.locales ?? SINGLE_LOCALE;
         const store = createEditorStore({
+          ...(hasCanUnlock ? { canUnlock: unlockFromHost } : {}),
+          ...(authorCode ? { capabilities: { authorCode: true } } : {}),
           doc: loaded.document,
           registry,
           readOnly: loaded.readOnly === true,
@@ -171,6 +195,9 @@ export function EditorApp(props: EditorAppProps) {
     waiting,
     config.autosave.debounceMs,
     config.autosave.maxWaitMs,
+    hasCanUnlock,
+    unlockFromHost,
+    authorCode,
   ]);
 
   return (
@@ -300,6 +327,30 @@ function useDataContext(adapter: EditorAppProps['adapter'], ref: DocumentRef) {
   return { schema, context };
 }
 
+/** A link an adapter may offer beyond the contract (`historyUrl`, `helpUrl`); `undefined` when it does not. */
+function optionalUrl(
+  adapter: object,
+  name: 'historyUrl' | 'helpUrl',
+  ref: DocumentRef,
+): string | undefined {
+  const read = (adapter as Partial<Record<typeof name, (ref: DocumentRef) => string | undefined>>)[
+    name
+  ];
+  return typeof read === 'function' ? read.call(adapter, ref) : undefined;
+}
+
+/** The page's public address as it shows in the publish dialog: the adapter's non-draft preview URL, when it is a safe one. */
+function publicAddress(adapter: EditorAppProps['adapter'], ref: DocumentRef): string | undefined {
+  try {
+    const url = adapter.previewUrl(ref, { draft: false });
+    if (!isSafePreviewUrl(url)) return undefined;
+    const parsed = new URL(url, window.location.href);
+    return `${parsed.host}${parsed.pathname}`;
+  } catch {
+    return undefined;
+  }
+}
+
 /** Hands the shell's panel controls (collapse, tab) to the shell component above the layout. */
 function PanelsTap({ into }: { readonly into: RefObject<ShellPanels | undefined> }) {
   into.current = useShellPanels();
@@ -357,6 +408,21 @@ function Shell(
   props: EditorAppProps & { readonly ready: Ready; readonly bridge: RefObject<Bridge> },
 ) {
   const t = useT();
+  const plural = usePlural();
+  const view = useViewState();
+  const [canvasMenu, setCanvasMenu] = useState<{ id: NodeId; x: number; y: number } | null>(null);
+  const [renameId, setRenameId] = useState<NodeId | null>(null);
+  const canvasMenuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!canvasMenu) return;
+    canvasMenuRef.current?.querySelector<HTMLButtonElement>('button')?.focus();
+    const dismiss = (event: PointerEvent) => {
+      if (event.target instanceof Node && !canvasMenuRef.current?.contains(event.target))
+        setCanvasMenu(null);
+    };
+    document.addEventListener('pointerdown', dismiss);
+    return () => document.removeEventListener('pointerdown', dismiss);
+  }, [canvasMenu]);
   const { adapter, documentRef, canvasUrl, manifest, ready, bridge } = props;
   const config = useMemo(() => resolveConfig(props.config), [props.config]);
   const locales = useLocaleState((state) => state.config);
@@ -385,6 +451,7 @@ function Shell(
   const data = useDataContext(adapter, documentRef);
   const preview = usePreview({ adapter, docRef: documentRef });
   const toast = useToast();
+  const notifyLocked = useStructureLockedNotice();
   const previewError = preview.error;
   const [title, setTitle] = useState(ready.loaded.title);
   const canRename = adapter.rename !== undefined;
@@ -404,7 +471,28 @@ function Shell(
     if (previewError === '') toast.dismiss('preview');
     else toast.show({ id: 'preview', variant: 'error', message: previewError });
   }, [previewError, toast]);
-  const issueCounts = countIssues(useIssues(diagnostics));
+  const publicUrl = useMemo(() => publicAddress(adapter, documentRef), [adapter, documentRef]);
+  const issueItems = useIssues(diagnostics);
+  const checked = useEditorState((state) => state.validation !== undefined);
+  // The store only schedules the checks after a change, so a freshly opened page would stay
+  // "unchecked" (an empty drawer and a green status bar) until something ran them by hand.
+  useEffect(() => {
+    if (!checked) store.validateNow();
+  }, [checked, store]);
+  const issueCounts = checked ? countIssues(issueItems) : undefined;
+
+  // Below the overlay breakpoint the inspector is a sheet: a block the author picks on the canvas
+  // opens it. Only a pick on the canvas does (the focus sits in its frame then); a selection that
+  // came from a panel, a shortcut or a command leaves the sheets as they are.
+  const selectedIds = useEditorState((state) => state.selectedIds);
+  useEffect(() => {
+    if (selectedIds.length === 0) return;
+    const panels = panelsRef.current;
+    if (panels === undefined || !panels.narrow || panels.open.right) return;
+    const frame = area.current?.querySelector('iframe');
+    if (frame !== null && frame !== undefined && document.activeElement === frame)
+      panels.toggle('right');
+  }, [selectedIds]);
 
   useRegisterDragHost(host as DragHost | null);
   useRegisterCanvas(() => {
@@ -448,7 +536,10 @@ function Shell(
     toast.show({
       id: 'remove.undo',
       variant: 'success',
-      message: interpolate(t('toast.deleted'), { name }),
+      message:
+        request.ids.length > 1
+          ? plural('toast.deletedCount', request.ids.length)
+          : interpolate(t('toast.deleted'), { name }),
       action: {
         label: t('toast.undo'),
         onSelect: () => {
@@ -461,6 +552,10 @@ function Shell(
   };
   const requestRemoveRef = useRef((_request: RemoveRequest) => {});
   requestRemoveRef.current = (request) => {
+    if (structureLockedIds(store.getState().doc, request.ids).length > 0) {
+      notifyLocked(request.ids);
+      return;
+    }
     if (request.hasDescendants) setRemoval(request);
     else removeNow(request);
   };
@@ -475,7 +570,6 @@ function Shell(
     setSearchFocus((count) => count + 1);
   };
   // Once the Blocks tab is mounted and the panel is open, put the caret in the search field.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: runs once per request
   useEffect(() => {
     if (searchFocus === 0) return;
     searchRef.current?.focus();
@@ -514,6 +608,8 @@ function Shell(
             breakpoint={breakpoint}
             onBreakpointChange={changeBreakpoint}
             cmsUrl={adapter.cmsUrl?.(documentRef)}
+            historyUrl={props.historyUrl ?? optionalUrl(adapter, 'historyUrl', documentRef)}
+            helpUrl={optionalUrl(adapter, 'helpUrl', documentRef)}
             onPreview={preview.preview}
             onPublish={() => setPublishOpen(true)}
             canPublish={ready.canPublish}
@@ -555,6 +651,66 @@ function Shell(
                 },
               }}
               callbacks={{
+                onLocked: notifyLocked,
+                onAction: (event) => {
+                  const { id, action } = event;
+                  const { doc } = store.getState();
+                  const index = createIndex(doc);
+                  const parentId = index.parentOf[id];
+                  if (action === 'selectParent') {
+                    if (parentId && parentId !== doc.root) store.select(parentId);
+                    else store.clearSelection();
+                  } else if (action === 'remove')
+                    requestRemove({ ids: [id], hasDescendants: hasDescendants(doc, [id]) });
+                  else if (action === 'duplicate')
+                    store.dispatch({ type: 'node.duplicate', payload: { ids: [id] } });
+                  else if (action === 'align')
+                    store.dispatch({
+                      type: 'node.setStyle',
+                      payload: {
+                        id,
+                        layer: {},
+                        group: 'typography',
+                        property: 'textAlign',
+                        value: event.value,
+                      },
+                    });
+                  else if (action === 'more') {
+                    const rect = area.current?.querySelector('iframe')?.getBoundingClientRect();
+                    const frame = area.current?.querySelector('iframe');
+                    const scale = rect && frame?.offsetWidth ? rect.width / frame.offsetWidth : 1;
+                    setCanvasMenu({
+                      id,
+                      x: (rect?.left ?? 0) + (event.point?.x ?? 0) * scale,
+                      y: (rect?.top ?? 0) + (event.point?.y ?? 0) * scale,
+                    });
+                  } else {
+                    const slot = index.slotOf[id];
+                    const position = index.indexOf[id];
+                    if (!parentId || !slot || position === undefined) return;
+                    const target = position + (action === 'moveUp' ? -1 : 1);
+                    const siblings = doc.nodes[parentId]?.slots?.[slot] ?? [];
+                    if (target >= 0 && target < siblings.length)
+                      store.dispatch({
+                        type: 'node.move',
+                        payload: {
+                          ids: [id],
+                          parentId,
+                          slot,
+                          index: action === 'moveUp' ? target : target + 1,
+                        },
+                      });
+                  }
+                },
+                onInsert: ({ target }) => {
+                  const children =
+                    store.getState().doc.nodes[target.parentId]?.slots?.[target.slot] ?? [];
+                  const previous = children[target.index - 1];
+                  store.select(previous ?? target.parentId);
+                  // After the selection: a selection change ends the previous target.
+                  view.setInsertionTarget(target);
+                  focusSearch();
+                },
                 onKeyDown: (event) => {
                   forward({ key: event.key, mods: event.mods });
                 },
@@ -593,14 +749,95 @@ function Shell(
         status={
           <>
             <PanelsTap into={panelsRef} />
+            <button
+              type="button"
+              className="bd-status-btn"
+              aria-pressed={view.outlines}
+              aria-label={t('statusBar.guides')}
+              title={t('statusBar.guides')}
+              onClick={view.toggleOutlines}
+            >
+              <Icon name="square-dashed" />
+            </button>
             <StatusInfo host={host} breakpoints={config.breakpoints} breakpoint={breakpoint} />
           </>
         }
       />
+      {canvasMenu ? (
+        <div
+          role="menu"
+          className="bd-menu bd-menu-in"
+          ref={canvasMenuRef}
+          data-state="open"
+          aria-label={t('layers.menu')}
+          style={{ position: 'fixed', left: canvasMenu.x, top: canvasMenu.y, zIndex: 1000 }}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') setCanvasMenu(null);
+          }}
+        >
+          <button
+            type="button"
+            role="menuitem"
+            className="bd-menu-item"
+            onClick={() => {
+              setRenameId(canvasMenu.id);
+              setCanvasMenu(null);
+            }}
+          >
+            {t('layers.menu.rename')}
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            className="bd-menu-item"
+            onClick={() => {
+              if (isNodeStructureLocked(store.getState().doc, canvasMenu.id))
+                notifyLocked([canvasMenu.id]);
+              else store.dispatch({ type: 'node.duplicate', payload: { ids: [canvasMenu.id] } });
+              setCanvasMenu(null);
+            }}
+          >
+            {t('layers.menu.duplicate')}
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            className="bd-menu-item"
+            onClick={() => {
+              requestRemove({
+                ids: [canvasMenu.id],
+                hasDescendants: hasDescendants(store.getState().doc, [canvasMenu.id]),
+              });
+              setCanvasMenu(null);
+            }}
+          >
+            {t('layers.menu.delete')}
+          </button>
+        </div>
+      ) : null}
+      {renameId ? (
+        <input
+          aria-label={t('layers.rename')}
+          defaultValue={store.getState().doc.nodes[renameId]?.name ?? ''}
+          ref={(input) => input?.focus()}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') setRenameId(null);
+            if (event.key === 'Enter') {
+              store.dispatch({
+                type: 'node.setAttr',
+                payload: { id: renameId, key: 'name', value: event.currentTarget.value || null },
+              });
+              setRenameId(null);
+            }
+          }}
+        />
+      ) : null}
       <PublishDialog
         open={publishOpen}
         onOpenChange={setPublishOpen}
         canvasDiagnostics={diagnostics}
+        pageName={title}
+        address={publicUrl}
       />
       <RemoveConfirm
         request={removal}

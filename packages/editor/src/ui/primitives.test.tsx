@@ -336,6 +336,27 @@ describe('UI primitives', () => {
     );
   });
 
+  it('NumberUnitInput: unitLabels change the shown unit text, not the stored value', async () => {
+    const onValueChange = vi.fn();
+    await show(
+      <NumberUnitInput
+        value="45deg"
+        onValueChange={onValueChange}
+        units={['deg', 'turn']}
+        unitLabels={{ deg: '°' }}
+        unitLabel="Unit"
+        ariaLabel="Angle"
+      />,
+    );
+    const options = [...container.querySelectorAll('select.bd-unit-select option')].map(
+      (option) => [(option as HTMLOptionElement).value, option.textContent],
+    );
+    expect(options).toEqual([
+      ['deg', '°'],
+      ['turn', 'turn'],
+    ]);
+  });
+
   it('hexOf and ColorInput: the native picker returns a hex colour', async () => {
     expect(hexOf('#abc')).toBe('#aabbcc');
     expect(hexOf('$color.primary')).toBeUndefined();

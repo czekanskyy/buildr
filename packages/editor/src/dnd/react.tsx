@@ -14,6 +14,7 @@ import {
 import { useStore } from 'zustand';
 import { useT } from '../messages/index.tsx';
 import { useEditor } from '../store/index.ts';
+import { useStructureLockedNotice } from '../ui/structure-locked.ts';
 import {
   type CanvasSurface,
   createDragEngine,
@@ -115,12 +116,16 @@ export interface DragProviderProps {
  */
 export function DragProvider({ children }: DragProviderProps) {
   const store = useEditor();
+  const notifyLocked = useStructureLockedNotice();
+  const lockedRef = useRef(notifyLocked);
+  lockedRef.current = notifyLocked;
   const value = useMemo<DragContextValue>(() => {
     const registry: Registry = { canvas: null, tree: null, host: null };
     const engine = createDragEngine({
       store,
       host: () => registry.host ?? undefined,
       surfaces: { canvas: () => registry.canvas?.(), tree: () => registry.tree?.() },
+      onLocked: (ids) => lockedRef.current(ids),
     });
     return { engine, registry };
   }, [store]);

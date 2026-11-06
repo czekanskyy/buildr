@@ -20,6 +20,7 @@ import { type Resizable, useResizable } from './use-resizable.ts';
 export interface IssueCounts {
   readonly error: number;
   readonly warning: number;
+  readonly info?: number;
 }
 
 export interface EditorLayoutProps {
@@ -108,6 +109,10 @@ const RIGHT = { initial: 320, min: 240, max: 520 } as const;
 export const NARROW_BELOW = 1100;
 /** The canvas never gets narrower than this while the panels sit beside it. */
 export const CANVAS_MIN = 480;
+/** At this editor width and below the toolbar and the status bar collapse to what a phone needs. */
+export const COMPACT_AT = 768;
+/** At this editor width and below the toolbar keeps only icons. */
+export const TIGHT_AT = 480;
 const SPLITTERS = 2;
 
 /** The editor's own width, watched with a `ResizeObserver`; 0 while unknown (jsdom). */
@@ -165,6 +170,8 @@ export function EditorLayout({
   const toolbarRef = useRef<HTMLDivElement>(null);
   const width = useEditorWidth(toolbarRef);
   const narrow = width > 0 && width < NARROW_BELOW;
+  const compact = width > 0 && width <= COMPACT_AT;
+  const tight = width > 0 && width <= TIGHT_AT;
 
   const toggle = useCallback(
     (side: PanelSide) =>
@@ -172,6 +179,13 @@ export function EditorLayout({
         left: side === 'left' && !current.left,
         right: side === 'right' && !current.right,
       })),
+    [],
+  );
+  const closeOverlay = useCallback(
+    () =>
+      setOverlay((current) =>
+        current.left || current.right ? { left: false, right: false } : current,
+      ),
     [],
   );
   const update = useCallback((change: (current: Collapsed) => Collapsed) => {
@@ -201,8 +215,11 @@ export function EditorLayout({
   const panels = useMemo<ShellPanels>(
     () => ({
       narrow,
+      compact,
+      tight,
       open: overlay,
       toggle,
+      closeOverlay,
       collapsed,
       toggleCollapsed,
       collapseAll,
@@ -210,7 +227,19 @@ export function EditorLayout({
       leftTab,
       setLeftTab,
     }),
-    [narrow, overlay, toggle, collapsed, toggleCollapsed, collapseAll, expandAll, leftTab],
+    [
+      narrow,
+      compact,
+      tight,
+      overlay,
+      toggle,
+      closeOverlay,
+      collapsed,
+      toggleCollapsed,
+      collapseAll,
+      expandAll,
+      leftTab,
+    ],
   );
   const slots = useMemo<StageSlots>(
     () => ({ stage, issuesOpen, setIssuesOpen }),
@@ -251,7 +280,7 @@ export function EditorLayout({
       panel.querySelector<HTMLElement>('.bd-rail button')?.focus();
     }
   }, [collapsed]);
-  const issueText = (count: number, kind: 'error' | 'warning') =>
+  const issueText = (count: number, kind: 'error' | 'warning' | 'info') =>
     plural(`issues.count.${kind}`, count);
 
   const closeOnEscape = (side: PanelSide) => (event: KeyboardEvent) => {
@@ -260,6 +289,51 @@ export function EditorLayout({
       setOverlay((current) => ({ ...current, [side]: false }));
     }
   };
+  const sheetOpen = narrow && (overlay.left || overlay.right);
+  const sheetSide: PanelSide | null = !narrow
+    ? null
+    : overlay.left
+      ? 'left'
+      : overlay.right
+        ? 'right'
+        : null;
+  // A sheet takes focus: it moves into it when it opens and returns to what opened it when it closes.
+  const opener = useRef<HTMLElement | null>(null);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs when the open sheet changes; the ids are stable
+  useEffect(() => {
+    if (sheetSide === null) {
+      opener.current?.focus();
+      opener.current = null;
+      return;
+    }
+    if (opener.current === null && document.activeElement instanceof HTMLElement) {
+      opener.current = document.activeElement;
+    }
+    const panel = document.getElementById(ids[sheetSide]);
+    const first = panel?.querySelector<HTMLElement>(
+      '.bd-sheet-close, button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])',
+    );
+    (first ?? panel)?.focus();
+  }, [sheetSide]);
+  // The sheet is a non-modal dialog on purpose: the toolbar stays live while it is open, because its
+  // Blocks / Structure / Inspector toggles swap one sheet for the other. So no `aria-modal` (it would
+  // claim the toolbar is unreachable) and the toolbar is not `inert`; the canvas, splitters and status
+  // bar are inert, and the scrim, the close button and Escape close the sheet.
+  const sheetProps = (side: PanelSide) => (sheetSide === side ? ({ role: 'dialog' } as const) : {});
+  // Escape closes a sheet wherever the focus is (the canvas frame aside), unless a menu or dialog
+  // above it already took the key.
+  useEffect(() => {
+    if (!sheetOpen) return;
+    const onKey = (event: globalThis.KeyboardEvent) => {
+      if (event.key === 'Escape' && !event.defaultPrevented) closeOverlay();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [sheetOpen, closeOverlay]);
+  // A sheet that no longer is one (the editor grew wide) must not stay open behind the layout.
+  useEffect(() => {
+    if (!narrow) closeOverlay();
+  }, [narrow, closeOverlay]);
 
   return (
     <ShellPanelsContext.Provider value={panels}>
@@ -268,6 +342,7 @@ export function EditorLayout({
           className="bd-toolbar"
           role="toolbar"
           aria-label={t('editor.toolbar')}
+          data-compact={compact}
           ref={toolbarRef}
         >
           {toolbar}
@@ -276,6 +351,7 @@ export function EditorLayout({
           className="bd-body"
           style={style}
           data-narrow={narrow}
+          data-compact={compact}
           data-dragging={leftSize.dragging || rightSize.dragging}
         >
           <Panel
@@ -283,10 +359,24 @@ export function EditorLayout({
             id={ids.left}
             aria-label={t('editor.leftPanel')}
             hidden={narrow && !overlay.left}
+            tabIndex={sheetSide === 'left' ? -1 : undefined}
+            {...sheetProps('left')}
             data-side="left"
             data-collapsed={rail.left}
             onKeyDown={closeOnEscape('left')}
           >
+            {narrow && (
+              <div className="bd-sheet-bar">
+                <span className="bd-sheet-title">{t('editor.leftPanel')}</span>
+                <IconButton
+                  size="sm"
+                  icon="x"
+                  label={t('ui.close')}
+                  className="bd-sheet-close"
+                  onClick={() => setOverlay((current) => ({ ...current, left: false }))}
+                />
+              </div>
+            )}
             <div className="bd-panel-content" hidden={rail.left} tabIndex={-1}>
               {left}
             </div>
@@ -317,9 +407,15 @@ export function EditorLayout({
             max={LEFT.max}
             label={t('editor.resize.left')}
             controls={ids.left}
-            inert={rail.left}
+            inert={rail.left || sheetOpen}
           />
-          <main className="bd-canvas" aria-label={t('editor.canvas')} tabIndex={-1} ref={setStage}>
+          <main
+            className="bd-canvas"
+            aria-label={t('editor.canvas')}
+            tabIndex={-1}
+            inert={sheetOpen}
+            ref={setStage}
+          >
             <div className="bd-stage-scroll">{center}</div>
             <section
               className="bd-issues"
@@ -337,17 +433,31 @@ export function EditorLayout({
             max={RIGHT.max}
             label={t('editor.resize.right')}
             controls={ids.right}
-            inert={rail.right}
+            inert={rail.right || sheetOpen}
           />
           <Panel
             as="aside"
             id={ids.right}
             aria-label={t('editor.inspector')}
             hidden={narrow && !overlay.right}
+            tabIndex={sheetSide === 'right' ? -1 : undefined}
+            {...sheetProps('right')}
             data-side="right"
             data-collapsed={rail.right}
             onKeyDown={closeOnEscape('right')}
           >
+            {narrow && (
+              <div className="bd-sheet-bar">
+                <span className="bd-sheet-title">{t('editor.inspector')}</span>
+                <IconButton
+                  size="sm"
+                  icon="x"
+                  label={t('ui.close')}
+                  className="bd-sheet-close"
+                  onClick={() => setOverlay((current) => ({ ...current, right: false }))}
+                />
+              </div>
+            )}
             <div className="bd-panel-content" hidden={rail.right} tabIndex={-1}>
               {right}
             </div>
@@ -363,8 +473,22 @@ export function EditorLayout({
               </div>
             )}
           </Panel>
+          {sheetOpen && (
+            <button
+              type="button"
+              className="bd-scrim"
+              aria-label={t('ui.close')}
+              tabIndex={-1}
+              onClick={closeOverlay}
+            />
+          )}
         </div>
-        <section className="bd-status" aria-label={t('statusBar.label')}>
+        <section
+          className="bd-status"
+          aria-label={t('statusBar.label')}
+          data-compact={compact}
+          inert={sheetOpen}
+        >
           <div className="bd-status-crumbs">{breadcrumbs}</div>
           <button
             type="button"
@@ -376,7 +500,7 @@ export function EditorLayout({
           >
             {issueCounts === undefined ? (
               t('editor.issues.show')
-            ) : issueCounts.error + issueCounts.warning === 0 ? (
+            ) : issueCounts.error + issueCounts.warning + (issueCounts.info ?? 0) === 0 ? (
               <>
                 <Icon name="circle-check" />
                 {t('statusBar.noIssues')}
@@ -393,6 +517,12 @@ export function EditorLayout({
                   <span className="bd-status-count" data-severity="warning">
                     <Icon name="triangle-alert" />
                     <span className="bd-tabular">{issueText(issueCounts.warning, 'warning')}</span>
+                  </span>
+                )}
+                {(issueCounts.info ?? 0) > 0 && (
+                  <span className="bd-status-count" data-severity="info">
+                    <Icon name="info" />
+                    <span className="bd-tabular">{issueText(issueCounts.info ?? 0, 'info')}</span>
                   </span>
                 )}
               </>

@@ -10,6 +10,7 @@ import {
 } from 'react';
 import type { RemoveRequest, ShortcutCallbacks } from '../app/contracts.ts';
 import { useEditor } from '../store/index.ts';
+import { useStructureLockedNotice } from '../ui/structure-locked.ts';
 import { bindEditorActions, type ExternalActions } from './actions.ts';
 import { ShortcutsDialog } from './help.tsx';
 import {
@@ -104,6 +105,7 @@ export function ShortcutProvider({
   children,
 }: ShortcutProviderProps) {
   const store = useEditor();
+  const notifyLocked = useStructureLockedNotice();
   const [helpOpen, setHelpOpen] = useState(false);
   const detected = useMemo(() => platform ?? detectPlatform(), [platform]);
   const registry = useMemo(
@@ -113,8 +115,8 @@ export function ShortcutProvider({
   // The handlers read the latest actions without rebinding on every render.
   const external = useRef<ExternalActions>({});
   external.current = actions ?? {};
-  const host = useRef({ callbacks, onRemove });
-  host.current = { callbacks, onRemove };
+  const host = useRef({ callbacks, onRemove, notifyLocked });
+  host.current = { callbacks, onRemove, notifyLocked };
   // Set while a key press aimed outside the editor is handled: the UI-only keys then stay out of it.
   const outside = useRef(false);
 
@@ -132,6 +134,7 @@ export function ShortcutProvider({
         callbacks: () => host.current.callbacks,
         onRemove: () => host.current.onRemove,
         uiAllowed: () => !outside.current,
+        onLocked: () => host.current.notifyLocked,
       },
     );
     const unbindHelp = registry.bind('help.shortcuts', () => {

@@ -10,6 +10,25 @@
   height: 100%;
   min-height: 0;
 }
+/* The filter field with expand-all and collapse-all beside it (the template's Structure panel). */
+.buildr-editor .bd-layers-tools {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--bd-space-1);
+  padding: var(--bd-space-3) var(--bd-space-3) var(--bd-space-2);
+}
+.buildr-editor .bd-layers-filter {
+  flex: 1;
+  min-width: 0;
+}
+.buildr-editor .bd-layers-empty {
+  margin: 0;
+  padding: var(--bd-space-3) var(--bd-space-4);
+  color: var(--bd-text-muted);
+  font-size: var(--bd-text-sm);
+  line-height: var(--bd-leading-sm);
+}
 .buildr-editor .bd-layers-scroll {
   flex: 1;
   min-height: 0;
@@ -828,6 +847,40 @@
 }
 .bd-media-preview img {
   object-fit: cover;
+}
+.bd-media-preview {
+  align-items: center;
+  min-width: 0;
+}
+.bd-media-badge {
+  flex: none;
+  padding: 0 var(--bd-space-2);
+  border-radius: var(--bd-radius-pill);
+  background: var(--bd-surface-2);
+  color: var(--bd-text-muted);
+  font-size: var(--bd-text-xs);
+  line-height: var(--bd-leading-sm);
+}
+.bd-external-entry {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-space-1);
+  min-width: 0;
+}
+.bd-external-row {
+  display: flex;
+  gap: var(--bd-space-2);
+  min-width: 0;
+}
+.bd-external-row > input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.bd-dialog .bd-external-url {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--bd-text-muted);
+  font-size: var(--bd-text-sm);
 }
 
 /* --- Style inspector and value editor controls (PB-128) ----------------------------------- */

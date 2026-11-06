@@ -193,6 +193,10 @@ describe('catalog', () => {
     expect(safeThumbnail('//evil.example.com/a.png')).toBeUndefined();
     expect(safeThumbnail('data:text/html,<script>')).toBeUndefined();
     expect(safeThumbnail(undefined)).toBeUndefined();
+    const wireframe = `data:image/svg+xml,${encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'><path fill='#d1d5db' d='M1 2h3v4h-3z'/></svg>")}`;
+    expect(safeThumbnail(wireframe)).toBe(wireframe);
+    expect(safeThumbnail('data:image/svg+xml,%3Csvg onload=alert(1)%3E')).toBeUndefined();
+    expect(safeThumbnail('data:image/svg+xml,%broken')).toBeUndefined();
   });
 });
 
@@ -200,9 +204,9 @@ describe('category headings', () => {
   const custom = createRegistryMeta({
     components: [
       meta('buildr/page', { capabilities: { root: true }, slots: { default: {} } }),
-      meta('buildr/button', { label: 'Button', category: 'ui' }),
-      meta('buildr/list', { label: 'List', category: 'cms' }),
-      meta('buildr/quote', { label: 'Quote', category: 'blog' }),
+      meta('buildr/alert', { label: 'Alert', category: 'ui' }),
+      meta('buildr/faq', { label: 'Faq', category: 'cms' }),
+      meta('buildr/post', { label: 'Post', category: 'blog' }),
     ],
     templates: [],
   });
@@ -212,15 +216,31 @@ describe('category headings', () => {
 
   it('names ui and cms in capitals and title-cases a custom category', async () => {
     await mount(false, 'en', custom, customManifest);
-    expect(headings()).toEqual(['UI', 'CMS', 'Blog']);
-    expect(container.querySelector('.bd-insert-category-name')?.textContent).toBe('UI');
+    expect(headings()).toEqual(['Recently used', 'UI', 'CMS', 'Blog']);
+    expect(container.querySelector('.bd-insert-category-name')?.textContent).toBe('Recently used');
+  });
+
+  it('puts the basic blocks in a Basic group at the top, and the defaults in Recently used', async () => {
+    await mount();
+    expect(headings()).toEqual(['Recently used', 'Basic', 'Layout']);
+    const basic = container.querySelector('[aria-label="Basic"]') as HTMLElement;
+    expect(basic.querySelector('.bd-insert-category-toggle')?.getAttribute('aria-expanded')).toBe(
+      'true',
+    );
+    expect([...basic.querySelectorAll('.bd-insert-label')].map((l) => l.textContent)).toEqual([
+      'Text',
+    ]);
+    const recent = container.querySelector('#bd-insert-recent') as HTMLElement;
+    expect([...recent.querySelectorAll('.bd-insert-label')].map((l) => l.textContent)).toEqual([
+      'Text',
+    ]);
   });
 
   it('uses the Polish catalog', async () => {
     await mount(false, 'pl', custom, customManifest);
-    expect(headings()).toEqual(['UI', 'CMS', 'Blog']);
+    expect(headings()).toEqual(['Ostatnio używane', 'UI', 'CMS', 'Blog']);
     await mount(false, 'pl');
-    expect(headings()).toEqual(['Układ', 'Treść']);
+    expect(headings()).toEqual(['Ostatnio używane', 'Podstawowe', 'Układ']);
   });
 });
 
@@ -231,12 +251,12 @@ describe('InsertPanel', () => {
     const groups = [...container.querySelectorAll('[role=group]')].map((g) =>
       g.getAttribute('aria-label'),
     );
-    expect(groups).toEqual(['Layout', 'Content']);
+    expect(groups).toEqual(['Recently used', 'Basic', 'Layout']);
     await switchMode('Patterns');
     expect(await axe(container)).toHaveNoViolations();
     expect(
       [...container.querySelectorAll('[role=group]')].map((g) => g.getAttribute('aria-label')),
-    ).toEqual(['Sections', 'My patterns']);
+    ).toEqual(['Pattern category']);
     expect(container.querySelector('img')?.getAttribute('src')).toBe('/thumbs/hero.png');
     expect(container.querySelectorAll('img')).toHaveLength(1);
   });
@@ -328,7 +348,7 @@ describe('InsertPanel', () => {
   it('is operable with the keyboard alone (real buttons in tab order)', async () => {
     await mount();
     const items = [...container.querySelectorAll('.bd-insert-item')] as HTMLButtonElement[];
-    expect(items.length).toBe(2);
+    expect(items.length).toBe(3);
     for (const item of items) {
       expect(item.tagName).toBe('BUTTON');
       expect(item.tabIndex).toBe(0);
@@ -346,22 +366,24 @@ describe('InsertPanel (PB-125)', () => {
       (b) => b.getAttribute('aria-label') === name,
     ) as HTMLElement;
 
-  it('collapses a category and reports it with aria-expanded and a count', async () => {
+  it('starts categories collapsed and toggles their accessible state and remembered choice', async () => {
     await mount();
     const toggle = [...container.querySelectorAll('.bd-insert-category-toggle')].find((b) =>
       b.textContent?.includes('Layout'),
     ) as HTMLElement;
-    expect(toggle.getAttribute('aria-expanded')).toBe('true');
-    expect(toggle.querySelector('.bd-insert-count')?.textContent).toBe('1');
-    await act(async () => toggle.click());
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
-    expect(JSON.parse(localStorage.getItem('buildr.editor.insert.collapsed') ?? '[]')).toEqual([
-      'components:layout',
-    ]);
+    expect(toggle.querySelector('.bd-insert-count')?.textContent).toBe('1');
     const list = container.querySelector(`#${toggle.getAttribute('aria-controls')}`) as HTMLElement;
     expect(list.hidden).toBe(true);
     await act(async () => toggle.click());
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
     expect(list.hidden).toBe(false);
+    expect(JSON.parse(localStorage.getItem('buildr.editor.insert.collapsed') ?? '[]')).toEqual([]);
+    await act(async () => toggle.click());
+    expect(list.hidden).toBe(true);
+    expect(JSON.parse(localStorage.getItem('buildr.editor.insert.collapsed') ?? '[]')).toContain(
+      'components:layout',
+    );
   });
 
   it('focuses the search on "/" only when no text field has focus', async () => {
@@ -410,7 +432,7 @@ describe('InsertPanel (PB-157)', () => {
     expect(container.querySelector('.bd-insert')?.getAttribute('data-mode')).toBe('patterns');
     expect(button('Hero')).toBeDefined();
     expect(button('Box')).toBeUndefined();
-    expect(container.querySelector('.bd-insert-shell')?.textContent).toBe('No patterns found');
+    expect(container.querySelector('.bd-insert-category-toggle')).toBeNull();
     expect(container.querySelector('input')?.getAttribute('aria-label')).toBe('Search patterns');
     await switchMode('Blocks');
     expect(button('Box')).toBeDefined();
@@ -447,7 +469,8 @@ describe('InsertPanel (PB-157)', () => {
 
   it('remembers inserted blocks, newest first, and lists them as a group', async () => {
     const store = await mount();
-    expect(groupNames()).not.toContain('Recently used');
+    expect(groupNames()[0]).toBe('Recently used');
+    expect(recentLabels()).toEqual(['Text']);
     await act(async () => store.select('boxNode001'));
     await click('Text');
     await click('Box');
@@ -459,7 +482,8 @@ describe('InsertPanel (PB-157)', () => {
   it('ignores corrupt or unknown stored recents', async () => {
     localStorage.setItem(RECENT, '{not json');
     await mount();
-    expect(groupNames()).not.toContain('Recently used');
+    expect(groupNames()[0]).toBe('Recently used');
+    expect(recentLabels()).toEqual(['Text']);
     act(() => root.unmount());
     root = createRoot(container);
     localStorage.setItem(RECENT, JSON.stringify(['buildr/text', 7, 'gone/type']));
@@ -468,12 +492,32 @@ describe('InsertPanel (PB-157)', () => {
   });
 
   it('restores the collapsed groups', async () => {
-    localStorage.setItem('buildr.editor.insert.collapsed', JSON.stringify(['components:content']));
+    localStorage.setItem('buildr.editor.insert.collapsed', JSON.stringify(['components:basic']));
     await mount();
     const toggle = [...container.querySelectorAll('.bd-insert-category-toggle')].find((b) =>
-      b.textContent?.includes('Content'),
+      b.textContent?.includes('Basic'),
     );
     expect(toggle?.getAttribute('aria-expanded')).toBe('false');
+  });
+});
+
+describe('pattern filters', () => {
+  it('filters pattern cards with manifest categories without accordions', async () => {
+    await mount(false, 'pl', registry, manifest, { mode: 'patterns' });
+    const chips = [
+      ...container.querySelectorAll('.bd-pattern-filters button'),
+    ] as HTMLButtonElement[];
+    expect(chips.map((chip) => chip.textContent)).toEqual(['Wszystkie', 'Sections', 'Moje wzorce']);
+    expect(chips[0]?.getAttribute('aria-pressed')).toBe('true');
+    expect(container.querySelectorAll('.bd-pattern-list .bd-insert-desc')).toHaveLength(2);
+    await act(async () => chips[2]?.click());
+    expect(chips[2]?.getAttribute('aria-pressed')).toBe('true');
+    expect(container.querySelector('.bd-pattern-list')).toBeNull();
+    expect(container.querySelector('.bd-insert-shell')?.textContent).toBe('Brak wzorców');
+    await act(async () => chips[1]?.click());
+    expect(container.querySelectorAll('.bd-pattern-list .bd-insert-item')).toHaveLength(2);
+    expect(container.querySelector('.bd-insert-category-toggle')).toBeNull();
+    expect(await axe(container)).toHaveNoViolations();
   });
 });
 
@@ -495,5 +539,88 @@ describe('versions', () => {
     await click('Box');
     expect(store.getState().doc.components['buildr/box']).toBe(2);
     expect(children(store, 'root')).toHaveLength(3);
+  });
+});
+
+describe('canvas insertion target', () => {
+  it('shows the Polish target, inserts at its index and clears it with undo/redo intact', async () => {
+    const store = await mount(false, 'pl');
+    await act(async () => {
+      store.select('boxNode002');
+      store.view
+        .getState()
+        .setInsertionTarget({ parentId: 'boxNode001', slot: 'default', index: 0 });
+    });
+    expect(container.querySelector('.bd-insert-target')?.textContent).toContain(
+      'Wstaw do: Box \u00b7 pozycja 1',
+    );
+    const before = store.getState().doc;
+    await click('Tekst');
+    const inserted = children(store, 'boxNode001')[0];
+    expect(children(store, 'boxNode001')).toEqual([inserted, 'textNodeA1']);
+    expect(children(store, 'boxNode002')).toEqual([]);
+    expect(store.view.getState().insertionTarget).toBeNull();
+    await act(async () => store.undo());
+    expect(store.getState().doc).toEqual(before);
+    await act(async () => store.redo());
+    expect(children(store, 'boxNode001')[0]).toBe(inserted);
+  });
+
+  it('uses the gap for patterns and recent blocks', async () => {
+    const store = await mount();
+    await act(async () => store.select('boxNode002'));
+    await click('Text');
+    await act(async () =>
+      store.view
+        .getState()
+        .setInsertionTarget({ parentId: 'boxNode001', slot: 'default', index: 0 }),
+    );
+    await click('Text');
+    expect(children(store, 'boxNode001')).toHaveLength(2);
+    expect(store.view.getState().insertionTarget).toBeNull();
+    await switchMode('Patterns');
+    await act(async () =>
+      store.view
+        .getState()
+        .setInsertionTarget({ parentId: 'boxNode001', slot: 'default', index: 1 }),
+    );
+    await click('Hero');
+    const id = children(store, 'boxNode001')[1];
+    expect(store.getState().doc.nodes[id as string]?.source?.template).toBe('site/hero');
+    expect(store.view.getState().insertionTarget).toBeNull();
+  });
+
+  it.each([
+    { parentId: 'missing', slot: 'default', index: 0 },
+    { parentId: 'boxNode001', slot: 'missing', index: 0 },
+    { parentId: 'boxNode001', slot: 'default', index: 99 },
+    { parentId: 'root', slot: 'default', index: 0 },
+  ])('falls back to selection for an invalid target %j', async (target) => {
+    const store = await mount();
+    await act(async () => {
+      store.select('boxNode002');
+      store.view.getState().setInsertionTarget(target);
+    });
+    await click('Text');
+    expect(children(store, 'boxNode002')).toHaveLength(1);
+    expect(children(store, 'boxNode001')).toEqual(['textNodeA1']);
+    expect(store.view.getState().insertionTarget).toBeNull();
+  });
+
+  it('clears the chip with Escape or its dismiss button', async () => {
+    const store = await mount();
+    const target = { parentId: 'boxNode001', slot: 'default', index: 0 };
+    await act(async () => store.view.getState().setInsertionTarget(target));
+    await act(async () =>
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })),
+    );
+    expect(store.view.getState().insertionTarget).toBeNull();
+    await act(async () => store.view.getState().setInsertionTarget(target));
+    await act(async () =>
+      (
+        container.querySelector('[aria-label="Clear insertion target"]') as HTMLButtonElement
+      ).click(),
+    );
+    expect(store.view.getState().insertionTarget).toBeNull();
   });
 });

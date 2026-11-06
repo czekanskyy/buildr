@@ -57,6 +57,7 @@ function helpGroups(registry: ShortcutRegistry): HelpGroup[] {
       title: 'shortcut.group.selection',
       rows: [
         { label: 'shortcut.selectBlock', groups: [['enter']] },
+        ...defined([row('shortcut.selectAll', 'selection.all')]),
         ...defined([row('shortcut.selectParent', 'selection.clear')]),
         { label: 'shortcut.nextBlock', groups: [['tab']] },
         { label: 'shortcut.prevBlock', groups: [['shift', 'tab']] },
@@ -69,6 +70,7 @@ function helpGroups(registry: ShortcutRegistry): HelpGroup[] {
         row('shortcut.duplicate', 'edit.duplicate'),
         row('shortcut.delete', 'edit.delete'),
         copyPaste,
+        row('shortcut.cut', 'edit.cut'),
         row('shortcut.moveUp', 'node.moveUp'),
         row('shortcut.moveDown', 'node.moveDown'),
       ]),
@@ -96,7 +98,7 @@ export interface ShortcutsDialogProps {
 export function ShortcutsDialog({ open, onOpenChange, registry, platform }: ShortcutsDialogProps) {
   const t = useT();
   return (
-    <Dialog open={open} onOpenChange={onOpenChange} title={t('shortcut.title')}>
+    <Dialog open={open} onOpenChange={onOpenChange} title={t('shortcut.title')} wide>
       <div className="bd-shortcut-help">
         {helpGroups(registry).map((group) => (
           <section key={group.id}>

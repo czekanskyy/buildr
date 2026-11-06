@@ -1,9 +1,12 @@
+import type { MessageKey } from '../../../messages/index.tsx';
 import type { IconName } from '../../../ui/index.ts';
 
 /** One segment: an icon (its name and tooltip are the keyword) or, without an icon, the keyword as text. */
 export interface Segment {
   readonly keyword: string;
   readonly icon?: IconName;
+  /** Message key of the visible name (tooltip and accessible name) when the keyword is English jargon. */
+  readonly labelKey?: MessageKey;
 }
 
 /**
@@ -13,10 +16,10 @@ export interface Segment {
  */
 export const SEGMENTED: Readonly<Record<string, readonly Segment[]>> = {
   'layout.display': [
-    { keyword: 'block' },
-    { keyword: 'flex' },
-    { keyword: 'grid' },
-    { keyword: 'none' },
+    { keyword: 'block', icon: 'rows-2', labelKey: 'style.display.block' },
+    { keyword: 'flex', icon: 'columns-3', labelKey: 'style.display.flex' },
+    { keyword: 'grid', icon: 'layout-grid', labelKey: 'style.display.grid' },
+    { keyword: 'none', icon: 'eye-off', labelKey: 'style.display.none' },
   ],
   'layout.direction': [
     { keyword: 'row', icon: 'arrow-right' },
@@ -58,6 +61,13 @@ export const SEGMENTED: Readonly<Record<string, readonly Segment[]>> = {
     { keyword: 'none', icon: 'ban' },
     { keyword: 'underline', icon: 'underline' },
     { keyword: 'line-through', icon: 'strikethrough' },
+  ],
+  // The arrow is where the block travels (up = it rises from below).
+  'motion.entranceDirection': [
+    { keyword: 'up', icon: 'arrow-up', labelKey: 'styleOption.motion.up' },
+    { keyword: 'down', icon: 'arrow-down', labelKey: 'styleOption.motion.down' },
+    { keyword: 'left', icon: 'arrow-left', labelKey: 'styleOption.motion.left' },
+    { keyword: 'right', icon: 'arrow-right', labelKey: 'styleOption.motion.right' },
   ],
 };
 

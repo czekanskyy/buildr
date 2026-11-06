@@ -5,7 +5,7 @@ import * as SelectPrimitive from '@radix-ui/react-select';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
 import * as TogglePrimitive from '@radix-ui/react-toggle';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
-import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, Ref } from 'react';
+import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, Ref, RefObject } from 'react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { useT } from '../messages/index.tsx';
 import { Icon, type IconName } from './icon.tsx';
@@ -330,6 +330,10 @@ interface DialogBaseProps {
   readonly tone?: 'default' | 'info' | 'warning' | 'danger';
   /** A text-style action at the start (left) of the footer, opposite the `footer` actions. */
   readonly footerStart?: ReactNode;
+  /** The element that takes the focus when the dialog opens (the primary action); the first focusable one otherwise. */
+  readonly initialFocus?: RefObject<HTMLElement | null>;
+  /** The wide panel (two columns of content), as the shortcuts dialog. */
+  readonly wide?: boolean;
 }
 
 /**
@@ -352,6 +356,8 @@ export function Dialog({
   tone = 'default',
   alert,
   footerStart,
+  initialFocus,
+  wide,
 }: DialogProps) {
   const t = useT();
   const portal = usePortalContainer();
@@ -364,10 +370,16 @@ export function Dialog({
         <DialogPrimitive.Overlay className="bd-dialog-overlay" />
         <DialogPrimitive.Content
           className="bd-dialog bd-dialog-in"
+          data-wide={wide === true ? '' : undefined}
           {...(alert === true ? { role: 'alertdialog' } : {})}
-          onOpenAutoFocus={() => {
+          onOpenAutoFocus={(event) => {
             const active = document.activeElement;
             opener.current = active instanceof HTMLElement ? active : null;
+            const target = initialFocus?.current;
+            if (target && !target.hasAttribute('disabled')) {
+              event.preventDefault();
+              target.focus();
+            }
           }}
           onCloseAutoFocus={(event) => {
             const target = opener.current;
@@ -607,6 +619,8 @@ export interface SegmentOption {
   readonly label: string;
   readonly icon?: IconName;
   readonly iconOnly?: boolean;
+  /** This segment cannot be chosen (the rest of the row can). */
+  readonly disabled?: boolean;
 }
 
 export interface SegmentedControlProps {
@@ -642,7 +656,7 @@ export function SegmentedControl({
             variant="ghost"
             className="bd-segment"
             aria-pressed={value === option.value}
-            disabled={disabled === true}
+            disabled={disabled === true || option.disabled === true}
             {...(option.iconOnly === true ? { 'aria-label': option.label } : {})}
             onClick={() => onValueChange(option.value)}
           >
@@ -695,6 +709,8 @@ export interface NumberUnitInputProps {
   readonly step?: number;
   /** The grammar takes a bare number as well as a length: the menu then also offers "no unit". */
   readonly bareNumber?: boolean;
+  /** Display text for units whose raw name reads badly (`deg` -> `°`); the stored value is unchanged. */
+  readonly unitLabels?: Readonly<Record<string, string>> | undefined;
   readonly disabled?: boolean;
   readonly invalid?: boolean;
   readonly describedBy?: string | undefined;
@@ -731,6 +747,7 @@ export function NumberUnitInput({
   unitLabel,
   step = 1,
   bareNumber,
+  unitLabels,
   disabled,
   invalid,
   describedBy,
@@ -809,7 +826,7 @@ export function NumberUnitInput({
         >
           {options.map((entry) => (
             <option key={entry} value={entry}>
-              {entry === '' ? NO_UNIT : entry}
+              {entry === '' ? NO_UNIT : (unitLabels?.[entry] ?? entry)}
             </option>
           ))}
         </select>

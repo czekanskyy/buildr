@@ -11,8 +11,14 @@ export type PanelSide = 'left' | 'right';
 export interface ShellPanels {
   /** The editor is narrower than the overlay breakpoint. */
   readonly narrow: boolean;
+  /** The editor is phone or small tablet wide (768px and less): the toolbar and the status bar collapse. */
+  readonly compact?: boolean;
+  /** The editor is phone wide (480px and less): the toolbar keeps only icons. */
+  readonly tight?: boolean;
   readonly open: Readonly<Record<PanelSide, boolean>>;
   toggle(side: PanelSide): void;
+  /** Closes the open overlay (`narrow` only). */
+  closeOverlay?(): void;
   /** Persisted collapse of each side panel (wide layout). */
   readonly collapsed?: Readonly<Record<PanelSide, boolean>>;
   toggleCollapsed?(side: PanelSide): void;

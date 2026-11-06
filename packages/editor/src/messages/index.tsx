@@ -54,15 +54,23 @@ export function createPluralTranslator(locale: string): TranslatePlural {
 
 const TranslateContext = createContext<Translate>(createTranslator('en'));
 const PluralContext = createContext<TranslatePlural>(createPluralTranslator('en'));
+const UiLocaleContext = createContext('en');
 
 export function MessagesProvider(props: { readonly locale: string; readonly children: ReactNode }) {
   const t = useMemo(() => createTranslator(props.locale), [props.locale]);
   const plural = useMemo(() => createPluralTranslator(props.locale), [props.locale]);
   return (
     <TranslateContext.Provider value={t}>
-      <PluralContext.Provider value={plural}>{props.children}</PluralContext.Provider>
+      <PluralContext.Provider value={plural}>
+        <UiLocaleContext.Provider value={props.locale}>{props.children}</UiLocaleContext.Provider>
+      </PluralContext.Provider>
     </TranslateContext.Provider>
   );
+}
+
+/** The language code the editor's interface was asked to use (`config.uiLocale`). */
+export function useUiLocale(): string {
+  return useContext(UiLocaleContext);
 }
 
 /** The plural translator of the editor's interface language. */

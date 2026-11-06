@@ -334,6 +334,33 @@ describe('createDragEngine', () => {
     ]);
   });
 
+  it('refuses to drop a block that is locked for structure, and says why', () => {
+    const base = fixture();
+    const doc: BuilderDocument = {
+      ...base,
+      nodes: {
+        ...base.nodes,
+        leafBBBBB1: { id: 'leafBBBBB1', type: 'buildr/leaf', lock: { structure: true } },
+      },
+    };
+    const store = newStore(doc);
+    const onLocked = vi.fn();
+    const engine = createDragEngine({
+      store,
+      host: () => undefined,
+      surfaces: { canvas: () => undefined, tree: () => undefined },
+      onLocked,
+    });
+    const before = store.getState().doc;
+    const result = engine.drop(
+      { kind: 'nodes', ids: ['leafBBBBB1'] },
+      { parentId: 'boxAAAAAA1', slot: 'default', index: 0 },
+    );
+    expect(result).toEqual({ ok: false, message: 'structureLocked' });
+    expect(onLocked).toHaveBeenCalledOnce();
+    expect(store.getState().doc).toBe(before);
+  });
+
   it('leaves the canvas when the pointer goes to the tree', () => {
     const { engine, host, flush } = setup();
     engine.press(leaf, 'Leaf', { x: 10, y: 10 });

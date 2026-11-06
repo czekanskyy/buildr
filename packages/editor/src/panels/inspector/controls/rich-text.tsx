@@ -333,21 +333,24 @@ export function RichTextControl({
           {linkError ? <p role="alert">{t('richText.linkUnsafe')}</p> : null}
         </form>
       ) : null}
-      {/* biome-ignore lint/a11y/useSemanticElements: a rich text field is a contenteditable region, not a textarea */}
-      <div
-        id={id}
-        ref={rootRef}
-        className="bd-rich-editor bd-input"
-        role="textbox"
-        aria-multiline="true"
-        aria-label={label}
-        aria-describedby={describedBy}
-        aria-disabled={disabled}
-        tabIndex={disabled ? -1 : 0}
-        contentEditable={!disabled}
-        suppressContentEditableWarning
-        spellCheck
-      />
+      {/* The editable sits in a plain block: Lexical warns when its parent is a flex container. */}
+      <div className="bd-rich-body">
+        {/* biome-ignore lint/a11y/useSemanticElements: a rich text field is a contenteditable region, not a textarea */}
+        <div
+          id={id}
+          ref={rootRef}
+          className="bd-rich-editor bd-input"
+          role="textbox"
+          aria-multiline="true"
+          aria-label={label}
+          aria-describedby={describedBy}
+          aria-disabled={disabled}
+          tabIndex={disabled ? -1 : 0}
+          contentEditable={!disabled}
+          suppressContentEditableWarning
+          spellCheck
+        />
+      </div>
     </div>
   );
 }

@@ -143,7 +143,12 @@ describe('box model', () => {
 
 describe('alignment pad', () => {
   it('names the chosen cell in a caption and selects with aria-checked', async () => {
-    const store = await mount({ background: { imagePosition: 'top left' } }, ['background']);
+    const store = await mount(
+      {
+        background: { imagePosition: 'top left', gradient: 'linear-gradient(180deg, #000, #fff)' },
+      },
+      ['background'],
+    );
     const pad = container.querySelector('.bd-alignment-pad') as HTMLElement;
     expect(pad.getAttribute('role')).toBe('radiogroup');
     expect(pad.querySelector('[aria-label="top left"]')?.getAttribute('aria-checked')).toBe('true');
@@ -163,7 +168,12 @@ const key = (element: Element, name: string) =>
 
 describe('radio keyboard navigation', () => {
   it('moves focus and selection over the 3x3 pad with a roving tab stop', async () => {
-    const store = await mount({ background: { imagePosition: 'top left' } }, ['background']);
+    const store = await mount(
+      {
+        background: { imagePosition: 'top left', gradient: 'linear-gradient(180deg, #000, #fff)' },
+      },
+      ['background'],
+    );
     const radios = () => [
       ...container.querySelectorAll<HTMLButtonElement>('.bd-alignment-pad [role="radio"]'),
     ];
@@ -208,10 +218,14 @@ describe('range slider', () => {
     const range = container.querySelector(
       '[data-path="effects.opacity"] .bd-slider input[type="range"]',
     ) as HTMLInputElement;
-    expect(container.querySelector('.bd-slider__bubble')?.textContent).toBe('0.5');
+    expect(
+      container.querySelector('[data-path="effects.opacity"] .bd-slider__bubble')?.textContent,
+    ).toBe('50%');
     await type(range, '0.8');
     expect(base(store)?.effects?.opacity).toBe(0.8);
-    expect(container.querySelector('.bd-slider__bubble')?.textContent).toBe('0.8');
+    expect(
+      container.querySelector('[data-path="effects.opacity"] .bd-slider__bubble')?.textContent,
+    ).toBe('80%');
   });
 });
 
@@ -244,15 +258,19 @@ describe('colour field', () => {
 });
 
 describe('shadow cards', () => {
-  it('shows one read-only card per layer of the chosen token and cannot add a layer', async () => {
+  it('shows the preset through sliders that start from its first layer and edit a custom shadow', async () => {
     const name = Object.keys(defaultTheme.tokens.shadow)[0] as string;
     const store = await mount({ effects: { shadow: `$shadow.${name}` } }, ['effects']);
-    const layers = String(defaultTheme.tokens.shadow[name]).split('),').length;
-    expect(container.querySelectorAll('.bd-wshadow__card').length).toBeGreaterThanOrEqual(1);
-    expect(container.querySelectorAll('.bd-wshadow__card').length).toBeLessThanOrEqual(layers + 4);
-    expect(container.querySelector('.bd-wshadow__add')).toBeNull();
-    expect(byLabel('Shadow layer 1: Blur').disabled).toBe(true);
-    expect(base(store)?.effects?.shadow).toBe(`$shadow.${name}`);
+    // The sliders replace the read-only layer cards.
+    expect(container.querySelectorAll('.bd-wshadow__card')).toHaveLength(0);
+    const x = container.querySelector('[data-path="effects.shadowX"] input:not([type="range"])');
+    expect(x).not.toBeNull();
+    expect(base(store)?.effects?.shadowX).toBeUndefined();
+    await type(x as HTMLInputElement, '3');
+    // One edit writes the whole custom shadow (X, Y, blur, spread, colour, inset) that overrides the token.
+    expect(base(store)?.effects?.shadowX).toBe('3px');
+    expect(base(store)?.effects?.shadowColor).toBeDefined();
+    expect(base(store)?.effects?.shadowInset).toBeDefined();
   });
 
   it('adds, edits and removes layers through onChange, as the grammar allows four', async () => {

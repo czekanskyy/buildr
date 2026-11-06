@@ -18,7 +18,7 @@
   color: var(--bd-text);
   font: inherit;
   font-size: var(--bd-text-sm);
-  font-weight: var(--bd-weight-semibold);
+  font-weight: var(--bd-weight-regular);
   text-align: left;
   cursor: pointer;
   transition: background var(--bd-duration-fast) var(--bd-ease-standard);

@@ -54,6 +54,43 @@ export function toMediaRef(asset: MediaAsset, collection: string): MediaRef {
   };
 }
 
+/** What a media prop stores for a file outside the library (ADR-028); the renderer validates it again on every render. */
+export interface ExternalMedia {
+  readonly external: true;
+  readonly url: string;
+  readonly mimeType?: string | undefined;
+}
+
+export const externalMediaSchema: z.ZodType<ExternalMedia> = z.object({
+  external: z.literal(true),
+  url: z.string().min(1),
+  mimeType: z.string().optional(),
+});
+
+/** The value of a media prop, when it is an external URL; anything else is `undefined`. */
+export function parseExternalMedia(value: unknown): ExternalMedia | undefined {
+  const parsed = externalMediaSchema.safeParse(value);
+  return parsed.success ? parsed.data : undefined;
+}
+
+export const MAX_EXTERNAL_URL_LENGTH = 2048;
+
+/**
+ * The URL to store for what an author typed, or `undefined` when it is not acceptable: HTTPS only,
+ * no credentials, a bounded length. Feedback only; the renderer validates stored values itself.
+ */
+export function normalizeExternalUrl(text: string): string | undefined {
+  const trimmed = text.trim();
+  if (trimmed === '' || trimmed.length > MAX_EXTERNAL_URL_LENGTH) return undefined;
+  try {
+    const url = new URL(trimmed);
+    if (url.protocol !== 'https:' || url.username !== '' || url.password !== '') return undefined;
+    return url.href;
+  } catch {
+    return undefined;
+  }
+}
+
 /** Which kinds of file the picker offers. The prop's `accept` (`['image']`) narrows the choice. */
 export type MediaKind = 'all' | 'image' | 'video' | 'document';
 

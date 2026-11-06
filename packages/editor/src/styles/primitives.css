@@ -414,6 +414,36 @@
 .bd-shortcut-help dd {
   margin: 0;
 }
+/* PB-157: two columns like the template (group headings, one key cap per key). */
+.bd-shortcut-help {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--bd-space-2) var(--bd-space-6);
+}
+.bd-shortcut-help > p {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--bd-text-muted);
+  font-size: var(--bd-text-xs);
+}
+.bd-shortcut-help h3 {
+  margin: var(--bd-space-2) 0 var(--bd-space-1);
+  color: var(--bd-text-subtle);
+  font-size: var(--bd-text-xs);
+  font-weight: var(--bd-weight-semibold);
+}
+.bd-shortcut-help dd {
+  display: flex;
+  align-items: center;
+  gap: var(--bd-space-1);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+@media (max-width: 640px) {
+  .bd-shortcut-help {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 .bd-shortcut-help kbd {
   font-family: inherit;
   padding: 0 var(--bd-space-1);

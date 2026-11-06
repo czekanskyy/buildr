@@ -8,10 +8,12 @@ import { PanelToggle } from './panel-toggles.tsx';
 export interface ToolbarLeftProps {
   /** The page in the CMS's admin; the link is left out without it, or when it moved to the more menu. */
   readonly cmsUrl?: string | undefined;
+  /** A phone-wide row: only the panel toggle, undo and redo stay (the mark and the back link are left out). */
+  readonly compact?: boolean;
 }
 
 /** Back to the CMS, the product mark, a divider, the left panel toggle, undo and redo. */
-export function ToolbarLeft({ cmsUrl }: ToolbarLeftProps) {
+export function ToolbarLeft({ cmsUrl, compact = false }: ToolbarLeftProps) {
   const t = useT();
   const store = useEditor();
   const canUndo = useEditorState((state) => state.canUndo);
@@ -21,7 +23,7 @@ export function ToolbarLeft({ cmsUrl }: ToolbarLeftProps) {
   const redoHint = useShortcutHint('edit.redo');
   return (
     <div className="bd-toolbar-cluster" data-zone="left">
-      {cmsUrl !== undefined && (
+      {cmsUrl !== undefined && !compact && (
         <Tooltip content={t('toolbar.backToCms')}>
           <a
             className="bd-button bd-icon-button bd-toolbar-link"
@@ -33,8 +35,12 @@ export function ToolbarLeft({ cmsUrl }: ToolbarLeftProps) {
           </a>
         </Tooltip>
       )}
-      <Brand />
-      <span className="bd-toolbar-divider" aria-hidden="true" />
+      {!compact && (
+        <>
+          <Brand />
+          <span className="bd-toolbar-divider" aria-hidden="true" />
+        </>
+      )}
       <PanelToggle side="left" />
       <IconButton
         label={t('toolbar.undo')}

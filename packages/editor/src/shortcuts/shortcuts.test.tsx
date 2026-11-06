@@ -11,6 +11,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { RemoveRequest, ShortcutCallbacks } from '../app/contracts.ts';
 import { MessagesProvider } from '../messages/index.tsx';
 import { createEditorStore, EditorStoreProvider } from '../store/index.ts';
+import { ToastProvider } from '../ui/index.ts';
 import { comboOf, displayCombo, isTypingTarget, type KeyInput, normalizeCombo } from './keys.ts';
 import { DEFAULT_SHORTCUTS } from './map.ts';
 import { overlayOpen, parentSelection } from './navigation.ts';
@@ -189,6 +190,7 @@ describe('ShortcutProvider', () => {
       doc?: BuilderDocument;
       callbacks?: Partial<ShortcutCallbacks>;
       onRemove?: (request: RemoveRequest) => void;
+      toasts?: boolean;
     } = {},
   ) {
     const store = createEditorStore({
@@ -196,19 +198,23 @@ describe('ShortcutProvider', () => {
       registry: registryMeta,
       generateId: createSeededIdGenerator(5),
       validationDelayMs: null,
+      canUnlock: () => true,
     });
+    const shortcuts = (
+      <ShortcutProvider
+        platform="other"
+        actions={actions}
+        {...(extra.callbacks ? { callbacks: extra.callbacks } : {})}
+        {...(extra.onRemove ? { onRemove: extra.onRemove } : {})}
+      >
+        <Probe />
+      </ShortcutProvider>
+    );
     await act(async () =>
       root.render(
         <MessagesProvider locale="en">
           <EditorStoreProvider store={store}>
-            <ShortcutProvider
-              platform="other"
-              actions={actions}
-              {...(extra.callbacks ? { callbacks: extra.callbacks } : {})}
-              {...(extra.onRemove ? { onRemove: extra.onRemove } : {})}
-            >
-              <Probe />
-            </ShortcutProvider>
+            {extra.toasts ? <ToastProvider>{shortcuts}</ToastProvider> : shortcuts}
           </EditorStoreProvider>
         </MessagesProvider>,
       ),
@@ -244,6 +250,49 @@ describe('ShortcutProvider', () => {
     expect(order(store)).toEqual(['itemAAAAA1', 'itemBBBBB1', 'itemCCCCC1']);
     await key(document.body, { key: 'Z', ctrlKey: true, shiftKey: true });
     expect(order(store)).toEqual(['itemAAAAA1', 'itemCCCCC1']);
+  });
+
+  it('refuses to delete, move or duplicate a block locked for structure, and says why', async () => {
+    const base = fixture();
+    const doc: BuilderDocument = {
+      ...base,
+      nodes: {
+        ...base.nodes,
+        itemBBBBB1: { id: 'itemBBBBB1', type: 'buildr/item', lock: { structure: true } },
+      },
+    };
+    const store = await mount({ doc, toasts: true });
+    const before = order(store);
+    act(() => store.select('itemBBBBB1'));
+    await key(document.body, { key: 'Delete' });
+    expect(container.textContent).toContain(
+      'This block is locked. Unlock it in the Structure panel.',
+    );
+    await key(document.body, { key: 'ArrowUp', altKey: true });
+    await key(document.body, { key: 'ArrowDown', altKey: true });
+    await key(document.body, { key: 'd', ctrlKey: true });
+    expect(order(store)).toEqual(before);
+    expect(Object.keys(store.getState().doc.nodes)).toHaveLength(4);
+    // The neighbour is not locked and still goes.
+    act(() => store.select('itemCCCCC1'));
+    await key(document.body, { key: 'Delete' });
+    expect(order(store)).toEqual(['itemAAAAA1', 'itemBBBBB1']);
+  });
+
+  it('toggles session outlines from UI and forwarded canvas keys', async () => {
+    const store = await mount();
+    container.classList.add('buildr-editor');
+    await key(container, { key: 'O', ctrlKey: true, shiftKey: true });
+    expect(store.view.getState().outlines).toBe(true);
+    act(() => {
+      forwarded(press('O', { ctrl: true, shift: true }));
+    });
+    expect(store.view.getState().outlines).toBe(false);
+    const outside = document.createElement('button');
+    document.body.append(outside);
+    await key(outside, { key: 'O', ctrlKey: true, shiftKey: true });
+    expect(store.view.getState().outlines).toBe(false);
+    expect(store.getState().docVersion).toBe(0);
   });
 
   it('duplicates, moves and clears', async () => {

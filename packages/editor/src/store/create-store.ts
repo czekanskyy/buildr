@@ -1,4 +1,5 @@
 import {
+  authorCodeEnabled,
   type BuilderDocument,
   err,
   generateId,
@@ -39,6 +40,7 @@ import type {
   EditorStoreOptions,
   ValidationSnapshot,
 } from './types.ts';
+import { createViewStore } from './view.ts';
 
 /** How long after the last change validation and the accessibility checks run. */
 export const DEFAULT_VALIDATION_DELAY_MS = 300;
@@ -76,6 +78,7 @@ export function createEditorStore(options: EditorStoreOptions): EditorStore {
     commands,
     generateId: options.generateId ?? generateId,
     canUnlock: options.canUnlock,
+    ...(options.capabilities !== undefined ? { capabilities: options.capabilities } : {}),
     checkInvariants: options.checkInvariants ?? false,
   };
   const timers = options.timers ?? defaultTimers();
@@ -195,9 +198,26 @@ export function createEditorStore(options: EditorStoreOptions): EditorStore {
     return result;
   };
 
+  const view = createViewStore();
+  // The insertion target is session presentation: it never points to a node that is gone (removed,
+  // undone away, replaced page) and it ends when the selection moves elsewhere.
+  api.subscribe((state, previous) => {
+    const target = view.getState().insertionTarget;
+    if (target === null) return;
+    const moved =
+      state.selectedIds !== previous.selectedIds &&
+      state.selectedIds.join() !== previous.selectedIds.join();
+    if (moved || !Object.hasOwn(state.doc.nodes, target.parentId)) {
+      view.getState().setInsertionTarget(null);
+    }
+  });
+
   const store: EditorStore = {
+    view,
     ...api,
     registry: options.registry,
+    canUnlock: options.canUnlock !== undefined,
+    authorCode: authorCodeEnabled(options.capabilities),
     history,
 
     dispatch: (command, options_) => run([command], options_),

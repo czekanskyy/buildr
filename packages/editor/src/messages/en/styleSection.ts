@@ -1,0 +1,15 @@
+export const styleSection = {
+  'styleSection.layout': 'Layout',
+  'styleSection.size': 'Dimensions',
+  'styleSection.spacing': 'Spacing',
+  'styleSection.typography': 'Typography',
+  'styleSection.colors': 'Colours',
+  'styleSection.background': 'Background',
+  'styleSection.border': 'Border and corners',
+  'styleSection.shadow': 'Shadow',
+  'styleSection.effects': 'Effects',
+  'styleSection.animation': 'Animations',
+  'styleSection.hover': 'On hover',
+  'styleSection.expandAll': 'Expand all sections',
+  'styleSection.collapseAll': 'Collapse all sections',
+} as const;

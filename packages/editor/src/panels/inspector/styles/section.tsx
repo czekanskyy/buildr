@@ -11,12 +11,13 @@ const sectionIcons: Readonly<Record<string, IconName>> = {
   size: 'stretch-vertical',
   spacing: 'box',
   typography: 'type',
-  colors: 'circle',
+  colors: 'droplet',
   background: 'image',
   border: 'braces',
   effects: 'sigma',
   shadow: 'copy',
   visibility: 'eye',
+  motion: 'sparkles',
 };
 
 const deviceIcon = (layer: string): IconName =>
@@ -49,13 +50,8 @@ export function StyleSection(props: {
   const plural = usePlural();
   const id = useId();
   const stored = useSyncExternalStore(subscribeSections, rememberedSections, rememberedSections);
-  const open = stored[props.name] ?? (props.modified || props.defaultOpen);
+  const open = stored[props.name] ?? props.defaultOpen;
   const expanded = props.searching || open;
-  // A section that holds values opens when it appears or gains them.
-  useEffect(() => {
-    if (props.modified && rememberedSections()[props.name] !== true)
-      setSectionOpen(props.name, true);
-  }, [props.modified, props.name]);
   const registry = useSectionRegistry();
   useEffect(() => registry.report(props.name, open), [registry, props.name, open]);
   const count = props.overrideCount ?? (props.override ? 1 : 0);

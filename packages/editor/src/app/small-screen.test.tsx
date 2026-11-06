@@ -113,7 +113,7 @@ describe('useViewportTooNarrow on the server and while hydrating', () => {
 });
 
 describe('SmallScreenNotice', () => {
-  it('asks for a computer, in the interface language, as an alert', async () => {
+  it('asks for a wider window, in the interface language, as an alert', async () => {
     const view = await mount(
       <MessagesProvider locale="pl">
         <SmallScreenNotice />
@@ -121,6 +121,6 @@ describe('SmallScreenNotice', () => {
     );
     const alert = view.querySelector('[role="alert"]');
     expect(alert?.querySelector('h1')?.textContent).toBe('Edytor wymaga większego ekranu');
-    expect(alert?.textContent).toContain('na komputerze');
+    expect(alert?.textContent).toContain('zbyt wąskie');
   });
 });

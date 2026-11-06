@@ -28,6 +28,7 @@
   --bd-box-v-w: 36px;
   --bd-boxbar-h: 10px;
   --bd-boxbar-w: 10px;
+  --bd-unit-chip-w: 44px;
   --bd-check-h: 4px;
   --bd-check-tf: rotate(-45deg) translate(1px, -1px) scale(0);
   --bd-check-tf-2: rotate(-45deg) translate(1px, -1px) scale(1);
@@ -49,6 +50,7 @@
   --bd-field-h: 6px;
   --bd-field-w: 6px;
   --bd-hue-h: 8px;
+  --bd-stepper-w: 14px;
   --bd-imgpick-thumb-w: 56px;
   --bd-input--area-lh: 18px;
   --bd-input--area-min-h: 96px;

@@ -159,6 +159,8 @@ describe('the media picker and control', () => {
         <MediaPicker open onOpenChange={() => undefined} onPick={onPick} searchDelayMs={0} />
       </MediaLibraryProvider>,
     );
+    await settle();
+    await act(async () => byText('Upload')?.click());
     const submit = byText('Upload and use') as HTMLButtonElement;
     const file = new File(['x'], 'cat.jpg', { type: 'image/jpeg' });
     const fileInput = document.querySelector('input[type=file]') as HTMLInputElement;
@@ -175,6 +177,106 @@ describe('the media picker and control', () => {
     await act(async () => submit.click());
     expect(upload).toHaveBeenCalledWith(file, 'A cat');
     expect(onPick).toHaveBeenCalledWith(photo);
+  });
+
+  it('limits the upload field to what the prop accepts and rejects other files', async () => {
+    const upload = vi.fn(async () => photo);
+    const { media } = library({ upload });
+    await render(
+      <MediaLibraryProvider media={media}>
+        <MediaPicker
+          open
+          onOpenChange={() => undefined}
+          onPick={() => undefined}
+          accept={['image']}
+          searchDelayMs={0}
+        />
+      </MediaLibraryProvider>,
+    );
+    await settle();
+    await act(async () => byText('Upload')?.click());
+    const fileInput = document.querySelector('input[type=file]') as HTMLInputElement;
+    expect(fileInput.getAttribute('accept')).toBe('image/*');
+    const pdf = new File(['x'], 'a.pdf', { type: 'application/pdf' });
+    await act(async () => {
+      Object.defineProperty(fileInput, 'files', { value: [pdf], configurable: true });
+      fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(document.querySelector('.bd-media-error')?.textContent).toBe(
+      'That file type is not accepted here.',
+    );
+    expect(document.querySelector('.bd-media-drop-file')).toBeNull();
+  });
+
+  it('offers a library only, until the adapter can upload or an address may be used', async () => {
+    const { media } = library();
+    await render(
+      <MediaLibraryProvider media={media}>
+        <MediaPicker
+          open
+          onOpenChange={() => undefined}
+          onPick={() => undefined}
+          searchDelayMs={0}
+        />
+      </MediaLibraryProvider>,
+    );
+    await settle();
+    expect(document.querySelector('fieldset[aria-label=Source]')).toBeNull();
+    expect(document.querySelector('.bd-media-drop')).toBeNull();
+  });
+
+  it('has a drop zone and the Upload source only when the adapter can upload', async () => {
+    const { media } = library({ upload: async () => photo });
+    await render(
+      <MediaLibraryProvider media={media}>
+        <MediaPicker
+          open
+          onOpenChange={() => undefined}
+          onPick={() => undefined}
+          searchDelayMs={0}
+        />
+      </MediaLibraryProvider>,
+    );
+    await settle();
+    const names = [...document.querySelectorAll('fieldset[aria-label=Source] button')].map(
+      (b) => b.textContent,
+    );
+    expect(names).toEqual(['Library', 'Upload']);
+    expect(document.querySelector('.bd-media-drop')).toBeNull();
+    await act(async () => byText('Upload')?.click());
+    expect(document.querySelector('.bd-media-drop')).not.toBeNull();
+    expect(document.querySelector('.bd-media-grid')).toBeNull();
+  });
+
+  it('adds a link on the From an address source only after the warning is confirmed', async () => {
+    const { media } = library();
+    const onPickExternal = vi.fn();
+    const onOpenChange = vi.fn();
+    await render(
+      <MediaLibraryProvider media={media}>
+        <MediaPicker
+          open
+          onOpenChange={onOpenChange}
+          onPick={() => undefined}
+          onPickExternal={onPickExternal}
+          searchDelayMs={0}
+        />
+      </MediaLibraryProvider>,
+    );
+    await settle();
+    await act(async () => byText('From an address')?.click());
+    expect(document.querySelector('.bd-media-grid')).toBeNull();
+    const field = document.querySelector('input[type=url]') as HTMLInputElement;
+    await setValue(field, 'https://cdn.example.com/a.jpg');
+    await act(async () => byText('Add link')?.click());
+    expect(onPickExternal).not.toHaveBeenCalled();
+    expect(document.querySelector('[role=alertdialog]')?.textContent).toContain('External source');
+    await act(async () => byText('Cancel')?.click());
+    expect(onPickExternal).not.toHaveBeenCalled();
+    await act(async () => byText('Add link')?.click());
+    await act(async () => byText('I confirm and add the link')?.click());
+    expect(onPickExternal).toHaveBeenCalledWith('https://cdn.example.com/a.jpg');
+    expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
   it('shows a failed library as a retryable error', async () => {

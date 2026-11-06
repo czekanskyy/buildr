@@ -1,4 +1,5 @@
 import {
+  type ComponentMeta,
   canEdit,
   createIndex,
   defaultTheme,
@@ -17,8 +18,15 @@ import { type ReactNode, useId, useState } from 'react';
 import { componentMeta, useManifest } from '../../../app/manifest.tsx';
 import { interpolate, type MessageKey, useT } from '../../../messages/index.tsx';
 import { useEditor, useEditorState } from '../../../store/index.ts';
-import { Icon, Input, NumberUnitInput, SegmentedControl, Tooltip } from '../../../ui/index.ts';
+import { Button, Icon, Input, SegmentedControl, Tooltip } from '../../../ui/index.ts';
 import { ScrubLabel } from '../scrub-label.tsx';
+import { readProp } from '../value.ts';
+import {
+  BackgroundMediaFields,
+  backgroundMediaSupport,
+  hasMedia,
+  mediaToClear,
+} from './background-media.tsx';
 import { BoxModel } from './box-model.tsx';
 import { GradientFields } from './gradient-fields.tsx';
 import {
@@ -27,21 +35,35 @@ import {
   colorOf,
   isEnumeration,
   isNumeric,
+  KEYWORD_DEFAULTS,
   keywordsOf,
   layerFor,
   partsOf,
+  RANGES,
+  rangeShown,
+  rangeText,
   sliderOf,
   stepOf,
   takesNumber,
   unitsOf,
 } from './model.ts';
+import { MotionRows } from './motion-rows.tsx';
+import { NumberUnitInput } from './number-input.tsx';
+import { optionLabel } from './option-label.ts';
 import { Highlight, propertyLabel } from './property-label.tsx';
 import { StyleSection } from './section.tsx';
 import { PAIRS, SEGMENTED } from './segments.ts';
 import { SidesEditor, type SideWrite } from './sides-editor.tsx';
 import { TokenPicker } from './token-picker.tsx';
 import { useStyleValue } from './use-style-value.ts';
-import { AlignmentPad, ColorField, RangeSlider, ResetField, ShadowEditor } from './widgets.tsx';
+import {
+  AlignmentPad,
+  ColorField,
+  RangeSlider,
+  ResetField,
+  ShadowEditor,
+  shadowLayers,
+} from './widgets.tsx';
 
 export interface StyleInspectorProps {
   readonly node: PageNode;
@@ -54,6 +76,42 @@ export interface StyleInspectorProps {
 
 const pathOf = (def: StylePropertyDef, part?: string) =>
   `${def.group}.${def.name}${part !== undefined ? `.${part}` : ''}`;
+
+const SHADOW = {
+  shadowX: '0px',
+  shadowY: '0px',
+  shadowBlur: '0px',
+  shadowSpread: '0px',
+  shadowColor: '#00000026',
+  shadowInset: 'outset',
+};
+const TEXT_SHADOW = {
+  textShadowX: '0px',
+  textShadowY: '0px',
+  textShadowBlur: '0px',
+  textShadowColor: '#00000026',
+};
+const FILTERS = {
+  blur: '0px',
+  brightness: 1,
+  contrast: 1,
+  saturate: 1,
+  grayscale: 0,
+  sepia: 0,
+  hueRotate: '0deg',
+  invert: 0,
+};
+const TRANSFORMS = {
+  translateX: '0px',
+  translateY: '0px',
+  rotate: '0deg',
+  scale: 1,
+  skewX: '0deg',
+  skewY: '0deg',
+};
+function compoundFor(name: string): Readonly<Record<string, string | number>> | undefined {
+  return [SHADOW, TEXT_SHADOW, FILTERS, TRANSFORMS].find((group) => Object.hasOwn(group, name));
+}
 
 function sourceLabel(source: string, t: (key: MessageKey) => string): string {
   if (source === 'base') return t('style.desktop');
@@ -95,6 +153,8 @@ function ValueField(props: {
   readonly theme: Theme;
   readonly disabled: boolean;
   readonly keywords: readonly string[];
+  /** What the property is while nothing sets it (the preset's value, a default): hinted, never stored. */
+  readonly hint?: string | undefined;
   readonly onSet: (value: string | number) => void;
   readonly onUnset: () => void;
 }) {
@@ -117,7 +177,20 @@ function ValueField(props: {
   const describedBy = error !== '' ? `${id}-error` : undefined;
   const listId = props.keywords.length > 0 ? `${id}-list` : undefined;
   const swatch = colorOf(def, shown.trim(), props.theme);
-  const slider = sliderOf(def);
+  const slider = RANGES[path] === undefined ? sliderOf(def) : undefined;
+  const range = RANGES[path];
+  const rangeValue = Number.parseFloat(shown);
+  const hinted = props.hint !== undefined ? Number.parseFloat(props.hint) : Number.NaN;
+  // The colour a field has while none is set: the hint, else the theme's text colour for text.
+  const textColor = props.theme.tokens.color['text'];
+  const hintColor =
+    props.hint !== undefined ? (colorOf(def, props.hint, props.theme) ?? props.hint) : undefined;
+  const fallbackColor =
+    props.hint !== undefined && hintColor !== undefined
+      ? { text: props.hint, color: hintColor }
+      : path === 'typography.color' && textColor !== undefined
+        ? { text: textColor, color: textColor }
+        : undefined;
 
   return (
     <div className="bd-style-value" data-path={path} data-source={current?.source ?? 'none'}>
@@ -154,6 +227,7 @@ function ValueField(props: {
             disabled={props.disabled}
             invalid={error !== ''}
             describedBy={describedBy}
+            fallback={fallbackColor}
             onText={field.change}
             onSwatch={(text) => {
               const checked = checkStyleInput(def, text, props.theme);
@@ -178,8 +252,16 @@ function ValueField(props: {
             value={shown}
             units={unitsOf(def)}
             unitLabel={`${t('style.unit')}: ${props.label}`}
+            unitLabels={{ deg: t('style.unit.deg') }}
             step={stepOf(def)}
             bareNumber={takesNumber(def)}
+            placeholder={
+              props.hint !== undefined && Number.isFinite(hinted)
+                ? String(hinted)
+                : range !== undefined
+                  ? String(range.fallback)
+                  : undefined
+            }
             disabled={props.disabled}
             invalid={error !== ''}
             describedBy={describedBy}
@@ -240,6 +322,37 @@ function ValueField(props: {
           onChange={field.change}
         />
       ) : null}
+      {range !== undefined ? (
+        <RangeSlider
+          label={`${props.label}: ${t('style.slider')}`}
+          min={range.min}
+          max={range.max}
+          step={range.step}
+          value={
+            Number.isFinite(rangeValue)
+              ? rangeValue
+              : Number.isFinite(hinted)
+                ? hinted
+                : range.fallback
+          }
+          format={(value) => rangeShown(range, value)}
+          unset={!Number.isFinite(rangeValue)}
+          disabled={props.disabled}
+          onChange={(text) => field.change(rangeText(range, Number(text)))}
+        />
+      ) : null}
+      {path === 'layout.gap' ? (
+        <RangeSlider
+          label={`${props.label}: ${t('style.slider')}`}
+          min={0}
+          max={64}
+          step={1}
+          value={Number.parseFloat(shown) || 0}
+          unit="px"
+          disabled={props.disabled}
+          onChange={(value) => field.change(`${value}px`)}
+        />
+      ) : null}
       {listId !== undefined ? (
         <datalist id={listId}>
           {props.keywords.map((keyword) => (
@@ -275,6 +388,8 @@ function StyleProperty(props: {
   readonly children?: ReactNode;
   /** The search text, highlighted in the label. */
   readonly query?: string;
+  /** What properties of the section are while unset (a shadow preset's geometry), by name. */
+  readonly hints?: Readonly<Record<string, string>>;
 }) {
   const t = useT();
   const store = useEditor();
@@ -325,7 +440,31 @@ function StyleProperty(props: {
     });
     props.onError(failure);
   };
-  const set = (value: string | number | boolean, part?: string) => report(setOne(value, part));
+  const set = (value: string | number | boolean, part?: string) => {
+    const compound = compoundFor(def.name);
+    if (def.group !== 'effects' || compound === undefined) return report(setOne(value, part));
+    let failure = '';
+    store.transaction(label, () => {
+      for (const [property, fallback] of Object.entries(compound)) {
+        const result = store.dispatch({
+          type: 'node.setStyle',
+          payload: {
+            id: nodeId,
+            layer: layerObject,
+            group: 'effects',
+            property,
+            value:
+              property === def.name
+                ? value
+                : (effective[`effects.${property}`]?.value ?? props.hints?.[property] ?? fallback),
+          },
+        });
+        if (!result.ok) failure ||= result.error?.message ?? '';
+      }
+      return failure === '';
+    });
+    props.onError(failure);
+  };
   const unset = (part?: string) => report(unsetOne(part));
 
   const paths = parts.length > 0 ? parts.map((part) => pathOf(def, part)) : [pathOf(def)];
@@ -412,7 +551,14 @@ function StyleProperty(props: {
           layout={props.ring === true ? 'ring' : 'row'}
           apply={apply}
           renderHead={(extras) =>
-            head(<span className="bd-field-label">{shownLabel}</span>, extras)
+            head(
+              <span className="bd-field-label">
+                {props.ring === true && (def.name === 'margin' || def.name === 'padding')
+                  ? t(`styleField.spacing.${def.name}`)
+                  : shownLabel}
+              </span>,
+              extras,
+            )
           }
         >
           {props.children}
@@ -428,7 +574,9 @@ function StyleProperty(props: {
     const segments = SEGMENTED[key]?.filter((segment) => keywords.includes(segment.keyword));
     const currentText = current !== undefined ? String(current.value) : undefined;
     const currentLabel =
-      current !== undefined ? `${String(current.value)} (${sourceLabel(current.source, t)})` : '—';
+      current !== undefined
+        ? `${optionLabel(String(current.value), t)} (${sourceLabel(current.source, t)})`
+        : optionLabel(KEYWORD_DEFAULTS[key] ?? '', t) || t('style.default');
     const remaining =
       segments === undefined
         ? keywords
@@ -446,7 +594,10 @@ function StyleProperty(props: {
             disabled={props.disabled}
             options={segments.map((segment) => ({
               value: segment.keyword,
-              label: segment.keyword,
+              label:
+                segment.labelKey !== undefined
+                  ? t(segment.labelKey)
+                  : optionLabel(segment.keyword, t),
               ...(segment.icon !== undefined ? { icon: segment.icon } : {}),
               iconOnly: segment.icon !== undefined,
             }))}
@@ -468,10 +619,12 @@ function StyleProperty(props: {
             disabled={props.disabled}
             onChange={(event) => (event.target.value === '' ? unset() : set(event.target.value))}
           >
-            <option value="">{segments !== undefined ? '—' : currentLabel}</option>
+            <option value="">
+              {segments !== undefined ? t('style.more.short') : currentLabel}
+            </option>
             {remaining.map((keyword) => (
               <option key={keyword} value={keyword}>
-                {keyword}
+                {optionLabel(keyword, t)}
               </option>
             ))}
           </select>
@@ -510,6 +663,7 @@ function StyleProperty(props: {
       <ValueField
         {...base}
         keywords={keywords}
+        hint={props.hints?.[def.name]}
         inputId={id}
         path={pathOf(def)}
         label={label}
@@ -527,7 +681,7 @@ function StyleProperty(props: {
       data-origin={origin}
     >
       {head(title)}
-      {body}
+      {key === 'effects.shadow' ? null : body}
       {key === 'background.imagePosition' ? (
         <AlignmentPad
           value={String(effective[key]?.value ?? 'center')}
@@ -538,10 +692,22 @@ function StyleProperty(props: {
       ) : null}
       {key === 'effects.shadow' ? (
         <ShadowEditor
+          layers={false}
           theme={props.theme}
           value={String(effective[key]?.value ?? 'none')}
           disabled={props.disabled}
-          onPick={set}
+          onPick={(value) => {
+            store.transaction(label, () => {
+              for (const property of Object.keys(SHADOW)) {
+                const result = store.dispatch({
+                  type: 'node.unsetStyle',
+                  payload: { id: nodeId, layer: layerObject, group: 'effects', property },
+                });
+                if (!result.ok) return false;
+              }
+              return setOne(value).ok;
+            });
+          }}
           onCustom={
             // Only when the property stores a custom shadow; today it takes tokens and `none`.
             checkStyleInput(def, '0px 4px 12px 0px #00000026', props.theme).ok
@@ -613,6 +779,18 @@ function SelectedStyleInspector({
           ),
         };
   const groups = STYLE_GROUPS.filter((group) => meta?.styles.groups.includes(group));
+  // For a container the display is a component prop, not a style: read the effective one.
+  const displayDef = meta?.props['display'];
+  const displayReading =
+    displayDef === undefined
+      ? undefined
+      : readProp(node, 'display', displayDef, undefined, undefined);
+  const fallbackDisplay =
+    displayReading?.mode === 'static' && typeof displayReading.value === 'string'
+      ? displayReading.value
+      : typeof displayDef?.default === 'string'
+        ? displayDef.default
+        : undefined;
 
   if (groups.length === 0) {
     return <p className="bd-inspector-empty">{t('style.none')}</p>;
@@ -695,6 +873,9 @@ function SelectedStyleInspector({
       {groups.flatMap((group) => {
         const common = {
           group,
+          fallbackDisplay,
+          node,
+          meta,
           nodeId: node.id,
           effective,
           layer,
@@ -704,12 +885,12 @@ function SelectedStyleInspector({
           query: query.trim().toLocaleLowerCase(),
         };
         return [
+          ...(group === 'effects'
+            ? [<StyleGroupSection key="shadow" {...common} section="shadow" />]
+            : []),
           <StyleGroupSection key={group} {...common} />,
           ...(group === 'typography'
             ? [<StyleGroupSection key="colors" {...common} section="colors" />]
-            : []),
-          ...(group === 'effects'
-            ? [<StyleGroupSection key="shadow" {...common} section="shadow" />]
             : []),
         ];
       })}
@@ -723,6 +904,9 @@ function SelectedStyleInspector({
 function StyleGroupSection(props: {
   readonly group: StyleGroup;
   readonly section?: 'colors' | 'shadow';
+  /** The node and its component, for the media of the background (props, not styles). */
+  readonly node?: PageNode;
+  readonly meta?: ComponentMeta | undefined;
   readonly nodeId: string;
   readonly effective: EffectiveStyles;
   readonly layer: string;
@@ -730,6 +914,8 @@ function StyleGroupSection(props: {
   readonly disabled: boolean;
   readonly onError: (message: string) => void;
   readonly query: string;
+  /** The display the component has when no style sets one (a component prop, else its default). */
+  readonly fallbackDisplay?: string | undefined;
 }) {
   const t = useT();
   const section = props.section ?? props.group;
@@ -741,6 +927,60 @@ function StyleGroupSection(props: {
         : t(`style.group.${props.group}` as MessageKey);
   const store = useEditor();
   const [moreDims, setMoreDims] = useState(false);
+  // The media of a background are component props (an image and a video), found by their shape.
+  const support = backgroundMediaSupport(props.meta);
+  const videoSet = props.node !== undefined && hasMedia(props.node, 'backgroundVideo');
+  const imageSet = props.node !== undefined && hasMedia(props.node, 'backgroundImage');
+  const [chosenMode, setBackgroundMode] = useState<string>(
+    props.effective['background.gradient'] !== undefined ? 'gradient' : 'color',
+  );
+  // A value the component already holds decides the mode (also after Undo brings one back).
+  // Media belong to the whole component, so only the base layer lets them decide.
+  const backgroundMode =
+    props.layer !== 'base'
+      ? chosenMode
+      : support.video && videoSet
+        ? 'video'
+        : support.image && imageSet
+          ? 'image'
+          : chosenMode;
+  // Media props belong to the whole component, not to one device or state.
+  const mediaEditable = !props.disabled && props.layer === 'base';
+  const chooseBackground = (kind: string) => {
+    setBackgroundMode(kind);
+    const node = props.node;
+    const clear =
+      node === undefined || props.layer !== 'base'
+        ? []
+        : mediaToClear(kind).filter((name) => hasMedia(node, name));
+    if (kind !== 'none' && clear.length === 0) return;
+    // Switching the kind removes the media the new kind does not keep: one undo step.
+    const done = store.transaction(sectionLabel, () => {
+      if (kind === 'none') {
+        for (const property of ['color', 'gradient']) {
+          const result = store.dispatch({
+            type: 'node.unsetStyle',
+            payload: {
+              id: props.nodeId,
+              layer: layerFor(props.layer),
+              group: 'background',
+              property,
+            },
+          });
+          if (!result.ok) return false;
+        }
+      }
+      for (const prop of clear) {
+        const result = store.dispatch({
+          type: 'node.unsetProp',
+          payload: { id: props.nodeId, prop },
+        });
+        if (!result.ok) return false;
+      }
+      return true;
+    });
+    if (!done) props.onError(t('style.media.switchFailed'));
+  };
   // Every property of the section, whatever the search says: "Reset section" and the counts use it.
   const sectionDefs = propertiesOfGroup(props.group).filter(
     (def) =>
@@ -749,7 +989,7 @@ function StyleGroupSection(props: {
       (props.group !== 'typography' ||
         (props.section === 'colors' ? def.name === 'color' : def.name !== 'color')) &&
       (props.group !== 'effects' ||
-        (props.section === 'shadow' ? def.name === 'shadow' : def.name !== 'shadow')),
+        (props.section === 'shadow' ? /shadow/i.test(def.name) : !/shadow/i.test(def.name))),
   );
   const matching = sectionDefs.filter(
     (def) =>
@@ -770,7 +1010,28 @@ function StyleGroupSection(props: {
       Object.keys(props.effective).some((path) => path.startsWith(`${pathOf(def)}`)),
   );
   const showLimits = moreDims || limitUsed || props.query !== '';
-  const defs = matching.filter((def) => !isLimit(def) || showLimits);
+  const shadowFirst = (a: StylePropertyDef, b: StylePropertyDef) =>
+    Number(b.name === 'shadow') - Number(a.name === 'shadow');
+  const defs = matching
+    .filter(
+      (def) =>
+        (!isLimit(def) || showLimits) &&
+        (props.group !== 'background' ||
+          props.query !== '' ||
+          (backgroundMode === 'none' || backgroundMode === 'image' || backgroundMode === 'video'
+            ? false
+            : backgroundMode === 'color'
+              ? def.name === 'color'
+              : def.name !== 'color')),
+    )
+    .sort(props.section === 'shadow' ? shadowFirst : () => 0);
+  // Why Image and Video are off: the component has no such background, or a device is being edited.
+  const mediaHint =
+    !support.image && !support.video
+      ? t('style.media.unsupported')
+      : props.layer !== 'base'
+        ? t('style.media.baseOnly')
+        : undefined;
   const hasLimits = props.query === '' && sectionDefs.some(isLimit);
   /** Paths written at the layer being edited: what "Reset section" removes. */
   const here = sectionDefs.flatMap((def) => {
@@ -823,7 +1084,27 @@ function StyleGroupSection(props: {
   const seconds = new Set([...paired.values()].map((def) => def.name));
 
   const rows: ReactNode[] = [];
-  for (const def of defs) {
+  const structured = props.query === '' && props.group === 'effects';
+  if (structured) rows.push(...structuredEffectRows({ ...props, byName, common, t }));
+  const motion = props.query === '' && props.group === 'motion';
+  if (motion) {
+    rows.push(
+      <MotionRows
+        key="motion"
+        nodeId={props.nodeId}
+        effective={props.effective}
+        layer={props.layer}
+        disabled={props.disabled}
+        onError={props.onError}
+        has={(name) => byName.has(name)}
+        row={(name) => {
+          const def = byName.get(name);
+          return def === undefined ? null : <StyleProperty def={def} inline {...common} />;
+        }}
+      />,
+    );
+  }
+  for (const def of structured || motion ? [] : defs) {
     if (seconds.has(def.name)) continue;
     if (nested && def.name === 'padding') continue;
     if (nested && def.name === 'margin') {
@@ -849,15 +1130,39 @@ function StyleGroupSection(props: {
       );
       continue;
     }
-    rows.push(<StyleProperty key={def.name} def={def} inline {...common} />);
+    if (
+      props.group === 'layout' &&
+      [
+        'justify',
+        'align',
+        'rowGap',
+        'columnGap',
+        'order',
+        'zIndex',
+        'columnSpan',
+        'position',
+        'inset',
+      ].includes(def.name) &&
+      props.query === ''
+    ) {
+      rows.push(
+        <LayoutMore key={def.name} label={propertyLabel(def, t)}>
+          <StyleProperty def={def} inline {...common} />
+        </LayoutMore>,
+      );
+    } else rows.push(<StyleProperty key={def.name} def={def} inline {...common} />);
+    if (props.group === 'layout' && def.name === 'direction' && props.query === '')
+      rows.push(
+        <LayoutAlignment key="alignment" {...common} fallbackDisplay={props.fallbackDisplay} />,
+      );
   }
 
-  if (defs.length === 0) return null;
+  if (matching.length === 0) return null;
   return (
     <StyleSection
       name={section}
       label={sectionLabel}
-      defaultOpen={used || props.group === 'layout' || props.group === 'spacing'}
+      defaultOpen={section === 'colors' || props.group === 'spacing'}
       searching={props.query !== ''}
       modified={used}
       override={isBreakpoint && here.length > 0}
@@ -867,7 +1172,60 @@ function StyleGroupSection(props: {
       onReset={here.length > 0 ? resetSection : undefined}
       resetDisabled={props.disabled}
     >
-      {props.group === 'layout' && props.query === '' ? <LayoutAlignment {...common} /> : null}
+      {props.group === 'background' && props.query === '' ? (
+        <>
+          <span className="bd-field-label">{t('styleField.bg.type')}</span>
+          <fieldset className="bd-segmented bd-bg-kind" aria-label={t('styleField.bg.type')}>
+            {(
+              [
+                ['none', t('styleField.bg.noneShort')],
+                ['color', t('styleField.bg.color')],
+                ['gradient', t('styleField.bg.gradient')],
+                ['image', t('style.media.image')],
+                ['video', t('style.media.video')],
+              ] as const
+            ).map(([kind, text]) => {
+              const media = kind === 'image' || kind === 'video';
+              const offered = kind === 'image' ? support.image : support.video;
+              const blocked = media && (!offered || props.layer !== 'base');
+              const button = (
+                <Button
+                  key={kind}
+                  variant="ghost"
+                  className="bd-segment"
+                  aria-pressed={backgroundMode === kind}
+                  disabled={props.disabled || blocked}
+                  onClick={() => chooseBackground(kind)}
+                >
+                  {text}
+                </Button>
+              );
+              return blocked ? (
+                <Tooltip
+                  key={kind}
+                  content={t(offered ? 'style.media.baseOnly' : 'style.media.unsupported')}
+                >
+                  <span className="bd-bg-kind__disabled">{button}</span>
+                </Tooltip>
+              ) : (
+                button
+              );
+            })}
+          </fieldset>
+          {mediaHint !== undefined ? <p className="bd-hint">{mediaHint}</p> : null}
+          {(backgroundMode === 'image' || backgroundMode === 'video') &&
+          props.node !== undefined &&
+          props.meta !== undefined ? (
+            <BackgroundMediaFields
+              node={props.node}
+              meta={props.meta}
+              mode={backgroundMode}
+              disabled={!mediaEditable}
+              onError={props.onError}
+            />
+          ) : null}
+        </>
+      ) : null}
       {rows}
       {hasLimits ? (
         <button
@@ -885,6 +1243,201 @@ function StyleGroupSection(props: {
   );
 }
 
+type StylePropertyProps = Parameters<typeof StyleProperty>[0];
+
+const SHADOW_GEOMETRY = [
+  'shadowX',
+  'shadowY',
+  'shadowBlur',
+  'shadowSpread',
+  'shadowColor',
+  'shadowInset',
+] as const;
+const TEXT_SHADOW_ROWS = ['textShadowX', 'textShadowY', 'textShadowBlur', 'textShadowColor'];
+/** The effects, grouped the way the template groups them; the second list sits behind a disclosure. */
+const EFFECT_GROUPS: readonly {
+  readonly title?: MessageKey;
+  readonly main: readonly string[];
+  readonly more?: { readonly label: MessageKey; readonly names: readonly string[] };
+}[] = [
+  { main: ['opacity', 'blur', 'blendMode'] },
+  {
+    title: 'styleField.effects.filters',
+    main: ['brightness', 'contrast', 'saturate'],
+    more: {
+      label: 'styleField.effects.moreFilters',
+      names: ['grayscale', 'sepia', 'hueRotate', 'invert', 'backdropBlur'],
+    },
+  },
+  {
+    title: 'styleField.effects.transforms',
+    main: ['rotate', 'scale', 'translateX', 'translateY'],
+    more: {
+      label: 'styleField.effects.moreTransforms',
+      names: ['skewX', 'skewY', 'transformOrigin'],
+    },
+  },
+];
+
+/**
+ * The first layer of the shadow the property shows (a theme preset), as the geometry values the
+ * sliders start from. Only text the grammar accepts is used, so a preset the grammar cannot
+ * express in parts simply leaves the sliders at their defaults.
+ */
+function shadowSeed(
+  theme: Theme,
+  value: string,
+  defs: ReadonlyMap<string, StylePropertyDef>,
+): Record<string, string> {
+  const layer = shadowLayers(theme, value)[0];
+  if (layer === undefined) return {};
+  const wanted: Record<string, string> = {
+    shadowX: layer.x,
+    shadowY: layer.y,
+    shadowBlur: layer.blur,
+    shadowSpread: layer.spread,
+    shadowColor: layer.color,
+    shadowInset: layer.inset ? 'inset' : 'outset',
+  };
+  const out: Record<string, string> = {};
+  for (const [name, text] of Object.entries(wanted)) {
+    const def = defs.get(name);
+    if (def !== undefined && checkStyleInput(def, text, theme).ok) out[name] = text;
+  }
+  return out;
+}
+
+/** The shadow and effects sections: ready shadows first, geometry only for a shadow, extras folded. */
+function structuredEffectRows(props: {
+  readonly section?: 'colors' | 'shadow';
+  readonly effective: EffectiveStyles;
+  readonly theme: Theme;
+  readonly byName: ReadonlyMap<string, StylePropertyDef>;
+  readonly common: Omit<StylePropertyProps, 'def'>;
+  readonly t: (key: MessageKey) => string;
+}): ReactNode[] {
+  const { byName, common, effective, t } = props;
+  const used = (names: readonly string[]) =>
+    names.some((name) => effective[`effects.${name}`] !== undefined);
+  const row = (name: string, hints?: Record<string, string>, inline = true) => {
+    const def = byName.get(name);
+    return def === undefined ? null : (
+      <StyleProperty
+        key={name}
+        def={def}
+        inline={inline}
+        {...common}
+        {...(hints !== undefined ? { hints } : {})}
+      />
+    );
+  };
+  const sub = (key: string, label: string) => (
+    <span key={key} className="bd-flabel bd-style-sub">
+      {label}
+    </span>
+  );
+  const rows: ReactNode[] = [];
+
+  if (props.section === 'shadow') {
+    const value = String(effective['effects.shadow']?.value ?? 'none');
+    const custom = used(SHADOW_GEOMETRY);
+    const seed = shadowSeed(props.theme, value, byName);
+    rows.push(row('shadow', seed, false));
+    if (custom || value !== 'none') {
+      rows.push(sub('adjust', t(custom ? 'styleField.shadow.custom' : 'styleField.shadow.adjust')));
+      for (const name of SHADOW_GEOMETRY) rows.push(row(name, seed));
+    }
+    if (TEXT_SHADOW_ROWS.some((name) => byName.has(name))) {
+      rows.push(
+        <Disclosure
+          key="text-shadow"
+          label={t('styleField.shadow.text')}
+          defaultOpen={used(TEXT_SHADOW_ROWS)}
+        >
+          {TEXT_SHADOW_ROWS.map((name) => row(name))}
+        </Disclosure>,
+      );
+    }
+    return rows;
+  }
+
+  const listed = new Set<string>(['transition', 'cursor']);
+  for (const group of EFFECT_GROUPS) {
+    for (const name of [...group.main, ...(group.more?.names ?? [])]) listed.add(name);
+  }
+  for (const group of EFFECT_GROUPS) {
+    if (group.title !== undefined) rows.push(sub(group.title, t(group.title)));
+    for (const name of group.main) rows.push(row(name));
+    const more = group.more;
+    if (more !== undefined && more.names.some((name) => byName.has(name))) {
+      rows.push(
+        <Disclosure key={more.label} label={t(more.label)} defaultOpen={used(more.names)}>
+          {more.names.map((name) => row(name))}
+        </Disclosure>,
+      );
+    }
+  }
+  const rest = ['transition', 'cursor', ...[...byName.keys()].filter((name) => !listed.has(name))];
+  if (rest.some((name) => byName.has(name))) {
+    rows.push(
+      <Disclosure key="advanced" label={t('styleField.effects.advanced')} defaultOpen={used(rest)}>
+        {rest.map((name) => row(name))}
+      </Disclosure>,
+    );
+  }
+  return rows;
+}
+
+/** A closed-by-default group of rows behind a button with `aria-expanded`; open while any holds a value. */
+function Disclosure(props: {
+  readonly label: string;
+  readonly defaultOpen: boolean;
+  readonly children: ReactNode;
+}) {
+  const [open, setOpen] = useState(props.defaultOpen);
+  const id = useId();
+  return (
+    <div className="bd-layout-more" data-open={open}>
+      <button
+        type="button"
+        className="bd-layout-more__toggle"
+        aria-expanded={open}
+        aria-controls={id}
+        onClick={() => setOpen(!open)}
+      >
+        <Icon name={open ? 'chevron-down' : 'chevron-right'} />
+        {props.label}
+      </button>
+      <div id={id} className="bd-disclosure__body" hidden={!open}>
+        {props.children}
+      </div>
+    </div>
+  );
+}
+
+/** A closed-by-default row (a button with `aria-expanded`, not `<details>`) for the rarely used layout properties. */
+function LayoutMore(props: { readonly label: string; readonly children: ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const id = useId();
+  return (
+    <div className="bd-layout-more" data-open={open}>
+      <button
+        type="button"
+        className="bd-layout-more__toggle"
+        aria-expanded={open}
+        aria-controls={id}
+        onClick={() => setOpen(!open)}
+      >
+        <Icon name={open ? 'chevron-down' : 'chevron-right'} />
+        {props.label}
+      </button>
+      <div id={id} hidden={!open}>
+        {props.children}
+      </div>
+    </div>
+  );
+}
+
 /** The pad is a shortcut for the same two layout commands as the individual segments. */
 function LayoutAlignment(props: {
   readonly nodeId: string;
@@ -892,10 +1445,11 @@ function LayoutAlignment(props: {
   readonly layer: string;
   readonly disabled: boolean;
   readonly onError: (message: string) => void;
+  readonly fallbackDisplay?: string | undefined;
 }) {
   const t = useT();
   const store = useEditor();
-  const display = props.effective['layout.display']?.value;
+  const display = props.effective['layout.display']?.value ?? props.fallbackDisplay;
   if (display !== 'flex' && display !== 'inline-flex') return null;
   const direction = String(props.effective['layout.direction']?.value ?? 'row');
   const column = direction.startsWith('column');

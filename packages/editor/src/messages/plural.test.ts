@@ -4,6 +4,14 @@ import { createPluralTranslator, createTranslator, interpolate, UI_LOCALES } fro
 import { pl } from './pl.ts';
 
 describe('plurals', () => {
+  it('uses Polish deletion plurals', () => {
+    const plural = createPluralTranslator('pl');
+    expect(plural('toast.deletedCount', 1)).toBe('Usunięto 1 blok');
+    expect(plural('toast.deletedCount', 3)).toBe('Usunięto 3 bloki');
+    expect(plural('toast.deletedCount', 5)).toBe('Usunięto 5 bloków');
+    expect(plural('toast.deletedCount', 22)).toBe('Usunięto 22 bloki');
+  });
+
   it('picks one and other in English', () => {
     const plural = createPluralTranslator('en');
     expect(plural('issues.count.warning', 1)).toBe('1 warning');

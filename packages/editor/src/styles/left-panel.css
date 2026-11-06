@@ -236,3 +236,164 @@
   height: var(--bd-tile-h);
   padding: var(--bd-space-2);
 }
+/* PB-157: library geometry follows the approved template. */
+.buildr-editor .bd-left-panel-head {
+  height: var(--bd-panel-header);
+  align-items: stretch;
+  gap: var(--bd-space-1);
+  padding-left: var(--bd-space-3);
+}
+.buildr-editor .bd-left-panel-head > .bd-icon-button {
+  align-self: center;
+}
+.buildr-editor .bd-left-panel-head .bd-tabs-list {
+  align-items: stretch;
+  gap: var(--bd-space-1);
+  padding: 0;
+}
+.buildr-editor .bd-left-panel-head .bd-tab {
+  padding: 0 var(--bd-space-2);
+}
+.buildr-editor .bd-insert {
+  padding: var(--bd-space-3) var(--bd-space-4) var(--bd-space-4);
+}
+.buildr-editor .bd-insert-category {
+  margin: 0;
+}
+.buildr-editor .bd-insert-category-toggle {
+  height: 40px;
+  min-height: 40px;
+  padding-inline: var(--bd-space-1);
+  font-size: var(--bd-text-md);
+  font-weight: 400;
+}
+.buildr-editor .bd-insert-group {
+  border-bottom: var(--bd-border-width) solid var(--bd-border);
+}
+.buildr-editor .bd-insert-group:last-child {
+  border-bottom: 0;
+}
+.buildr-editor .bd-insert-list[data-kind="component"] {
+  padding-top: var(--bd-space-1);
+}
+.buildr-editor .bd-insert[data-view="grid"] .bd-insert-list[data-kind="component"] .bd-insert-item {
+  justify-content: center;
+}
+.buildr-editor .bd-pattern-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bd-space-1);
+}
+.buildr-editor .bd-pattern-filters button {
+  height: var(--bd-control-sm);
+  padding: 0 var(--bd-space-2);
+  border: var(--bd-border-width) solid var(--bd-border);
+  border-radius: var(--bd-radius-pill);
+  background: var(--bd-surface);
+  color: var(--bd-text-muted);
+  font-size: var(--bd-text-xs);
+  font-weight: var(--bd-weight-medium);
+  cursor: pointer;
+}
+.buildr-editor .bd-pattern-filters button[aria-pressed="true"] {
+  border-color: transparent;
+  background: var(--bd-accent-soft);
+  color: var(--bd-accent);
+}
+.buildr-editor .bd-pattern-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bd-space-2);
+  padding: 0;
+  margin: var(--bd-space-3) 0 0;
+  list-style: none;
+}
+.buildr-editor .bd-insert[data-view="grid"][data-mode="patterns"] .bd-pattern-list .bd-insert-item {
+  align-items: stretch;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+  text-align: start;
+}
+.buildr-editor .bd-pattern-list .bd-insert-thumb {
+  height: 88px;
+  aspect-ratio: auto;
+  border-radius: 0;
+  border-bottom: var(--bd-border-width) solid var(--bd-border);
+}
+.buildr-editor .bd-pattern-list .bd-insert-label {
+  padding: var(--bd-space-2) var(--bd-space-3) 0;
+}
+.buildr-editor .bd-pattern-list .bd-insert-desc {
+  padding: 0 var(--bd-space-3) var(--bd-space-2);
+  font-size: var(--bd-text-xs);
+  white-space: normal;
+}
+.buildr-editor .bd-layer-actions {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  flex: none;
+}
+.buildr-editor .bd-insert .bd-insert-result {
+  height: var(--bd-control-lg);
+  align-items: center;
+  padding: 0 var(--bd-space-2);
+  border: 0;
+  border-radius: var(--bd-radius-md);
+  background: transparent;
+  box-shadow: none;
+}
+.buildr-editor .bd-insert .bd-insert-result:hover {
+  background: var(--bd-surface-hover);
+}
+/* A pattern's thumbnail in a search row is a small preview, not the full-width card image. */
+.buildr-editor .bd-insert-result .bd-insert-thumb {
+  flex: none;
+  width: var(--bd-control-lg);
+  height: auto;
+  aspect-ratio: 16 / 10;
+}
+.buildr-editor
+  .bd-insert[data-view="grid"]
+  .bd-insert-results[data-kind="component"]
+  .bd-insert-result
+  .bd-insert-icon {
+  background: var(--bd-surface-2);
+  color: var(--bd-text-muted);
+}
+
+/* PB-157: row toggles (hide in editor, lock) show on hover and selection; an active one stays. */
+.buildr-editor .bd-layer-toggles {
+  display: flex;
+  align-items: center;
+}
+.buildr-editor .bd-layer-toggles .bd-icon-button {
+  display: none;
+  width: var(--bd-control-sm);
+  height: var(--bd-control-sm);
+  border-color: transparent;
+  background: transparent;
+  color: var(--bd-text-muted);
+}
+.buildr-editor .bd-layer-toggles .bd-icon-button:hover {
+  background: var(--bd-surface-hover);
+  color: var(--bd-text);
+}
+.buildr-editor .bd-layer-toggles .bd-icon-button[data-state="on"],
+.buildr-editor .bd-layer:hover .bd-layer-toggles .bd-icon-button,
+.buildr-editor .bd-layer:focus-within .bd-layer-toggles .bd-icon-button,
+.buildr-editor .bd-layer[data-hovered="true"] .bd-layer-toggles .bd-icon-button,
+.buildr-editor .bd-layer[data-selected="true"] .bd-layer-toggles .bd-icon-button {
+  display: inline-grid;
+}
+.buildr-editor .bd-layer[data-hidden="true"] :is(.bd-layer-icon, .bd-layer-label, .bd-layer-type) {
+  opacity: 0.45;
+}
+/* The issue marker stays, but quiet: a plain glyph, no tinted chip. */
+.buildr-editor .bd-layer-badge[data-badge="layers.badge.issues"] {
+  background: transparent;
+}
+.buildr-editor .bd-layer-slot {
+  opacity: 0.8;
+}

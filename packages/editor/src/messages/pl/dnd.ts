@@ -1,0 +1,18 @@
+export const dnd = {
+  'dnd.notAllowed': 'Nie można tego tutaj upuścić.',
+  'dnd.ghost.nodes': 'elementy',
+  'dnd.moveTo': 'Przenieś do…',
+  'dnd.moveTo.title': 'Przenieś do…',
+  'dnd.moveTo.description': 'Wybierz, dokąd przenieść zaznaczone elementy.',
+  'dnd.moveTo.none': 'Nie ma miejsca, do którego można przenieść zaznaczenie.',
+  'dnd.moveTo.into': 'Do',
+  'dnd.moveTo.named': 'Przenieś blok „{name}”',
+  'dnd.moveTo.search': 'Szukaj miejsca',
+  'dnd.moveTo.searchAria': 'Szukaj sekcji lub kontenera',
+  'dnd.moveTo.where': 'Gdzie przenieść',
+  'dnd.moveTo.position': 'Miejsce w środku',
+  'dnd.moveTo.start': 'Na początku',
+  'dnd.moveTo.end': 'Na końcu',
+  'dnd.moveTo.current': 'obecne miejsce',
+  'dnd.moveTo.confirm': 'Przenieś',
+} as const;

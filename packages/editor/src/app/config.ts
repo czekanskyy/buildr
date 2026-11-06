@@ -1,5 +1,6 @@
-import type { RegistryManifest } from '@next-buildr/core';
+import type { HostCapabilities, RegistryManifest } from '@next-buildr/core';
 import type { DocumentAdapter, DocumentRef } from '../persistence/types.ts';
+import type { EditorStoreOptions } from '../store/types.ts';
 
 export type { DocumentRef };
 
@@ -26,9 +27,16 @@ export interface EditorConfig {
   readonly theme?: 'light' | 'dark' | 'system';
   /**
    * The narrowest window (in CSS pixels) the editor opens in; below it a notice asks the author to
-   * use a computer. Defaults to 1024 (phones and tablets held upright); `0` turns the check off.
+   * use a wider screen. Defaults to 320 (the narrowest phone; the panels are sheets over the
+   * canvas below 1100px); `0` turns the check off.
    */
   readonly minViewportWidth?: number;
+  /**
+   * What the host permits beyond the safe defaults (ADR-026). `authorCode: true` shows the Advanced
+   * fields (custom CSS, classes, attributes) and the Text HTML mode and lets their commands run;
+   * absent or anything but exactly `true` leaves them off. The `capabilities` prop of the editor wins.
+   */
+  readonly capabilities?: HostCapabilities;
 }
 
 export interface ResolvedEditorConfig {
@@ -38,14 +46,15 @@ export interface ResolvedEditorConfig {
   readonly uiLocale: string;
   readonly theme: 'light' | 'dark' | 'system';
   readonly minViewportWidth: number;
+  readonly capabilities: HostCapabilities;
 }
 
-/** Below this window width the editor does not open: its panels and the canvas need the room. */
-export const DEFAULT_MIN_VIEWPORT_WIDTH = 1024;
+/** Below this window width the editor does not open: not even the toolbar and the canvas fit. */
+export const DEFAULT_MIN_VIEWPORT_WIDTH = 320;
 
 export const DEFAULT_BREAKPOINTS: readonly BreakpointConfig[] = [
   { id: 'desktop', width: 1280 },
-  { id: 'tablet', width: 820 },
+  { id: 'tablet', width: 768 },
   { id: 'mobile', width: 390 },
 ];
 
@@ -58,6 +67,7 @@ export function resolveConfig(config: EditorConfig = {}): ResolvedEditorConfig {
     uiLocale: config.uiLocale ?? 'en',
     theme: config.theme ?? 'system',
     minViewportWidth: config.minViewportWidth ?? DEFAULT_MIN_VIEWPORT_WIDTH,
+    capabilities: config.capabilities ?? {},
   };
 }
 
@@ -73,4 +83,18 @@ export interface BuilderEditorProps {
   readonly canvasUrl: string;
   readonly documentRef: DocumentRef;
   readonly config?: EditorConfig;
+  /** Host permissions (ADR-026); same as `config.capabilities`, and wins over it. Default: all off. */
+  readonly capabilities?: HostCapabilities;
+  /**
+   * Decides whether the author may weaken a lock (`node.setAttr` `lock`), e.g. from the host's own
+   * permission for template editing. Without it the editor can lock a block but never unlock it.
+   * Read when an unlock is attempted, so it may close over current host state.
+   */
+  readonly canUnlock?: NonNullable<EditorStoreOptions['canUnlock']>;
+  /**
+   * The version history of the page. An address makes the toolbar's history icon a link; a function
+   * is called when the icon is pressed (open your own panel or dialog). Without it, and without an
+   * adapter `historyUrl(ref)`, there is no history icon. The prop wins over the adapter.
+   */
+  readonly historyUrl?: string | (() => void);
 }

@@ -1,5 +1,5 @@
 import type { Diagnostic } from '@next-buildr/core';
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { useManifest } from '../app/manifest.tsx';
 import { useStageSlots } from '../app/stage-slots.tsx';
 import { interpolate, type MessageKey, usePlural, useT } from '../messages/index.tsx';
@@ -12,7 +12,7 @@ import {
 } from '../panels/issues/index.ts';
 import { type PublishOutcome, usePersistence, usePersistenceState } from '../persistence/index.ts';
 import { useEditor, useEditorState } from '../store/index.ts';
-import { Button, Dialog, Icon } from '../ui/index.ts';
+import { Button, Dialog, Icon, Tooltip } from '../ui/index.ts';
 
 export interface PublishDialogProps {
   readonly open: boolean;
@@ -20,6 +20,9 @@ export interface PublishDialogProps {
   /** `block` refuses to publish while errors exist; `warn` (the default) only says so. */
   readonly policy?: PublishPolicy | undefined;
   readonly canvasDiagnostics?: readonly Diagnostic[] | undefined;
+  /** The page's name and its public address, for the "visible at" line; the line is left out without an address. */
+  readonly pageName?: string | undefined;
+  readonly address?: string | undefined;
   /** Called after the backend accepted the publication. */
   readonly onPublished?: (() => void) | undefined;
 }
@@ -37,7 +40,9 @@ const FAILURE_KEY: Record<Exclude<PublishOutcome, { ok: true }>['kind'], Message
  * and publishes after saving whatever is unsaved (`PersistenceController.publish`).
  */
 export function PublishDialog(props: PublishDialogProps) {
-  const { open, onOpenChange, policy, canvasDiagnostics, onPublished } = props;
+  const { open, onOpenChange, policy, canvasDiagnostics, onPublished, pageName, address } = props;
+  const primary = useRef<HTMLButtonElement>(null);
+  const scheduleReason = useId();
   const t = useT();
   const plural = usePlural();
   const slots = useStageSlots();
@@ -83,12 +88,14 @@ export function PublishDialog(props: PublishDialogProps) {
       open={open}
       onOpenChange={onOpenChange}
       icon="send"
+      initialFocus={primary}
       title={t('dialog.publish.title')}
       description={t('publish.description')}
       footer={
         <>
           <Button onClick={() => onOpenChange(false)}>{t('dialog.cancel')}</Button>
           <Button
+            ref={primary}
             variant="primary"
             disabled={gate.blocked || readOnly || working || done || status === 'conflict'}
             onClick={() => void publish()}
@@ -98,6 +105,14 @@ export function PublishDialog(props: PublishDialogProps) {
         </>
       }
     >
+      {address === undefined ? null : (
+        <p className="bd-publish-address">
+          {interpolate(t('dialog.publish.visibleAt'), {
+            name: pageName ?? '',
+            address,
+          })}
+        </p>
+      )}
       <p className="bd-publish-notice">{t('publish.notice')}</p>
       <ul
         className="bd-publish-list"
@@ -149,6 +164,29 @@ export function PublishDialog(props: PublishDialogProps) {
             : interpolate(t('dialog.publish.warningsDontBlock'), { issues: counts })}
         </p>
       ) : null}
+      <fieldset className="bd-publish-when" aria-label={t('dialog.publish.when')}>
+        <button type="button" aria-pressed="true" className="bd-publish-option">
+          <b>{t('dialog.publish.now')}</b>
+          <span>{t('dialog.publish.nowHint')}</span>
+        </button>
+        {/* Scheduling needs adapter support that does not exist yet: shown, not usable. */}
+        <Tooltip content={t('dialog.publish.soon')}>
+          <button
+            type="button"
+            aria-pressed="false"
+            aria-disabled="true"
+            aria-describedby={scheduleReason}
+            className="bd-publish-option"
+            data-unavailable=""
+          >
+            <b>{t('dialog.publish.schedule')}</b>
+            <span>{t('dialog.publish.scheduleHint')}</span>
+            <small id={scheduleReason} className="bd-publish-option-reason">
+              {t('dialog.publish.scheduleUnavailable')}
+            </small>
+          </button>
+        </Tooltip>
+      </fieldset>
       {status === 'conflict' ? (
         <p role="alert" className="bd-publish-blocked">
           {t('publish.failed.conflict')}

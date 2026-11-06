@@ -173,7 +173,7 @@ describe('value modes in the inspector', () => {
 
   const title = () => container.querySelector('[data-prop=title]') as HTMLElement;
   const button = (name: string) =>
-    [...title().querySelectorAll('button')].find(
+    [...document.querySelectorAll('button')].find(
       (element) => (element.getAttribute('aria-label') ?? element.textContent) === name,
     ) as HTMLButtonElement;
   const click = (element: Element) =>
@@ -185,8 +185,12 @@ describe('value modes in the inspector', () => {
 
   it('picking a field writes a binding', async () => {
     const store = await mount();
+    await click(title().querySelector('.bd-value-modes button') as Element);
     await click(button('Data'));
-    const field = [...title().querySelectorAll('button')].find((element) =>
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    });
+    const field = [...document.querySelectorAll('button')].find((element) =>
       element.textContent?.includes('post.title'),
     ) as HTMLButtonElement;
     expect(field).toBeDefined();
@@ -214,7 +218,8 @@ describe('value modes in the inspector', () => {
 
   it('shows the mode switch as a segmented control with icons, and the field list with type icons', async () => {
     await mount({ title: { kind: 'binding', path: 'post.title' } });
-    const modes = title().querySelector('.bd-value-modes.bd-segmented');
+    await click(title().querySelector('.bd-value-modes button') as Element);
+    const modes = document.querySelector('.bd-popover .bd-segmented');
     expect(modes?.tagName).toBe('FIELDSET');
     expect(modes?.querySelectorAll('svg')).toHaveLength(3);
     expect(title().querySelector('.bd-value-field-icon')).not.toBeNull();
@@ -223,6 +228,7 @@ describe('value modes in the inspector', () => {
 
   it('switching back to Fixed restores a static value', async () => {
     const store = await mount({ title: { kind: 'binding', path: 'post.title' } });
+    await click(title().querySelector('.bd-value-modes button') as Element);
     await click(button('Fixed'));
     expect(propOf(store)?.kind ?? 'static').toBe('static');
   });

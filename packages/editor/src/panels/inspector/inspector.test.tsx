@@ -4,6 +4,7 @@ import {
   type ComponentMeta,
   createRegistryMeta,
   createSeededIdGenerator,
+  type PropDef,
   p,
   s,
   toManifest,
@@ -90,10 +91,18 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
-async function mount(select: string | null, extra: InspectorProps = {}, doc = fixture()) {
+async function mount(
+  select: string | null,
+  extra: InspectorProps = {},
+  doc = fixture(),
+  customMeta?: ComponentMeta,
+) {
+  const currentRegistry = customMeta
+    ? createRegistryMeta({ components: [page, customMeta] })
+    : registry;
   const store = createEditorStore({
     doc,
-    registry,
+    registry: currentRegistry,
     generateId: createSeededIdGenerator(3),
     validationDelayMs: null,
   });
@@ -101,7 +110,7 @@ async function mount(select: string | null, extra: InspectorProps = {}, doc = fi
   await act(async () =>
     root.render(
       <MessagesProvider locale="en">
-        <ManifestProvider manifest={manifest}>
+        <ManifestProvider manifest={customMeta ? toManifest(currentRegistry) : manifest}>
           <EditorStoreProvider store={store}>
             <Inspector {...extra} />
           </EditorStoreProvider>
@@ -265,9 +274,11 @@ describe('Inspector', () => {
     expect(container.querySelector('[data-state=no-match]')).not.toBeNull();
   });
 
-  it('shows the parent in the subtitle', async () => {
+  it('shows an excerpt of the text in the subtitle', async () => {
     await mount('widget0001');
-    expect(container.querySelector('.bd-inspector-subtitle')?.textContent).toContain('Page');
+    expect(container.querySelector('.bd-inspector-subtitle')?.textContent).toContain(
+      'Widget · “Hello”',
+    );
   });
 
   it('keeps its own tab, or follows a controlled one', async () => {
@@ -429,12 +440,21 @@ describe('Inspector', () => {
     };
     await mount('widget0001', {}, bound);
     expect((field('title').querySelector('input') as HTMLInputElement).value).toBe('post.title');
-    expect(field('title').querySelector('[aria-pressed=true]')?.getAttribute('aria-label')).toBe(
-      'Data',
-    );
-    expect(field('href').querySelector('[aria-pressed=true]')?.getAttribute('aria-label')).toBe(
-      'Formula',
-    );
+    await act(async () => {
+      (field('title').querySelector('.bd-value-modes button') as HTMLButtonElement).click();
+    });
+    expect(
+      document.querySelector('.bd-popover [aria-pressed=true]')?.getAttribute('aria-label'),
+    ).toBe('Data');
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    });
+    await act(async () => {
+      (field('href').querySelector('.bd-value-modes button') as HTMLButtonElement).click();
+    });
+    expect(
+      document.querySelector('.bd-popover [aria-pressed=true]')?.getAttribute('aria-label'),
+    ).toBe('Formula');
     expect((field('href').querySelector('textarea') as HTMLTextAreaElement).value).toBe(
       'post.slug',
     );
@@ -631,5 +651,100 @@ describe('template v2 prop controls', () => {
     );
     await format('Clear formatting');
     expect(propOf(store, 'widget0001', 'rich')).toEqual(s(initial));
+  });
+});
+
+describe('Advanced template controls', () => {
+  it('places tabs before search and writes breakpoint visibility with undo and redo', async () => {
+    const store = await mount('widget0001');
+    const tabs = container.querySelector('[role=tablist]') as Element;
+    const search = container.querySelector('.bd-inspector-search input') as Element;
+    expect(tabs.compareDocumentPosition(search) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    await openTab('Advanced');
+    const chip = container.querySelector(
+      '.bd-visibility-chips button:nth-child(2)',
+    ) as HTMLButtonElement;
+    await act(async () => chip.click());
+    expect(
+      store.getState().doc.nodes['widget0001']?.styles?.bp?.['tablet']?.visibility?.hidden,
+    ).toBe(true);
+    await act(async () => store.undo());
+    expect(
+      store.getState().doc.nodes['widget0001']?.styles?.bp?.['tablet']?.visibility?.hidden,
+    ).toBeUndefined();
+    await act(async () => store.redo());
+    expect(
+      store.getState().doc.nodes['widget0001']?.styles?.bp?.['tablet']?.visibility?.hidden,
+    ).toBe(true);
+    await act(async () => {
+      for (const toggle of container.querySelectorAll<HTMLButtonElement>(
+        '.bd-advanced-group > h4 button',
+      ))
+        toggle.click();
+    });
+    expect(await axe(container)).toHaveNoViolations();
+  });
+});
+
+describe('Advanced condition commands', () => {
+  it('clears a display condition with undo and redo', async () => {
+    const base = fixture();
+    const node = base.nodes['widget0001'];
+    if (!node) throw new Error('missing fixture');
+    const store = await mount(
+      'widget0001',
+      {},
+      {
+        ...base,
+        nodes: {
+          ...base.nodes,
+          widget0001: { ...node, visibleIf: { kind: 'binding', path: 'post.published' } },
+        },
+      },
+    );
+    await openTab('Advanced');
+    const remove = [...container.querySelectorAll('button')].find(
+      (button) => button.textContent === 'Remove the condition',
+    ) as HTMLButtonElement;
+    await act(async () => remove.click());
+    expect(store.getState().doc.nodes['widget0001']?.visibleIf).toBeUndefined();
+    await act(async () => store.undo());
+    expect(store.getState().doc.nodes['widget0001']?.visibleIf).toEqual({
+      kind: 'binding',
+      path: 'post.published',
+    });
+    await act(async () => store.redo());
+    expect(store.getState().doc.nodes['widget0001']?.visibleIf).toBeUndefined();
+  });
+});
+
+describe('Heading level segments', () => {
+  it('shows six levels before text and writes the numeric prop through history', async () => {
+    const store = await mount('widget0001', {}, fixture(), {
+      ...widget,
+      props: {
+        title: widget.props['title'] as PropDef,
+        level: p.select({ options: [1, 2, 3, 4, 5, 6], default: 2 }),
+      },
+    });
+    const levels = field('level');
+    const segments = levels.querySelectorAll('.bd-segment');
+    expect([...segments].map((button) => button.textContent)).toEqual([
+      'H1',
+      'H2',
+      'H3',
+      'H4',
+      'H5',
+      'H6',
+    ]);
+    expect(
+      levels.compareDocumentPosition(field('title')) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    await act(async () => (segments[2] as HTMLButtonElement).click());
+    expect(propOf(store, 'widget0001', 'level')).toEqual(s(3));
+    await act(async () => store.undo());
+    expect(propOf(store, 'widget0001', 'level')).toBeUndefined();
+    await act(async () => store.redo());
+    expect(propOf(store, 'widget0001', 'level')).toEqual(s(3));
   });
 });

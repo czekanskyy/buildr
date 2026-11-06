@@ -93,5 +93,12 @@ describe('LeftPanel', () => {
   it('uses the Polish labels', async () => {
     await mount('pl');
     expect(tabs().map((t) => t.textContent)).toEqual(['Bloki', 'Struktura']);
+    expect(await axe(container)).toHaveNoViolations();
+    await act(async () => tabs()[1]?.click());
+    expect(container.querySelector('[role=tabpanel]')?.getAttribute('aria-labelledby')).toBe(
+      tabs()[1]?.id,
+    );
+    expect(container.querySelector('[role=tabpanel] input')).toBeNull();
+    expect(await axe(container)).toHaveNoViolations();
   });
 });

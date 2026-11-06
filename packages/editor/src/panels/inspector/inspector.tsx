@@ -1,14 +1,21 @@
-import type { PageNode, PropDef, Value } from '@next-buildr/core';
-import { canEdit, createIndex } from '@next-buildr/core';
+import type { ComponentMeta, PageNode, PropDef, Value } from '@next-buildr/core';
+import { canEdit, createIndex, p as prop, valueSchema } from '@next-buildr/core';
 import type { Command } from '@next-buildr/core/commands';
 import type { KeyboardEvent, ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
+import { z } from 'zod';
 import type { RemoveRequest } from '../../app/contracts.ts';
 import { componentMeta, useManifest } from '../../app/manifest.tsx';
 import { MoveToDialog, useDragAvailable } from '../../dnd/index.ts';
 import { interpolate, useT } from '../../messages/index.tsx';
 import { hasDescendants } from '../../shortcuts/navigation.ts';
-import { useEditor, useEditorState, useSelectedNode } from '../../store/index.ts';
+import {
+  pathTo,
+  structureLockedIds,
+  useEditor,
+  useEditorState,
+  useSelectedNode,
+} from '../../store/index.ts';
 import {
   Button,
   ComponentIcon,
@@ -18,11 +25,16 @@ import {
   Input,
   Popover,
   SearchField,
+  Select,
   Tabs,
+  useStructureLockedNotice,
 } from '../../ui/index.ts';
+import { AttributesField, AuthorOffNote, ClassesField, CssField } from './author-fields.tsx';
+import { renderControl } from './controls/index.ts';
 import { PropsPanel } from './props-panel.tsx';
-import { translationLocale } from './value.ts';
+import { readProp, translationLocale } from './value.ts';
 import { TranslationBanner } from './values/translation.tsx';
+import { ValueEditor } from './values/value-editor.tsx';
 
 export type InspectorTab = 'content' | 'style' | 'advanced';
 
@@ -138,6 +150,41 @@ function AttrField(props: {
   );
 }
 
+/** Accordion preferences are editor state; opening a group never changes the document. */
+function AdvancedGroup({
+  title,
+  icon,
+  searching,
+  hidden,
+  children,
+}: {
+  readonly title: string;
+  readonly icon: IconName;
+  readonly searching: boolean;
+  readonly hidden?: boolean;
+  readonly children: ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const expanded = searching || open;
+  return (
+    <section className="bd-advanced-group" hidden={hidden}>
+      <h4>
+        <button
+          type="button"
+          className="bd-props-toggle"
+          aria-expanded={expanded}
+          onClick={() => setOpen(!open)}
+        >
+          <Icon name={expanded ? 'chevron-down' : 'chevron-right'} />
+          <Icon name={icon} />
+          {title}
+        </button>
+      </h4>
+      <div hidden={!expanded}>{children}</div>
+    </section>
+  );
+}
+
 /** The "more actions" menu: items are menuitems, arrows wrap, Home and End jump, focus starts on the first. */
 function ActionMenu({ label, children }: { readonly label: string; readonly children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -163,11 +210,33 @@ function ActionMenu({ label, children }: { readonly label: string; readonly chil
     list[next]?.focus();
   };
   return (
-    // biome-ignore lint/a11y/noNoninteractiveElementInteractions: the menu role owns the arrow-key navigation of its items
     <div role="menu" aria-label={label} ref={ref} onKeyDown={onKeyDown}>
       {children}
     </div>
   );
+}
+
+const EXCERPT_LENGTH = 24;
+
+/** A short, single-line excerpt of the node's own text (a plain string, never markup), for the subtitle. */
+function textExcerpt(
+  node: PageNode,
+  meta: ComponentMeta | undefined,
+  locale: string | undefined,
+  defaultLocale: string | undefined,
+): string | undefined {
+  if (meta === undefined) return undefined;
+  const entries = Object.entries(meta.props).filter(
+    ([, def]) => def.kind === 'text' || def.kind === 'textarea',
+  );
+  const [name, def] = entries.find(([key]) => key === 'text') ?? entries[0] ?? [];
+  if (name === undefined || def === undefined) return undefined;
+  const reading = readProp(node, name, def, locale, defaultLocale);
+  if (reading.mode !== 'static' || typeof reading.value !== 'string') return undefined;
+  const text = reading.value.replace(/\s+/g, ' ').trim();
+  if (text === '') return undefined;
+  const chars = [...text];
+  return chars.length > EXCERPT_LENGTH ? `${chars.slice(0, EXCERPT_LENGTH).join('')}…` : text;
 }
 
 /**
@@ -199,6 +268,13 @@ export function Inspector({
   const [menuOpen, setMenuOpen] = useState(false);
   const [moving, setMoving] = useState(false);
   const canMove = useDragAvailable();
+  const notifyLocked = useStructureLockedNotice();
+  /** A block locked for structure is not removed, moved or duplicated: say why. */
+  const refuseLocked = () => {
+    if (structureLockedIds(store.getState().doc, selectedIds).length === 0) return false;
+    notifyLocked(selectedIds);
+    return true;
+  };
   const tab = controlledTab ?? innerTab;
 
   if (node === undefined) {
@@ -221,17 +297,20 @@ export function Inspector({
   const meta = componentMeta(manifest, node.type);
   const locked = !canEdit(doc, createIndex(doc), node.id, 'content').ok;
   const disabled = readOnly || locked;
-  const parentId = createIndex(doc).parentOf[node.id];
-  const parent = parentId === undefined ? undefined : doc.nodes[parentId];
-  const parentLabel =
-    parent === undefined
+  const styleDisabled = readOnly || !canEdit(doc, createIndex(doc), node.id, 'style').ok;
+  const excerpt = textExcerpt(node, meta, locale, defaultLocale);
+  const parentId = pathTo(doc, node.id).at(-2);
+  const parentNode = parentId === undefined ? undefined : doc.nodes[parentId];
+  const parentName =
+    parentNode === undefined
       ? undefined
-      : (parent.name ?? componentMeta(manifest, parent.type)?.label ?? parent.type);
+      : (parentNode.name ?? componentMeta(manifest, parentNode.type)?.label ?? parentNode.type);
   const subtitle = [
-    node.name ?? node.type,
-    parentLabel === undefined
+    node.name ?? meta?.label ?? node.type,
+    excerpt === undefined ? undefined : interpolate(t('inspector.excerpt'), { text: excerpt }),
+    parentName === undefined
       ? undefined
-      : interpolate(t('inspector.inBlock'), { name: parentLabel }),
+      : interpolate(t('inspector.inBlock'), { name: parentName }),
   ]
     .filter((x) => x !== undefined)
     .join(' · ');
@@ -320,6 +399,16 @@ export function Inspector({
           scope === 'advanced' &&
           (matches(t('inspector.attr.name')) ||
             matches(t('inspector.attr.anchor')) ||
+            [
+              'inspector.visibility.title',
+              'inspector.condition.title',
+              'inspector.position.title',
+              'inspector.content.htmlElement',
+              'inspector.css.title',
+              'inspector.classes.title',
+              'inspector.attributes.title',
+              'inspector.author.off.title',
+            ].some((key) => matches(t(key as Parameters<typeof t>[0]))) ||
             (node.visibleIf !== undefined && matches(t('inspector.attr.visibleIf'))))
         }
         onChange={write}
@@ -329,6 +418,17 @@ export function Inspector({
       />
     );
   };
+
+  const search = (
+    <SearchField
+      className="bd-inspector-search"
+      value={query}
+      onChange={setQuery}
+      label={t('inspector.search')}
+      clearLabel={t('inspector.search')}
+      placeholder={t('inspector.search.placeholder')}
+    />
+  );
 
   const menuItem = (
     id: string,
@@ -355,7 +455,14 @@ export function Inspector({
   );
 
   return (
-    <div className="bd-inspector">
+    <div
+      className="bd-inspector"
+      data-state-controls={
+        node.type.endsWith('/button') ||
+        Object.keys(meta?.props ?? {}).some((key) => ['href', 'link', 'onClick'].includes(key)) ||
+        Object.keys(node.styles?.state ?? {}).length > 0
+      }
+    >
       <header className="bd-inspector-head">
         <div className="bd-inspector-headline">
           <span className="bd-inspector-icon">
@@ -383,25 +490,33 @@ export function Inspector({
               }
             >
               <ActionMenu label={t('inspector.moreActions')}>
-                {menuItem('duplicate', 'copy', t('menu.duplicate'), () =>
-                  report(store.dispatch({ type: 'node.duplicate', payload: { ids: selectedIds } })),
-                )}
+                {menuItem('duplicate', 'copy', t('menu.duplicate'), () => {
+                  if (!refuseLocked())
+                    report(
+                      store.dispatch({ type: 'node.duplicate', payload: { ids: selectedIds } }),
+                    );
+                })}
                 {canMove
-                  ? menuItem('move', 'corner-left-up', t('menu.moveTo'), () => setMoving(true))
+                  ? menuItem('move', 'corner-left-up', t('menu.moveTo'), () => {
+                      if (!refuseLocked()) setMoving(true);
+                    })
                   : null}
                 {menuItem(
                   'delete',
                   'trash-2',
                   t('menu.delete'),
-                  () =>
-                    onRemoveRequest !== undefined
-                      ? onRemoveRequest({
-                          ids: selectedIds,
-                          hasDescendants: hasDescendants(doc, selectedIds),
-                        })
-                      : report(
-                          store.dispatch({ type: 'node.remove', payload: { ids: selectedIds } }),
-                        ),
+                  () => {
+                    if (refuseLocked()) return;
+                    if (onRemoveRequest !== undefined)
+                      onRemoveRequest({
+                        ids: selectedIds,
+                        hasDescendants: hasDescendants(doc, selectedIds),
+                      });
+                    else
+                      report(
+                        store.dispatch({ type: 'node.remove', payload: { ids: selectedIds } }),
+                      );
+                  },
                   true,
                 )}
               </ActionMenu>
@@ -414,14 +529,6 @@ export function Inspector({
         {locked ? <p className="bd-inspector-locked">{t('inspector.locked')}</p> : null}
       </header>
       <TranslationBanner locale={locale} defaultLocale={defaultLocale} />
-      <SearchField
-        className="bd-inspector-search"
-        value={query}
-        onChange={setQuery}
-        label={t('inspector.search')}
-        clearLabel={t('inspector.search')}
-        placeholder={t('inspector.search.placeholder')}
-      />
       <Tabs
         label={t('inspector.tabs')}
         value={tab}
@@ -435,15 +542,25 @@ export function Inspector({
             value: 'content',
             icon: 'type',
             label: t('inspector.tab.content'),
-            content: propsPanel('content'),
+            content: (
+              <>
+                {search}
+                {propsPanel('content')}
+              </>
+            ),
           },
           {
             value: 'style',
             icon: 'image',
             modified: node.styles !== undefined && Object.keys(node.styles).length > 0,
             label: t('inspector.tab.style'),
-            content: renderStyle?.(node, query) ?? (
-              <p className="bd-inspector-empty">{t('inspector.style.pending')}</p>
+            content: (
+              <>
+                {search}
+                {renderStyle?.(node, query) ?? (
+                  <p className="bd-inspector-empty">{t('inspector.style.pending')}</p>
+                )}
+              </>
             ),
           },
           {
@@ -452,41 +569,270 @@ export function Inspector({
             label: t('inspector.tab.advanced'),
             content: (
               <>
-                {matches(t('inspector.attr.name')) ? (
-                  <AttrField
-                    key={`${node.id}-name`}
-                    nodeId={node.id}
-                    attr="name"
-                    label={t('inspector.attr.name')}
-                    value={node.name ?? ''}
+                {search}
+                {Object.entries(meta?.props ?? {})
+                  .filter(([key]) => ['element', 'as', 'level'].includes(key))
+                  .map(([key, def]) => (
+                    <AdvancedGroup
+                      key={key}
+                      hidden={
+                        !matches(t('inspector.content.htmlElement')) &&
+                        !matches(t('inspector.content.tag'))
+                      }
+                      title={t('inspector.content.htmlElement')}
+                      icon="braces"
+                      searching={needle !== ''}
+                    >
+                      {renderControl(def, {
+                        id: `${node.id}-${key}-tag`,
+                        def,
+                        label: t('inspector.content.tag'),
+                        describedBy: undefined,
+                        value: readProp(node, key, def, locale, defaultLocale).value,
+                        disabled,
+                        onChange: (value) => write(key, def, value),
+                      })}
+                      <p className="bd-field-hint">{t('inspector.content.tagHelp')}</p>
+                      <p className="bd-field-hint">
+                        <code>
+                          {interpolate(t('inspector.content.tagOnPage'), {
+                            tag: `<${key === 'level' ? 'h' : ''}${String(readProp(node, key, def, locale, defaultLocale).value)}>`,
+                          })}
+                        </code>
+                      </p>
+                    </AdvancedGroup>
+                  ))}
+                <AdvancedGroup
+                  hidden={!matches(t('inspector.visibility.title'))}
+                  title={t('inspector.visibility.title')}
+                  icon="eye"
+                  searching={needle !== ''}
+                >
+                  <p className="bd-field-label">{t('inspector.visibility.hideOnDevice')}</p>
+                  <div className="bd-visibility-chips">
+                    {(['desktop', 'tablet', 'mobile'] as const).map((device) => {
+                      const layer = device === 'desktop' ? {} : { bp: device };
+                      const hidden =
+                        (device === 'desktop' ? node.styles?.base : node.styles?.bp?.[device])
+                          ?.visibility?.hidden ?? false;
+                      return (
+                        <Button
+                          key={device}
+                          disabled={styleDisabled}
+                          aria-pressed={hidden}
+                          aria-label={interpolate(
+                            t(
+                              hidden
+                                ? 'inspector.visibility.showOn'
+                                : 'inspector.visibility.hideOn',
+                            ),
+                            { device: t(`inspector.device.${device}`) },
+                          )}
+                          onClick={() =>
+                            report(
+                              store.dispatch({
+                                type: 'node.setStyle',
+                                payload: {
+                                  id: node.id,
+                                  layer,
+                                  group: 'visibility',
+                                  property: 'hidden',
+                                  value: !hidden,
+                                },
+                              }),
+                            )
+                          }
+                        >
+                          {t(`inspector.device.${device}`)}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                  <p className="bd-field-hint">{t('inspector.visibility.help')}</p>
+                </AdvancedGroup>
+                <AdvancedGroup
+                  hidden={!matches(t('inspector.condition.title'))}
+                  title={t('inspector.condition.title')}
+                  icon="sliders-vertical"
+                  searching={needle !== ''}
+                >
+                  <ValueEditor
+                    def={prop.boolean()}
+                    label={t('inspector.condition.showWhen')}
+                    raw={valueSchema(z.unknown()).safeParse(node.visibleIf).data}
                     disabled={disabled}
-                    onChange={setAttr}
+                    staticControl={null}
+                    onSet={(value) => {
+                      if (value.kind !== 'static')
+                        report(
+                          store.dispatch({
+                            type: 'node.setAttr',
+                            payload: { id: node.id, key: 'visibleIf', value },
+                          }),
+                        );
+                    }}
+                    onFixed={clearCondition}
                   />
-                ) : null}
-                {matches(t('inspector.attr.anchor')) ? (
-                  <AttrField
-                    key={`${node.id}-anchor`}
-                    nodeId={node.id}
-                    attr="anchor"
-                    label={t('inspector.attr.anchor')}
-                    value={node.anchor ?? ''}
-                    disabled={disabled}
-                    placeholder={t('inspector.htmlId.placeholder')}
-                    onChange={setAttr}
-                  />
-                ) : null}
-                {node.visibleIf !== undefined && matches(t('inspector.attr.visibleIf')) ? (
-                  <div className="bd-field bd-note bd-note--info" data-attr="visibleIf">
-                    <Icon name="eye" />
-                    <div className="bd-note-text">
-                      <span className="bd-field-label">{t('inspector.attr.visibleIf')}</span>
-                      <p className="bd-field-chip">{t('inspector.attr.visibleIfSet')}</p>
-                    </div>
+                  {node.visibleIf !== undefined ? (
                     <Button variant="ghost" disabled={disabled} onClick={clearCondition}>
                       {t('inspector.attr.visibleIfRemove')}
                     </Button>
-                  </div>
-                ) : null}
+                  ) : null}
+                </AdvancedGroup>
+                <AdvancedGroup
+                  hidden={!matches(t('inspector.position.title'))}
+                  title={t('inspector.position.title')}
+                  icon="move"
+                  searching={needle !== ''}
+                >
+                  <Select
+                    label={t('inspector.position.label')}
+                    value={String(node.styles?.base?.layout?.position ?? 'static')}
+                    disabled={styleDisabled}
+                    options={(['static', 'relative', 'absolute', 'sticky', 'fixed'] as const).map(
+                      (value) => ({ value, label: t(`inspector.position.${value}`) }),
+                    )}
+                    onValueChange={(value) =>
+                      report(
+                        store.dispatch({
+                          type: 'node.setStyle',
+                          payload: {
+                            id: node.id,
+                            layer: {},
+                            group: 'layout',
+                            property: 'position',
+                            value,
+                          },
+                        }),
+                      )
+                    }
+                  />
+                  {(['top', 'right', 'bottom', 'left', 'zIndex'] as const).map((side) => (
+                    <label
+                      className="bd-advanced-position"
+                      key={side}
+                      htmlFor={`${node.id}-position-${side}`}
+                    >
+                      {t(`inspector.position.${side}`)}
+                      <Input
+                        key={`${node.id}-${side}-${String(side === 'zIndex' ? node.styles?.base?.layout?.zIndex : node.styles?.base?.layout?.inset?.[side])}`}
+                        id={`${node.id}-position-${side}`}
+                        aria-label={t(`inspector.position.${side}`)}
+                        disabled={styleDisabled}
+                        defaultValue={String(
+                          side === 'zIndex'
+                            ? (node.styles?.base?.layout?.zIndex ?? '')
+                            : (node.styles?.base?.layout?.inset?.[side] ?? ''),
+                        )}
+                        onBlur={(event) => {
+                          const value = event.target.value;
+                          const payload = {
+                            id: node.id,
+                            layer: {},
+                            group: 'layout',
+                            property: side === 'zIndex' ? 'zIndex' : 'inset',
+                            ...(side === 'zIndex' ? {} : { side }),
+                          };
+                          report(
+                            store.dispatch(
+                              value === ''
+                                ? { type: 'node.unsetStyle', payload }
+                                : {
+                                    type: 'node.setStyle',
+                                    payload: {
+                                      ...payload,
+                                      value: side === 'zIndex' ? Number(value) : value,
+                                    },
+                                  },
+                            ),
+                          );
+                        }}
+                      />
+                    </label>
+                  ))}
+                </AdvancedGroup>
+                <AdvancedGroup
+                  hidden={
+                    !matches(t('inspector.anchor.title')) &&
+                    !matches(t('inspector.attr.name')) &&
+                    !matches(t('inspector.attr.anchor'))
+                  }
+                  title={t('inspector.anchor.title')}
+                  icon="link"
+                  searching={needle !== ''}
+                >
+                  {matches(t('inspector.attr.name')) ? (
+                    <AttrField
+                      key={`${node.id}-name`}
+                      nodeId={node.id}
+                      attr="name"
+                      label={t('inspector.attr.name')}
+                      value={node.name ?? ''}
+                      disabled={disabled}
+                      onChange={setAttr}
+                    />
+                  ) : null}
+                  {matches(t('inspector.attr.anchor')) ? (
+                    <AttrField
+                      key={`${node.id}-anchor`}
+                      nodeId={node.id}
+                      attr="anchor"
+                      label={t('inspector.attr.anchor')}
+                      value={node.anchor ?? ''}
+                      disabled={disabled}
+                      placeholder={t('inspector.htmlId.placeholder')}
+                      onChange={setAttr}
+                    />
+                  ) : null}
+                  {node.anchor ? (
+                    <p className="bd-field-hint">
+                      {interpolate(t('inspector.anchor.help'), { link: `#${node.anchor}` })}
+                    </p>
+                  ) : null}
+                </AdvancedGroup>
+                {store.authorCode ? (
+                  <>
+                    <AdvancedGroup
+                      hidden={!matches(t('inspector.css.title'))}
+                      title={t('inspector.css.title')}
+                      icon="braces"
+                      searching={needle !== ''}
+                    >
+                      <CssField key={node.id} node={node} disabled={styleDisabled} />
+                    </AdvancedGroup>
+                    <AdvancedGroup
+                      hidden={!matches(t('inspector.classes.title'))}
+                      title={t('inspector.classes.title')}
+                      icon="braces"
+                      searching={needle !== ''}
+                    >
+                      <ClassesField key={node.id} node={node} disabled={styleDisabled} />
+                    </AdvancedGroup>
+                    <AdvancedGroup
+                      hidden={!matches(t('inspector.attributes.title'))}
+                      title={t('inspector.attributes.title')}
+                      icon="braces"
+                      searching={needle !== ''}
+                    >
+                      <AttributesField key={node.id} node={node} disabled={styleDisabled} />
+                    </AdvancedGroup>
+                  </>
+                ) : (
+                  <AdvancedGroup
+                    hidden={!matches(t('inspector.author.off.title'))}
+                    title={t('inspector.author.off.title')}
+                    icon="lock"
+                    searching={needle !== ''}
+                  >
+                    <AuthorOffNote
+                      held={
+                        node.customCss !== undefined ||
+                        node.classes !== undefined ||
+                        node.attributes !== undefined
+                      }
+                    />
+                  </AdvancedGroup>
+                )}
                 {propsPanel('advanced')}
               </>
             ),

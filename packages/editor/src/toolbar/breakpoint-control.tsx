@@ -3,13 +3,13 @@ import { type MessageKey, useT } from '../messages/index.tsx';
 import { useEditorState } from '../store/index.ts';
 import { Button, Icon, type IconName, Tooltip } from '../ui/index.ts';
 
-const BREAKPOINT_LABELS: Readonly<Record<string, MessageKey>> = {
+export const BREAKPOINT_LABELS: Readonly<Record<string, MessageKey>> = {
   desktop: 'toolbar.breakpoint.desktop',
   tablet: 'toolbar.breakpoint.tablet',
   mobile: 'toolbar.breakpoint.mobile',
 };
 
-const BREAKPOINT_ICONS: Readonly<Record<string, IconName>> = {
+export const BREAKPOINT_ICONS: Readonly<Record<string, IconName>> = {
   desktop: 'monitor',
   tablet: 'tablet',
   mobile: 'smartphone',

@@ -189,6 +189,17 @@ describe('BuilderEditor shell', () => {
     expect($('.bd-status button[aria-expanded]').textContent).toBe(en['statusBar.noIssues']);
   });
 
+  it('counts notes in the status bar and reports no issues only when all three are zero', async () => {
+    await renderLayout('en', <EditorLayout issueCounts={{ error: 0, warning: 0, info: 2 }} />);
+    const toggle = $('.bd-status button[aria-expanded]');
+    expect(toggle.querySelector('[data-severity=info]')?.textContent).toBe('2 notes');
+    expect(toggle.textContent).not.toContain(en['statusBar.noIssues']);
+    await renderLayout('en', <EditorLayout issueCounts={{ error: 0, warning: 0, info: 0 }} />);
+    expect($('.bd-status button[aria-expanded]').textContent).toBe(en['statusBar.noIssues']);
+    await renderLayout('pl', <EditorLayout issueCounts={{ error: 0, warning: 0, info: 5 }} />);
+    expect($('.bd-status [data-severity=info]').textContent).toBe('5 uwag');
+  });
+
   it('words the issue counts with plural forms, in Polish', async () => {
     const text = async (warning: number) => {
       await renderLayout('pl', <EditorLayout issueCounts={{ error: 0, warning }} />);
@@ -333,9 +344,13 @@ describe('BuilderEditor shell', () => {
 
   it('turns the panels into toolbar-toggled overlays when the editor is narrow', async () => {
     let notify: ((entries: unknown[]) => void) | undefined;
+    const callbacks: ((entries: unknown[]) => void)[] = [];
     class FakeObserver {
       constructor(callback: (entries: unknown[]) => void) {
-        notify = callback;
+        callbacks.push(callback);
+        notify = (entries) => {
+          for (const each of callbacks) each(entries);
+        };
       }
       observe() {}
       disconnect() {}
@@ -371,6 +386,91 @@ describe('BuilderEditor shell', () => {
     vi.unstubAllGlobals();
   });
 
+  it('shows a scrim and closable sheets, opens one at a time and flags a phone-wide editor', async () => {
+    let notify: ((entries: unknown[]) => void) | undefined;
+    const callbacks: ((entries: unknown[]) => void)[] = [];
+    class FakeObserver {
+      constructor(callback: (entries: unknown[]) => void) {
+        callbacks.push(callback);
+        notify = (entries) => {
+          for (const each of callbacks) each(entries);
+        };
+      }
+      observe() {}
+      disconnect() {}
+    }
+    vi.stubGlobal('ResizeObserver', FakeObserver);
+    const width = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(390);
+    const Toggles = () => (
+      <>
+        <PanelToggle side="left" />
+        <PanelToggle side="right" />
+      </>
+    );
+    await act(async () =>
+      root.render(
+        <MessagesProvider locale="en">
+          <div className="buildr-editor">
+            <EditorLayout toolbar={<Toggles />} left={<p>left</p>} right={<p>right</p>} />
+          </div>
+        </MessagesProvider>,
+      ),
+    );
+    // The page can never grow wider than the window: nothing in the shell has a width of its own.
+    expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+    expect($('.bd-body').getAttribute('data-compact')).toBe('true');
+    expect($('.bd-toolbar').getAttribute('data-compact')).toBe('true');
+    expect($('.bd-status').getAttribute('data-compact')).toBe('true');
+    expect($('.bd-scrim')).toBeNull();
+    const [left, right] = [...document.querySelectorAll<HTMLElement>('.bd-toolbar button')];
+    left?.focus();
+    await act(async () => left?.click());
+    expect($('aside[data-side=left]').hidden).toBe(false);
+    expect($('.bd-scrim')).not.toBeNull();
+    // The open sheet is a non-modal dialog with a name; focus is inside it, the canvas and status bar are inert and the toolbar stays live.
+    const sheet = $('aside[data-side=left]');
+    expect(sheet.getAttribute('role')).toBe('dialog');
+    expect(sheet.hasAttribute('aria-modal')).toBe(false);
+    expect(sheet.getAttribute('aria-label')).toBe(en['editor.leftPanel']);
+    expect(sheet.contains(document.activeElement)).toBe(true);
+    expect($('.bd-toolbar').hasAttribute('inert')).toBe(false);
+    expect($('.bd-canvas').hasAttribute('inert')).toBe(true);
+    expect($('.bd-status').hasAttribute('inert')).toBe(true);
+    expect($('aside[data-side=right]').getAttribute('role')).toBeNull();
+    // Escape closes it, focus goes back to the button that opened it.
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    });
+    expect($('aside[data-side=left]').hidden).toBe(true);
+    expect($('.bd-toolbar').hasAttribute('inert')).toBe(false);
+    expect(document.activeElement).toBe(left);
+    await act(async () => left?.click());
+    // Opening the other one closes it.
+    await act(async () => right?.click());
+    expect($('aside[data-side=left]').hidden).toBe(true);
+    expect($('aside[data-side=right]').hidden).toBe(false);
+    // The inspector sheet has its own close button.
+    const close = $('aside[data-side=right] .bd-sheet-close');
+    expect(close.getAttribute('aria-label')).toBe(en['ui.close']);
+    await act(async () => close.click());
+    expect($('aside[data-side=right]').hidden).toBe(true);
+    // The scrim and Escape (from anywhere) close a sheet too.
+    await act(async () => left?.click());
+    await act(async () => $('.bd-scrim').click());
+    expect($('aside[data-side=left]').hidden).toBe(true);
+    await act(async () => right?.click());
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    });
+    expect($('aside[data-side=right]').hidden).toBe(true);
+    // A tablet is narrow but not compact.
+    await act(async () => notify?.([{ contentRect: { width: 1000 } }]));
+    expect($('.bd-body').getAttribute('data-narrow')).toBe('true');
+    expect($('.bd-body').getAttribute('data-compact')).toBe('false');
+    width.mockRestore();
+    vi.unstubAllGlobals();
+  });
+
   it('has no accessibility violations', async () => {
     await show(props());
     expect(await axe(container)).toHaveNoViolations();
@@ -384,6 +484,8 @@ describe('resolveConfig', () => {
     const config = resolveConfig();
     expect(config.breakpoints.map((b) => b.id)).toEqual(['desktop', 'tablet', 'mobile']);
     expect(config.autosave).toEqual({ debounceMs: 2000, maxWaitMs: 20_000 });
+    // Only a window too narrow for the toolbar and the canvas is turned away.
+    expect(config.minViewportWidth).toBe(320);
     expect(
       resolveConfig({ autosave: { debounceMs: 1, maxWaitMs: 2 }, uiLocale: 'pl' }),
     ).toMatchObject({ autosave: { debounceMs: 1, maxWaitMs: 2 }, uiLocale: 'pl' });

@@ -1,5 +1,6 @@
 export { BooleanControl } from './boolean.tsx';
 export { ListControl, moveItem, ObjectControl, renderControl } from './compound.tsx';
+export { ExternalLinkEntry, ExternalUrlControl } from './external-link.tsx';
 export { IconControl } from './icon.tsx';
 export { propLabel } from './label.ts';
 export { LinkControl } from './link.tsx';

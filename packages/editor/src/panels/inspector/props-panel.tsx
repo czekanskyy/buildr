@@ -1,9 +1,12 @@
 import type { ComponentMeta, PageNode, PropDef, Value } from '@next-buildr/core';
 import { useId, useState } from 'react';
+import { componentMeta, useSourceManifest } from '../../app/manifest.tsx';
 import { type MessageKey, useT } from '../../messages/index.tsx';
-import { Icon, IconButton } from '../../ui/index.ts';
-import { propLabel, renderControl } from './controls/index.ts';
+import { useEditor } from '../../store/index.ts';
+import { Icon, IconButton, SegmentedControl } from '../../ui/index.ts';
+import { ExternalUrlControl, propLabel, renderControl } from './controls/index.ts';
 import { parseNumber } from './controls/number.tsx';
+import { formatDefault } from './default-hint.ts';
 import { ScrubLabel } from './scrub-label.tsx';
 import { type PropReading, readProp, translationLocale } from './value.ts';
 import { TranslationHint } from './values/translation.tsx';
@@ -18,6 +21,45 @@ export const isAdvancedProp = (def: PropDef) =>
 const titleCase = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
 
 export { propLabel };
+
+const TEXT_MODES = ['plain', 'rich', 'html'] as const;
+
+/**
+ * The group a prop is shown in. The background props of a container carry no `group`; they are
+ * collected under "Background" by their names (`background*` and `overlay*`), so the editor needs
+ * no knowledge of the component.
+ */
+export function propGroup(name: string, def: PropDef): string {
+  if (def.group !== undefined) return def.group;
+  return /^(background|overlay)[A-Z]/.test(name) ? 'background' : '';
+}
+
+/** Short selects that read better as a row of segments (media fit, scrolling and overlay tone). */
+const SEGMENTED_SELECTS: ReadonlySet<string> = new Set([
+  'backgroundFit',
+  'backgroundAttachment',
+  'overlayTone',
+]);
+
+/** A text prop that always holds an address outside the site (the iframe's `url`, ADR-028). */
+export const isExternalUrlProp = (type: string, name: string, def: PropDef): boolean =>
+  type === 'buildr/iframe' && name === 'url' && def.kind === 'text';
+
+/**
+ * Text has three ways to write its content (ADR-026): `mode` picks one of `text`, `rich` and
+ * `html`. The inspector shows the mode as a switch and only the field of the chosen mode. Found by
+ * the shape of the props, so the editor needs no knowledge of the component.
+ */
+export function hasTextModes(props: Readonly<Record<string, PropDef>>): boolean {
+  const mode = props['mode'];
+  return (
+    mode?.kind === 'select' &&
+    TEXT_MODES.every((value) => (mode.options as readonly unknown[]).includes(value)) &&
+    props['text'] !== undefined &&
+    props['rich']?.kind === 'richText' &&
+    props['html']?.kind === 'textarea'
+  );
+}
 
 /** Short controls sit on one row with their label; long ones are stacked under it. */
 const ROW_KINDS: ReadonlySet<string> = new Set(['boolean', 'select', 'number', 'icon']);
@@ -81,12 +123,15 @@ export interface PropsPanelProps {
 }
 
 /** A hint shown under a control: what the default is, and the limits a value must keep. */
-function hintFor(def: PropDef, t: (key: MessageKey) => string): string {
+function hintFor(
+  def: PropDef,
+  t: (key: MessageKey) => string,
+  /** The component's label when the default text is the component's own English name. */
+  nameFor: (text: string) => string,
+): string {
   const parts: string[] = [];
-  const shown = String(def.default);
-  if (def.kind !== 'list' && def.kind !== 'object' && def.kind !== 'richText' && shown !== '') {
-    parts.push(`${t('inspector.default')}: ${shown}`);
-  }
+  const shown = formatDefault(def, t, nameFor);
+  if (shown !== undefined) parts.push(`${t('inspector.default')}: ${shown}`);
   if ((def.kind === 'text' || def.kind === 'textarea') && def.maxLength !== undefined) {
     parts.push(`${t('inspector.maxLength')}: ${def.maxLength}`);
   }
@@ -97,7 +142,7 @@ function hintFor(def: PropDef, t: (key: MessageKey) => string): string {
   return parts.join(' · ');
 }
 
-function Field(props: {
+export function Field(props: {
   readonly name: string;
   readonly def: PropDef;
   readonly reading: PropReading;
@@ -108,24 +153,84 @@ function Field(props: {
   readonly onReset: PropsPanelProps['onReset'];
   readonly onSetValue: PropsPanelProps['onSetValue'];
   readonly onFixed: PropsPanelProps['onFixed'];
+  readonly nameFor: (text: string) => string;
+  /** The `mode` prop of a text with three modes: drawn as a switch. */
+  readonly textMode?: boolean;
+  /** The prop is an external address: it is added through the ADR-028 warning. */
+  readonly externalUrl?: boolean;
 }) {
   const { name, def, reading, disabled, translating } = props;
   const t = useT();
   const id = useId();
+  const authorCode = useEditor().authorCode;
   const hintId = `${id}-hint`;
-  const label = propLabel(name, def);
-  const hint = hintFor(def, t);
+  const label =
+    props.textMode === true
+      ? t('inspector.text.mode')
+      : name === 'level'
+        ? t('inspector.content.level')
+        : propLabel(name, def);
+  const hint = props.textMode === true ? '' : hintFor(def, t, props.nameFor);
   const editable = reading.mode === 'static';
-  const control = renderControl(def, {
-    id,
-    def,
-    label,
-    describedBy: hint === '' ? undefined : hintId,
-    value: reading.value,
-    disabled,
-    onChange: (value) => props.onChange(name, def, value),
-  });
-  const layout = ROW_KINDS.has(def.kind) ? 'row' : 'stack';
+  const current = String(reading.value);
+  const control =
+    props.textMode === true ? (
+      <SegmentedControl
+        label={t('inspector.text.mode')}
+        value={current}
+        disabled={disabled}
+        options={TEXT_MODES.map((value) => ({
+          value,
+          label: t(`inspector.text.mode.${value}` as MessageKey),
+          disabled: value === 'html' && !authorCode && current !== 'html',
+        }))}
+        onValueChange={(value) => props.onChange(name, def, value)}
+      />
+    ) : name === 'level' &&
+      def.kind === 'select' &&
+      def.options.every((value) => typeof value === 'number' && value >= 1 && value <= 6) ? (
+      <SegmentedControl
+        label={t('inspector.content.level')}
+        value={String(reading.value)}
+        disabled={disabled}
+        options={def.options.map((value) => ({ value: String(value), label: `H${value}` }))}
+        onValueChange={(value) => props.onChange(name, def, Number(value))}
+      />
+    ) : props.externalUrl === true ? (
+      <ExternalUrlControl
+        id={id}
+        label={label}
+        describedBy={hint === '' ? undefined : hintId}
+        value={reading.value}
+        disabled={disabled}
+        onChange={(value) => props.onChange(name, def, value)}
+      />
+    ) : SEGMENTED_SELECTS.has(name) && def.kind === 'select' && def.options.length <= 3 ? (
+      <SegmentedControl
+        label={label}
+        value={String(reading.value)}
+        disabled={disabled}
+        options={def.options.map((option) => ({
+          value: String(option),
+          label: def.optionLabels?.[String(option)] ?? String(option),
+        }))}
+        onValueChange={(chosen) => {
+          const option = def.options.find((candidate) => String(candidate) === chosen);
+          if (option !== undefined) props.onChange(name, def, option);
+        }}
+      />
+    ) : (
+      renderControl(def, {
+        id,
+        def,
+        label,
+        describedBy: hint === '' ? undefined : hintId,
+        value: reading.value,
+        disabled,
+        onChange: (value) => props.onChange(name, def, value),
+      })
+    );
+  const layout = ROW_KINDS.has(def.kind) && !SEGMENTED_SELECTS.has(name) ? 'row' : 'stack';
 
   return (
     <div
@@ -216,14 +321,29 @@ function Field(props: {
 export function PropsPanel(props: PropsPanelProps) {
   const t = useT();
   const { node, meta, scope, locale, defaultLocale } = props;
+  const source = componentMeta(useSourceManifest(), node.type);
   const { closed, toggle } = useClosedGroups(node.type);
   const panelId = useId();
   const query = props.query ?? '';
   const all = Object.entries(meta.props).filter(
     ([, def]) => isAdvancedProp(def) === (scope === 'advanced'),
   );
+  all.sort(([a], [b]) => Number(b === 'level') - Number(a === 'level'));
+  const modal = hasTextModes(meta.props);
+  const modeDef = meta.props['mode'];
+  const modeValue =
+    modal && modeDef !== undefined
+      ? readProp(node, 'mode', modeDef, locale, defaultLocale).value
+      : undefined;
+  const activeMode = typeof modeValue === 'string' ? modeValue : 'plain';
+  // Only the field of the chosen text mode is shown (plain: text, rich: rich, html: html).
+  const inMode = (name: string) =>
+    !modal ||
+    !['text', 'rich', 'html'].includes(name) ||
+    (name === 'text' ? 'plain' : name) === activeMode;
   const entries = all.filter(
-    ([name, def]) => query === '' || propLabel(name, def).toLowerCase().includes(query),
+    ([name, def]) =>
+      inMode(name) && (query === '' || propLabel(name, def).toLowerCase().includes(query)),
   );
   if (entries.length === 0 && all.length > 0) {
     if (props.othersMatch === true) return null;
@@ -241,9 +361,12 @@ export function PropsPanel(props: PropsPanelProps) {
       </div>
     ) : null;
   }
+  // A default text that is the component's English name ("Heading") reads as its label in the UI language.
+  const nameFor = (text: string) =>
+    source?.label !== undefined && text === source.label ? (meta.label ?? text) : text;
   const groups = new Map<string, [string, PropDef][]>();
   for (const entry of entries) {
-    const group = entry[1].group ?? '';
+    const group = propGroup(entry[0], entry[1]);
     const list = groups.get(group);
     if (list === undefined) groups.set(group, [entry]);
     else list.push(entry);
@@ -262,7 +385,7 @@ export function PropsPanel(props: PropsPanelProps) {
                 onClick={() => toggle(group)}
               >
                 <Icon name={closed.has(group) ? 'chevron-right' : 'chevron-down'} />
-                {titleCase(group)}
+                {group === 'background' ? t('inspector.group.background') : titleCase(group)}
               </button>
             </h4>
           ) : null}
@@ -288,6 +411,9 @@ export function PropsPanel(props: PropsPanelProps) {
                 onReset={props.onReset}
                 onSetValue={props.onSetValue}
                 onFixed={props.onFixed}
+                nameFor={nameFor}
+                textMode={modal && name === 'mode'}
+                externalUrl={isExternalUrlProp(node.type, name, def)}
               />
             ))}
           </div>

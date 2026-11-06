@@ -271,7 +271,7 @@ describe('the Issues panel and the publish dialog', () => {
     expect(setIssuesOpen).toHaveBeenCalledWith(false);
   });
 
-  it('shows the publish rows and the counts sentence, without a schedule option', async () => {
+  it('shows the publish rows and the counts sentence, with scheduling disabled and the primary action focused', async () => {
     const { view } = setup(broken(), 'warn');
     await view(true);
     const dialog = document.querySelector('[role=dialog]');
@@ -280,8 +280,10 @@ describe('the Issues panel and the publish dialog', () => {
     expect(dialog?.querySelector('.bd-publish-counts')?.textContent).toMatch(
       /[0-9]+ (error|warning|note)/,
     );
-    expect(dialog?.querySelector('[role=radiogroup]')).toBeNull();
-    expect(dialog?.textContent).not.toContain('Schedule');
+    const options = [...(dialog?.querySelectorAll('.bd-publish-option') ?? [])];
+    expect(options.map((o) => o.getAttribute('aria-pressed'))).toEqual(['true', 'false']);
+    expect(options[1]?.getAttribute('aria-disabled')).toBe('true');
+    expect((document.activeElement as HTMLElement | null)?.textContent).toBe('Publish');
   });
 
   it('refuses to publish while errors exist under the block policy', async () => {

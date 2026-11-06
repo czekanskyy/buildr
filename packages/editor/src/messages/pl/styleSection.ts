@@ -1,0 +1,15 @@
+export const styleSection = {
+  'styleSection.layout': 'Układ',
+  'styleSection.size': 'Wymiary',
+  'styleSection.spacing': 'Odstępy',
+  'styleSection.typography': 'Typografia',
+  'styleSection.colors': 'Kolory',
+  'styleSection.background': 'Tło',
+  'styleSection.border': 'Obramowanie i zaokrąglenia',
+  'styleSection.shadow': 'Cień',
+  'styleSection.effects': 'Efekty',
+  'styleSection.animation': 'Animacje',
+  'styleSection.hover': 'Po najechaniu',
+  'styleSection.expandAll': 'Rozwiń wszystkie sekcje',
+  'styleSection.collapseAll': 'Zwiń wszystkie sekcje',
+} as const;

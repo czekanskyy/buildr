@@ -344,6 +344,10 @@
   color: var(--bd-warning);
 }
 
+.bd-status-count[data-severity="info"] {
+  color: var(--bd-info);
+}
+
 .buildr-editor .bd-breadcrumbs {
   min-width: 0;
 }
@@ -509,10 +513,14 @@
   color: var(--bd-danger);
 }
 
-/* Toolbar: a 1fr / auto / 1fr grid. The row is measured by a ResizeObserver, not a media query. */
+/*
+ * Toolbar: three zones. The outer ones are never narrower than their content (so Publish is never
+ * clipped) and share the rest equally; the middle one gives way first (its title is cut with an
+ * ellipsis). The row is measured by a ResizeObserver, not a media query.
+ */
 .buildr-editor .bd-toolbar-row {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: minmax(max-content, 1fr) minmax(0, auto) minmax(max-content, 1fr);
   align-items: center;
   gap: var(--bd-space-3);
   flex: 1;
@@ -549,6 +557,8 @@
 
 /* The page chip in the middle of the toolbar. */
 .buildr-editor .bd-toolbar .bd-page-chip {
+  min-width: 0;
+  max-width: 100%;
   gap: var(--bd-space-2);
   height: var(--bd-control-md);
   padding: 0 var(--bd-space-2) 0 var(--bd-space-3);
@@ -945,4 +955,134 @@
 .bd-menu-theme .bd-segmented .bd-segment {
   flex: 1;
   justify-content: center;
+}
+
+/* Sheets (PB-157): below 1100px a panel is a sheet over the canvas, with a scrim behind it. */
+.bd-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  padding: 0;
+  border: 0;
+  background: var(--bd-overlay);
+  cursor: pointer;
+}
+
+.bd-sheet-bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bd-space-2);
+  height: var(--bd-panel-header);
+  padding: 0 var(--bd-space-3);
+  background: var(--bd-surface);
+  border-bottom: var(--bd-border-width) solid var(--bd-border);
+}
+
+.bd-sheet-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: var(--bd-weight-semibold);
+}
+
+/* Phone and small tablet (768px and less, measured on the editor): a lean toolbar and status bar, touch-sized targets. */
+.buildr-editor .bd-toolbar[data-compact="true"] {
+  gap: var(--bd-space-1);
+  padding: 0 var(--bd-space-2);
+}
+
+.buildr-editor .bd-toolbar-row[data-compact="true"] {
+  grid-template-columns: max-content minmax(0, 1fr) max-content;
+  gap: var(--bd-space-1);
+}
+
+.buildr-editor .bd-toolbar-row[data-compact="true"] .bd-toolbar-cluster[data-zone="centre"] {
+  justify-content: center;
+}
+
+.buildr-editor .bd-toolbar[data-compact="true"] .bd-page-chip {
+  flex: 0 1 auto;
+  padding: 0 var(--bd-space-2);
+}
+
+.buildr-editor .bd-toolbar[data-compact="true"] .bd-page-chip-title {
+  min-width: 0;
+  max-width: none;
+  white-space: nowrap;
+}
+
+.buildr-editor .bd-toolbar[data-compact="true"] .bd-page-chip-status,
+.buildr-editor .bd-toolbar[data-compact="true"] .bd-page-chip .bd-icon:last-child,
+.buildr-editor .bd-toolbar[data-compact="true"] .bd-save-status .bd-button {
+  display: none;
+}
+
+.buildr-editor .bd-toolbar[data-compact="true"] .bd-save-status {
+  margin-inline-end: 0;
+}
+
+.buildr-editor .bd-toolbar[data-compact="true"] .bd-button,
+.buildr-editor .bd-toolbar[data-compact="true"] .bd-icon-button {
+  min-height: 36px;
+}
+
+.buildr-editor .bd-toolbar[data-compact="true"] .bd-icon-button {
+  width: 36px;
+  min-width: 36px;
+}
+
+.buildr-editor .bd-toolbar[data-compact="true"] .bd-publish {
+  gap: var(--bd-space-2);
+  margin-inline-start: 0;
+}
+
+.buildr-editor .bd-toolbar[data-compact="true"] .bd-publish[data-icon-only="true"] {
+  width: 36px;
+  min-width: 36px;
+  padding: 0;
+}
+
+.buildr-editor .bd-body[data-compact="true"] .bd-canvas-host {
+  padding: var(--bd-space-2);
+}
+
+.buildr-editor .bd-body[data-compact="true"] > .bd-panel {
+  max-width: calc(100% - 56px);
+}
+
+.buildr-editor .bd-body[data-compact="true"] .bd-panel .bd-button,
+.buildr-editor .bd-body[data-compact="true"] .bd-panel .bd-icon-button,
+.buildr-editor .bd-body[data-compact="true"] .bd-panel .bd-tab {
+  min-height: 36px;
+}
+
+.buildr-editor .bd-body[data-compact="true"] .bd-panel .bd-icon-button {
+  min-width: 36px;
+}
+
+.buildr-editor .bd-status[data-compact="true"] {
+  height: 40px;
+}
+
+.buildr-editor .bd-status[data-compact="true"] .bd-status-crumbs > *,
+.buildr-editor .bd-status[data-compact="true"] .bd-status-static,
+.buildr-editor .bd-status[data-compact="true"] .bd-status-btn[aria-pressed],
+.buildr-editor .bd-status[data-compact="true"] .bd-status-divider {
+  display: none;
+}
+
+.buildr-editor .bd-status[data-compact="true"] .bd-status-btn,
+.buildr-editor .bd-status[data-compact="true"] .bd-zoom-trigger {
+  min-height: 36px;
+}
+
+.bd-menu-touch .bd-menu-item,
+.bd-menu-touch .bd-segmented .bd-segment {
+  min-height: 40px;
 }

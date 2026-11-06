@@ -1,6 +1,6 @@
 import { createIndex, type NodeId } from '@next-buildr/core';
 import type { RemoveRequest, ShortcutCallbacks } from '../app/contracts.ts';
-import type { EditorStore } from '../store/index.ts';
+import { type EditorStore, structureLockedIds } from '../store/index.ts';
 import { hasDescendants, overlayOpen, parentSelection } from './navigation.ts';
 import type { ShortcutRegistry } from './registry.ts';
 
@@ -18,6 +18,8 @@ export interface HostHooks {
   readonly onRemove?: () => ((request: RemoveRequest) => void) | undefined;
   /** Whether the UI-only keys may run for the key press being handled (`false` for a key aimed outside the editor). */
   readonly uiAllowed?: () => boolean;
+  /** Tells the person why a structure-locked block was not removed, moved or duplicated. */
+  readonly onLocked?: () => ((ids?: readonly NodeId[]) => void) | undefined;
 }
 
 /** The selected nodes that can be acted on: the root is never removed, duplicated or moved. */
@@ -26,10 +28,26 @@ function actionable(store: EditorStore): NodeId[] {
   return selectedIds.filter((id) => id !== doc.root && Object.hasOwn(doc.nodes, id));
 }
 
-function moveSelected(store: EditorStore, delta: -1 | 1): boolean {
+/** True (after saying why) when one of the ids is locked for structure: the key is then taken but nothing changes. */
+function refuseLocked(
+  store: EditorStore,
+  ids: readonly NodeId[],
+  notify?: (ids?: readonly NodeId[]) => void,
+): boolean {
+  if (structureLockedIds(store.getState().doc, ids).length === 0) return false;
+  notify?.(ids);
+  return true;
+}
+
+function moveSelected(
+  store: EditorStore,
+  delta: -1 | 1,
+  notify?: (ids?: readonly NodeId[]) => void,
+): boolean {
   const ids = actionable(store);
   const [id] = ids;
   if (ids.length !== 1 || id === undefined) return false;
+  if (refuseLocked(store, ids, notify)) return true;
   const { doc } = store.getState();
   const index = createIndex(doc);
   const parentId = index.parentOf[id];
@@ -85,6 +103,7 @@ export function bindEditorActions(
     run();
     return true;
   };
+  const locked = (ids?: readonly NodeId[]) => host.onLocked?.()?.(ids);
   const device = (key: '1' | '2' | '3') =>
     ui((callbacks) => callbacks.setDevice && (() => callbacks.setDevice?.(key)));
   const stops = [
@@ -92,11 +111,14 @@ export function bindEditorActions(
     bind('edit.redo', () => store.redo().ok),
     bind('edit.duplicate', () => {
       const ids = actionable(store);
-      return ids.length > 0 && store.dispatch({ type: 'node.duplicate', payload: { ids } }).ok;
+      if (ids.length === 0) return false;
+      if (refuseLocked(store, ids, locked)) return true;
+      return store.dispatch({ type: 'node.duplicate', payload: { ids } }).ok;
     }),
     bind('edit.delete', () => {
       const ids = actionable(store);
       if (ids.length === 0) return false;
+      if (refuseLocked(store, ids, locked)) return true;
       const onRemove = host.onRemove?.();
       if (onRemove !== undefined) {
         onRemove({ ids, hasDescendants: hasDescendants(store.getState().doc, ids) });
@@ -104,8 +126,8 @@ export function bindEditorActions(
       }
       return store.dispatch({ type: 'node.remove', payload: { ids } }).ok;
     }),
-    bind('node.moveUp', () => moveSelected(store, -1)),
-    bind('node.moveDown', () => moveSelected(store, 1)),
+    bind('node.moveUp', () => moveSelected(store, -1, locked)),
+    bind('node.moveDown', () => moveSelected(store, 1, locked)),
     bind('selection.all', () => selectAll(store)),
     // Escape goes up one level and clears at the top level; an open menu or dialog gets it first.
     bind('selection.clear', () => {
@@ -126,7 +148,7 @@ export function bindEditorActions(
     ),
     bind(
       'ui.guides',
-      ui((callbacks) => callbacks.toggleGuides && (() => callbacks.toggleGuides?.())),
+      ui((callbacks) => callbacks.toggleGuides ?? store.view.getState().toggleOutlines),
     ),
     bind(
       'ui.findBlock',

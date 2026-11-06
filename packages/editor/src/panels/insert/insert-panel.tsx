@@ -8,9 +8,10 @@ import { type PointerEvent, type RefObject, useEffect, useMemo, useRef, useState
 import type { PaletteMode } from '../../app/contracts.ts';
 import { useManifest } from '../../app/manifest.tsx';
 import { useDragPress } from '../../dnd/index.ts';
-import { usePlural, useT } from '../../messages/index.tsx';
+import { type MessageKey, usePlural, useT } from '../../messages/index.tsx';
 import { isTypingTarget } from '../../shortcuts/index.ts';
 import { useEditor, useEditorState } from '../../store/index.ts';
+import { useViewState } from '../../store/react.tsx';
 import {
   ComponentIcon,
   Icon,
@@ -20,11 +21,13 @@ import {
   useToast,
 } from '../../ui/index.ts';
 import {
+  DEFAULT_RECENT,
   filterItems,
   groupByCategory,
   type PaletteItem,
   paletteItems,
   safeThumbnail,
+  withBasicGroup,
 } from './catalog.ts';
 import { categoryName } from './category-name.ts';
 import { readCollapsed, readRecent, withRecent, writeCollapsed, writeRecent } from './storage.ts';
@@ -64,6 +67,10 @@ export function InsertPanel({
   const t = useT();
   const plural = usePlural();
   const store = useEditor();
+  const { insertionTarget, setInsertionTarget } = useViewState();
+  const targetNode = useEditorState((state) =>
+    insertionTarget === null ? undefined : state.doc.nodes[insertionTarget.parentId],
+  );
   const manifest = useManifest();
   const selectedId = useEditorState((state) => state.anchorId);
   const selectedNode = useEditorState((state) =>
@@ -74,7 +81,18 @@ export function InsertPanel({
   const [query, setQuery] = useState('');
   const [ownMode, setOwnMode] = useState<PaletteMode>('blocks');
   const mode = modeProp ?? ownMode;
-  const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(readCollapsed);
+  const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(() => {
+    const saved = readCollapsed();
+    return new Set([
+      ...(manifest === undefined
+        ? []
+        : withBasicGroup(groupByCategory(paletteItems(manifest).components))
+            .filter((group) => group.category !== 'basic')
+            .map((group) => `components:${group.category}`)),
+      ...saved,
+    ]);
+  });
+  const [patternCategory, setPatternCategory] = useState('all');
   const [recent, setRecent] = useState<readonly string[]>(readRecent);
   const ownSearchRef = useRef<HTMLInputElement>(null);
   const searchRef = searchRefProp ?? ownSearchRef;
@@ -85,12 +103,42 @@ export function InsertPanel({
     onModeChange?.(next);
   };
 
-  const palette = useMemo(
-    () => (manifest === undefined ? undefined : paletteItems(manifest)),
-    [manifest],
-  );
+  const palette = useMemo(() => {
+    if (manifest === undefined) return undefined;
+    const items = paletteItems(manifest);
+    const knownPatterns: Record<string, string> = {
+      'buildr/hero': 'heroImage',
+      'buildr/feature-grid': 'threeCards',
+      'buildr/testimonial': 'testimonial',
+      'buildr/cta': 'cta',
+    };
+    return {
+      ...items,
+      templates: items.templates.map((item) => {
+        const known = knownPatterns[item.id];
+        if (known === undefined) return item;
+        const label = t(`patterns.item.${known}.name` as MessageKey);
+        const description = t(`patterns.item.${known}.desc` as MessageKey);
+        return {
+          ...item,
+          label,
+          description,
+          haystack: `${item.haystack} ${label} ${description}`.toLowerCase(),
+        };
+      }),
+    };
+  }, [manifest, t]);
   const patterns = mode === 'patterns';
-  const source = patterns ? palette?.templates : palette?.components;
+  const patternCategories = [...new Set(palette?.templates.map((item) => item.category) ?? [])];
+  const patternCategoryName = (category: string) =>
+    ['marketing', 'blog', 'commerce'].includes(category)
+      ? t(`patterns.cat.${category}` as MessageKey)
+      : categoryName(t, category);
+  const source = patterns
+    ? palette?.templates.filter(
+        (item) => patternCategory === 'all' || item.category === patternCategory,
+      )
+    : palette?.components;
   const searching = query.trim() !== '';
   const loading = manifest === undefined;
   const results = useMemo(
@@ -98,12 +146,18 @@ export function InsertPanel({
     [searching, source, query],
   );
   const groups = useMemo(
-    () => (!searching && source !== undefined ? groupByCategory(source) : []),
-    [searching, source],
+    () =>
+      !searching && source !== undefined
+        ? patterns
+          ? groupByCategory(source)
+          : withBasicGroup(groupByCategory(source))
+        : [],
+    [searching, source, patterns],
   );
   const recentItems = useMemo(() => {
     const byType = new Map((palette?.components ?? []).map((item) => [item.id, item]));
-    return recent.flatMap((type) => byType.get(type) ?? []);
+    const used = recent.flatMap((type) => byType.get(type) ?? []);
+    return used.length > 0 ? used : DEFAULT_RECENT.flatMap((type) => byType.get(type) ?? []);
   }, [palette, recent]);
 
   const press = useDragPress();
@@ -111,6 +165,9 @@ export function InsertPanel({
   // `/` jumps to the search, unless the keyboard already belongs to a field or an editable region.
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && store.view.getState().insertionTarget !== null) {
+        store.view.getState().setInsertionTarget(null);
+      }
       if (event.key !== '/' || event.defaultPrevented || event.isComposing) return;
       if (event.ctrlKey || event.metaKey || event.altKey) return;
       if (isTypingTarget(event.target)) return;
@@ -120,7 +177,7 @@ export function InsertPanel({
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [searchRef]);
+  }, [searchRef, store]);
 
   const toggleGroup = (key: string) =>
     setCollapsed((current) => {
@@ -163,6 +220,7 @@ export function InsertPanel({
       store.registry,
       state.selectedIds.at(-1) ?? null,
       fragment,
+      store.view.getState().insertionTarget,
     );
     if (!placement.ok) {
       toast.show({
@@ -181,6 +239,7 @@ export function InsertPanel({
       toast.show({ id: 'insert', variant: 'error', message: result.error.message });
       return;
     }
+    setInsertionTarget(null);
     toast.show({
       id: 'insert',
       variant: 'success',
@@ -231,6 +290,10 @@ export function InsertPanel({
   };
 
   const renderTile = (item: PaletteItem, keyPrefix: string) => {
+    const title = item.label;
+    const description =
+      item.description ??
+      t('patterns.description').replace('{category}', () => patternCategoryName(item.category));
     const button = (
       <button
         type="button"
@@ -243,7 +306,8 @@ export function InsertPanel({
       >
         {glyph(item)}
         <Icon name="ellipsis" className="bd-insert-grip" aria-hidden="true" />
-        <span className="bd-insert-label">{item.label}</span>
+        <span className="bd-insert-label">{title}</span>
+        {item.kind === 'template' ? <span className="bd-insert-desc">{description}</span> : null}
       </button>
     );
     return (
@@ -354,10 +418,25 @@ export function InsertPanel({
         placeholder={label}
         hint="/"
       />
-      <div className="bd-insert-target" role="status" data-node-id={selectedId ?? undefined}>
+      <div
+        className="bd-insert-target"
+        role="status"
+        data-node-id={insertionTarget?.parentId ?? selectedId ?? undefined}
+      >
         <Icon name="arrow-right" aria-hidden="true" />
         <span>
-          {targetName === undefined ? (
+          {insertionTarget !== null ? (
+            t('insert.target.gap')
+              .replace(
+                '{name}',
+                () =>
+                  targetNode?.name ??
+                  manifest?.components[targetNode?.type ?? '']?.label ??
+                  targetNode?.type ??
+                  insertionTarget.parentId,
+              )
+              .replace('{position}', String(insertionTarget.index + 1))
+          ) : targetName === undefined ? (
             t('leftPanel.insertAtEnd')
           ) : (
             <>
@@ -365,8 +444,36 @@ export function InsertPanel({
             </>
           )}
         </span>
+        {insertionTarget !== null ? (
+          <button
+            type="button"
+            aria-label={t('insert.target.clear')}
+            onClick={() => setInsertionTarget(null)}
+          >
+            <Icon name="x" size="sm" />
+          </button>
+        ) : null}
       </div>
-      <div className="bd-insert-scroll">
+      {patterns ? (
+        // biome-ignore lint/a11y/useSemanticElements: names a set of filter buttons
+        <div className="bd-pattern-filters" role="group" aria-label={t('patterns.category')}>
+          {['all', ...patternCategories, 'mine'].map((category) => (
+            <button
+              key={category}
+              type="button"
+              aria-pressed={patternCategory === category}
+              onClick={() => setPatternCategory(category)}
+            >
+              {category === 'all'
+                ? t('patterns.cat.all')
+                : category === 'mine'
+                  ? t('patterns.cat.mine')
+                  : patternCategoryName(category)}
+            </button>
+          ))}
+        </div>
+      ) : null}
+      <div className="bd-insert-scroll" key={mode}>
         {loading ? (
           <section className="bd-insert-section" aria-busy="true">
             <ul className="bd-insert-list" data-kind="template" aria-hidden="true">
@@ -405,28 +512,33 @@ export function InsertPanel({
           </p>
         ) : null}
         {!searching && !loading ? (
-          <>
-            {patterns || recentItems.length === 0
-              ? null
-              : renderGroup(RECENT_ID, t('blocks.recent'), recentItems, 'component')}
-            {groups.map((group) =>
-              renderGroup(
-                `${kind}s:${group.category}`,
-                categoryName(t, group.category),
-                group.items,
-                kind,
-              ),
-            )}
-            {patterns
-              ? renderGroup(
-                  'patterns:mine',
-                  t('patterns.cat.mine'),
-                  [],
-                  'template',
-                  t('patterns.empty'),
-                )
-              : null}
-          </>
+          patterns ? (
+            source?.length ? (
+              <ul className="bd-insert-list bd-pattern-list" data-kind="template">
+                {source.map((item) => renderTile(item, 'patterns'))}
+              </ul>
+            ) : (
+              <p className="bd-insert-shell">{t('patterns.empty')}</p>
+            )
+          ) : (
+            <>
+              {renderGroup(
+                RECENT_ID,
+                t('blocks.recent'),
+                recentItems,
+                'component',
+                t('insert.recent.empty'),
+              )}
+              {groups.map((group) =>
+                renderGroup(
+                  `components:${group.category}`,
+                  categoryName(t, group.category),
+                  group.items,
+                  'component',
+                ),
+              )}
+            </>
+          )
         ) : null}
       </div>
     </div>

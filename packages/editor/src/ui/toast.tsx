@@ -64,6 +64,11 @@ export function useToast(): ToastApi {
   return api;
 }
 
+/** `useToast` for code that may run outside a `<ToastProvider>`: `undefined` there. */
+export function useOptionalToast(): ToastApi | undefined {
+  return useContext(ToastContext);
+}
+
 /**
  * Mount once, above everything that reports. It renders the single toast region of the editor: a
  * polite `role="status"` list for success, info and warning, and a `role="alert"` list for errors

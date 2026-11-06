@@ -25,6 +25,11 @@ export function placeInsertion(
   registry: RegistryMeta,
   selectedId: NodeId | null,
   what: string | BuilderFragment,
+  insertionTarget?: {
+    readonly parentId: NodeId;
+    readonly slot: string;
+    readonly index: number;
+  } | null,
 ): Placement {
   const index = createIndex(doc);
   let firstReason: Reason | undefined;
@@ -35,6 +40,16 @@ export function placeInsertion(
     firstReason ??= verdict.error;
     return undefined;
   };
+
+  if (insertionTarget != null) {
+    const target = {
+      parentId: insertionTarget.parentId,
+      slot: insertionTarget.slot,
+      at: insertionTarget.index,
+    };
+    const found = attempt(target);
+    if (found !== undefined) return found;
+  }
 
   const inside = (id: NodeId): Placement | undefined => {
     const node = Object.hasOwn(doc.nodes, id) ? doc.nodes[id] : undefined;

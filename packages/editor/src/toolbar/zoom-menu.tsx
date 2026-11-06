@@ -12,15 +12,19 @@ export interface ZoomMenuProps {
   readonly onChange: (zoom: Zoom) => void;
   /** `status` is the flat trigger of the status bar; `toolbar` (default) is the ghost button. */
   readonly variant?: 'toolbar' | 'status';
+  /** The percent `Fit` currently comes to; the status trigger shows it instead of the word. */
+  readonly shown?: number | undefined;
 }
 
 const percent = (zoom: number) => `${Math.round(zoom * 100)}%`;
 
 /** The canvas zoom: Fit, 50, 75, 100 and 125 percent (the host's `setZoom`). */
-export function ZoomMenu({ zoom, onChange, variant = 'toolbar' }: ZoomMenuProps) {
+export function ZoomMenu({ zoom, onChange, variant = 'toolbar', shown }: ZoomMenuProps) {
   const t = useT();
   const [open, setOpen] = useState(false);
   const text = (value: Zoom) => (value === 'fit' ? t('toolbar.zoom.fit') : percent(value));
+  const current =
+    variant === 'status' && zoom === 'fit' && shown !== undefined ? `${shown}%` : text(zoom);
   return (
     <Popover
       open={open}
@@ -32,9 +36,9 @@ export function ZoomMenu({ zoom, onChange, variant = 'toolbar' }: ZoomMenuProps)
           <button
             type="button"
             className="bd-status-btn bd-tabular"
-            aria-label={t('statusBar.zoom').replace('{value}', text(zoom))}
+            aria-label={t('statusBar.zoom').replace('{value}', current)}
           >
-            <span aria-hidden="true">{text(zoom)}</span>
+            <span aria-hidden="true">{current}</span>
             <Icon name="chevron-down" />
           </button>
         ) : (
