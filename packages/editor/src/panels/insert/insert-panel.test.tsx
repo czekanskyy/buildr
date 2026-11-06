@@ -206,6 +206,9 @@ describe('category headings', () => {
       meta('buildr/page', { capabilities: { root: true }, slots: { default: {} } }),
       meta('buildr/alert', { label: 'Alert', category: 'ui' }),
       meta('buildr/faq', { label: 'Faq', category: 'cms' }),
+      meta('buildr/loop', { label: 'Loop', category: 'cms' }),
+      meta('buildr/pagination', { label: 'Pagination', category: 'cms' }),
+      meta('buildr/rich-text', { label: 'Rich text' }),
       meta('buildr/post', { label: 'Post', category: 'blog' }),
     ],
     templates: [],
@@ -214,10 +217,27 @@ describe('category headings', () => {
   const headings = () =>
     [...container.querySelectorAll('[role=group]')].map((g) => g.getAttribute('aria-label'));
 
-  it('names ui and cms in capitals and title-cases a custom category', async () => {
+  it('names ui in capitals, hides cms and title-cases a custom category', async () => {
     await mount(false, 'en', custom, customManifest);
-    expect(headings()).toEqual(['UI', 'CMS', 'Blog']);
+    expect(headings()).toEqual(['UI', 'Blog']);
     expect(container.querySelector('.bd-insert-category-name')?.textContent).toBe('UI');
+  });
+
+  it('hides rich text and all cms blocks from sections and search, keeping custom blocks', async () => {
+    await mount(false, 'en', custom, customManifest);
+    const hidden = ['buildr/rich-text', 'buildr/loop', 'buildr/pagination', 'buildr/faq'];
+    for (const id of hidden) {
+      expect(container.querySelector(`[data-id="${id}"]`)).toBeNull();
+    }
+    expect(button('Post')).toBeDefined();
+    for (const query of ['rich', 'loop', 'pagination', 'faq', 'buildr/']) {
+      await typeQuery(query);
+      for (const id of hidden) {
+        expect(container.querySelector(`[data-id="${id}"]`)).toBeNull();
+      }
+    }
+    await typeQuery('post');
+    expect(button('Post')).toBeDefined();
   });
 
   it('renders a shared block in two sections and once in search', async () => {
@@ -241,7 +261,7 @@ describe('category headings', () => {
 
   it('uses the Polish catalog', async () => {
     await mount(false, 'pl', custom, customManifest);
-    expect(headings()).toEqual(['UI', 'CMS', 'Blog']);
+    expect(headings()).toEqual(['UI', 'Blog']);
     await mount(false, 'pl');
     expect(headings()).toEqual(['Tre\u015b\u0107', 'Uk\u0142ad']);
   });

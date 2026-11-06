@@ -1,3 +1,4 @@
+import { type ComponentMeta, createRegistryMeta, toManifest } from '@next-buildr/core';
 import { describe, expect, it } from 'vitest';
 import {
   BLOCK_SECTIONS,
@@ -5,6 +6,7 @@ import {
   filterItems,
   groupByCategory,
   type PaletteItem,
+  paletteItems,
 } from './catalog.ts';
 
 const item = (category: string): PaletteItem =>
@@ -53,19 +55,48 @@ describe('block sections', () => {
   it('skips missing types and appends unmapped blocks by their original category', () => {
     const groups = blockSections([
       block('custom/widget', 'third-party'),
-      block('buildr/loop', 'cms'),
       block('buildr/text'),
       block('buildr/list-item'),
-      block('buildr/pagination', 'cms'),
     ]);
-    expect(groups.map((group) => group.category)).toEqual(['content', 'ui', 'cms', 'third-party']);
+    expect(groups.map((group) => group.category)).toEqual(['content', 'ui', 'third-party']);
     expect(groups.flatMap((group) => group.items.map((entry) => entry.id))).toEqual([
       'buildr/text',
       'buildr/list-item',
-      'buildr/loop',
-      'buildr/pagination',
       'custom/widget',
     ]);
     expect(blockSections([])).toEqual([]);
+  });
+});
+
+describe('palette visibility', () => {
+  it('filters hidden types and categories before section grouping and search', () => {
+    const components = [
+      ['buildr/rich-text', 'content'],
+      ['buildr/loop', 'cms'],
+      ['buildr/pagination', 'cms'],
+      ['custom/cms-block', 'cms'],
+      ['custom/widget', 'third-party'],
+    ].map(
+      ([type, category]) =>
+        ({
+          type,
+          category,
+          label: type,
+          version: 1,
+          props: {},
+          contentCategories: ['flow'],
+          styles: { groups: [] },
+          runtime: 'shared',
+        }) as ComponentMeta,
+    );
+    const manifest = toManifest(createRegistryMeta({ components, templates: [] }));
+    const palette = paletteItems(manifest).components;
+    expect(blockSections(palette).map((group) => group.category)).toEqual(['third-party']);
+    expect(palette.map((entry) => entry.id)).toEqual(['custom/widget']);
+    for (const query of ['rich-text', 'loop', 'pagination', 'cms-block']) {
+      expect(filterItems(palette, query)).toEqual([]);
+    }
+    expect(filterItems(palette, 'widget').map((entry) => entry.id)).toEqual(['custom/widget']);
+    expect(Object.keys(manifest.components)).toHaveLength(5);
   });
 });

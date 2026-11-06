@@ -338,9 +338,11 @@
   flex: none;
 }
 .buildr-editor .bd-insert .bd-insert-result {
-  height: var(--bd-control-lg);
+  /* Name, category and description stack in three lines, so the row grows instead of overlapping. */
+  height: auto;
+  min-height: var(--bd-control-lg);
   align-items: center;
-  padding: 0 var(--bd-space-2);
+  padding: var(--bd-space-1) var(--bd-space-2);
   border: 0;
   border-radius: var(--bd-radius-md);
   background: transparent;

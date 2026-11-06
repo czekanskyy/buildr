@@ -67,6 +67,9 @@ export function safeThumbnail(value: string | undefined): string | undefined {
     : undefined;
 }
 
+const HIDDEN_TYPES = new Set(['buildr/rich-text']);
+const HIDDEN_CATEGORIES = new Set(['cms']);
+
 /** Components that can be inserted (not root-only, not `insertable: false`) and templates, from the manifest. */
 export function paletteItems(manifest: RegistryManifest): {
   readonly components: readonly PaletteItem[];
@@ -75,7 +78,13 @@ export function paletteItems(manifest: RegistryManifest): {
   const byLabel = (a: PaletteItem, b: PaletteItem) => a.label.localeCompare(b.label);
   return {
     components: Object.values(manifest.components)
-      .filter((meta) => meta.capabilities?.insertable !== false && meta.capabilities?.root !== true)
+      .filter(
+        (meta) =>
+          meta.capabilities?.insertable !== false &&
+          meta.capabilities?.root !== true &&
+          !HIDDEN_TYPES.has(meta.type) &&
+          !HIDDEN_CATEGORIES.has(meta.category),
+      )
       .map(componentItem)
       .sort(byLabel),
     templates: Object.values(manifest.templates).map(templateItem).sort(byLabel),
@@ -99,7 +108,6 @@ export const BLOCK_SECTIONS = [
     types: [
       'buildr/heading',
       'buildr/text',
-      'buildr/rich-text',
       'buildr/image',
       'buildr/list',
       'buildr/button',
