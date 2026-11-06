@@ -93,6 +93,9 @@ async function signIn(page: Page): Promise<void> {
 /** Opens the page in the visual editor: it renders, shows no errors and lists every node. */
 async function expectEditable(page: Page, built: Built, headline: string): Promise<void> {
   await signIn(page);
+  // The layer tree is virtualized (only the rows in view exist): make the window tall enough
+  // that every node of the page has a row.
+  await page.setViewportSize({ width: 1280, height: 720 + built.nodeCount * 32 });
   await page.goto(`/buildr/edit/pages/${String(built.id)}`);
   const canvas = page.frameLocator('iframe');
   await expect(canvas.getByRole('heading', { name: headline }).first()).toBeVisible();
