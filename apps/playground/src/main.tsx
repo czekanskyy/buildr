@@ -1,5 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { Blocks } from './blocks.tsx';
 import { CanvasPage } from './canvas.tsx';
 import { EditorPage } from './editor.tsx';
 import { Gallery } from './gallery.tsx';
@@ -15,6 +16,8 @@ const page = pathname.startsWith('/canvas') ? (
   <PreviewPage search={search} />
 ) : pathname.startsWith('/gallery') ? (
   <Gallery search={search} />
+) : pathname === '/blocks' ? (
+  <Blocks search={search} />
 ) : (
   <EditorPage />
 );

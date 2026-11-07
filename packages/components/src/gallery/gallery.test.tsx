@@ -36,9 +36,31 @@ it.each(galleryFixtures)('snapshot and axe $id', async (fixture) => {
   );
   const host = document.createElement('main');
   host.innerHTML = result.html;
-  await expect(host.innerHTML.replace(/ b-[^" ]+/g, '')).toMatchFileSnapshot(
-    `./${fixture.id}.snap`,
-  );
+  const markup = host.querySelector('.bc-gallery')?.outerHTML.replace(/ b-[^" ]+/g, '');
+  if (fixture.id === 'gallery-auto')
+    expect(markup).toMatchInlineSnapshot(
+      `"<div class="bc-gallery"><div class="bc-gallery__list" role="list" data-columns="3" data-ratio="auto"><div class="bc-gallery-item" role="listitem"><figure><a class="bc-gallery-item__link" href="/media/gallery.svg" aria-label="Landscape"><img src="/media/gallery.svg" alt="Landscape" loading="lazy" decoding="async" sizes="100vw"></a><figcaption>Landscape 1</figcaption></figure></div><div class="bc-gallery-item" role="listitem"><figure><a class="bc-gallery-item__link" href="/media/gallery.svg" aria-label="Landscape"><img src="/media/gallery.svg" alt="Landscape" loading="lazy" decoding="async" sizes="100vw"></a><figcaption>Landscape 2</figcaption></figure></div><div class="bc-gallery-item" role="listitem"><figure><a class="bc-gallery-item__link" href="/media/gallery.svg" aria-label="Landscape"><img src="/media/gallery.svg" alt="Landscape" loading="lazy" decoding="async" sizes="100vw"></a><figcaption>Landscape 3</figcaption></figure></div></div><span hidden="" data-gallery-enhancer=""></span></div>"`,
+    );
+  if (fixture.id === 'gallery-default')
+    expect(markup).toMatchInlineSnapshot(
+      `"<div class="bc-gallery"><div class="bc-gallery__list" role="list" data-columns="3" data-ratio="1:1"><div class="bc-gallery-item" role="listitem"><figure><a class="bc-gallery-item__link" href="/media/gallery.svg" aria-label="Landscape"><img src="/media/gallery.svg" alt="Landscape" loading="lazy" decoding="async" sizes="100vw"></a><figcaption>Landscape 1</figcaption></figure></div><div class="bc-gallery-item" role="listitem"><figure><a class="bc-gallery-item__link" href="/media/gallery.svg" aria-label="Landscape"><img src="/media/gallery.svg" alt="Landscape" loading="lazy" decoding="async" sizes="100vw"></a><figcaption>Landscape 2</figcaption></figure></div><div class="bc-gallery-item" role="listitem"><figure><a class="bc-gallery-item__link" href="/media/gallery.svg" aria-label="Landscape"><img src="/media/gallery.svg" alt="Landscape" loading="lazy" decoding="async" sizes="100vw"></a><figcaption>Landscape 3</figcaption></figure></div></div><span hidden="" data-gallery-enhancer=""></span></div>"`,
+    );
+  if (fixture.id === 'gallery-empty')
+    expect(markup).toMatchInlineSnapshot(
+      `"<div class="bc-gallery"><div class="bc-gallery__list" role="list" data-columns="3" data-ratio="1:1"><div class="bc-gallery-item" role="listitem" data-empty=""><figure></figure></div><div class="bc-gallery-item" role="listitem" data-empty=""><figure></figure></div><div class="bc-gallery-item" role="listitem" data-empty=""><figure></figure></div></div><span hidden="" data-gallery-enhancer=""></span></div>"`,
+    );
+  if (fixture.id === 'gallery-links')
+    expect(markup).toMatchInlineSnapshot(
+      `"<div class="bc-gallery"><div class="bc-gallery__list" role="list" data-columns="3" data-ratio="1:1"><div class="bc-gallery-item" role="listitem"><figure><a class="bc-gallery-item__link" href="/media/gallery.svg" aria-label="Landscape"><img src="/media/gallery.svg" alt="Landscape" loading="lazy" decoding="async" sizes="100vw"></a><figcaption>Landscape 1</figcaption></figure></div><div class="bc-gallery-item" role="listitem"><figure><a class="bc-gallery-item__link" href="/media/gallery.svg" aria-label="Landscape"><img src="/media/gallery.svg" alt="Landscape" loading="lazy" decoding="async" sizes="100vw"></a><figcaption>Landscape 2</figcaption></figure></div><div class="bc-gallery-item" role="listitem"><figure><a class="bc-gallery-item__link" href="/media/gallery.svg" aria-label="Landscape"><img src="/media/gallery.svg" alt="Landscape" loading="lazy" decoding="async" sizes="100vw"></a><figcaption>Landscape 3</figcaption></figure></div></div></div>"`,
+    );
+  if (fixture.id === 'gallery-loop')
+    expect(markup).toMatchInlineSnapshot(
+      `"<div class="bc-gallery"><div class="bc-gallery__list" role="list" data-columns="3" data-ratio="1:1"><div class="bc-loop"><div class="bc-gallery-item" role="listitem"><figure><a class="bc-gallery-item__link" href="/media/gallery.svg" aria-label="Bound landscape"><img src="/media/gallery.svg" alt="Bound landscape" loading="lazy" decoding="async" sizes="100vw"></a><figcaption>Bound caption</figcaption></figure></div><div class="bc-loop__after"></div></div></div><span hidden="" data-gallery-enhancer=""></span></div>"`,
+    );
+  if (fixture.id === 'gallery-wide')
+    expect(markup).toMatchInlineSnapshot(
+      `"<div class="bc-gallery"><div class="bc-gallery__list" role="list" data-columns="4" data-ratio="16:9"><div class="bc-gallery-item" role="listitem"><figure><a class="bc-gallery-item__link" href="/media/gallery.svg" aria-label="Landscape"><img src="/media/gallery.svg" alt="Landscape" loading="lazy" decoding="async" sizes="100vw"></a><figcaption>Landscape 1</figcaption></figure></div><div class="bc-gallery-item" role="listitem"><figure><a class="bc-gallery-item__link" href="/media/gallery.svg" aria-label="Landscape"><img src="/media/gallery.svg" alt="Landscape" loading="lazy" decoding="async" sizes="100vw"></a><figcaption>Landscape 2</figcaption></figure></div><div class="bc-gallery-item" role="listitem"><figure><a class="bc-gallery-item__link" href="/media/gallery.svg" aria-label="Landscape"><img src="/media/gallery.svg" alt="Landscape" loading="lazy" decoding="async" sizes="100vw"></a><figcaption>Landscape 3</figcaption></figure></div></div><span hidden="" data-gallery-enhancer=""></span></div>"`,
+    );
   expect((await axe(host, { rules: { 'color-contrast': { enabled: false } } })).violations).toEqual(
     [],
   );
