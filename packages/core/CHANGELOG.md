@@ -1,5 +1,56 @@
 # @next-buildr/core
 
+## 3.0.0
+
+### Minor Changes
+
+- c2144e8: PB-157: bump the canvas protocol to version 2 with strict, bounded overlay view updates, block action and insertion intents, and ping/pong message shapes. The editor remains the only document mutation owner. Editor and canvas (`@next-buildr/react`) must be updated together; version 1 peers are rejected through the existing protocol-mismatch path.
+
+  PB-157: the optional `typeLabels` (localized component names, at most 128, strictly bounded) and `scale` fields of `view:set` and the 14th overlay label `selectParentOf` are additive.
+
+- c2144e8: PB-157: add validated custom and text shadow controls, ordered filters and transforms,
+  blend modes, radial gradients, background repeat and attachment. Export inspector option
+  lists and augmented style interfaces while preserving existing linear gradients and shadow presets.
+- c2144e8: PB-157 (ADR-028): `buildr/container` (version 3, identity migration) gets background video with a
+  poster, an overlay (`overlayTone`, `overlayOpacity`, `backgroundOverlay`), and `backgroundFit`,
+  `backgroundPosition` and `backgroundAttachment`. The background is decorative (`aria-hidden`), the
+  video is muted and looping, and reduced motion shows the still and unfixes the background. New
+  components `buildr/video` and `buildr/iframe` (https only, sandboxed with `allow-scripts`, no
+  referrer, lazy, a required title). A media prop may hold an external source,
+  `{ external: true, url }`, which `buildr/image`, `buildr/video` and the container background render
+  only when the URL is https, free of credentials and allowed by the host. `HostCapabilities` in
+  `@next-buildr/core` gets the optional `externalMediaHosts` and `iframeHosts` allowlists (a host and
+  its subdomains; absent means any https host, `[]` none). The default manifest budget is now 72 KB.
+- c2144e8: PB-157 (ADR-027): a typed, CSS-only `motion` style group (entrance, hover, scroll reveal and
+  parallax) with enums and bounded numbers, compiled to scoped `@keyframes`, transitions and
+  `animation-timeline` behind `@supports`, all inside `prefers-reduced-motion: no-preference`. No
+  runtime script. `compileStyles` also returns each node's `NodeRules.motion` and `keyframes`.
+
+  PB-157 (ADR-026): trusted author code, off by default. `PageNode` gains optional `customCss`,
+  `classes` and `attributes`, set through `node.setAttr`, and `textarea` props gain `format: 'html'`.
+  All of it needs `capabilities.authorCode === true` on `CommandEnv` (`command.author-code-not-permitted`
+  otherwise; core fails closed when the field is absent), and `compileStyles(doc, theme, { capabilities })`
+  and `authorNodeAttributes` ignore it without the capability. Custom CSS is parsed by a strict in-house
+  reader, scoped to the node and emitted into `@layer buildr.custom`; `@import`, `url()`, other at-rules,
+  escapes and sibling combinators are rejected; CR, CRLF and FF count as newlines (they end a string, as
+  in a browser) and other control characters are refused. `node.setProp`, `node.insert`, `node.wrap`
+  and `node.duplicate` apply the same capability rule to HTML props and copied author code, and
+  attribute names starting `data-b` (Buildr's canvas markers) are reserved. New exports: `HostCapabilities`, `authorCodeEnabled`,
+  `compileCustomCss`, `sanitizeHtml`, `sanitizeHtmlToString`, `authorNodeAttributes`, `checkAuthorCode`.
+
+  New runtime dependency `parse5` in `@next-buildr/core`, only for the Text `html` sanitiser
+  (`core/author/html.ts`): untrusted markup must be parsed the way a browser parses it before an
+  allowlist is applied, and a regex or hand-written HTML parser is not safe enough for that. It has no
+  dependencies of its own that matter here, runs in Node and the browser, and nothing else imports it.
+  The mcp package only explains the new command error code and lists the `motion` group.
+
+### Patch Changes
+
+- c2144e8: PB-157: `buildr/heading` gets an optional `tag` prop (`heading` by default, or `p`, `span`, `div`,
+  `strong`) to render heading-styled text outside the outline. The `heading-order` and `empty-heading`
+  a11y rules skip a heading that does not render as a heading. Component version 2 (identity migration).
+- c2144e8: PB-157 security review fixes (ADR-026, ADR-028). Custom CSS: `(` and `[` share one bracket stack, as in the CSS Syntax spec, so `[(])` and `([)]` are refused instead of swallowing later rules, and a `:` that is not a pseudo-class is refused in a selector. Media: `@next-buildr/react` exports `markResolvedMedia` and `isResolvedMedia`; the renderer marks only the assets it resolved from `PreparedData.media`, and the media components treat every other object with a `url` (a raw value, or the snapshot of an unprepared reference) like an external source (https and the host allowlist) or a same-origin `/path`. A present `externalMediaHosts` or `iframeHosts` that is not an array now allows no host. `buildr/video` no longer sets `referrerPolicy`, which a `video` element does not have; hosts using external video should send a page-level `Referrer-Policy`. Payload: without a `registry`, a request that may not write author code cannot add or change an `html` prop or `mode: 'html'`, `authorCode` other than `false` needs the `registry` option, and a duplicate no longer carries the source document's author code to a request that may not write it.
+
 ## 2.0.1
 
 ### Patch Changes

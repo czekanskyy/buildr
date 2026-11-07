@@ -1,5 +1,23 @@
 # @next-buildr/test-utils
 
+## 3.0.0
+
+### Patch Changes
+
+- Updated dependencies [e72f26a]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [1d27dd7]
+  - @next-buildr/react@3.0.0
+  - @next-buildr/core@3.0.0
+
 ## 2.0.1
 
 ### Patch Changes

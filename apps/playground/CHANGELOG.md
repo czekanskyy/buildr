@@ -1,5 +1,38 @@
 # @next-buildr/playground
 
+## 3.0.0
+
+### Patch Changes
+
+- Updated dependencies [e72f26a]
+- Updated dependencies [fde184e]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [2278f42]
+- Updated dependencies [5b49a14]
+- Updated dependencies [e88ba0f]
+- Updated dependencies [13e16e8]
+- Updated dependencies [1d27dd7]
+  - @next-buildr/editor@3.0.0
+  - @next-buildr/react@3.0.0
+  - @next-buildr/core@3.0.0
+  - @next-buildr/components@3.0.0
+  - @next-buildr/test-utils@3.0.0
+
 ## 2.0.1
 
 ### Patch Changes

@@ -1,5 +1,31 @@
 # @next-buildr/react
 
+## 3.0.0
+
+### Minor Changes
+
+- c2144e8: PB-157: the canvas selection chip and the toolbar's parent button use the editor's localized component names (`typeLabels`), the block toolbar is counter-scaled so it keeps its on-screen size at any zoom, the canvas says hello again when the editor goes silent (editor reload), and the preview iframe drops `allow-same-origin` for cross-origin preview URLs.
+- c2144e8: Add template floating block tools and sibling insertion intents to the canvas overlay, with session view preferences, localized labels, keyboard access and protocol v2 heartbeat replies.
+- c2144e8: Add a host `capabilities` option (`{ authorCode?: boolean }`, fail-closed: only `true` enables it) to `renderDocument`, `DocumentRenderer`, `renderTree` (`RenderTreeOptions`) and `CanvasRuntime`, and expose it to components as `env.capabilities`. With `authorCode` on, a node's class names and validated attributes are added to its root element and its custom CSS is compiled; with it off they render nothing. `NodeRoot` now allows `title`, `role`, `rel`, `target`, `aria-*` and `data-*`. The canvas compiles motion rules and `@keyframes` (guarded by `prefers-reduced-motion`) so the editor preview shows animations.
+
+  `capabilities` also forwards `externalMediaHosts` and `iframeHosts` (ADR-028) to `env.capabilities`: arrays of strings only, trimmed, lowercased and bounded; a malformed list means no host.
+
+- c2144e8: PB-157 security review fixes (ADR-026, ADR-028). Custom CSS: `(` and `[` share one bracket stack, as in the CSS Syntax spec, so `[(])` and `([)]` are refused instead of swallowing later rules, and a `:` that is not a pseudo-class is refused in a selector. Media: `@next-buildr/react` exports `markResolvedMedia` and `isResolvedMedia`; the renderer marks only the assets it resolved from `PreparedData.media`, and the media components treat every other object with a `url` (a raw value, or the snapshot of an unprepared reference) like an external source (https and the host allowlist) or a same-origin `/path`. A present `externalMediaHosts` or `iframeHosts` that is not an array now allows no host. `buildr/video` no longer sets `referrerPolicy`, which a `video` element does not have; hosts using external video should send a page-level `Referrer-Policy`. Payload: without a `registry`, a request that may not write author code cannot add or change an `html` prop or `mode: 'html'`, `authorCode` other than `false` needs the `registry` option, and a duplicate no longer carries the source document's author code to a request that may not write it.
+- 1d27dd7: PB-160c: optional `Platform.maps` host config for the Map block.
+  Maps are off by default.
+  No behaviour change when the config is absent.
+
+### Patch Changes
+
+- e72f26a: Rebuild the editor UI to match the v2 design template: three-zone toolbar, Blocks / Structure left panel, collapsible inspector and style sections, empty page, shortcuts and help dialog, panel rails, in-stage issues drawer and toasts. The canvas overlay chip in `@next-buildr/react` is restyled. The editor now requires canvas protocol v2, so it must be paired with matching `@next-buildr/core` and `@next-buildr/react` releases (the protocol change itself is described in the core and react changesets). The `uiLocale` and `minViewportWidth` defaults and the `canUnlock` prop are covered in their own changesets. No document or prop shape changed.
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+  - @next-buildr/core@3.0.0
+
 ## 2.0.1
 
 ### Patch Changes
