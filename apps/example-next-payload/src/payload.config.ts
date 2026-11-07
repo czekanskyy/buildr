@@ -1,3 +1,4 @@
+// biome-ignore-all lint/complexity/useLiteralKeys: Environment index signatures require bracket access.
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { revalidateHooks } from '@next-buildr/payload/next';
@@ -27,6 +28,31 @@ import { SiteSettings } from './globals/site-settings.ts';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const hooks = revalidateHooks();
+
+// Keep the secret in this server configuration. Enable verification and trusted IP handling
+// together; incomplete setup leaves captcha forms closed at the endpoint.
+const captchaSecretKey = process.env['TURNSTILE_SECRET_KEY'];
+const captchaSiteKey = process.env['TURNSTILE_SITE_KEY'];
+const captchaHostnames = (process.env['CAPTCHA_HOSTNAMES'] ?? '')
+  .split(',')
+  .map((hostname) => hostname.trim().toLowerCase())
+  .filter(Boolean);
+const clientIpHeader = process.env['CLIENT_IP_HEADER']?.trim().toLowerCase();
+const captchaForms =
+  captchaSecretKey &&
+  captchaSiteKey &&
+  /^[A-Za-z0-9_-]{1,128}$/.test(captchaSiteKey) &&
+  captchaHostnames.length > 0 &&
+  clientIpHeader
+    ? {
+        captcha: {
+          provider: 'turnstile' as const,
+          secretKey: captchaSecretKey,
+          hostnames: captchaHostnames,
+        },
+        clientIp: { header: clientIpHeader, hops: 1 },
+      }
+    : {};
 
 // Postgres when DATABASE_URL is set, otherwise a local SQLite file: `pnpm dev:example` needs nothing else.
 const db = process.env['DATABASE_URL']
@@ -75,7 +101,7 @@ export default buildConfig({
       globals: { site: 'site-settings' },
       queryable,
       media: { collection: 'media' },
-      forms: { enabled: true, notifyAllowlist: [] },
+      forms: { enabled: true, notifyAllowlist: [], ...captchaForms },
       access: pluginAccess,
       a11y: { publish: 'warn' },
       mcp: {

@@ -2,9 +2,15 @@ import { withPayload } from '@payloadcms/next/withPayload';
 import type { NextConfig } from 'next';
 
 // biome-ignore lint/complexity/useLiteralKeys: Environment index signature requires bracket access.
-const mapFrameSrc = process.env['GOOGLE_MAPS_EMBED_API_KEY']?.trim()
-  ? '; frame-src https://www.google.com'
+const mapFrameHost = process.env['GOOGLE_MAPS_EMBED_API_KEY']?.trim()
+  ? 'https://www.google.com'
   : '';
+// biome-ignore lint/complexity/useLiteralKeys: Environment index signature requires bracket access.
+const captchaFrameHost = /^[A-Za-z0-9_-]{1,128}$/.test(process.env['TURNSTILE_SITE_KEY'] ?? '')
+  ? 'https://challenges.cloudflare.com'
+  : '';
+const frameHosts = [mapFrameHost, captchaFrameHost].filter(Boolean);
+const frameSrc = frameHosts.length ? `; frame-src ${frameHosts.join(' ')}` : '';
 
 const noStore = [
   { key: 'Cache-Control', value: 'private, no-store' },
@@ -26,7 +32,7 @@ const nextConfig: NextConfig = {
     },
     {
       source: '/((?!buildr/canvas|buildr/edit).*)',
-      headers: [{ key: 'Content-Security-Policy', value: `frame-ancestors 'self'${mapFrameSrc}` }],
+      headers: [{ key: 'Content-Security-Policy', value: `frame-ancestors 'self'${frameSrc}` }],
     },
   ],
   // The workspace packages ship TypeScript sources.
