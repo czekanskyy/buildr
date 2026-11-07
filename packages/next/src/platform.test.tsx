@@ -5,6 +5,30 @@ import { createNextPlatform, isInternalHref } from './platform.tsx';
 const platform = createNextPlatform();
 
 describe('createNextPlatform', () => {
+  it('omits captcha when not configured', () => {
+    expect('captcha' in platform).toBe(false);
+    expect('captcha' in createNextPlatform({})).toBe(false);
+  });
+
+  it.each([undefined, true, false])(
+    'passes captcha through unchanged with clickToLoad %s',
+    (clickToLoad) => {
+      const captcha = Object.freeze({
+        provider: 'turnstile' as const,
+        siteKey: 'public-site-key',
+        ...(clickToLoad === undefined ? {} : { clickToLoad }),
+      });
+      const configured = createNextPlatform({ captcha });
+      expect(configured.captcha).toBe(captcha);
+      expect(configured.captcha).toEqual({
+        provider: 'turnstile',
+        siteKey: 'public-site-key',
+        ...(clickToLoad === undefined ? {} : { clickToLoad }),
+      });
+      expect(Object.isFrozen(configured.captcha)).toBe(true);
+    },
+  );
+
   it('omits maps when not configured', () => {
     expect('maps' in platform).toBe(false);
     expect('maps' in createNextPlatform({})).toBe(false);

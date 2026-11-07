@@ -41,11 +41,24 @@ export type PlatformMaps = {
 };
 
 /**
+ * Optional Captcha host config; absent or an invalid siteKey means off (ADR-029).
+ * The site key is public; the secret never belongs here. Never put this config in the
+ * document or manifest; the canvas never reads it.
+ * Click-to-load defaults on; only literal `clickToLoad: false` opts out.
+ */
+export type PlatformCaptcha = {
+  readonly provider: 'turnstile';
+  readonly siteKey: string;
+  readonly clickToLoad?: boolean;
+};
+
+/**
  * What the host application injects into rendering (docs/renderer.md): link and image primitives
  * and the form action. Not serializable, so only `runtime: 'shared'` components receive it.
  */
 export interface Platform {
   readonly maps?: PlatformMaps;
+  readonly captcha?: PlatformCaptcha;
   readonly Link: FunctionComponent<PlatformLinkProps>;
   readonly Image: FunctionComponent<PlatformImageProps>;
   /** The `action` of a form: a URL or a server action, for the form node `nodeId` in the layout `ref`. */
