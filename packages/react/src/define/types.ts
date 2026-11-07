@@ -31,10 +31,21 @@ export type PlatformImageProps = Omit<ComponentPropsWithoutRef<'img'>, 'src' | '
 };
 
 /**
+ * Optional Maps host config; absent means off (ADR-029). The public Maps Embed API key
+ * must be restricted by HTTP referrer; never put it in the document, manifest or canvas.
+ * Click-to-load defaults on; only literal `clickToLoad: false` opts out.
+ */
+export type PlatformMaps = {
+  readonly apiKey: string;
+  readonly clickToLoad?: boolean;
+};
+
+/**
  * What the host application injects into rendering (docs/renderer.md): link and image primitives
  * and the form action. Not serializable, so only `runtime: 'shared'` components receive it.
  */
 export interface Platform {
+  readonly maps?: PlatformMaps;
   readonly Link: FunctionComponent<PlatformLinkProps>;
   readonly Image: FunctionComponent<PlatformImageProps>;
   /** The `action` of a form: a URL or a server action, for the form node `nodeId` in the layout `ref`. */

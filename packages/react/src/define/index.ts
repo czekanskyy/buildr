@@ -15,5 +15,6 @@ export type {
   Platform,
   PlatformImageProps,
   PlatformLinkProps,
+  PlatformMaps,
   PropSchema,
 } from './types.ts';

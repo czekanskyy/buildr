@@ -1,4 +1,9 @@
-import type { Platform, PlatformImageProps, PlatformLinkProps } from '@next-buildr/react';
+import type {
+  Platform,
+  PlatformImageProps,
+  PlatformLinkProps,
+  PlatformMaps,
+} from '@next-buildr/react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -39,6 +44,7 @@ function NextImage({ src, alt, width, height, priority, ...rest }: PlatformImage
 }
 
 export interface NextPlatformOptions {
+  readonly maps?: PlatformMaps;
   /**
    * The URL a form of the layout `ref` (`{collection}:{id}`) posts to. Defaults to the Payload
    * plugin endpoint `/api/buildr/forms/:collection/:id/:nodeId`.
@@ -49,6 +55,7 @@ export interface NextPlatformOptions {
 /** The `Platform` of a Next.js application (docs/nextjs.md): `next/link`, `next/image` and the form endpoint. */
 export function createNextPlatform(options: NextPlatformOptions = {}): Platform {
   return {
+    ...(options.maps === undefined ? {} : { maps: options.maps }),
     Link: NextLink,
     Image: NextImage,
     formAction(ref, nodeId) {

@@ -71,9 +71,15 @@ The `/buildr/*` prefix does not collide with Payload's own catch-all `/api/*`, o
 
 - `createBuildrConfig({ registry, theme, platform, dataSource, messages?, onError?, cache?, capabilities? })` — a frozen bundle. `dataSource(context)` is called per render, so it can be a per-request Payload source; `messages(locale)` supplies the built-in strings; `capabilities` (`authorCode`, `externalMediaHosts`, `iframeHosts`; ADR-026, ADR-028) is forwarded to the renderer, off by default, and should match what the editor's canvas gets.
 - `BuildrPage({ config, entry, fallback?, sectionBoundaries? })` — an async Server Component. `entry` is `{ document, context, layoutRef?, currentId? }` (the shape `getBuildrDocument` produces in PB-107). It calls `renderDocument` from `@next-buildr/react/server`. Error-level diagnostics go to `onError`; a document that cannot be rendered throws (for `error.tsx`) unless `fallback` is given. In production every top-level section is wrapped in a `BuildrSectionBoundary` (`sectionBoundaries` overrides this).
-- `createNextPlatform({ formAction? })` — internal paths (`/x`, `#x`, `?x`) use `next/link`; everything else is a plain `<a>` (with `noopener noreferrer` added for `target="_blank"`). `Image` uses `next/image` when width and height are known, else a plain `img`. `formAction` defaults to `/api/buildr/forms/:collection/:id/:nodeId` from the `{collection}:{id}` layout reference.
+- `createNextPlatform({ formAction?, maps? })` — internal paths (`/x`, `#x`, `?x`) use `next/link`; everything else is a plain `<a>` (with `noopener noreferrer` added for `target="_blank"`). `Image` uses `next/image` when width and height are known, else a plain `img`. `formAction` defaults to `/api/buildr/forms/:collection/:id/:nodeId` from the `{collection}:{id}` layout reference.
 - `BuildrSectionBoundary` (`'use client'`) — the only client module of the page path; it logs the failure and renders `fallback` (nothing by default).
 - `buildrMetadata(entry, defaults)` — maps SEO fields (`meta.title/description/image/noIndex/canonical`, with the title, excerpt and featured image as fallbacks) and `alternates` (hreflang) onto a `Metadata`-shaped object. `noIndex` and `draft` both give `robots: noindex`.
+
+Optional `maps` enables Maps host config; absent means off. `apiKey` is a public Maps Embed API key,
+restricted by HTTP referrer, never stored in the document or manifest. Click-to-load defaults on;
+only literal `clickToLoad: false` opts out. If that opt-out depends on consent, use per-request config
+and dynamic, uncached rendering: the Next config is created once, static/ISR HTML could serve provider iframes to visitors who never consented.
+The canvas Platform must not be given `maps`. See [ADR-029](adr/ADR-029-provider-embeds-and-form-challenges.md).
 
 `next` is a peer dependency; it is a devDependency only so the platform can be tested.
 
