@@ -19,7 +19,7 @@ for (const entry of [
       await expect
         .poll(() =>
           frame
-            .locator('img')
+            .locator('img[src]')
             .evaluateAll((images) =>
               images.every((image) => image instanceof HTMLImageElement && image.naturalWidth > 0),
             ),
