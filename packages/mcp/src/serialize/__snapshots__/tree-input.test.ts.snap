@@ -57,6 +57,8 @@ exports[`the tree JSON Schema > is described, ready for a tool definition 1`] = 
           "enum": [
             "buildr/container",
             "buildr/grid",
+            "buildr/spacer",
+            "buildr/anchor",
             "buildr/heading",
             "buildr/text",
             "buildr/rich-text",
@@ -74,6 +76,7 @@ exports[`the tree JSON Schema > is described, ready for a tool definition 1`] = 
             "buildr/loop",
             "buildr/pagination",
             "buildr/form",
+            "buildr/fieldset",
             "buildr/input",
             "buildr/textarea",
             "buildr/select",
@@ -142,6 +145,8 @@ exports[`the tree JSON Schema > is described, ready for a tool definition 1`] = 
       "enum": [
         "buildr/container",
         "buildr/grid",
+        "buildr/spacer",
+        "buildr/anchor",
         "buildr/heading",
         "buildr/text",
         "buildr/rich-text",
@@ -159,6 +164,7 @@ exports[`the tree JSON Schema > is described, ready for a tool definition 1`] = 
         "buildr/loop",
         "buildr/pagination",
         "buildr/form",
+        "buildr/fieldset",
         "buildr/input",
         "buildr/textarea",
         "buildr/select",

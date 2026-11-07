@@ -303,6 +303,9 @@ export type IconName = keyof typeof EDITOR_ICONS;
 
 /** Icons a component's `meta.icon` may name: the built-in catalogue plus a common vocabulary. */
 const COMPONENT_ICONS: Readonly<Record<string, LucideIcon>> = {
+  space: ChevronsUpDown,
+  hash: Hash,
+  group: SquareDashed,
   // built-in components
   file: File,
   'rectangle-horizontal': RectangleHorizontal,

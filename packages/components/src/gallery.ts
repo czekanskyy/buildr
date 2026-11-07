@@ -1,12 +1,14 @@
 import { type ComponentType, createMemoryDataSource, s, type TreeNode } from '@next-buildr/core';
 import { accordionFixtures } from './accordion/fixtures.ts';
 import { accordionItemFixtures } from './accordion-item/fixtures.ts';
+import { anchorFixtures } from './anchor/fixtures.ts';
 import { badgeFixtures } from './badge/fixtures.ts';
 import { buttonFixtures } from './button/fixtures.ts';
 import { cardFixtures } from './card/fixtures.ts';
 import { checkboxFixtures } from './checkbox/fixtures.ts';
 import { containerFixtures } from './container/fixtures.ts';
 import { dividerFixtures } from './divider/fixtures.ts';
+import { fieldsetFixtures } from './fieldset/fixtures.ts';
 import type { ComponentFixture } from './fixtures.ts';
 import { formFixtures } from './form/fixtures.ts';
 import { gridFixtures } from './grid/fixtures.ts';
@@ -23,6 +25,7 @@ import { pageFixtures } from './page/fixtures.ts';
 import { paginationFixtures } from './pagination/fixtures.ts';
 import { richTextFixtures } from './rich-text/fixtures.ts';
 import { selectFixtures } from './select/fixtures.ts';
+import { spacerFixtures } from './spacer/fixtures.ts';
 import { contentTemplateFixtures, marketingTemplateFixtures } from './templates/fixtures.ts';
 import { templateSampleCollections, templateSampleScopes } from './templates/sample-data.ts';
 import { textFixtures } from './text/fixtures.ts';
@@ -55,6 +58,9 @@ function withoutProbes(node: TreeNode): TreeNode {
 
 const componentFixtures: readonly (readonly [ComponentType, readonly ComponentFixture[]])[] = [
   ['buildr/page', pageFixtures],
+  ['buildr/fieldset', fieldsetFixtures],
+  ['buildr/anchor', anchorFixtures],
+  ['buildr/spacer', spacerFixtures],
   ['buildr/container', containerFixtures],
   ['buildr/grid', gridFixtures],
   ['buildr/heading', headingFixtures],

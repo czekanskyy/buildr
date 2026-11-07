@@ -1,0 +1,9 @@
+@layer buildr.components {
+  .bc-fieldset {
+    min-inline-size: 0;
+    padding: var(--b-space-4);
+  }
+  .bc-fieldset > legend {
+    padding-inline: var(--b-space-2);
+  }
+}

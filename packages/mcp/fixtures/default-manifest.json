@@ -1,5 +1,5 @@
 {
-  "hash": "3ql2wkkonwf29",
+  "hash": "2rj1dohqmldxu",
   "components": {
     "buildr/page": {
       "type": "buildr/page",
@@ -295,6 +295,66 @@
         "emptySlotText": {
           "default": "Drop content here"
         }
+      },
+      "runtime": "shared"
+    },
+    "buildr/spacer": {
+      "type": "buildr/spacer",
+      "version": 1,
+      "label": "Spacer",
+      "description": "Theme spacing.",
+      "category": "layout",
+      "icon": "space",
+      "contentCategories": ["flow"],
+      "props": {
+        "size": {
+          "kind": "select",
+          "label": "Size",
+          "localizable": false,
+          "accepts": [],
+          "options": ["xs", "sm", "md", "lg", "xl", "2xl"],
+          "default": "md"
+        },
+        "axis": {
+          "kind": "select",
+          "label": "Axis",
+          "localizable": false,
+          "accepts": [],
+          "options": ["vertical", "horizontal"],
+          "default": "vertical"
+        }
+      },
+      "styles": {
+        "groups": ["size", "visibility"]
+      },
+      "a11y": {
+        "element": "div"
+      },
+      "runtime": "shared"
+    },
+    "buildr/anchor": {
+      "type": "buildr/anchor",
+      "version": 1,
+      "label": "Anchor",
+      "description": "Named scroll target.",
+      "category": "layout",
+      "icon": "hash",
+      "contentCategories": ["flow"],
+      "props": {
+        "name": {
+          "kind": "text",
+          "label": "Name",
+          "bindable": false,
+          "localizable": false,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        }
+      },
+      "styles": {
+        "groups": ["size", "visibility"]
+      },
+      "a11y": {
+        "element": "span"
       },
       "runtime": "shared"
     },
@@ -1549,6 +1609,52 @@
         "emptySlotText": {
           "default": "Add fields and a submit button"
         }
+      },
+      "runtime": "shared"
+    },
+    "buildr/fieldset": {
+      "type": "buildr/fieldset",
+      "version": 1,
+      "label": "Fieldset",
+      "description": "A named group of form controls.",
+      "category": "forms",
+      "icon": "group",
+      "contentCategories": ["flow"],
+      "parents": {
+        "requireAncestor": ["buildr/form"]
+      },
+      "props": {
+        "legend": {
+          "kind": "text",
+          "label": "Legend",
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        },
+        "disabled": {
+          "kind": "boolean",
+          "label": "Disabled",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": false
+        }
+      },
+      "slots": {
+        "default": {
+          "label": "Content",
+          "allow": ["#flow"],
+          "axis": "vertical"
+        }
+      },
+      "styles": {
+        "groups": ["size", "spacing", "typography", "background", "border", "visibility"]
+      },
+      "a11y": {
+        "element": "fieldset"
+      },
+      "editor": {
+        "inlineProp": "legend",
+        "placeholder": "Legend"
       },
       "runtime": "shared"
     },

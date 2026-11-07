@@ -1,0 +1,11 @@
+@layer buildr.components {
+  .bc-anchor {
+    scroll-margin-top: var(--b-space-16);
+  }
+  .bc-anchor[data-canvas] {
+    display: inline-block;
+    padding: var(--b-space-1) var(--b-space-2);
+    border: 1px solid var(--b-color-border);
+    border-radius: var(--b-radius-sm);
+  }
+}

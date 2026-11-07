@@ -46,6 +46,19 @@ describe('block sections', () => {
     );
   });
 
+  it('places fieldset in the former label slot in forms', () => {
+    expect(BLOCK_SECTIONS.find(({ section }) => section === 'forms')?.types).toEqual([
+      'buildr/form',
+      'buildr/input',
+      'buildr/textarea',
+      'buildr/select',
+      'buildr/checkbox',
+      'buildr/button',
+      'buildr/fieldset',
+      'buildr/captcha',
+    ]);
+  });
+
   it('lists button in content and forms while search returns it once', () => {
     const blocks = [block('buildr/button')];
     expect(blockSections(blocks).map((group) => group.category)).toEqual(['content', 'forms']);

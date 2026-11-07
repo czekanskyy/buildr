@@ -20,12 +20,12 @@ The catalog is deliberately not a copy of Elementor or Divi. It is built from a 
 
 Each entry below is expanded with full detail once its implementation task lands (see [ai/component-development.md](ai/component-development.md) for the required content and the [backlog](backlog/README.md) for build order). This file is the living catalog referenced by AGENTS.md and updated by every component task's Definition of Done.
 
-- **Layout**: Page, Container, Grid
+- **Layout**: Page, Container, Grid, Spacer, Anchor
 - **Content**: Heading, Text, RichText, Link, Button, Icon, List, ListItem, Divider, Badge
 - **Media**: Image, Video, Iframe
 - **UI**: Card, Accordion, AccordionItem
 - **CMS**: Loop, Pagination
-- **Forms**: Form, Input, Textarea, Select, Checkbox
+- **Forms**: Form, Input, Textarea, Select, Checkbox, Fieldset
 - **Templates**: Hero, CTA, Feature, FeatureGrid, Testimonial, Pricing, FAQ, Contact, PostHeader, PostCard, BlogListing, AuthorBox, PostContent, ProductHero, ProductDetails
 
 ### Editor icons (`meta.icon`)
@@ -47,6 +47,8 @@ Each built-in component has a distinct [lucide](https://lucide.dev) icon (kebab-
 | Textarea | `text-align-start` | Form | `clipboard-list` |
 | Checkbox | `square-check` | Select | `square-chevron-down` |
 | Video | `video` | Iframe | `globe` |
+| Spacer | `space` | Anchor | `hash` |
+| Fieldset | `group` | | |
 
 ## Layout components
 
@@ -222,3 +224,17 @@ A binding that finds nothing falls back (the post title to "Untitled") or render
 ## Form field derivation
 
 Any component may declare `ComponentMeta.formField` (see [component-registry.md](component-registry.md)) to participate in form schema derivation. `deriveFormSchema(doc, registryMeta, formNodeId)` (in `@next-buildr/core/forms`) walks a `buildr/form` node's descendants and reads `formField` metadata generically — it never imports specific components — so custom form controls participate automatically. It returns `{ schema: { formId, fields: [{ nodeId, name, valueType, required, maxLength?, options? }] }, diagnostics }`. Only static prop values are read: a dynamic `name` or `options` is reported (`form.name-dynamic`, `form.options-dynamic`) and the field is left out, as are missing, invalid, reserved or duplicate names (`form.name-missing`, `form.name-invalid`, `form.name-duplicate`) and fields beyond the limit (`form.too-many-fields`). This function is the server-side source of truth for what a submitted form is allowed to contain; see [payload.md](payload.md) and [security.md](security.md).
+
+### Spacer (`buildr/spacer`, version 1)
+
+A decorative leaf (`div aria-hidden="true"`). `size` is xs, sm, md (default), lg, xl or 2xl and maps to theme space tokens 1, 2, 4, 8, 12 and 16 respectively; `axis` is vertical (default) or horizontal. Supports size and visibility styles.
+
+### Anchor (`buildr/anchor`, version 1)
+
+An empty span with an ID and a space-16 scroll margin. Canvas mode shows a `#name` pill; Spacer shows a hatched band with a minimum hit area. `name` is static, nonlocalizable, matches `^[a-z][a-z0-9-]{0,63}$`, and must not start with reserved `bc-`. Invalid or missing names render nothing on the site. For duplicate IDs, the first anchor wins for browser fragment navigation; no document validation rule deduplicates IDs.
+
+### Fieldset (`buildr/fieldset`, version 1)
+
+A form-only container with a default flow-content slot. Renders a native fieldset with its legend before the children. `legend` is bindable and localizable (default empty); `disabled` is bindable, defaults to false and disables descendant controls natively. It requires a `buildr/form` ancestor and replaces the old label palette slot.
+
+PB-160a adds new version-1 types without migrations. Fixtures are registered for all three gallery widths. Docker visual baselines are refreshed in the same branch.
