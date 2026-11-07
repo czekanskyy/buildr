@@ -126,7 +126,7 @@ export const BLOCK_SECTIONS = [
       'buildr/icon',
       'buildr/video',
       'buildr/iframe',
-      'buildr/google-maps',
+      'buildr/map',
     ],
   },
   {

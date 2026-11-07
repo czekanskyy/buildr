@@ -147,3 +147,9 @@ describe('palette visibility', () => {
     expect(Object.keys(manifest.components)).toHaveLength(5);
   });
 });
+
+it('lists Map in media using the registered type', () => {
+  const types = BLOCK_SECTIONS.find(({ section }) => section === 'media')?.types;
+  expect(types).toContain('buildr/map');
+  expect(types).not.toContain('buildr/google-maps');
+});

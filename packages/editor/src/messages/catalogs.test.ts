@@ -61,3 +61,19 @@ it('provides PB-160b labels with carousel and gallery overrides', () => {
   expect(plLabels.options['buildr/gallery/aspectRatio']).toMatchObject({ auto: 'Oryginalny' });
   expect(plLabels.slots).toMatchObject({ Slides: 'Slajdy' });
 });
+
+it('provides Map labels, description, props and map type options', () => {
+  expect(plLabels.components['buildr/map']).toBe('Mapa');
+  expect(plLabels.descriptions['buildr/map']).toBeTruthy();
+  expect(Object.keys(plLabels.props['buildr/map'] ?? {}).sort()).toEqual([
+    'aspectRatio',
+    'mapType',
+    'query',
+    'title',
+    'zoom',
+  ]);
+  expect(plLabels.options['buildr/map/mapType']).toEqual({
+    roadmap: 'Drogowa',
+    satellite: 'Satelitarna',
+  });
+});

@@ -22,7 +22,7 @@ Each entry below is expanded with full detail once its implementation task lands
 
 - **Layout**: Page, Container, Grid, Spacer, Anchor
 - **Content**: Heading, Text, RichText, Link, Button, Icon, List, ListItem, Divider, Badge
-- **Media**: Image, Video, Iframe, Carousel, CarouselSlide, Gallery, GalleryItem
+- **Media**: Image, Video, Iframe, Map, Carousel, CarouselSlide, Gallery, GalleryItem
 - **UI**: Card, Accordion, AccordionItem
 - **CMS**: Loop, Pagination
 - **Forms**: Form, Input, Textarea, Select, Checkbox, Fieldset
@@ -48,7 +48,7 @@ Each built-in component has a distinct [lucide](https://lucide.dev) icon (kebab-
 | Checkbox | `square-check` | Select | `square-chevron-down` |
 | Video | `video` | Iframe | `globe` |
 | Spacer | `space` | Anchor | `hash` |
-| Fieldset | `group` | | |
+| Fieldset | `group` | Map | `map-pin` |
 | Carousel | `gallery-horizontal` | CarouselSlide | `rectangle-horizontal` |
 | Gallery | `images` | GalleryItem | `square` |
 

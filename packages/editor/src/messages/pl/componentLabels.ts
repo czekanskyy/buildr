@@ -7,6 +7,7 @@
 import type { LabelCatalog } from '../../i18n/label-catalog.ts';
 
 const COMPONENTS: Readonly<Record<string, string>> = {
+  'buildr/map': 'Mapa',
   'buildr/carousel': 'Karuzela',
   'buildr/carousel-slide': 'Slajd',
   'buildr/gallery': 'Galeria',
@@ -43,6 +44,7 @@ const COMPONENTS: Readonly<Record<string, string>> = {
 };
 
 const DESCRIPTIONS: Readonly<Record<string, string>> = {
+  'buildr/map': 'Mapa Google z miejscem i linkiem do mapy.',
   'buildr/carousel': 'Przewijane slajdy z opcjonalnym automatycznym przewijaniem.',
   'buildr/carousel-slide': 'Jeden slajd karuzeli.',
   'buildr/gallery': 'Siatka obrazów z opcjonalnym podglądem.',
@@ -178,6 +180,13 @@ const COMMON_PROPS: Readonly<Record<string, string>> = {
 };
 
 const PROPS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  'buildr/map': {
+    query: 'Miejsce',
+    zoom: 'Powiększenie',
+    mapType: 'Typ mapy',
+    title: 'Nazwa dostępna',
+    aspectRatio: 'Proporcje',
+  },
   'buildr/carousel': {
     ariaLabel: 'Nazwa dostępna',
     showArrows: 'Pokaż strzałki',
@@ -273,6 +282,7 @@ const COMMON_OPTIONS: Readonly<Record<string, Readonly<Record<string, string>>>>
 };
 
 const OPTIONS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  'buildr/map/mapType': { roadmap: 'Drogowa', satellite: 'Satelitarna' },
   'buildr/gallery/aspectRatio': { auto: 'Oryginalny' },
   'buildr/button/type': { button: 'Przycisk', submit: 'Wyślij formularz' },
   'buildr/input/type': {

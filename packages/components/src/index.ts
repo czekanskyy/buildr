@@ -78,6 +78,8 @@ export { ListItem } from './list-item/definition.ts';
 export { listItemFixtures } from './list-item/fixtures.ts';
 export { Loop } from './loop/definition.ts';
 export { loopFixtureCollections, loopFixtures } from './loop/fixtures.ts';
+export { Map } from './map/definition.ts';
+export { mapFixtures } from './map/fixtures.ts';
 export type { ExternalMedia, ExternalUrlCheck, ExternalUrlProblem } from './media/external.ts';
 export {
   checkExternalUrl,

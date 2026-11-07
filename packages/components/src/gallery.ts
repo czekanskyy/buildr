@@ -25,6 +25,7 @@ import { linkFixtures } from './link/fixtures.ts';
 import { listFixtures } from './list/fixtures.ts';
 import { listItemFixtures } from './list-item/fixtures.ts';
 import { loopFixtures } from './loop/fixtures.ts';
+import { mapFixtures } from './map/fixtures.ts';
 import { pageFixtures } from './page/fixtures.ts';
 import { paginationFixtures } from './pagination/fixtures.ts';
 import { richTextFixtures } from './rich-text/fixtures.ts';
@@ -82,6 +83,7 @@ const componentFixtures: readonly (readonly [ComponentType, readonly ComponentFi
   ['buildr/image', imageFixtures],
   ['buildr/video', videoFixtures],
   ['buildr/iframe', iframeFixtures],
+  ['buildr/map', mapFixtures],
   ['buildr/icon', iconFixtures],
   ['buildr/list', listFixtures],
   ['buildr/list-item', listItemFixtures],
@@ -145,6 +147,7 @@ export function createGalleryDataSource() {
 /** The scopes the gallery entries read (`post`, `product`, `route`). */
 export const gallerySampleScopes = {
   ...templateSampleScopes,
+  map: { query: 'Rynek Glowny 1, Krakow', title: 'Office map' },
   carousel: {
     ariaLabel: 'Bound carousel',
     showArrows: true,
