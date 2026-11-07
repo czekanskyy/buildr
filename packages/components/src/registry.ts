@@ -6,11 +6,15 @@ import { Anchor } from './anchor/definition.ts';
 import { Badge } from './badge/definition.ts';
 import { Button } from './button/definition.ts';
 import { Card } from './card/definition.ts';
+import { Carousel } from './carousel/definition.ts';
+import { CarouselSlide } from './carousel-slide/definition.ts';
 import { Checkbox } from './checkbox/definition.ts';
 import { Container } from './container/definition.ts';
 import { Divider } from './divider/definition.ts';
 import { Fieldset } from './fieldset/definition.ts';
 import { Form } from './form/definition.ts';
+import { Gallery } from './gallery/definition.ts';
+import { GalleryItem } from './gallery-item/definition.ts';
 import { Grid } from './grid/definition.ts';
 import { Heading } from './heading/definition.ts';
 import { IconComponent } from './icon/definition.ts';
@@ -46,6 +50,10 @@ export const defaultComponents: readonly ComponentDefinition[] = [
   Image,
   Video,
   Iframe,
+  Carousel,
+  CarouselSlide,
+  Gallery,
+  GalleryItem,
   IconComponent,
   List,
   ListItem,

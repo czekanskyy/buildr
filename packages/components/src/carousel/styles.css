@@ -1,0 +1,45 @@
+@layer buildr.components {
+  .bc-carousel__track {
+    --per-view: 1;
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+  .bc-carousel__track[data-per-view="2"] {
+    --per-view: 2;
+  }
+  .bc-carousel__track[data-per-view="3"] {
+    --per-view: 3;
+  }
+  .bc-carousel__track[data-per-view="4"] {
+    --per-view: 4;
+  }
+  .bc-carousel__track > .bc-loop,
+  .bc-carousel__track > .bc-loop > .bc-loop__after {
+    display: contents;
+  }
+  .bc-carousel__controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--b-space-2);
+  }
+  .bc-carousel__controls[hidden] {
+    display: none;
+  }
+  .bc-carousel__track:focus-visible,
+  .bc-carousel__controls button:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .bc-carousel__track {
+      scroll-behavior: smooth;
+    }
+  }
+  /* Viewport based, not container based: narrow columns on wide pages keep their slide count. */
+  @media (max-width: 480px) {
+    .bc-carousel__track[data-per-view] {
+      --per-view: 1;
+    }
+  }
+}

@@ -19,6 +19,10 @@ export {
 export { buttonFixtures } from './button/fixtures.ts';
 export { CARD_ELEMENTS, CARD_VARIANTS, Card } from './card/definition.ts';
 export { cardFixtures } from './card/fixtures.ts';
+export { Carousel } from './carousel/definition.ts';
+export { carouselFixtures } from './carousel/fixtures.ts';
+export { CarouselSlide } from './carousel-slide/definition.ts';
+export { carouselSlideFixtures } from './carousel-slide/fixtures.ts';
 export { Checkbox } from './checkbox/definition.ts';
 export { checkboxFixtures } from './checkbox/fixtures.ts';
 export {
@@ -41,8 +45,12 @@ export type { ComponentFixture } from './fixtures.ts';
 export { FIXTURE_WIDTHS } from './fixtures.ts';
 export { Form } from './form/definition.ts';
 export { formFixtures } from './form/fixtures.ts';
+export { Gallery } from './gallery/definition.ts';
+export { galleryFixtures } from './gallery/fixtures.ts';
 export type { GalleryEntry } from './gallery.ts';
 export { createGalleryDataSource, galleryEntries, gallerySampleScopes } from './gallery.ts';
+export { GalleryItem } from './gallery-item/definition.ts';
+export { galleryItemFixtures } from './gallery-item/fixtures.ts';
 export { Grid } from './grid/definition.ts';
 export { gridFixtures } from './grid/fixtures.ts';
 export { HEADING_LEVELS, Heading } from './heading/definition.ts';

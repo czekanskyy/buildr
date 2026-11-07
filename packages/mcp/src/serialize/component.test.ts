@@ -21,7 +21,7 @@ function described(type: string) {
 
 describe('describeComponent over every built-in component', () => {
   it('covers the whole catalogue', () => {
-    expect(types).toHaveLength(29);
+    expect(types).toHaveLength(33);
   });
 
   it.each(types)('%s: text description', (type) => {

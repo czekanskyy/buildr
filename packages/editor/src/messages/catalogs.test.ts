@@ -35,3 +35,29 @@ it('contains no damaged characters in Polish catalog strings', () => {
   check(pl);
   check(plLabels);
 });
+
+it('provides PB-160b labels with carousel and gallery overrides', () => {
+  const props = {
+    'buildr/carousel': [
+      'ariaLabel',
+      'autoplay',
+      'interval',
+      'loop',
+      'showArrows',
+      'showDots',
+      'slidesPerView',
+    ],
+    'buildr/carousel-slide': [],
+    'buildr/gallery': ['ariaLabel', 'aspectRatio', 'columns', 'lightbox'],
+    'buildr/gallery-item': ['alt', 'caption', 'image'],
+  };
+  for (const [type, names] of Object.entries(props)) {
+    expect(plLabels.components[type]).toBeTruthy();
+    expect(plLabels.descriptions[type]).toBeTruthy();
+    expect(Object.keys(plLabels.props[type] ?? {}).sort()).toEqual(names);
+  }
+  expect(plLabels.props['buildr/carousel']).toMatchObject({ autoplay: 'Automatyczne przewijanie' });
+  expect(plLabels.commonProps).toMatchObject({ autoplay: 'Autoodtwarzanie (bez dźwięku)' });
+  expect(plLabels.options['buildr/gallery/aspectRatio']).toMatchObject({ auto: 'Oryginalny' });
+  expect(plLabels.slots).toMatchObject({ Slides: 'Slajdy' });
+});
