@@ -1,5 +1,63 @@
 # @next-buildr/editor
 
+## 3.0.0
+
+### Minor Changes
+
+- e72f26a: Rebuild the editor UI to match the v2 design template: three-zone toolbar, Blocks / Structure left panel, collapsible inspector and style sections, empty page, shortcuts and help dialog, panel rails, in-stage issues drawer and toasts. The canvas overlay chip in `@next-buildr/react` is restyled. The editor now requires canvas protocol v2, so it must be paired with matching `@next-buildr/core` and `@next-buildr/react` releases (the protocol change itself is described in the core and react changesets). The `uiLocale` and `minViewportWidth` defaults and the `canUnlock` prop are covered in their own changesets. No document or prop shape changed.
+- c2144e8: PB-157: the canvas selection chip and the toolbar's parent button use the editor's localized component names (`typeLabels`), the block toolbar is counter-scaled so it keeps its on-screen size at any zoom, the canvas says hello again when the editor goes silent (editor reload), and the preview iframe drops `allow-same-origin` for cross-origin preview URLs.
+- c2144e8: PB-157: new optional `canUnlock` prop on `BuilderEditor` and `EditorApp` (the host's permission to
+  weaken a lock). Without it a locked block stays locked: the layers panel says unlocking is not
+  allowed, and the locked toast no longer sends the author to the Structure panel. `EditorStore`
+  gains a read-only `canUnlock` flag.
+- c2144e8: The media control accepts a link to an external file as well as a library file. A valid https address opens the "Zewnętrzne źródło" warning (ADR-028) and is stored as `{ external: true, url }` only after "Potwierdzam i dodaję link"; Cancel stores nothing. The `url` of `buildr/iframe` uses the same warning. The inspector groups a container's background and overlay props under "Tło" and shows fit, scrolling and overlay tone as segments. Wideo and Iframe get Polish labels and descriptions. No document or prop shape changed.
+- c2144e8: Add the Animations section to the Style tab (ready entrance effects, entrance, hover and scroll-reveal controls, ADR-027) and the author-code fields of ADR-026: custom CSS, CSS classes and HTML attributes on the Advanced tab, and a Basic / Rich / HTML code mode switch for Text. They are shown only when the host sets the new `capabilities={{ authorCode: true }}` prop (or `config.capabilities`); it is off by default, the fields then show a quiet "not enabled" note, and the commands refuse the writes anyway. The prop is passed into the command environment. `EditorStore` gains a read-only `authorCode` flag and `SegmentOption` an optional `disabled`. No document or prop shape changed.
+- c2144e8: Close the editor QA gaps: Style > Background gets Image and Video modes for components with the container background props (a mode switch removes the media the new mode does not use, as one undo step); the Structure panel gets a filter (ancestors of a match stay visible, with an empty state) and expand all / collapse all; the new optional `historyUrl` prop of `BuilderEditor` / `EditorApp` takes a link or a function and wins over the adapter; the media picker gets Library / Upload / URL sources with a drop zone for upload; the rich text editable no longer sits directly in a flex container. No document or prop shape changed.
+- c2144e8: PB-157: the editor no longer refuses to open below 1024px. The default of `minViewportWidth` changed
+  from 1024 to 320, so the "use a computer" notice only appears on very narrow windows; set `1024`
+  to keep the old gate. The default `tablet` breakpoint width changed from 820 to 768
+  (`DEFAULT_BREAKPOINTS`). Below 1100px the panels become sheets, and the status bar counts notes next
+  to errors and warnings.
+
+### Patch Changes
+
+- fde184e: Redesign the editor with updated tokens, a toolbar theme control and new localized messages. Legacy spacing aliases now map to the v2 spacing scale.
+- 2278f42: PB-159: visual fixes round 1. The Blocks tab drops "Recently used", shows always-open sections
+  (Układ, Treść, Multimedia, Formularze, then any other category) in two columns (one when the
+  sidebar is narrower than about 272px), and the canvas stage has square corners and smaller margins.
+  The palette sections come from an explicit ordered list in `panels/insert/catalog.ts`; blocks the
+  registry lacks are skipped. The stored `buildr.editor.insert.recent` and `.collapsed` keys are no
+  longer read.
+- 5b49a14: PB-160a: three new blocks. `buildr/spacer` (vertical or horizontal gap, theme space tokens, hidden
+  from assistive technology), `buildr/anchor` (an empty `<span id>` link target; the name must match
+  `^[a-z][a-z0-9-]{0,63}$` and may not start with `bc-`, an invalid name renders nothing on the site,
+  the first of duplicate ids wins) and `buildr/fieldset` (`<fieldset><legend>`, only inside a form).
+  All three start at version 1, so no migration is needed. The editor knows their Polish labels and
+  icons, and the Formularze section of the Blocks tab lists Fieldset in place of the old "Etykieta"
+  slot.
+- e88ba0f: PB-160b: four new blocks. `buildr/carousel` provides a scroll-snap track with optional
+  controls and opt-in autoplay (off by default, never under reduced motion, with a pause
+  control), and `buildr/carousel-slide` holds its content. `buildr/gallery` provides an
+  image grid, aspect ratios and an optional native-dialog lightbox; `buildr/gallery-item`
+  holds each image and caption. All four start at version 1, so no migration is needed.
+  The editor knows their Polish labels, and the media section of the Blocks tab lists
+  Carousel and Gallery. Slides and items cannot be inserted or moved individually
+  in the palette (`insertable: false`).
+- 13e16e8: PB-160c: `buildr/map` uses the Google Maps Embed API in place mode, with
+  click-to-load on by default: no provider request before the consent click, and
+  the canvas never loads a provider. Without a valid key, or when the frame host
+  is not allowed by `iframeHosts`, it renders only a link. Requires `Platform.maps`
+  (the react/next minor releases in `pb-160c-platform-maps.md`). Starts at version 1,
+  so no migration is needed. The editor knows its Polish label and lists Map in
+  the media section of the Blocks tab.
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+  - @next-buildr/core@3.0.0
+
 ## 2.0.1
 
 ### Patch Changes

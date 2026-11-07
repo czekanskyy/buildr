@@ -1,5 +1,41 @@
 # @next-buildr/next
 
+## 3.0.0
+
+### Minor Changes
+
+- c2144e8: `createBuildrConfig` takes a `capabilities` option (`authorCode`, `externalMediaHosts`, `iframeHosts`) that `BuildrPage` forwards to the renderer. Off by default.
+- 1d27dd7: PB-160c: optional `Platform.maps` host config for the Map block.
+  Maps are off by default.
+  No behaviour change when the config is absent.
+
+### Patch Changes
+
+- Updated dependencies [e72f26a]
+- Updated dependencies [fde184e]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [2278f42]
+- Updated dependencies [5b49a14]
+- Updated dependencies [e88ba0f]
+- Updated dependencies [13e16e8]
+- Updated dependencies [1d27dd7]
+  - @next-buildr/editor@3.0.0
+  - @next-buildr/react@3.0.0
+  - @next-buildr/core@3.0.0
+
 ## 2.0.1
 
 ### Patch Changes

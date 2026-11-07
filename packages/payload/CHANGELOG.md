@@ -1,5 +1,45 @@
 # @next-buildr/payload
 
+## 3.0.0
+
+### Minor Changes
+
+- c2144e8: PB-157 (ADR-026): new `authorCode` plugin option (`false` by default, `true`, or
+  `({ req }) => boolean | Promise<boolean>` resolved per request; never granted to API-key requests).
+  Every write of a layout (the `layout` field hook, the save endpoint and `buildr-templates`) now runs
+  `checkAuthorCode`: without the capability a save is rejected (`author.not-permitted`) when it adds or
+  changes a node's custom CSS, classes, attributes or HTML props, while author code already stored can
+  be saved unchanged or removed. With it, the code is still checked against its rules. `processLayout`
+  (exported) gains `allowAuthorCode` and `previous` options and rejects all author code without them.
+
+### Patch Changes
+
+- c2144e8: PB-157 security review fixes (ADR-026, ADR-028). Custom CSS: `(` and `[` share one bracket stack, as in the CSS Syntax spec, so `[(])` and `([)]` are refused instead of swallowing later rules, and a `:` that is not a pseudo-class is refused in a selector. Media: `@next-buildr/react` exports `markResolvedMedia` and `isResolvedMedia`; the renderer marks only the assets it resolved from `PreparedData.media`, and the media components treat every other object with a `url` (a raw value, or the snapshot of an unprepared reference) like an external source (https and the host allowlist) or a same-origin `/path`. A present `externalMediaHosts` or `iframeHosts` that is not an array now allows no host. `buildr/video` no longer sets `referrerPolicy`, which a `video` element does not have; hosts using external video should send a page-level `Referrer-Policy`. Payload: without a `registry`, a request that may not write author code cannot add or change an `html` prop or `mode: 'html'`, `authorCode` other than `false` needs the `registry` option, and a duplicate no longer carries the source document's author code to a request that may not write it.
+- Updated dependencies [e72f26a]
+- Updated dependencies [fde184e]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [2278f42]
+- Updated dependencies [5b49a14]
+- Updated dependencies [e88ba0f]
+- Updated dependencies [13e16e8]
+- Updated dependencies [1d27dd7]
+  - @next-buildr/editor@3.0.0
+  - @next-buildr/core@3.0.0
+  - @next-buildr/mcp@3.0.0
+  - @next-buildr/next@3.0.0
+
 ## 2.0.1
 
 ### Patch Changes

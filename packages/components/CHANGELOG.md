@@ -1,5 +1,70 @@
 # @next-buildr/components
 
+## 3.0.0
+
+### Minor Changes
+
+- c2144e8: PB-157: `buildr/container` now supports the `typography` style group, so the editor shows its Typography and Colours sections (inherited text colour and type settings for children).
+- c2144e8: PB-157: `buildr/heading` gets an optional `tag` prop (`heading` by default, or `p`, `span`, `div`,
+  `strong`) to render heading-styled text outside the outline. The `heading-order` and `empty-heading`
+  a11y rules skip a heading that does not render as a heading. Component version 2 (identity migration).
+- c2144e8: PB-157 (ADR-028): `buildr/container` (version 3, identity migration) gets background video with a
+  poster, an overlay (`overlayTone`, `overlayOpacity`, `backgroundOverlay`), and `backgroundFit`,
+  `backgroundPosition` and `backgroundAttachment`. The background is decorative (`aria-hidden`), the
+  video is muted and looping, and reduced motion shows the still and unfixes the background. New
+  components `buildr/video` and `buildr/iframe` (https only, sandboxed with `allow-scripts`, no
+  referrer, lazy, a required title). A media prop may hold an external source,
+  `{ external: true, url }`, which `buildr/image`, `buildr/video` and the container background render
+  only when the URL is https, free of credentials and allowed by the host. `HostCapabilities` in
+  `@next-buildr/core` gets the optional `externalMediaHosts` and `iframeHosts` allowlists (a host and
+  its subdomains; absent means any https host, `[]` none). The default manifest budget is now 72 KB.
+- c2144e8: PB-157 (ADR-026, ADR-027): `buildr/text` gets `mode` (`plain` by default, `rich`, `html`) with the
+  props `rich` (rich text) and `html` (author HTML). `plain` is the old behaviour; `rich` and `html`
+  render a `div`. `html` renders core's sanitised tree through `createElement` (no
+  `dangerouslySetInnerHTML`) and only when the host's `authorCode` capability is on; otherwise it shows
+  the plain `text`. Component version 2 (identity migration: a stored text has no `mode`, which already
+  means plain). Every component that had `effects` except the form controls now also has the `motion`
+  style group.
+- 5b49a14: PB-160a: three new blocks. `buildr/spacer` (vertical or horizontal gap, theme space tokens, hidden
+  from assistive technology), `buildr/anchor` (an empty `<span id>` link target; the name must match
+  `^[a-z][a-z0-9-]{0,63}$` and may not start with `bc-`, an invalid name renders nothing on the site,
+  the first of duplicate ids wins) and `buildr/fieldset` (`<fieldset><legend>`, only inside a form).
+  All three start at version 1, so no migration is needed. The editor knows their Polish labels and
+  icons, and the Formularze section of the Blocks tab lists Fieldset in place of the old "Etykieta"
+  slot.
+- e88ba0f: PB-160b: four new blocks. `buildr/carousel` provides a scroll-snap track with optional
+  controls and opt-in autoplay (off by default, never under reduced motion, with a pause
+  control), and `buildr/carousel-slide` holds its content. `buildr/gallery` provides an
+  image grid, aspect ratios and an optional native-dialog lightbox; `buildr/gallery-item`
+  holds each image and caption. All four start at version 1, so no migration is needed.
+  The editor knows their Polish labels, and the media section of the Blocks tab lists
+  Carousel and Gallery. Slides and items cannot be inserted or moved individually
+  in the palette (`insertable: false`).
+- 13e16e8: PB-160c: `buildr/map` uses the Google Maps Embed API in place mode, with
+  click-to-load on by default: no provider request before the consent click, and
+  the canvas never loads a provider. Without a valid key, or when the frame host
+  is not allowed by `iframeHosts`, it renders only a link. Requires `Platform.maps`
+  (the react/next minor releases in `pb-160c-platform-maps.md`). Starts at version 1,
+  so no migration is needed. The editor knows its Polish label and lists Map in
+  the media section of the Blocks tab.
+
+### Patch Changes
+
+- c2144e8: PB-157 security review fixes (ADR-026, ADR-028). Custom CSS: `(` and `[` share one bracket stack, as in the CSS Syntax spec, so `[(])` and `([)]` are refused instead of swallowing later rules, and a `:` that is not a pseudo-class is refused in a selector. Media: `@next-buildr/react` exports `markResolvedMedia` and `isResolvedMedia`; the renderer marks only the assets it resolved from `PreparedData.media`, and the media components treat every other object with a `url` (a raw value, or the snapshot of an unprepared reference) like an external source (https and the host allowlist) or a same-origin `/path`. A present `externalMediaHosts` or `iframeHosts` that is not an array now allows no host. `buildr/video` no longer sets `referrerPolicy`, which a `video` element does not have; hosts using external video should send a page-level `Referrer-Policy`. Payload: without a `registry`, a request that may not write author code cannot add or change an `html` prop or `mode: 'html'`, `authorCode` other than `false` needs the `registry` option, and a duplicate no longer carries the source document's author code to a request that may not write it.
+- Updated dependencies [e72f26a]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [c2144e8]
+- Updated dependencies [1d27dd7]
+  - @next-buildr/react@3.0.0
+  - @next-buildr/core@3.0.0
+
 ## 2.0.1
 
 ### Patch Changes
