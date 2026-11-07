@@ -71,7 +71,7 @@ The `/buildr/*` prefix does not collide with Payload's own catch-all `/api/*`, o
 
 - `createBuildrConfig({ registry, theme, platform, dataSource, messages?, onError?, cache?, capabilities? })` — a frozen bundle. `dataSource(context)` is called per render, so it can be a per-request Payload source; `messages(locale)` supplies the built-in strings; `capabilities` (`authorCode`, `externalMediaHosts`, `iframeHosts`; ADR-026, ADR-028) is forwarded to the renderer, off by default, and should match what the editor's canvas gets.
 - `BuildrPage({ config, entry, fallback?, sectionBoundaries? })` — an async Server Component. `entry` is `{ document, context, layoutRef?, currentId? }` (the shape `getBuildrDocument` produces in PB-107). It calls `renderDocument` from `@next-buildr/react/server`. Error-level diagnostics go to `onError`; a document that cannot be rendered throws (for `error.tsx`) unless `fallback` is given. In production every top-level section is wrapped in a `BuildrSectionBoundary` (`sectionBoundaries` overrides this).
-- `createNextPlatform({ formAction?, maps? })` — internal paths (`/x`, `#x`, `?x`) use `next/link`; everything else is a plain `<a>` (with `noopener noreferrer` added for `target="_blank"`). `Image` uses `next/image` when width and height are known, else a plain `img`. `formAction` defaults to `/api/buildr/forms/:collection/:id/:nodeId` from the `{collection}:{id}` layout reference.
+- `createNextPlatform({ formAction?, maps?, captcha? })` — internal paths (`/x`, `#x`, `?x`) use `next/link`; everything else is a plain `<a>` (with `noopener noreferrer` added for `target="_blank"`). `Image` uses `next/image` when width and height are known, else a plain `img`. `formAction` defaults to `/api/buildr/forms/:collection/:id/:nodeId` from the `{collection}:{id}` layout reference.
 - `BuildrSectionBoundary` (`'use client'`) — the only client module of the page path; it logs the failure and renders `fallback` (nothing by default).
 - `buildrMetadata(entry, defaults)` — maps SEO fields (`meta.title/description/image/noIndex/canonical`, with the title, excerpt and featured image as fallbacks) and `alternates` (hreflang) onto a `Metadata`-shaped object. `noIndex` and `draft` both give `robots: noindex`.
 
@@ -90,6 +90,46 @@ const platform = createNextPlatform({
 ```
 
 Set `GOOGLE_MAPS_EMBED_API_KEY` only on the site, never in the editor's client bundle. If the site's CSP restricts frames, add `https://www.google.com` to its `frame-src` (or `default-src`); a CSP that restricts nothing needs no change. Also, `capabilities.iframeHosts`, if set, must list `www.google.com`. Restrict the key in Google Cloud; see [security.md](security.md#provider-embeds-map).
+
+### Captcha (PB-160d)
+
+Optional `captcha: { provider: 'turnstile', siteKey, clickToLoad? }` turns on the Turnstile widget of `buildr/captcha`; absent means off, and it is passed to the platform by identity only when set, like `maps`. `siteKey` is a public Cloudflare site key and must match `^[A-Za-z0-9_-]{1,128}$` (no surrounding whitespace); anything else counts as off and the block shows "unavailable" on the page. Click-to-load defaults on; only literal `clickToLoad: false` opts out, with the same per-request-config and dynamic-rendering caveat as `maps`. The canvas Platform must not be given `captcha`. The secret key never goes into `createNextPlatform`; it belongs to the Payload plugin ([payload.md](payload.md#captcha-pb-160d)).
+
+```ts
+// buildr.server.ts: the site key is public, so it may be read here
+const siteKey = process.env.TURNSTILE_SITE_KEY;
+const platform = createNextPlatform({
+  formAction,
+  ...(siteKey ? { captcha: { provider: 'turnstile', siteKey } } : {}),
+});
+
+// payload.config.ts: the secret is read here and nowhere else
+forms: {
+  enabled: true,
+  captcha: {
+    secretKey: process.env.TURNSTILE_SECRET_KEY!,
+    hostnames: process.env.CAPTCHA_HOSTNAMES!.split(',').map((h) => h.trim().toLowerCase()),
+  },
+  clientIp: { header: process.env.CLIENT_IP_HEADER!, hops: 1 }, // required with captcha
+},
+```
+
+The example app (`apps/example-next-payload`, see `.env.example`) reads four variables:
+
+| Variable | Read in | Meaning |
+|---|---|---|
+| `TURNSTILE_SITE_KEY` | `buildr.server.ts`, `payload.config.ts`, `next.config.ts` | Public site key. All three use it only if it matches `^[A-Za-z0-9_-]{1,128}$` (the same check for the platform, the plugin and the CSP); `next.config.ts` validates it with the same regex for the CSP. |
+| `TURNSTILE_SECRET_KEY` | `payload.config.ts` only | Secret, server only. |
+| `CAPTCHA_HOSTNAMES` | `payload.config.ts` | Comma-separated exact hostnames the site is served on (trimmed and lowercased; no scheme, path or port). A value that is not a valid hostname fails plugin init. |
+| `CLIENT_IP_HEADER` | `payload.config.ts` | The header your proxy overwrites with the client address; lowercased and used as `clientIp: { header, hops: 1 }` (rightmost entry). |
+
+Captcha is enabled in the Payload plugin (`forms.captcha` and `forms.clientIp`) only when **all** of the secret, a valid site key, at least one hostname and the client IP header are set. With any missing, the plugin gets neither option and a form that has a captcha answers `503` (nothing is stored). The platform is separate: a valid `TURNSTILE_SITE_KEY` alone makes the widget render, so set all four together. Never put the secret in `next.config`'s `env` or in a `NEXT_PUBLIC_*` variable; either would ship it to the browser.
+
+Check that the secret stays out of the client output with `pnpm check:captcha-secret` from the example app directory, after a production build made with a unique sentinel secret and the other three variables set. The script scans the built client output (`.next/static`, source maps included) and is being extended to the server-rendered output as well (`.next/server/app` and `.next/server/pages`); it fails if the output is missing, empty or contains the sentinel, and prints only the offending path. It needs a build made with the sentinel environment, so it is a separate build verification, not part of the unit tests, and the sentinel must never be a production secret. The exact command, variables and optional test-secret argument are in `apps/example-next-payload/CAPTCHA-TESTING.md`.
+
+If the site's CSP restricts frames, merge `https://challenges.cloudflare.com` into the same single `frame-src` directive as the map (`frame-src https://www.google.com https://challenges.cloudflare.com`). The example's `next.config.ts` does this for you: the public-page header rule gets one `frame-src` with `https://challenges.cloudflare.com` when `TURNSTILE_SITE_KEY` is valid and `https://www.google.com` when `GOOGLE_MAPS_EMBED_API_KEY` is set (not on the editor and canvas routes), and it adds no `script-src`. A nonce-based script policy should list the nonce plus `https://challenges.cloudflare.com` in `script-src-elem` (or `script-src`) and give the enhancer a nonce carrier (the first non-empty `script[nonce]`, else `<meta name="csp-nonce">`); the host allowlist alone permits nonce-less scripts. See [security.md](security.md#captcha-turnstile).
+
+**Function-valued form actions.** When `formAction` returns a function (a server action) instead of a URL, the widget still renders and the form still submits through the function, but the Payload endpoint never sees the request, so nothing verifies the token. The function receives the `FormData` with the token under `buildr-captcha` and must verify it with Cloudflare itself, check `hostname`, `action` (`buildr_form`) and `cdata`, and reject on failure. The form dispatches `buildr-form:settled` after the function completes or throws ([renderer.md](renderer.md#platform)).
 
 `next` is a peer dependency; it is a devDependency only so the platform can be tested.
 

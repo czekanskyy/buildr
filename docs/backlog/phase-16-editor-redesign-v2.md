@@ -144,6 +144,13 @@ Missing blocks: Spacer, Anchor, Carousel, Gallery, Google Maps, Captcha. `packag
 | PB-160c | ADR-029, then Map | M / critical | ADR via planner, `security-reviewer` and Astra; accepted by the user before any code. ADR-029 accepted 2026-11-07; Map merged as PR #156 on 2026-11-07 |
 | PB-160d | Captcha | L / critical | Single writer (published API across react, next and payload); depends on 160c and the provider decision |
 
+PB-160d follow-ups (not part of that PR; cards to be opened by the orchestrator):
+
+- A core cardinality rule for at most one captcha per form. The editor cannot enforce it today, so the endpoint answers 503 and the canvas shows a hint.
+- The form body size cap only checks `content-length` (pre-existing behaviour of the forms endpoint).
+- Core `sanitizeUrl` throws a `RangeError` for numeric HTML entities above U+10FFFF (a separate core fix; `buildr/map` already guards against it).
+- A manual smoke test of the widget and `siteverify` with Cloudflare's published Turnstile test keys, in a real browser.
+
 ### Files
 
 `packages/components/src/{spacer,anchor,carousel,carousel-slide,gallery,gallery-item,map,captcha}/`, `registry.ts`, `index.ts`, `gallery.ts` (fixtures), `messages/`; `packages/editor/src/{messages/pl/componentLabels.ts,ui/icon.tsx}` (after PB-159); 160c: `packages/react/src/define/types.ts`, `packages/react/src/index.ts`, `packages/next/src/platform.tsx` (the optional `Platform.maps` field); 160d only: `packages/react/src/define/types.ts`, `packages/next/src/platform.tsx`, `packages/payload/src/plugin/{endpoints/forms.ts,forms/captcha.ts,options}`; `apps/playground`, `apps/example-next-payload`; docs (`components.md`, `security.md`, `payload.md`, `nextjs.md`, ADR-029).

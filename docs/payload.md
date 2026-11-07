@@ -65,7 +65,7 @@ buildrPlugin({
 | GET | `/api/buildr/samples/:collection` | `?search` | `{ items: { id, title }[] }` | edit (template sample data) |
 | GET | `/api/buildr/documents` | `?collection&search&page` (only with `mcp.enabled`) | `{ items, page, totalPages }` | edit + collection read |
 | POST | `/api/buildr/documents` | `{ collection, title, slug?, template? }` (only with `mcp.enabled`) | `201 DocumentSummary` (a draft) | edit + collection create |
-| POST | `/api/buildr/forms/:collection/:id/:nodeId` | form data / JSON | `{ ok }` / `422` / `429` | public |
+| POST | `/api/buildr/forms/:collection/:id/:nodeId` | form data / JSON | `{ ok }` / `422` / `429` / `503` (captcha only) | public |
 
 Read/data endpoints accept a `locale` parameter (defaulting to the default locale) and pass it through to the Local API's own `locale`/`fallbackLocale`. Every endpoint runs Local API calls with `user: req.user, overrideAccess: false`. Request/response types are defined once (Zod, `@next-buildr/payload/src/contract.ts`) and shared between the endpoint implementations and the HTTP adapter.
 
@@ -284,7 +284,7 @@ forms: {
   notifyAllowlist: ['@example.com', 'ops@partner.example'], // exact addresses or @domains
   notifyTo: ['ops@example.com'],                            // every one must match the allowlist (checked at startup)
   rateLimit: { limit: 5, windowMs: 60_000 },                 // per visitor and form; the in-memory limiter
-  rateLimiter,                                               // optional: your own RateLimiter { hit(key) }
+  rateLimiter,                                               // optional: your own RateLimiter { hit(key) }; also the captcha counter (`captcha:` keys)
 }
 ```
 
@@ -294,10 +294,57 @@ Order of the checks: route and collection (`404`) → rate limit (`429`, `Retry-
 
 - **Answers.** A JSON request (`Content-Type: application/json` or `Accept: application/json`, which the form's enhancement sends) gets `{ ok: true }`, or `422 { errors: { field: message }, codes: { field: code } }` (`codes` for clients that localize). A plain HTML form gets `303` back to the `Referer` page (only when it is on the same origin, otherwise `/`) with `?buildr-form=sent` or `?buildr-form=invalid`.
 - **Honeypot.** The form renders an `_hp` input nobody sees. A submission with it filled is answered as a success and stored nowhere, so a bot learns nothing.
-- **Rate limiting.** Keyed by a hash of the visitor's address (`X-Forwarded-For`, then `X-Real-IP`; put the site behind a proxy that sets it) and the form. `createMemoryRateLimiter` keeps its windows in one process's memory (bounded), so it does not work across serverless instances: pass a `rateLimiter` backed by a shared store (Redis) there.
+- **Rate limiting.** Keyed by a hash of the visitor's address (by default the first `X-Forwarded-For` entry, then `X-Real-IP`; put the site behind a proxy that sets it, or name a trusted source with `forms.clientIp`, see [Captcha](#captcha-pb-160d)) and the form. `createMemoryRateLimiter` keeps its windows in one process's memory (bounded at 10,000 keys; by default a full limiter drops expired windows first and then the oldest live ones, and the optional `failClosed: true` makes it reject new keys instead, see [Captcha](#captcha-pb-160d)), so it does not work across serverless instances: pass a `rateLimiter` backed by a shared store (Redis) there.
 - **Stored.** `form: { collection, documentId, nodeId }`, `data` (the validated values, typed), `locale`, `meta: { userAgent, ipHash }`. The IP is stored only as `sha256(secret:ip)`, cut to 32 hex characters. Only signed-in users read or delete submissions; nobody creates them but the endpoint.
 - **Email.** Each submission is mailed through Payload's `sendEmail` to `notifyTo`, filtered through `notifyAllowlist` once more when sending. A failing mail server is logged and never fails the submission.
 - **CSRF.** The endpoint is public by design (a plain HTML form must work) and only creates a submission; the honeypot and the rate limiter are what protect it.
+
+### Captcha (PB-160d)
+
+`buildr/captcha` ([components.md](components.md#captcha-buildrcaptcha-version-1), [ADR-029](adr/ADR-029-provider-embeds-and-form-challenges.md)) is the block; these options make the endpoint enforce it with Cloudflare Turnstile. A host that sets neither sees no change.
+
+```ts
+forms: {
+  enabled: true,
+  captcha: {
+    provider: 'turnstile',                          // the only provider; the default
+    secretKey: process.env.TURNSTILE_SECRET_KEY!,   // host env only
+    hostnames: ['www.example.com'],                 // exact, lowercase, required
+    maxInFlight: 16,                                // concurrent siteverify calls per process (1-1024)
+  },
+  clientIp: { header: 'x-forwarded-for', hops: 1 }, // REQUIRED with captcha
+  // or: clientIp: (req) => req.headers.get('x-real-ip') ?? undefined,
+}
+```
+
+| Option | Rules |
+|---|---|
+| `forms.captcha.secretKey` | Non-empty. Lives only in the host's environment and this option: never in the document, manifest, client props, the platform or a `NEXT_PUBLIC_*` variable. Init errors and logs never contain it. |
+| `forms.captcha.hostnames` | At least one. Lowercase DNS hostnames (`www.example.com`): no scheme, port, path, uppercase or whitespace. The hostname Cloudflare reports (lowercased) must equal one entry exactly. The list is never taken from the request and is not derived from Payload's `serverURL`, so a split deployment (`cms.example.com`, `www.example.com`) lists the site's own hostname. |
+| `forms.captcha.maxInFlight` | Default 16. Concurrent verifications per plugin instance (per process, like the in-memory limiter). Above it the endpoint answers `503` without an outbound call. |
+| `forms.clientIp` | Required whenever `forms.captcha` is set (an init error otherwise). `{ header, hops? }`: `header` is a lowercase header name (`^[a-z0-9-]{1,64}$`), `hops` a positive integer counted from the **right** of the comma-separated list (default 1). Or a function that receives the Payload request and returns a string or `undefined`, so a host without a proxy can return the socket address. |
+
+Init errors (listed in the usual single `buildrPlugin: invalid options` error): `captcha` without `forms.enabled`; `captcha` without `clientIp`; missing or invalid `hostnames`; any other key under `captcha` or `clientIp`. There is no public `verifier` option: the verifier is an internal test seam, not API.
+
+**Client address.** A configured `clientIp` source never falls back to `X-Forwarded-For` or `X-Real-IP`. A missing header, a chain shorter than `hops`, a value that is not an IP address (a zone id such as `%eth0` included) or a callback that throws puts the request in one shared `unknown` bucket (so a misconfigured header throttles all visitors together; it never grants a bypass). An IPv4-mapped IPv6 address (`::ffff:a.b.c.d`) becomes that IPv4 address, any other IPv6 address is bucketed by its /64 prefix (the key is the canonical first four groups followed by `::/64`), and IPv6 spellings of one address share a key, so a visitor cannot rotate through the addresses of one network. Zone ids and values that are not valid IPs go to the `unknown` bucket. The same address feeds the per-form limiter and the stored `ipHash`; `clientIp` may also be set without `captcha`, and unset keeps the default rule above.
+
+The header is trusted, so the proxy in front of Payload **must overwrite it** (not append to a value the client sent), and the origin must not be reachable except through that proxy. Otherwise a client chooses its own address and with it its own rate-limit bucket. Choose `hops` as the number of proxies you trust, counting the one that appended the last entry as 1.
+
+**Order of the checks** for a form that has a captcha: route and collection (`404`) → per-form rate limiter (`429`) → body (`415`, `413`) → honeypot (a filled honeypot still gets the fake success before any captcha work) → published document and form (`404`) → configuration checks (below) → token shape (`422`) → per-IP limiter (`429`) → in-flight gate (`503`) → `siteverify` (5 s) → hostname, `action` and `cData` (`422`) → strip the token → `validateSubmission` (`422`) → store → notify. The captcha requirement and the schema come from one snapshot of the published layout (templates resolved), kept across `siteverify`; the requirement is never read from the request. A form without a captcha behaves exactly as before.
+
+- **Token.** The widget posts it as `buildr-captcha`. It must be a single string matching `^[A-Za-z0-9._-]{1,2048}$`; an array, a number, an empty or a longer value is `422` and causes no outbound call. The field does not count toward the 200-field limit.
+- **Verification.** One `POST` of `secret` and `response` (no `remoteip`: the address comes from a header, and Cloudflare already enforces single use) to the fixed `https://challenges.cloudflare.com/turnstile/v0/siteverify`, with `redirect: 'error'` and `cache: 'no-store'`. The endpoint races it against a 5 s `AbortSignal`: the visitor gets `503` at 5 s, a late answer is discarded and the in-flight slot is freed. The response body is read through a reader capped at 16 KB. A network error, redirect, non-2xx, malformed or oversized answer, and Cloudflare's `missing-input-secret`, `invalid-input-secret` and `internal-error` are `503`; any other failure code, and `timeout-or-duplicate` (expired or reused), are `422`.
+- **Binding.** The widget is created with `action: 'buildr_form'` and a `cData`: the SHA-256 (hex) of the JSON tuple `["buildr/captcha", 1, layoutRef, formNodeId]`, where `layoutRef` is the canonical `{collection}:{id}` of the layout the form was resolved from (the page, or its template). A token minted for another form or layout is `422`, as is a hostname outside `hostnames`. Pages that share a template share the `cData` of that template's form by design: a token from one is valid on another, still single use and still bound to your hostnames.
+- **Limiters.** Besides the unchanged per-form limiter, the captcha has its own per-IP counter, keyed on the address hash alone (all forms together) and hit only for a form with a captcha whose token has the right shape. It is a separate limiter instance, never the per-form one, with the same `forms.rateLimit` window and limit. Without a host `forms.rateLimiter` it is a bundled memory limiter created with `failClosed: true`: when it holds 10,000 keys and the key is new, it first drops expired windows, and if it is still full it answers `429` with `Retry-After` (the earliest reset) instead of evicting live counters; known keys keep counting. When the host supplies `forms.rateLimiter`, that limiter serves the captcha counter too, with every key prefixed `captcha:` so it cannot collide with the per-form keys, and the host's own store decides what happens when it is full. The in-flight gate is separate again.
+- **Residual risk of the in-memory limiter.** A flood across many distinct IPv6 /64 prefixes can fill the bundled limiter, and new visitors then get `429` until entries expire (at most one window, 60 s by default). That is a denial of service of the captcha form only, never a bypass: a refused request is stopped before any call to Cloudflare, and the per-form limiter, the other forms and the rest of the site are unaffected. The memory limiter lives in one process, so on a multi-instance or serverless host each instance fills separately; the mitigation there is a shared `forms.rateLimiter` backed by a store with its own expiry and capacity (Redis, ...).
+- **Answers.** `422 { errors: { 'buildr-captcha': 'The verification failed. Try again.' }, codes: { 'buildr-captcha': 'captcha' } }` and `503 { error: 'Verification is unavailable. Try again later.', code: 'captcha-unavailable' }`. A plain HTML form gets the usual `303` with `?buildr-form=invalid` for both.
+- **Fail closed.** A challenge that cannot be checked never lets a submission through: no captcha configured on the server, a verifier error, a full gate or a timeout is `503`, and nothing is stored or mailed.
+- **Configuration errors (`503` plus an error log, no outbound call).** More than one `buildr/captcha` in the form (the editor cannot prevent this today); a `buildr/form` ancestor of the form that has a captcha in its own subtree (nested forms: a captcha belongs to its nearest form); or an author field named `buildr-captcha` (next point). Detection reads the stored nodes literally: it ignores visibility, conditions, bindings and the registry, tolerates cycles, duplicate references and missing ids, and skips nested-form subtrees.
+- **Reserved field name.** `buildr-captcha` is reserved. The endpoint checks the submitted form's own subtree (the form itself and any nested `buildr/form` subtree are not searched, and other forms on the same document are unaffected). A form that contains an author field with that static name answers `503` whether or not it has a captcha block, so a field can neither collide with nor smuggle the token; the check reads the stored fields before schema derivation, so invalid metadata or the field limit cannot mask it. On a form without a captcha, a submitted `buildr-captcha` value is an unknown field (`422`), as before.
+- **Never kept.** The token is removed before validation, so it is never stored, emailed or logged. Logs carry the reason and Cloudflare's error codes (filtered to `^[a-z0-9-]{1,64}$`, at most 10), never the token, the secret, a raw response or a thrown error.
+- **Log levels.** Everything goes through the request's Payload logger (so it also works before `onInit`), once per failed request. A token Cloudflare rejects (`invalid`, or `expired-or-reused`) and a hostname, `action` or `cData` mismatch log once at `warn`: they are visitor behaviour. An `unavailable` verification (network error, timeout, redirect, non-2xx or malformed answer, `internal-error`) logs at `error`, and so do configuration errors: Cloudflare's `missing-input-secret` or `invalid-input-secret` (`reason: 'configuration'`), no captcha configured on the server, a second captcha, a nested form with a captcha ancestor, and the reserved field name. A malformed token, a per-IP `429` and a full in-flight gate answer without a log entry.
+
+Migration: the options are new and optional, so an existing configuration changes nothing. The one behaviour that can differ without them is the reserved name: a published form with an author field named `buildr-captcha` now answers `503`, so rename that field. No document or prop shape changes, so there is no migration. A function-valued form action bypasses this endpoint and must verify the token itself ([nextjs.md](nextjs.md#captcha-pb-160d)).
 
 ## Localization (PB-116)
 

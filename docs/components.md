@@ -25,7 +25,7 @@ Each entry below is expanded with full detail once its implementation task lands
 - **Media**: Image, Video, Iframe, Map, Carousel, CarouselSlide, Gallery, GalleryItem
 - **UI**: Card, Accordion, AccordionItem
 - **CMS**: Loop, Pagination
-- **Forms**: Form, Input, Textarea, Select, Checkbox, Fieldset
+- **Forms**: Form, Input, Textarea, Select, Checkbox, Fieldset, Captcha
 - **Templates**: Hero, CTA, Feature, FeatureGrid, Testimonial, Pricing, FAQ, Contact, PostHeader, PostCard, BlogListing, AuthorBox, PostContent, ProductHero, ProductDetails
 
 ### Editor icons (`meta.icon`)
@@ -202,7 +202,37 @@ A form is a plain HTML `<form method="post">` whose action comes from `platform.
 
 ### Form (`buildr/form`)
 
-Container for fields and a submit button (`form-submit` a11y rule). Props: `successMessage`, `errorMessage` (default to the built-in `form.success`/`form.error` messages for the locale), `ariaLabel`. It renders a hidden honeypot field `_hp` (out of the tab order, `aria-hidden`); a submission that fills it is treated as spam. Nested forms are not allowed and their fields are ignored by the schema.
+Container for fields and a submit button (`form-submit` a11y rule). Props: `successMessage`, `errorMessage` (default to the built-in `form.success`/`form.error` messages for the locale), `ariaLabel`. It renders a hidden honeypot field `_hp` (out of the tab order, `aria-hidden`); a submission that fills it is treated as spam. Nested forms are not allowed and their fields are ignored by the schema. The `<form>` carries `data-buildr-form="{node id}"` (after the author's attributes, so they cannot override it), and the enhancer dispatches a bubbling `buildr-form:settled` event on it whenever a submission ends, whether it succeeded, failed, threw, or ran a function-valued action ([renderer.md](renderer.md#form-markup-and-the-settle-event)). Both exist for enhancers such as the captcha.
+
+### Captcha (`buildr/captcha`, version 1)
+
+A Cloudflare Turnstile check for a form ([ADR-029](adr/ADR-029-provider-embeds-and-form-challenges.md)), category `forms`. It has no props in v1 and only the `spacing` style group; it renders a `div` and is valid only inside a `buildr/form` (`requireAncestor`, never directly in a Loop). A form may hold at most one: a captcha belongs to its nearest form, and a second one makes the server answer `503` and the canvas show "A form can have only one verification." (the editor cannot enforce this yet). The server decides whether a captcha is required from the published form, not from the request ([payload.md](payload.md#captcha-pb-160d)).
+
+Host config is `Platform.captcha?: { provider: 'turnstile'; siteKey: string; clickToLoad?: boolean }` ([renderer.md](renderer.md#platform), [nextjs.md](nextjs.md#captcha-pb-160d)). Absent means off. The site key is public and must match `^[A-Za-z0-9_-]{1,128}$`; anything else counts as absent. It is never stored in the document or manifest or passed through the editor or canvas protocol. The secret key is a server option and never reaches the page.
+
+| Situation | Output |
+|---|---|
+| Canvas | A neutral hint: "The Turnstile check appears on the page, not in the editor." It never reads the platform, so it cannot say whether a key exists |
+| No valid site key on a live page | The "unavailable" message; the server enforces the check regardless |
+| Valid key, click-to-load on (default) | The consent notice and a "Load the check" button |
+| Valid key, `clickToLoad: false` | The widget loads at mount, without the click |
+| Preview (`env.mode === 'preview'`) | Always the notice and button, even when `clickToLoad` is false |
+| No JavaScript | The notice and a `noscript` message "Enable JavaScript to submit this form."; the form cannot be submitted (fails closed) |
+
+If the render has no layout reference or the browser has no `crypto.subtle`, the enhancer shows the "unavailable" status instead of loading. The consent notice is fixed catalog text, authors cannot change it: it says that loading Cloudflare Turnstile from `challenges.cloudflare.com` may set cookies and process the visitor's IP address and browser data (Polish copy in ADR-029). Nothing is requested from Cloudflare before the click, and nothing is remembered afterwards.
+
+The enhancer (`captcha/enhancer.client.tsx`) injects `https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit` once, as one `script[data-buildr-turnstile]` element with the states idle, loading, ready and failed (15 s load deadline; a failure can be retried with the button; a planted tag with that URL is replaced, not trusted). It copies the page's CSP nonce, the first non-empty `script[nonce]`, else `<meta name="csp-nonce">` ([security.md](security.md#captcha-turnstile)). It calls `window.turnstile` only after its own load event and only if `render` is a function. The widget is rendered into a child element the enhancer owns, with every parameter explicit:
+
+| Parameter | Value |
+|---|---|
+| `sitekey` | `Platform.captcha.siteKey` |
+| `action` | `buildr_form` |
+| `cData` | SHA-256 (hex) of the JSON tuple `["buildr/captcha", 1, layoutRef, formNodeId]`; `formNodeId` comes from the form's `data-buildr-form`, `layoutRef` from the render environment |
+| `response-field-name` | `buildr-captcha` (the reserved field name) |
+| `size`, `theme`, `appearance` | `normal`, `auto`, `always` |
+| `language` | `env.locale` when it looks like a language tag, else `auto` |
+
+Accessibility: the button is `hidden` until hydration, is described by the notice (`aria-describedby`), is disabled while loading and disappears once the widget is ready. Pressing it moves focus to a polite `role="status"` region (`tabindex="-1"`), which then announces "Loading verification…", "Verification ready.", and the expiry, error and unavailable texts. The widget is reset after every submission (it listens for `buildr-form:settled` on its own form): a captcha failure or a network error asks the visitor to try again, and `503 captcha-unavailable` says the check is unavailable. The canvas never loads the provider: no script, no iframe, no preconnect. The type starts at version 1 without a migration. Hosts must update their CSP and privacy policy; see [security.md](security.md#captcha-turnstile).
 
 ### Input (`buildr/input`), Textarea (`buildr/textarea`), Select (`buildr/select`), Checkbox (`buildr/checkbox`)
 
@@ -217,7 +247,7 @@ Field ids are derived from the node id, so they are stable between server and cl
 
 ## The default registry
 
-`createDefaultRegistry()` returns a `ReactRegistry` with every component (`defaultComponents`, 34) and every template (`defaultTemplates`, 14) of this package; `defaultTheme` is the theme they are designed against (the core default, re-exported), so an application needs one import. Extend it with `registry.extend({ components, templates })`: each call builds a new registry and nothing is shared or global.
+`createDefaultRegistry()` returns a `ReactRegistry` with every component (`defaultComponents`, 35) and every template (`defaultTemplates`, 14) of this package; `defaultTheme` is the theme they are designed against (the core default, re-exported), so an application needs one import. Extend it with `registry.extend({ components, templates })`: each call builds a new registry and nothing is shared or global.
 
 ```ts
 import { createDefaultRegistry, defaultTheme } from '@next-buildr/components';
