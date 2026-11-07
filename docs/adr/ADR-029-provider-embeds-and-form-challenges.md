@@ -1,6 +1,6 @@
 # ADR-029: Provider embeds and form challenges
 
-**Status:** Proposed
+**Status:** Accepted (2026-11-07)
 
 ## Context
 
