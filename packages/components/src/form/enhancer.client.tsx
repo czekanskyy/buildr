@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { startTransition, useEffect, useRef, useState } from 'react';
 
 export interface FormEnhancerProps {
-  /** Where to send the form. Without a URL (a server action, or no platform) the browser does the submitting. */
+  /** A URL or framework server action. Without a platform the browser does the submitting. */
   readonly action: string | undefined;
+  readonly serverAction?: ((formData: FormData) => void | Promise<void>) | undefined;
   readonly sending: string;
   readonly success: string;
   readonly failure: string;
@@ -16,14 +17,19 @@ export interface FormEnhancerProps {
  * schema) and shows only what the server says was wrong with each field. Without JavaScript the
  * form is submitted the ordinary way and none of this runs.
  */
-export function FormEnhancer({ action, sending, success, failure }: FormEnhancerProps) {
+export function FormEnhancer({
+  action,
+  serverAction,
+  sending,
+  success,
+  failure,
+}: FormEnhancerProps) {
   const status = useRef<HTMLDivElement>(null);
   const [message, setMessage] = useState('');
 
   useEffect(() => {
     const form = status.current?.closest('form');
-    if (form == null || action === undefined) return;
-    const url = action;
+    if (form == null || (action === undefined && serverAction === undefined)) return;
     let live = true;
 
     const clearErrors = () => {
@@ -53,27 +59,42 @@ export function FormEnhancer({ action, sending, success, failure }: FormEnhancer
       }
     };
 
-    const onSubmit = async (event: SubmitEvent) => {
-      if (event.defaultPrevented) return;
-      event.preventDefault();
+    const submit = async () => {
       clearErrors();
       setMessage(sending);
       const buttons = [
         ...form.querySelectorAll<HTMLButtonElement>('button[type="submit"], button:not([type])'),
       ];
       for (const button of buttons) button.disabled = true;
+      let status = 0;
+      let codes: unknown;
+      let code: unknown;
       try {
-        const response = await fetch(url, {
+        const data = new FormData(form);
+        // Host function actions must verify the captcha token in this FormData.
+        if (serverAction) {
+          await serverAction(data);
+          status = 200;
+          if (live) {
+            form.reset();
+            setMessage(success);
+          }
+          return;
+        }
+        const response = await fetch(action as string, {
           method: 'POST',
-          body: new FormData(form),
+          body: data,
           headers: { Accept: 'application/json' },
         });
+        status = response.status;
         if (!live) return;
         if (response.ok) {
           form.reset();
           setMessage(success);
         } else {
           const body: unknown = await response.json().catch(() => undefined);
+          code = (body as { code?: unknown } | undefined)?.code;
+          codes = (body as { codes?: unknown } | undefined)?.codes;
           if (!live) return;
           showErrors((body as { errors?: unknown } | undefined)?.errors);
           setMessage(failure);
@@ -82,7 +103,21 @@ export function FormEnhancer({ action, sending, success, failure }: FormEnhancer
         if (live) setMessage(failure);
       } finally {
         for (const button of buttons) button.disabled = false;
+        form.dispatchEvent(
+          new CustomEvent('buildr-form:settled', {
+            bubbles: true,
+            detail: { status, codes, code },
+          }),
+        );
       }
+    };
+
+    const onSubmit = (event: SubmitEvent) => {
+      if (event.defaultPrevented) return;
+      event.preventDefault();
+      // Framework actions run in an Action context, as a React form action does.
+      if (serverAction) startTransition(submit);
+      else void submit();
     };
 
     form.addEventListener('submit', onSubmit);
@@ -90,7 +125,7 @@ export function FormEnhancer({ action, sending, success, failure }: FormEnhancer
       live = false;
       form.removeEventListener('submit', onSubmit);
     };
-  }, [action, sending, success, failure]);
+  }, [action, serverAction, sending, success, failure]);
 
   return (
     <div ref={status} className="bc-form__status" role="status" aria-live="polite">

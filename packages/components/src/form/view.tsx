@@ -20,6 +20,7 @@ export function FormView({
   return (
     <form
       {...root}
+      data-buildr-form={node.id}
       method="post"
       {...(action !== undefined ? { action } : {})}
       {...(props.ariaLabel !== '' ? { 'aria-label': props.ariaLabel } : {})}
@@ -33,6 +34,7 @@ export function FormView({
       </div>
       <FormEnhancer
         action={typeof action === 'string' ? action : undefined}
+        serverAction={typeof action === 'function' ? action : undefined}
         sending={message(env, 'form.sending')}
         success={props.successMessage !== '' ? props.successMessage : message(env, 'form.success')}
         failure={props.errorMessage !== '' ? props.errorMessage : message(env, 'form.error')}
