@@ -1,5 +1,5 @@
 {
-  "hash": "3cwxdu2p83cbz",
+  "hash": "bl6j8moeo2y6",
   "components": {
     "buildr/page": {
       "type": "buildr/page",
@@ -2328,6 +2328,27 @@
       "editor": {
         "inlineProp": "label",
         "placeholder": "Label"
+      },
+      "runtime": "shared"
+    },
+    "buildr/captcha": {
+      "type": "buildr/captcha",
+      "version": 1,
+      "label": "Captcha",
+      "description": "Form verification.",
+      "category": "forms",
+      "icon": "shield-check",
+      "contentCategories": ["flow"],
+      "parents": {
+        "requireAncestor": ["buildr/form"],
+        "deny": ["buildr/loop"]
+      },
+      "props": {},
+      "styles": {
+        "groups": ["spacing"]
+      },
+      "a11y": {
+        "element": "div"
       },
       "runtime": "shared"
     }

@@ -5,6 +5,17 @@
  */
 export const BUILT_IN_MESSAGES = {
   en: {
+    'captcha.notice':
+      'Loading Cloudflare Turnstile from challenges.cloudflare.com may set cookies and process your IP address and browser data.',
+    'captcha.button': 'Load the check',
+    'captcha.loading': 'Loading verification…',
+    'captcha.ready': 'Verification ready.',
+    'captcha.expired': 'The check expired. Please try again.',
+    'captcha.error': 'The check failed. Please try again.',
+    'captcha.unavailable': 'The check is unavailable right now. Please try again later.',
+    'captcha.canvas': 'The Turnstile check appears on the page, not in the editor.',
+    'captcha.noscript': 'Enable JavaScript to submit this form.',
+    'captcha.duplicate': 'A form can have only one verification.',
     'map.notice':
       'This map comes from Google. Loading it sends your IP address to Google, which may store data in your browser. See the site privacy policy.',
     'map.button': 'Show map',
@@ -42,6 +53,17 @@ export const BUILT_IN_MESSAGES = {
     'gallery.openImage': 'Open image',
   },
   pl: {
+    'captcha.notice':
+      'Wczytanie Cloudflare Turnstile z challenges.cloudflare.com może zapisać pliki cookie oraz przetwarzać Twój adres IP i dane przeglądarki.',
+    'captcha.button': 'Wczytaj weryfikację',
+    'captcha.loading': 'Wczytywanie weryfikacji…',
+    'captcha.ready': 'Weryfikacja gotowa.',
+    'captcha.expired': 'Weryfikacja wygasła. Spróbuj ponownie.',
+    'captcha.error': 'Weryfikacja nie powiodła się. Spróbuj ponownie.',
+    'captcha.unavailable': 'Weryfikacja jest chwilowo niedostępna. Spróbuj później.',
+    'captcha.canvas': 'Weryfikacja Turnstile jest widoczna tylko na stronie, nie w edytorze.',
+    'captcha.noscript': 'Aby wysłać formularz, włącz JavaScript.',
+    'captcha.duplicate': 'Formularz może mieć tylko jedną weryfikację.',
     'map.notice':
       'Mapa pochodzi z Google. Po jej wczytaniu Google otrzyma Twój adres IP i może zapisać dane w przeglądarce. Szczegóły znajdziesz w polityce prywatności witryny.',
     'map.button': 'Pokaż mapę',

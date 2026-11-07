@@ -16,6 +16,7 @@
 @import "./video/styles.css";
 @import "./iframe/styles.css";
 @import "./map/styles.css";
+@import "./captcha/styles.css";
 @import "./carousel/styles.css";
 @import "./carousel-slide/styles.css";
 @import "./gallery/styles.css";

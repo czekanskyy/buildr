@@ -4,6 +4,7 @@ import { accordionItemFixtures } from './accordion-item/fixtures.ts';
 import { anchorFixtures } from './anchor/fixtures.ts';
 import { badgeFixtures } from './badge/fixtures.ts';
 import { buttonFixtures } from './button/fixtures.ts';
+import { captchaFixtures } from './captcha/fixtures.ts';
 import { cardFixtures } from './card/fixtures.ts';
 import { carouselFixtures } from './carousel/fixtures.ts';
 import { carouselSlideFixtures } from './carousel-slide/fixtures.ts';
@@ -99,6 +100,7 @@ const componentFixtures: readonly (readonly [ComponentType, readonly ComponentFi
   ['buildr/textarea', textareaFixtures],
   ['buildr/select', selectFixtures],
   ['buildr/checkbox', checkboxFixtures],
+  ['buildr/captcha', captchaFixtures],
 ];
 
 /** The template a fixture shows: its id is `template-<name>` with an optional `-<variant>`. */

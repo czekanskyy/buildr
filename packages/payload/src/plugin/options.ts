@@ -61,6 +61,39 @@ export const optionsSchema = z.object({
     .object({
       /** Adds `buildr-form-submissions` and the public submission endpoint (needs `registry`). */
       enabled: z.boolean().default(false),
+      captcha: z
+        .object({
+          provider: z.literal('turnstile').default('turnstile'),
+          secretKey: z.string().min(1),
+          hostnames: z
+            .array(
+              z
+                .string()
+                .max(253)
+                .regex(
+                  /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$/,
+                )
+                .refine((value) => value === value.trim(), 'must be a hostname'),
+            )
+            .min(1),
+          maxInFlight: z.number().int().min(1).max(1024).default(16),
+        })
+        .strict()
+        .optional(),
+      clientIp: z
+        .union([
+          z
+            .object({
+              header: z
+                .string()
+                .regex(/^[a-z0-9-]{1,64}$/)
+                .refine((value) => value === value.trim(), 'must be a header name'),
+              hops: z.number().int().positive().default(1),
+            })
+            .strict(),
+          fn<(req: PayloadRequest) => string | undefined>(),
+        ])
+        .optional(),
       /** Who a notification may go to: exact addresses or domains (`@example.com`). */
       notifyAllowlist: z.array(z.string()).default([]),
       /** Notified about every submission; each must match `notifyAllowlist`. */
@@ -82,6 +115,17 @@ export const optionsSchema = z.object({
           'must be a rate limiter',
         )
         .optional(),
+    })
+    .superRefine((forms, ctx) => {
+      if (forms.captcha === undefined) return;
+      if (!forms.enabled)
+        ctx.addIssue({ code: 'custom', path: ['captcha'], message: 'requires forms.enabled' });
+      if (forms.clientIp === undefined)
+        ctx.addIssue({
+          code: 'custom',
+          path: ['clientIp'],
+          message: 'required with forms.captcha',
+        });
     })
     .default({
       enabled: false,
@@ -156,7 +200,10 @@ export function resolveOptions(input: BuildrPluginOptions): ResolvedOptions {
   const parsed = optionsSchema.safeParse(input);
   if (!parsed.success) {
     const problems = parsed.error.issues
-      .map((issue) => `  - ${issue.path.join('.') || '(options)'}: ${issue.message}`)
+      .map(
+        (issue) =>
+          `  - ${issue.path.join('.') || '(options)'}: ${issue.code === 'unrecognized_keys' && issue.path[0] === 'forms' && (issue.path[1] === 'captcha' || issue.path[1] === 'clientIp') ? 'unrecognized option' : issue.message}`,
+      )
       .join('\n');
     throw new Error(`buildrPlugin: invalid options\n${problems}`);
   }

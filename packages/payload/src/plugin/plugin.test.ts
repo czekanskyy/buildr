@@ -1,11 +1,12 @@
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { createEmptyDocument } from '@next-buildr/core';
+import { createEmptyDocument, createRegistryMeta } from '@next-buildr/core';
 import { sqliteAdapter } from '@payloadcms/db-sqlite';
-import { buildConfig, type CollectionConfig, getPayload, type Payload } from 'payload';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { buildConfig, type CollectionConfig, type Config, getPayload, type Payload } from 'payload';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { buildrPlugin } from './index.ts';
+import { type BuildrPluginOptions, resolveOptions } from './options.ts';
 import { BUILDR_WRITE } from './write-guard.ts';
 
 const pages: CollectionConfig = {
@@ -16,6 +17,88 @@ const pages: CollectionConfig = {
 const layoutOf = (name: string) => ({
   ...createEmptyDocument(),
   nodes: { root: { id: 'root', type: 'buildr/page', name } },
+});
+
+describe('captcha options', () => {
+  const secret = 'never-echo-this-secret';
+  const valid = {
+    collections: {},
+    forms: {
+      enabled: true,
+      clientIp: { header: 'trusted-ip' },
+      captcha: { secretKey: secret, hostnames: ['example.com'] },
+    },
+  };
+  it('ignores unknown forms keys as before', () => {
+    expect(
+      resolveOptions({ collections: {}, forms: { legacy: true } } as BuildrPluginOptions).forms
+        .enabled,
+    ).toBe(false);
+  });
+  it('keeps verifier implementation out of the public entry', async () => {
+    const entry = await import('./index.ts');
+    expect(entry).not.toHaveProperty('createTurnstileVerifier');
+  });
+  it('serialises no captcha secret and preserves the host onInit hook', async () => {
+    const onInit = vi.fn();
+    const config = await buildrPlugin({
+      ...valid,
+      registry: { meta: createRegistryMeta({ components: [] }) },
+    } as BuildrPluginOptions)({ collections: [], onInit } as unknown as Config);
+    expect(JSON.stringify(config)).not.toContain(secret);
+    const payload = { logger: { error: vi.fn(), warn: vi.fn() } } as unknown as Payload;
+    await config.onInit?.(payload);
+    expect(onInit).toHaveBeenCalledExactlyOnceWith(payload);
+  });
+  it('applies provider, concurrency and trusted hop defaults; accepts a request callback', () => {
+    expect(resolveOptions(valid).forms).toMatchObject({
+      captcha: { provider: 'turnstile', maxInFlight: 16 },
+      clientIp: { hops: 1 },
+    });
+    const callback = () => '192.0.2.1';
+    expect(
+      resolveOptions({ ...valid, forms: { ...valid.forms, clientIp: callback } }).forms.clientIp,
+    ).toBe(callback);
+  });
+  it.each([
+    { enabled: false },
+    { clientIp: undefined },
+    { captcha: { secretKey: secret } },
+    { captcha: { secretKey: secret, hostnames: [] } },
+    ...[
+      '.',
+      '..',
+      '-',
+      'example.com.',
+      '-example.com',
+      'example-.com',
+      `${'a'.repeat(64)}.com`,
+      'EXAMPLE.COM',
+      'https://example.com',
+      'example.com:443',
+      'example.com/path',
+      'a'.repeat(254),
+      'example.com\n',
+    ].map((hostname) => ({ captcha: { secretKey: secret, hostnames: [hostname] } })),
+    ...[0, 1.5, 1025].map((maxInFlight) => ({ captcha: { ...valid.forms.captcha, maxInFlight } })),
+    { captcha: { ...valid.forms.captcha, secretKey: '' } },
+    { captcha: { ...valid.forms.captcha, provider: 'other' } },
+    { captcha: { ...valid.forms.captcha, verifier: { verify() {} } } },
+    { captcha: { ...valid.forms.captcha, [secret]: true } },
+    ...['X-Forwarded-For', '', 'a b', 'valid\n', 'x'.repeat(65)].map((header) => ({
+      clientIp: { header },
+    })),
+    ...[0, -1, 1.5].map((hops) => ({ clientIp: { header: 'trusted-ip', hops } })),
+  ])('rejects invalid captcha configuration without exposing the secret', (change) => {
+    let message = '';
+    try {
+      resolveOptions({ ...valid, forms: { ...valid.forms, ...change } } as BuildrPluginOptions);
+    } catch (error) {
+      message = (error as Error).message;
+    }
+    expect(message).toContain('buildrPlugin: invalid options');
+    expect(message).not.toContain(secret);
+  });
 });
 
 let dir: string;

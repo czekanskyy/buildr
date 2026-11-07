@@ -5,6 +5,7 @@ it('parses entry, bounded width and explicit static opt-in', () => {
   expect(parseBlocksRoute('?entry=carousel-default&w=375&static=1')).toEqual({
     mode: 'production',
     mapKey: false,
+    captchaKey: false,
     entry: 'carousel-default',
     width: 375,
     staticMarkup: true,
@@ -15,6 +16,7 @@ it('parses entry, bounded width and explicit static opt-in', () => {
     staticMarkup: false,
     mode: 'production',
     mapKey: false,
+    captchaKey: false,
   });
 });
 it.each(['abc', '-5', '10', '99999', '1e3', '375px', ''])('ignores invalid width %s', (w) => {
@@ -34,6 +36,14 @@ it('requires explicit map opt-in and parses canvas mode', () => {
   });
   expect(parseBlocksRoute('?mapKey=true&mode=preview')).toMatchObject({
     mapKey: false,
-    mode: 'production',
+    mode: 'preview',
   });
+});
+
+it('requires an explicit captcha opt-in without accepting keys from the query', () => {
+  expect(parseBlocksRoute('?captchaKey=1&mode=preview')).toMatchObject({
+    captchaKey: true,
+    mode: 'preview',
+  });
+  expect(parseBlocksRoute('?captchaKey=arbitrary-key').captchaKey).toBe(false);
 });

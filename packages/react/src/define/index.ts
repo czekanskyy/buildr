@@ -13,6 +13,7 @@ export type {
   NodeParent,
   NodeRoot,
   Platform,
+  PlatformCaptcha,
   PlatformImageProps,
   PlatformLinkProps,
   PlatformMaps,

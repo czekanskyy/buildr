@@ -5,8 +5,20 @@ import { registry } from './registry.ts';
 
 const carousel = galleryEntries.find((entry) => entry.id === 'carousel-default');
 const gallery = galleryEntries.find((entry) => entry.id === 'gallery-default');
-if (!carousel || !gallery) throw new Error('Missing block fixtures');
+const captcha = galleryEntries.find((entry) => entry.id === 'captcha-default');
+if (!carousel || !gallery || !captcha) throw new Error('Missing block fixtures');
 const extras: GalleryEntry[] = [
+  ...['captcha-no-site-key', 'captcha-invalid-site-key', 'captcha-auto'].map((id) => ({
+    ...captcha,
+    id,
+    title: id,
+  })),
+  {
+    ...captcha,
+    id: 'captcha-multiple',
+    title: 'Captcha: independent forms sharing one script',
+    tree: { type: 'buildr/container', children: [captcha.tree, captcha.tree, captcha.tree] },
+  },
   {
     ...carousel,
     id: 'carousel-input',

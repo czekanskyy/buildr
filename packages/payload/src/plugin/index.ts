@@ -8,6 +8,7 @@ import {
   RESERVED_MCP_FIELDS,
   TEMPLATES_COLLECTION,
 } from './fields.ts';
+import { createCaptchaGate, createTurnstileVerifier } from './forms/captcha.ts';
 import { isAllowedRecipient } from './forms/notify.ts';
 import { createMemoryRateLimiter } from './forms/rate-limit.ts';
 import { layoutHook } from './hooks/layout-hook.ts';
@@ -67,6 +68,20 @@ export function buildrPlugin(input: BuildrPluginOptions): Plugin {
   const writeLimiter = options.mcp.enabled
     ? (options.mcp.rateLimiter ?? createMemoryRateLimiter(options.mcp.rateLimit))
     : undefined;
+  const hostRateLimiter = forms.rateLimiter;
+  const captcha =
+    forms.captcha === undefined
+      ? undefined
+      : {
+          verifier: createTurnstileVerifier({
+            secretKey: forms.captcha.secretKey,
+          }),
+          rateLimiter: hostRateLimiter
+            ? { hit: (key: string) => hostRateLimiter.hit(`captcha:${key}`) }
+            : createMemoryRateLimiter({ ...forms.rateLimit, failClosed: true }),
+          gate: createCaptchaGate(forms.captcha.maxInFlight),
+          hostnames: forms.captcha.hostnames,
+        };
   return (config: Config): Config => {
     const collections = config.collections ?? [];
     const authSlugs = collections.filter((c) => Boolean(c.auth)).map((c) => c.slug);
@@ -122,7 +137,7 @@ export function buildrPlugin(input: BuildrPluginOptions): Plugin {
       ...config,
       endpoints: [
         ...(config.endpoints ?? []),
-        ...buildrEndpoints({ options, rateLimiter, writeLimiter }),
+        ...buildrEndpoints({ options, rateLimiter, writeLimiter, captcha }),
       ],
       collections: [
         ...collections.map((collection) => {

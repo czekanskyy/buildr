@@ -9,6 +9,24 @@ restricted by HTTP referrer, never stored in the document or manifest. Click-to-
 only literal `clickToLoad: false` opts out. The canvas Platform must not be given `maps`.
 See [ADR-029](adr/ADR-029-provider-embeds-and-form-challenges.md).
 
+`Platform.captcha?: { provider: 'turnstile'; siteKey: string; clickToLoad?: boolean }` is the optional host config of `buildr/captcha`; absent means off. `siteKey` is a public Cloudflare Turnstile key (`^[A-Za-z0-9_-]{1,128}$`; an invalid one counts as off), never stored in the document or manifest. Click-to-load defaults on, only literal `clickToLoad: false` opts out, and in `preview` mode the click is always required. The view does not read it in the canvas, and the canvas Platform must not be given `captcha`. The secret never belongs to the platform. See [components.md](components.md#captcha-buildrcaptcha-version-1) and [nextjs.md](nextjs.md#captcha-pb-160d).
+
+### Form markup and the settle event
+
+`buildr/form` renders `data-buildr-form="{node id}"` on its `<form>` element, after the author's `root` attributes so they cannot override it. Enhancers find their form by it: the captcha reads the form's node id from it to compute `cData`. The attribute carries no secret.
+
+The form enhancer dispatches a bubbling `CustomEvent` named `buildr-form:settled` on the form element every time a submission ends, with `detail: { status, codes?, code? }`:
+
+| Outcome | `status` | `codes`, `code` |
+|---|---|---|
+| Fetch answered, success | the HTTP status (200) | none |
+| Fetch answered, failure | the HTTP status (`422`, `429`, `503`, ...) | `codes` and `code` from the JSON body when present (for example `codes: { 'buildr-captcha': 'captcha' }`, `code: 'captcha-unavailable'`) |
+| Network error or throw | `0` | none |
+| Function-valued action completed | `200` | none |
+| Function-valued action threw | `0` | none |
+
+The submit buttons are re-enabled before the event. Listeners should check `event.target` (it bubbles, and forms can sit inside other markup). The captcha enhancer uses it to reset its widget after every submission and to show a status.
+
 ## Pipeline
 
 ```

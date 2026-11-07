@@ -7,6 +7,7 @@
 import type { LabelCatalog } from '../../i18n/label-catalog.ts';
 
 const COMPONENTS: Readonly<Record<string, string>> = {
+  'buildr/captcha': 'Captcha',
   'buildr/map': 'Mapa',
   'buildr/carousel': 'Karuzela',
   'buildr/carousel-slide': 'Slajd',
@@ -44,6 +45,7 @@ const COMPONENTS: Readonly<Record<string, string>> = {
 };
 
 const DESCRIPTIONS: Readonly<Record<string, string>> = {
+  'buildr/captcha': 'Weryfikacja formularza.',
   'buildr/map': 'Mapa Google z miejscem i linkiem do mapy.',
   'buildr/carousel': 'Przewijane slajdy z opcjonalnym automatycznym przewijaniem.',
   'buildr/carousel-slide': 'Jeden slajd karuzeli.',

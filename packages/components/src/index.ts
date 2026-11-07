@@ -17,6 +17,7 @@ export {
   ICON_POSITIONS,
 } from './button/definition.ts';
 export { buttonFixtures } from './button/fixtures.ts';
+export { Captcha } from './captcha/definition.ts';
 export { CARD_ELEMENTS, CARD_VARIANTS, Card } from './card/definition.ts';
 export { cardFixtures } from './card/fixtures.ts';
 export { Carousel } from './carousel/definition.ts';

@@ -55,10 +55,34 @@ describe('buildr/form', () => {
       node: { id: 'node1', type: 'buildr/form' },
       env: { mode: 'production', locale: 'en', messages: {}, layoutRef: 'pages:7' },
       platform,
-    }) as { props: Record<string, unknown> };
+    }) as {
+      props: Record<string, unknown> & {
+        action?: unknown;
+        method?: unknown;
+        serverAction?: unknown;
+      };
+    };
     expect(calls).toEqual([['pages:7', 'node1']]);
-    expect(element.props['action']).toBe('/forms/pages:7/node1');
-    expect(element.props['method']).toBe('post');
+    expect(element.props.action).toBe('/forms/pages:7/node1');
+    expect(element.props.method).toBe('post');
+    expect(element.props['data-buildr-form']).toBe('node1');
+  });
+
+  it('protects the form identity from author attributes', () => {
+    const element = FormView({
+      props: { successMessage: '', errorMessage: '', ariaLabel: '' } as never,
+      root: { className: 'bc-form', 'data-buildr-form': 'forged' },
+      slots: {},
+      node: { id: 'real-form-id', type: 'buildr/form' },
+      env: { mode: 'production', locale: 'en', messages: {}, layoutRef: 'pages:7' },
+    } as never) as {
+      props: Record<string, unknown> & {
+        action?: unknown;
+        method?: unknown;
+        serverAction?: unknown;
+      };
+    };
+    expect(element.props['data-buildr-form']).toBe('real-form-id');
   });
 
   it('has no action without a platform, so the browser posts to the page itself', () => {
@@ -68,8 +92,14 @@ describe('buildr/form', () => {
       slots: {},
       node: { id: 'node1', type: 'buildr/form' },
       env: { mode: 'production', locale: 'en', messages: {} },
-    }) as { props: Record<string, unknown> };
-    expect(element.props['action']).toBeUndefined();
+    }) as {
+      props: Record<string, unknown> & {
+        action?: unknown;
+        method?: unknown;
+        serverAction?: unknown;
+      };
+    };
+    expect(element.props.action).toBeUndefined();
   });
 
   it('passes the enhancement its texts: the author’s, else the built-in ones for the locale', () => {
@@ -80,16 +110,16 @@ describe('buildr/form', () => {
         slots: {},
         node: { id: 'n', type: 'buildr/form' },
         env: { mode: 'production', locale, messages: {} },
-      }) as { props: { children: { props: Record<string, string> }[] } };
+      }) as { props: { children: { props: { success?: string; failure?: string } }[] } };
       return element.props.children.at(-1)?.props ?? {};
     };
-    expect(enhancerProps({}, 'en')['success']).toBe('Thank you, your message was sent.');
-    expect(enhancerProps({}, 'pl')['success']).toBe('Dziękujemy, wiadomość została wysłana.');
-    expect(enhancerProps({ successMessage: 'Thanks!' }, 'en')['success']).toBe('Thanks!');
-    expect(enhancerProps({ errorMessage: 'Oops' }, 'en')['failure']).toBe('Oops');
+    expect(enhancerProps({}, 'en').success).toBe('Thank you, your message was sent.');
+    expect(enhancerProps({}, 'pl').success).toBe('Dziękujemy, wiadomość została wysłana.');
+    expect(enhancerProps({ successMessage: 'Thanks!' }, 'en').success).toBe('Thanks!');
+    expect(enhancerProps({ errorMessage: 'Oops' }, 'en').failure).toBe('Oops');
   });
 
-  it('only takes a string action for the enhancement (a server action is left to the framework)', () => {
+  it('only takes a string action for the enhancement', () => {
     const platform: Platform = {
       Link: () => null,
       Image: () => null,
@@ -102,9 +132,21 @@ describe('buildr/form', () => {
       node: { id: 'n', type: 'buildr/form' },
       env: { mode: 'production', locale: 'en', messages: {} },
       platform,
-    }) as { props: { action: unknown; children: { props: Record<string, unknown> }[] } };
+    }) as {
+      props: {
+        action: unknown;
+        children: {
+          props: Record<string, unknown> & {
+            action?: unknown;
+            method?: unknown;
+            serverAction?: unknown;
+          };
+        }[];
+      };
+    };
     expect(typeof element.props.action).toBe('function');
-    expect(element.props.children.at(-1)?.props['action']).toBeUndefined();
+    expect(element.props.children.at(-1)?.props.action).toBeUndefined();
+    expect(element.props.children.at(-1)?.props.serverAction).toBe(element.props.action);
   });
 
   it('is named by ariaLabel when it has one', async () => {

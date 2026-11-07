@@ -8,12 +8,19 @@ import { registry, theme } from './buildr.registry.ts';
 
 // biome-ignore lint/complexity/useLiteralKeys: Environment index signature requires bracket access.
 const mapsApiKey = process.env['GOOGLE_MAPS_EMBED_API_KEY']?.trim();
+// biome-ignore lint/complexity/useLiteralKeys: Environment index signature requires bracket access.
+const captchaSiteKey = process.env['TURNSTILE_SITE_KEY'];
 
 /** Everything `BuildrPage` needs; built once per server process. */
 export const buildr = createBuildrConfig({
   registry,
   theme,
-  platform: createNextPlatform(mapsApiKey ? { maps: { apiKey: mapsApiKey } } : {}),
+  platform: createNextPlatform({
+    ...(mapsApiKey ? { maps: { apiKey: mapsApiKey } } : {}),
+    ...(captchaSiteKey && /^[A-Za-z0-9_-]{1,128}$/.test(captchaSiteKey)
+      ? { captcha: { provider: 'turnstile', siteKey: captchaSiteKey } }
+      : {}),
+  }),
   // Called per render: a visitor's read of the published content, through the Local API.
   dataSource: async () =>
     createPayloadDataSource({

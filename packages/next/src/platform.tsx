@@ -1,5 +1,6 @@
 import type {
   Platform,
+  PlatformCaptcha,
   PlatformImageProps,
   PlatformLinkProps,
   PlatformMaps,
@@ -45,6 +46,7 @@ function NextImage({ src, alt, width, height, priority, ...rest }: PlatformImage
 
 export interface NextPlatformOptions {
   readonly maps?: PlatformMaps;
+  readonly captcha?: PlatformCaptcha;
   /**
    * The URL a form of the layout `ref` (`{collection}:{id}`) posts to. Defaults to the Payload
    * plugin endpoint `/api/buildr/forms/:collection/:id/:nodeId`.
@@ -56,6 +58,7 @@ export interface NextPlatformOptions {
 export function createNextPlatform(options: NextPlatformOptions = {}): Platform {
   return {
     ...(options.maps === undefined ? {} : { maps: options.maps }),
+    ...(options.captcha === undefined ? {} : { captcha: options.captcha }),
     Link: NextLink,
     Image: NextImage,
     formAction(ref, nodeId) {

@@ -77,3 +77,8 @@ it('provides Map labels, description, props and map type options', () => {
     satellite: 'Satelitarna',
   });
 });
+
+it('provides Captcha labels and description', () => {
+  expect(plLabels.components['buildr/captcha']).toBe('Captcha');
+  expect(plLabels.descriptions['buildr/captcha']).toBe('Weryfikacja formularza.');
+});

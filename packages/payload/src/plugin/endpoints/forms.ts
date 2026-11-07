@@ -3,6 +3,18 @@ import { deriveFormSchema, MAX_FORM_FIELDS } from '@next-buildr/core';
 import type { Endpoint, PayloadRequest } from 'payload';
 import { resolveLayout, TEMPLATES_COLLECTION } from '../../data/resolve-layout.ts';
 import { FORM_SUBMISSIONS_COLLECTION } from '../collections/form-submissions.ts';
+import {
+  ancestorFormHasCaptcha,
+  CAPTCHA_ACTION,
+  CAPTCHA_FIELD,
+  type CaptchaVerification,
+  captchaCData,
+  findFormCaptchas,
+  formSubtreeNodes,
+  isCaptchaToken,
+} from '../forms/captcha.ts';
+import type { ClientIpSource } from '../forms/client-ip.ts';
+import { clientIpOf } from '../forms/client-ip.ts';
 import { isAllowedRecipient } from '../forms/notify.ts';
 import { type SubmissionError, validateSubmission } from '../forms/validate.ts';
 import { readLayout } from '../hooks/read-layout.ts';
@@ -64,9 +76,8 @@ async function readBody(req: PayloadRequest): Promise<Body> {
 }
 
 /** The visitor's address, hashed with the server secret: enough to rate-limit, not to identify. */
-function ipHashOf(req: PayloadRequest): string {
-  const forwarded = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
-  const ip = forwarded || req.headers.get('x-real-ip') || 'unknown';
+function ipHashOf(req: PayloadRequest, source?: ClientIpSource): string {
+  const ip = clientIpOf(req, source);
   return createHash('sha256').update(`${req.payload.secret}:${ip}`).digest('hex').slice(0, 32);
 }
 
@@ -114,7 +125,7 @@ export const formsEndpoint = (env: EndpointEnv): Endpoint => ({
 
     const locale = chooseLocale(req, req.searchParams?.get('locale'));
     if (!locale.ok) return locale.response;
-    const ipHash = ipHashOf(req);
+    const ipHash = ipHashOf(req, env.options.forms.clientIp);
     const limited = await env.rateLimiter?.hit(`${ipHash}:${collection}:${id}:${nodeId}`);
     if (limited !== undefined && !limited.allowed) {
       const response = fail(429, 'Too many submissions. Try again later.');
@@ -133,7 +144,8 @@ export const formsEndpoint = (env: EndpointEnv): Endpoint => ({
     if (trap !== undefined && !(typeof trap === 'string' && trap === '')) {
       return done('sent') ?? json({ ok: true });
     }
-    if (Object.keys(values).length > MAX_FORM_FIELDS) return fail(422, 'Too many fields.');
+    if (Object.keys(values).filter((name) => name !== CAPTCHA_FIELD).length > MAX_FORM_FIELDS)
+      return fail(422, 'Too many fields.');
 
     // Only the published state is public: a draft, or a document never published, has no form.
     let stored: Record<string, unknown>;
@@ -150,19 +162,21 @@ export const formsEndpoint = (env: EndpointEnv): Endpoint => ({
     }
     if (stored['_status'] !== 'published') return fail(404, 'The form was not found.');
 
-    const layout = isTemplate
-      ? stored['layout']
-      : (
-          await resolveLayout({
-            payload: req.payload,
-            collection,
-            doc: stored,
-            contextName: own?.context ?? collection,
-            draft: false,
-            overrideAccess: true,
-          })
-        ).layout;
-    const read = readLayout(layout, env.options);
+    const resolved = isTemplate
+      ? {
+          layout: stored['layout'],
+          layoutRef:
+            stored['id'] === undefined ? null : `${TEMPLATES_COLLECTION}:${String(stored['id'])}`,
+        }
+      : await resolveLayout({
+          payload: req.payload,
+          collection,
+          doc: stored,
+          contextName: own?.context ?? collection,
+          draft: false,
+          overrideAccess: true,
+        });
+    const read = readLayout(resolved.layout, env.options);
     const form =
       read.ok && Object.hasOwn(read.doc.nodes, nodeId) ? read.doc.nodes[nodeId] : undefined;
     if (
@@ -174,8 +188,104 @@ export const formsEndpoint = (env: EndpointEnv): Endpoint => ({
       return fail(404, 'The form was not found.');
     }
 
-    const { schema } = deriveFormSchema(read.doc, env.options.registry.meta, nodeId);
-    const result = validateSubmission(schema, values);
+    const snapshot = read.doc;
+    const canonicalRef = resolved.layoutRef;
+    if (canonicalRef === null) return fail(404, 'The form was not found.');
+    const captchaFailure = (unavailable: boolean): Response =>
+      done('invalid') ??
+      (unavailable
+        ? json(
+            { error: 'Verification is unavailable. Try again later.', code: 'captcha-unavailable' },
+            503,
+          )
+        : json(
+            {
+              errors: { [CAPTCHA_FIELD]: 'The verification failed. Try again.' },
+              codes: { [CAPTCHA_FIELD]: 'captcha' },
+            },
+            422,
+          ));
+    const configFailure = (): Response => {
+      req.payload.logger.error({
+        msg: 'buildr: captcha configuration error',
+        reason: 'configuration',
+      });
+      return captchaFailure(true);
+    };
+    // Check raw author fields too: invalid metadata or the field limit must not mask this name.
+    const reservedName = formSubtreeNodes(snapshot, nodeId).some((node) => {
+      const field = env.options.registry?.meta.get(node.type)?.formField;
+      const name =
+        field !== undefined && node.props !== undefined && Object.hasOwn(node.props, field.nameProp)
+          ? node.props[field.nameProp]
+          : undefined;
+      return name?.kind === 'static' && name.value === CAPTCHA_FIELD;
+    });
+    const captchas = findFormCaptchas(snapshot, nodeId);
+    if (reservedName || ancestorFormHasCaptcha(snapshot, nodeId) || captchas.length > 1)
+      return configFailure();
+    const { schema } = deriveFormSchema(snapshot, env.options.registry.meta, nodeId);
+    let submitted = values;
+    if (captchas.length === 1) {
+      const captcha = env.captcha;
+      if (captcha === undefined) return configFailure();
+      const token = Object.hasOwn(values, CAPTCHA_FIELD) ? values[CAPTCHA_FIELD] : undefined;
+      if (!isCaptchaToken(token)) return captchaFailure(false);
+      const limited = await captcha.rateLimiter.hit(ipHash);
+      if (limited !== undefined && !limited.allowed) {
+        const response = fail(429, 'Too many submissions. Try again later.');
+        response.headers.set('retry-after', String(limited.retryAfterSeconds));
+        return response;
+      }
+      const release = captcha.gate.tryAcquire();
+      if (release === null) return captchaFailure(true);
+      let verification: CaptchaVerification;
+      let onAbort: () => void = () => {};
+      const signal = AbortSignal.timeout(5000);
+      try {
+        const deadline = new Promise<CaptchaVerification>((resolve) => {
+          onAbort = () => {
+            release();
+            resolve({ ok: false, reason: 'unavailable' });
+          };
+          signal.addEventListener('abort', onAbort, { once: true });
+          if (signal.aborted) onAbort();
+        });
+        verification = await Promise.race([captcha.verifier.verify({ token, signal }), deadline]);
+      } catch {
+        verification = { ok: false, reason: 'unavailable' };
+      } finally {
+        signal.removeEventListener('abort', onAbort);
+        release();
+      }
+      if (verification?.ok !== true) {
+        const unavailable =
+          !verification ||
+          (verification.reason !== 'invalid' && verification.reason !== 'expired-or-reused');
+        const entry = {
+          msg: 'buildr: captcha verification',
+          reason: unavailable ? 'unavailable' : verification.reason,
+          ...verification?.log,
+        };
+        if (unavailable) req.payload.logger.error(entry);
+        else req.payload.logger.warn(entry);
+        return captchaFailure(unavailable);
+      }
+      if (
+        typeof verification.hostname !== 'string' ||
+        typeof verification.action !== 'string' ||
+        typeof verification.cdata !== 'string' ||
+        !captcha.hostnames.includes(verification.hostname.toLowerCase()) ||
+        verification.action !== CAPTCHA_ACTION ||
+        verification.cdata !== captchaCData(canonicalRef, nodeId)
+      ) {
+        req.payload.logger.warn({ msg: 'buildr: captcha verification', reason: 'mismatch' });
+        return captchaFailure(false);
+      }
+      const { [CAPTCHA_FIELD]: _token, ...clean } = values;
+      submitted = clean;
+    }
+    const result = validateSubmission(schema, submitted);
     if (!result.ok) {
       if (!wantsJson) return backTo(req, 'invalid');
       const errors: Record<string, string> = {};
