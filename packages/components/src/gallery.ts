@@ -5,12 +5,16 @@ import { anchorFixtures } from './anchor/fixtures.ts';
 import { badgeFixtures } from './badge/fixtures.ts';
 import { buttonFixtures } from './button/fixtures.ts';
 import { cardFixtures } from './card/fixtures.ts';
+import { carouselFixtures } from './carousel/fixtures.ts';
+import { carouselSlideFixtures } from './carousel-slide/fixtures.ts';
 import { checkboxFixtures } from './checkbox/fixtures.ts';
 import { containerFixtures } from './container/fixtures.ts';
 import { dividerFixtures } from './divider/fixtures.ts';
 import { fieldsetFixtures } from './fieldset/fixtures.ts';
 import type { ComponentFixture } from './fixtures.ts';
 import { formFixtures } from './form/fixtures.ts';
+import { galleryFixtures, galleryImage, galleryMedia } from './gallery/fixtures.ts';
+import { galleryItemFixtures } from './gallery-item/fixtures.ts';
 import { gridFixtures } from './grid/fixtures.ts';
 import { headingFixtures } from './heading/fixtures.ts';
 import { iconFixtures } from './icon/fixtures.ts';
@@ -58,6 +62,13 @@ function withoutProbes(node: TreeNode): TreeNode {
 
 const componentFixtures: readonly (readonly [ComponentType, readonly ComponentFixture[]])[] = [
   ['buildr/page', pageFixtures],
+  ['buildr/carousel', carouselFixtures],
+  ['buildr/carousel-slide', carouselSlideFixtures],
+  ['buildr/gallery', galleryFixtures],
+  [
+    'buildr/gallery-item',
+    galleryItemFixtures.map((fixture) => ({ ...fixture, id: `gallery-item-${fixture.id}` })),
+  ],
   ['buildr/fieldset', fieldsetFixtures],
   ['buildr/anchor', anchorFixtures],
   ['buildr/spacer', spacerFixtures],
@@ -116,10 +127,31 @@ export const galleryEntries: readonly GalleryEntry[] = [
 /** The data the gallery entries read: the sample posts, and the media the image fixtures name. */
 export function createGalleryDataSource() {
   return createMemoryDataSource({
-    collections: { ...templateSampleCollections },
-    media: { ...imageFixtureMedia, ...videoFixtureMedia },
+    collections: {
+      ...templateSampleCollections,
+      slides: [{ title: 'First' }, { title: 'Second' }, { title: 'Third' }],
+      photos: [
+        {
+          image: { ...galleryImage, snapshot: galleryMedia.g1 },
+          alt: 'Landscape',
+          caption: 'Landscape',
+        },
+      ],
+    },
+    media: { ...imageFixtureMedia, ...videoFixtureMedia, ...galleryMedia },
   });
 }
 
 /** The scopes the gallery entries read (`post`, `product`, `route`). */
-export const gallerySampleScopes = templateSampleScopes;
+export const gallerySampleScopes = {
+  ...templateSampleScopes,
+  carousel: {
+    ariaLabel: 'Bound carousel',
+    showArrows: true,
+    showDots: true,
+    loop: false,
+    autoplay: false,
+    interval: 5000,
+    slidesPerView: 1,
+  },
+};

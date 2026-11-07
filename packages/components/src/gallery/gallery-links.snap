@@ -1,0 +1,58 @@
+<style data-precedence="buildr" data-href="buildr-theme-tk3w4rawdgzv">@layer buildr.reset, buildr.tokens, buildr.components, buildr.nodes;
+@layer buildr.tokens {
+  :root {
+    --b-color-border: #d1d5db;
+    --b-color-danger: #b91c1c;
+    --b-color-focus: #1d4ed8;
+    --b-color-on-primary: #ffffff;
+    --b-color-primary: #2563eb;
+    --b-color-success: #15803d;
+    --b-color-surface: #ffffff;
+    --b-color-surface-alt: #f3f4f6;
+    --b-color-text: #111827;
+    --b-color-text-muted: #4b5563;
+    --b-space-0: 0;
+    --b-space-1: 0.25rem;
+    --b-space-12: 3rem;
+    --b-space-16: 4rem;
+    --b-space-2: 0.5rem;
+    --b-space-24: 6rem;
+    --b-space-3: 0.75rem;
+    --b-space-4: 1rem;
+    --b-space-6: 1.5rem;
+    --b-space-8: 2rem;
+    --b-radius-full: 9999px;
+    --b-radius-lg: 1rem;
+    --b-radius-md: 0.5rem;
+    --b-radius-none: 0;
+    --b-radius-sm: 0.25rem;
+    --b-shadow-lg: 0 12px 24px rgb(0 0 0 / 0.16);
+    --b-shadow-md: 0 4px 8px rgb(0 0 0 / 0.12);
+    --b-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.08);
+    --b-font-family-body: system-ui, sans-serif;
+    --b-font-family-heading: system-ui, sans-serif;
+    --b-font-family-mono: ui-monospace, monospace;
+    --b-font-size-2xl: 1.5rem;
+    --b-font-size-3xl: 1.875rem;
+    --b-font-size-4xl: 2.25rem;
+    --b-font-size-5xl: 3rem;
+    --b-font-size-lg: 1.125rem;
+    --b-font-size-md: 1rem;
+    --b-font-size-sm: 0.875rem;
+    --b-font-size-xl: 1.25rem;
+    --b-font-size-xs: 0.75rem;
+    --b-font-weight-bold: 700;
+    --b-font-weight-medium: 500;
+    --b-font-weight-regular: 400;
+    --b-font-weight-semibold: 600;
+    --b-line-height-normal: 1.5;
+    --b-line-height-relaxed: 1.75;
+    --b-line-height-tight: 1.2;
+    --b-container-lg: 64rem;
+    --b-container-md: 48rem;
+    --b-container-sm: 40rem;
+    --b-container-xl: 80rem;
+    --b-transition-fast: 150ms ease;
+    --b-transition-normal: 250ms ease;
+  }
+}</style><div class="bc-page"><div class="bc-gallery"><div class="bc-gallery__list" role="list" data-columns="3" data-ratio="1:1"><div class="bc-gallery-item" role="listitem"><figure><a class="bc-gallery-item__link" href="/media/gallery.svg" aria-label="Landscape"><img src="/media/gallery.svg" alt="Landscape" loading="lazy" decoding="async" sizes="100vw"></a><figcaption>Landscape 1</figcaption></figure></div><div class="bc-gallery-item" role="listitem"><figure><a class="bc-gallery-item__link" href="/media/gallery.svg" aria-label="Landscape"><img src="/media/gallery.svg" alt="Landscape" loading="lazy" decoding="async" sizes="100vw"></a><figcaption>Landscape 2</figcaption></figure></div><div class="bc-gallery-item" role="listitem"><figure><a class="bc-gallery-item__link" href="/media/gallery.svg" aria-label="Landscape"><img src="/media/gallery.svg" alt="Landscape" loading="lazy" decoding="async" sizes="100vw"></a><figcaption>Landscape 3</figcaption></figure></div></div></div></div>

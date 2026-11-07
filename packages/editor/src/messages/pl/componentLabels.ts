@@ -7,6 +7,10 @@
 import type { LabelCatalog } from '../../i18n/label-catalog.ts';
 
 const COMPONENTS: Readonly<Record<string, string>> = {
+  'buildr/carousel': 'Karuzela',
+  'buildr/carousel-slide': 'Slajd',
+  'buildr/gallery': 'Galeria',
+  'buildr/gallery-item': 'Element galerii',
   'buildr/spacer': 'Odstęp',
   'buildr/anchor': 'Kotwica',
   'buildr/fieldset': 'Grupa pól',
@@ -39,6 +43,10 @@ const COMPONENTS: Readonly<Record<string, string>> = {
 };
 
 const DESCRIPTIONS: Readonly<Record<string, string>> = {
+  'buildr/carousel': 'Przewijane slajdy z opcjonalnym automatycznym przewijaniem.',
+  'buildr/carousel-slide': 'Jeden slajd karuzeli.',
+  'buildr/gallery': 'Siatka obrazów z opcjonalnym podglądem.',
+  'buildr/gallery-item': 'Jeden obraz galerii z podpisem.',
   'buildr/spacer': 'Dodaje pusty odstęp w pionie lub w poziomie.',
   'buildr/anchor': 'Wyznacza nazwane miejsce docelowe dla odnośników na stronie.',
   'buildr/fieldset': 'Grupuje pola formularza pod wspólnym tytułem.',
@@ -88,6 +96,7 @@ const TEMPLATES: Readonly<Record<string, string>> = {
 
 /** English slot label -> Polish. */
 const SLOTS: Readonly<Record<string, string>> = {
+  Slides: 'Slajdy',
   Content: 'Treść',
   Cells: 'Komórki',
   Items: 'Elementy',
@@ -169,6 +178,23 @@ const COMMON_PROPS: Readonly<Record<string, string>> = {
 };
 
 const PROPS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  'buildr/carousel': {
+    ariaLabel: 'Nazwa dostępna',
+    showArrows: 'Pokaż strzałki',
+    showDots: 'Pokaż kropki',
+    loop: 'Zapętl',
+    autoplay: 'Automatyczne przewijanie',
+    interval: 'Odstęp czasu (ms)',
+    slidesPerView: 'Slajdy w widoku',
+  },
+  'buildr/carousel-slide': {},
+  'buildr/gallery': {
+    ariaLabel: 'Nazwa dostępna',
+    columns: 'Kolumny',
+    aspectRatio: 'Proporcje obrazu',
+    lightbox: 'Podgląd obrazu',
+  },
+  'buildr/gallery-item': { image: 'Obraz', alt: 'Tekst alternatywny', caption: 'Podpis' },
   'buildr/spacer': { size: 'Rozmiar', axis: 'Oś' },
   'buildr/anchor': { name: 'Nazwa' },
   'buildr/fieldset': { legend: 'Tytuł grupy', disabled: 'Wyłączona' },
@@ -247,6 +273,7 @@ const COMMON_OPTIONS: Readonly<Record<string, Readonly<Record<string, string>>>>
 };
 
 const OPTIONS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  'buildr/gallery/aspectRatio': { auto: 'Oryginalny' },
   'buildr/button/type': { button: 'Przycisk', submit: 'Wyślij formularz' },
   'buildr/input/type': {
     text: 'Tekst',

@@ -123,7 +123,15 @@ describe('Icon and ComponentIcon', () => {
   });
 
   it('resolves the PB-160a manifest icon names without fallback', async () => {
-    const names = ['space', 'hash', 'group'];
+    const names = [
+      'space',
+      'hash',
+      'group',
+      'gallery-horizontal',
+      'rectangle-horizontal',
+      'images',
+      'square',
+    ];
     await show(names.map((icon) => <ComponentIcon key={icon} meta={{ icon }} />));
     const icons = [...container.querySelectorAll('svg')];
     expect(icons.map((icon) => icon.getAttribute('data-icon'))).toEqual(names);

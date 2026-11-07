@@ -1,0 +1,7 @@
+@layer buildr.components {
+  .bc-carousel-slide {
+    flex: 0 0 calc(100% / var(--per-view, 1));
+    min-inline-size: 0;
+    scroll-snap-align: start;
+  }
+}

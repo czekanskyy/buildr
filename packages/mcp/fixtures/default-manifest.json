@@ -1,5 +1,5 @@
 {
-  "hash": "2rj1dohqmldxu",
+  "hash": "3e03hsqqubqxd",
   "components": {
     "buildr/page": {
       "type": "buildr/page",
@@ -947,6 +947,255 @@
       },
       "editor": {
         "placeholder": "Enter an address"
+      },
+      "runtime": "shared"
+    },
+    "buildr/carousel": {
+      "type": "buildr/carousel",
+      "version": 1,
+      "label": "Carousel",
+      "description": "Scrollable slides with optional rotation.",
+      "keywords": ["slides", "slider", "rotation"],
+      "category": "media",
+      "icon": "gallery-horizontal",
+      "contentCategories": ["flow"],
+      "props": {
+        "ariaLabel": {
+          "kind": "text",
+          "label": "Accessible name",
+          "bindable": true,
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        },
+        "showArrows": {
+          "kind": "boolean",
+          "label": "Show arrows",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": true
+        },
+        "showDots": {
+          "kind": "boolean",
+          "label": "Show dots",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": true
+        },
+        "loop": {
+          "kind": "boolean",
+          "label": "Loop",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": false
+        },
+        "autoplay": {
+          "kind": "boolean",
+          "label": "Automatic rotation",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": false
+        },
+        "interval": {
+          "kind": "number",
+          "label": "Interval (ms)",
+          "bindable": true,
+          "localizable": false,
+          "accepts": ["number"],
+          "default": 5000,
+          "min": 3000,
+          "max": 20000,
+          "step": 500
+        },
+        "slidesPerView": {
+          "kind": "number",
+          "label": "Slides per view",
+          "bindable": true,
+          "localizable": false,
+          "accepts": ["number"],
+          "default": 1,
+          "min": 1,
+          "max": 4,
+          "step": 1
+        }
+      },
+      "slots": {
+        "default": {
+          "label": "Slides",
+          "allow": ["buildr/carousel-slide", "buildr/loop"],
+          "axis": "horizontal"
+        }
+      },
+      "defaults": {
+        "slots": {
+          "default": [
+            {
+              "type": "buildr/carousel-slide"
+            },
+            {
+              "type": "buildr/carousel-slide"
+            },
+            {
+              "type": "buildr/carousel-slide"
+            }
+          ]
+        }
+      },
+      "styles": {
+        "groups": ["size", "spacing", "background", "border", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "section"
+      },
+      "runtime": "shared"
+    },
+    "buildr/carousel-slide": {
+      "type": "buildr/carousel-slide",
+      "version": 1,
+      "label": "Carousel slide",
+      "description": "One slide in a carousel.",
+      "category": "media",
+      "icon": "rectangle-horizontal",
+      "contentCategories": ["flow"],
+      "parents": {
+        "allow": ["buildr/carousel", "buildr/loop"],
+        "requireAncestor": ["buildr/carousel"]
+      },
+      "capabilities": {
+        "insertable": false
+      },
+      "props": {},
+      "slots": {
+        "default": {
+          "label": "Content",
+          "allow": ["#flow"],
+          "axis": "vertical"
+        }
+      },
+      "styles": {
+        "groups": ["layout", "spacing", "background", "border", "visibility"]
+      },
+      "a11y": {
+        "element": "div"
+      },
+      "runtime": "shared"
+    },
+    "buildr/gallery": {
+      "type": "buildr/gallery",
+      "version": 1,
+      "label": "Gallery",
+      "description": "Image grid with a lightbox.",
+      "category": "media",
+      "icon": "images",
+      "contentCategories": ["flow"],
+      "props": {
+        "ariaLabel": {
+          "kind": "text",
+          "bindable": true,
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        },
+        "columns": {
+          "kind": "number",
+          "bindable": true,
+          "localizable": false,
+          "accepts": ["number"],
+          "default": 3,
+          "min": 2,
+          "max": 6,
+          "step": 1
+        },
+        "aspectRatio": {
+          "kind": "select",
+          "localizable": false,
+          "accepts": [],
+          "options": ["1:1", "4:3", "3:2", "16:9", "auto"],
+          "default": "1:1",
+          "optionLabels": {
+            "auto": "Original"
+          }
+        },
+        "lightbox": {
+          "kind": "boolean",
+          "localizable": false,
+          "accepts": ["boolean"],
+          "default": true
+        }
+      },
+      "slots": {
+        "default": {
+          "allow": ["buildr/gallery-item", "buildr/loop"],
+          "axis": "auto"
+        }
+      },
+      "defaults": {
+        "slots": {
+          "default": [
+            {
+              "type": "buildr/gallery-item"
+            },
+            {
+              "type": "buildr/gallery-item"
+            },
+            {
+              "type": "buildr/gallery-item"
+            }
+          ]
+        }
+      },
+      "styles": {
+        "groups": ["size", "spacing", "background", "border", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "div"
+      },
+      "runtime": "shared"
+    },
+    "buildr/gallery-item": {
+      "type": "buildr/gallery-item",
+      "version": 1,
+      "label": "Gallery item",
+      "description": "One linked gallery image.",
+      "category": "media",
+      "icon": "square",
+      "contentCategories": ["flow"],
+      "parents": {
+        "allow": ["buildr/gallery", "buildr/loop"],
+        "requireAncestor": ["buildr/gallery"]
+      },
+      "capabilities": {
+        "insertable": false
+      },
+      "props": {
+        "image": {
+          "kind": "media",
+          "bindable": true,
+          "localizable": false,
+          "accepts": ["media"],
+          "default": null,
+          "accept": ["image"]
+        },
+        "alt": {
+          "kind": "text",
+          "bindable": true,
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        },
+        "caption": {
+          "kind": "text",
+          "bindable": true,
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        }
+      },
+      "styles": {
+        "groups": ["spacing", "border", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "div"
       },
       "runtime": "shared"
     },

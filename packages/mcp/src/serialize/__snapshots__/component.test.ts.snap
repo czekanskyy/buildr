@@ -207,6 +207,8 @@ exports[`describeComponent over every built-in component > buildr/accordion-item
         "buildr/image",
         "buildr/video",
         "buildr/iframe",
+        "buildr/carousel",
+        "buildr/gallery",
         "buildr/icon",
         "buildr/list",
         "buildr/divider",
@@ -247,7 +249,7 @@ Props:
 - summary (text) default "Question" [bindable, localizable]
 - defaultOpen (boolean) default false [bindable]
 Slots:
-- default: buildr/container, buildr/grid, buildr/spacer, buildr/anchor, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/video, buildr/iframe, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/fieldset, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+- default: buildr/container, buildr/grid, buildr/spacer, buildr/anchor, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/video, buildr/iframe, buildr/carousel, buildr/gallery, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/fieldset, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
 Note: It cannot be inserted on its own; include it as a child inside a tree of buildr/accordion, buildr/loop.
 Note: It can only be placed directly inside buildr/accordion, buildr/loop.
 Note: It needs an accessible name (text, label or aria-label).
@@ -737,6 +739,8 @@ exports[`describeComponent over every built-in component > buildr/card: JSON des
         "buildr/image",
         "buildr/video",
         "buildr/iframe",
+        "buildr/carousel",
+        "buildr/gallery",
         "buildr/icon",
         "buildr/list",
         "buildr/divider",
@@ -791,12 +795,302 @@ Props:
 - as (select) default "article" one of "article" | "div"
 Slots:
 - media (max 1): buildr/image, buildr/video, buildr/iframe, buildr/icon
-- body: buildr/container, buildr/grid, buildr/spacer, buildr/anchor, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/video, buildr/iframe, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/fieldset, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+- body: buildr/container, buildr/grid, buildr/spacer, buildr/anchor, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/video, buildr/iframe, buildr/carousel, buildr/gallery, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/fieldset, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
 - actions: buildr/button, buildr/link, buildr/iframe
 Style groups: layout, size, spacing, background, border, effects, motion, visibility
 Renders: article
 Insert into: buildr/page[default]
 Example: {"type":"buildr/card"}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/carousel: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "section",
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": true,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "media",
+  "description": "Scrollable slides with optional rotation.",
+  "example": {
+    "slots": {
+      "default": [
+        {
+          "type": "buildr/carousel-slide",
+        },
+        {
+          "type": "buildr/carousel-slide",
+        },
+        {
+          "type": "buildr/carousel-slide",
+        },
+      ],
+    },
+    "type": "buildr/carousel",
+  },
+  "keywords": [
+    "slides",
+    "slider",
+    "rotation",
+  ],
+  "label": "Carousel",
+  "notes": [],
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+  ],
+  "props": [
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "label": "Accessible name",
+      "localizable": true,
+      "name": "ariaLabel",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "boolean",
+      ],
+      "default": true,
+      "kind": "boolean",
+      "label": "Show arrows",
+      "localizable": false,
+      "name": "showArrows",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "boolean",
+      ],
+      "default": true,
+      "kind": "boolean",
+      "label": "Show dots",
+      "localizable": false,
+      "name": "showDots",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "boolean",
+      ],
+      "default": false,
+      "kind": "boolean",
+      "label": "Loop",
+      "localizable": false,
+      "name": "loop",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "boolean",
+      ],
+      "default": false,
+      "kind": "boolean",
+      "label": "Automatic rotation",
+      "localizable": false,
+      "name": "autoplay",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "number",
+      ],
+      "default": 5000,
+      "kind": "number",
+      "label": "Interval (ms)",
+      "localizable": false,
+      "max": 20000,
+      "min": 3000,
+      "name": "interval",
+      "required": false,
+      "step": 500,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "number",
+      ],
+      "default": 1,
+      "kind": "number",
+      "label": "Slides per view",
+      "localizable": false,
+      "max": 4,
+      "min": 1,
+      "name": "slidesPerView",
+      "required": false,
+      "step": 1,
+    },
+  ],
+  "slots": [
+    {
+      "allowedChildren": [
+        "buildr/carousel-slide",
+        "buildr/loop",
+      ],
+      "label": "Slides",
+      "name": "default",
+    },
+  ],
+  "styleGroups": [
+    "size",
+    "spacing",
+    "background",
+    "border",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/carousel",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/carousel: text description 1`] = `
+"buildr/carousel - Carousel (media, v1)
+Scrollable slides with optional rotation.
+Props:
+- ariaLabel (text) default "" [bindable, localizable]
+- showArrows (boolean) default true [bindable]
+- showDots (boolean) default true [bindable]
+- loop (boolean) default false [bindable]
+- autoplay (boolean) default false [bindable]
+- interval (number) default 5000 min 3000; max 20000 [bindable]
+- slidesPerView (number) default 1 min 1; max 4 [bindable]
+Slots:
+- default: buildr/carousel-slide, buildr/loop
+Style groups: size, spacing, background, border, effects, visibility
+Renders: section
+Insert into: buildr/page[default]
+Example: {"type":"buildr/carousel","slots":{"default":[{"type":"buildr/carousel-slide"},{"type":"buildr/carousel-slide"},{"type":"buildr/carousel-slide"}]}}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/carousel-slide: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "div",
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": false,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "media",
+  "description": "One slide in a carousel.",
+  "example": {
+    "slots": {
+      "default": [
+        {
+          "type": "buildr/carousel-slide",
+        },
+      ],
+    },
+    "type": "buildr/carousel",
+  },
+  "label": "Carousel slide",
+  "notes": [
+    "It cannot be inserted on its own; include it as a child inside a tree of buildr/carousel, buildr/loop.",
+    "It must be nested inside buildr/carousel.",
+    "It can only be placed directly inside buildr/carousel, buildr/loop.",
+  ],
+  "parentRules": {
+    "allowedParents": [
+      "buildr/carousel",
+      "buildr/loop",
+    ],
+    "requiresAncestor": [
+      "buildr/carousel",
+    ],
+  },
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+  ],
+  "props": [],
+  "slots": [
+    {
+      "allowedChildren": [
+        "buildr/container",
+        "buildr/grid",
+        "buildr/spacer",
+        "buildr/anchor",
+        "buildr/heading",
+        "buildr/text",
+        "buildr/rich-text",
+        "buildr/button",
+        "buildr/link",
+        "buildr/image",
+        "buildr/video",
+        "buildr/iframe",
+        "buildr/carousel",
+        "buildr/gallery",
+        "buildr/icon",
+        "buildr/list",
+        "buildr/divider",
+        "buildr/badge",
+        "buildr/card",
+        "buildr/accordion",
+        "buildr/loop",
+        "buildr/pagination",
+        "buildr/form",
+        "buildr/fieldset",
+        "buildr/input",
+        "buildr/textarea",
+        "buildr/select",
+        "buildr/checkbox",
+      ],
+      "label": "Content",
+      "name": "default",
+    },
+  ],
+  "styleGroups": [
+    "layout",
+    "spacing",
+    "background",
+    "border",
+    "visibility",
+  ],
+  "type": "buildr/carousel-slide",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/carousel-slide: text description 1`] = `
+"buildr/carousel-slide - Carousel slide (media, v1)
+One slide in a carousel.
+Props: none
+Slots:
+- default: buildr/container, buildr/grid, buildr/spacer, buildr/anchor, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/video, buildr/iframe, buildr/carousel, buildr/gallery, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/fieldset, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+Note: It cannot be inserted on its own; include it as a child inside a tree of buildr/carousel, buildr/loop.
+Note: It must be nested inside buildr/carousel.
+Note: It can only be placed directly inside buildr/carousel, buildr/loop.
+Style groups: layout, spacing, background, border, visibility
+Renders: div
+Insert into: buildr/page[default]
+Example: {"type":"buildr/carousel","slots":{"default":[{"type":"buildr/carousel-slide"}]}}"
 `;
 
 exports[`describeComponent over every built-in component > buildr/checkbox: JSON description 1`] = `
@@ -1237,6 +1531,8 @@ exports[`describeComponent over every built-in component > buildr/container: JSO
         "buildr/image",
         "buildr/video",
         "buildr/iframe",
+        "buildr/carousel",
+        "buildr/gallery",
         "buildr/icon",
         "buildr/list",
         "buildr/divider",
@@ -1292,7 +1588,7 @@ Props:
 - role (select) default "none" one of "none" | "group" | "list"
 - ariaLabel (text) default "" [bindable, localizable]
 Slots:
-- default: buildr/container, buildr/grid, buildr/spacer, buildr/anchor, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/video, buildr/iframe, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/fieldset, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+- default: buildr/container, buildr/grid, buildr/spacer, buildr/anchor, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/video, buildr/iframe, buildr/carousel, buildr/gallery, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/fieldset, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
 Style groups: layout, size, spacing, typography, background, border, effects, motion, visibility
 Renders: div
 Insert into: buildr/page[default]
@@ -1454,6 +1750,8 @@ exports[`describeComponent over every built-in component > buildr/fieldset: JSON
         "buildr/image",
         "buildr/video",
         "buildr/iframe",
+        "buildr/carousel",
+        "buildr/gallery",
         "buildr/icon",
         "buildr/list",
         "buildr/divider",
@@ -1493,7 +1791,7 @@ Props:
 - legend (text) default "" [bindable, localizable]
 - disabled (boolean) default false [bindable]
 Slots:
-- default: buildr/container, buildr/grid, buildr/spacer, buildr/anchor, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/video, buildr/iframe, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/fieldset, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+- default: buildr/container, buildr/grid, buildr/spacer, buildr/anchor, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/video, buildr/iframe, buildr/carousel, buildr/gallery, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/fieldset, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
 Note: It must be nested inside buildr/form.
 Style groups: size, spacing, typography, background, border, visibility
 Renders: fieldset
@@ -1597,6 +1895,8 @@ exports[`describeComponent over every built-in component > buildr/form: JSON des
         "buildr/image",
         "buildr/video",
         "buildr/iframe",
+        "buildr/carousel",
+        "buildr/gallery",
         "buildr/icon",
         "buildr/list",
         "buildr/divider",
@@ -1638,11 +1938,263 @@ Props:
 - errorMessage (text) default "" [bindable, localizable]
 - ariaLabel (text) default "" [bindable, localizable]
 Slots:
-- default: buildr/container, buildr/grid, buildr/spacer, buildr/anchor, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/video, buildr/iframe, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/fieldset, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+- default: buildr/container, buildr/grid, buildr/spacer, buildr/anchor, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/video, buildr/iframe, buildr/carousel, buildr/gallery, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/fieldset, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
 Style groups: layout, size, spacing, background, border, effects, visibility
 Renders: form
 Insert into: buildr/page[default]
 Example: {"type":"buildr/form"}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/gallery: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "div",
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": true,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "media",
+  "description": "Image grid with a lightbox.",
+  "example": {
+    "slots": {
+      "default": [
+        {
+          "type": "buildr/gallery-item",
+        },
+        {
+          "type": "buildr/gallery-item",
+        },
+        {
+          "type": "buildr/gallery-item",
+        },
+      ],
+    },
+    "type": "buildr/gallery",
+  },
+  "label": "Gallery",
+  "notes": [],
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+  ],
+  "props": [
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "localizable": true,
+      "name": "ariaLabel",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "number",
+      ],
+      "default": 3,
+      "kind": "number",
+      "localizable": false,
+      "max": 6,
+      "min": 2,
+      "name": "columns",
+      "required": false,
+      "step": 1,
+    },
+    {
+      "bindable": false,
+      "default": "1:1",
+      "kind": "select",
+      "localizable": false,
+      "name": "aspectRatio",
+      "options": [
+        "1:1",
+        "4:3",
+        "3:2",
+        "16:9",
+        "auto",
+      ],
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "boolean",
+      ],
+      "default": true,
+      "kind": "boolean",
+      "localizable": false,
+      "name": "lightbox",
+      "required": false,
+    },
+  ],
+  "slots": [
+    {
+      "allowedChildren": [
+        "buildr/gallery-item",
+        "buildr/loop",
+      ],
+      "name": "default",
+    },
+  ],
+  "styleGroups": [
+    "size",
+    "spacing",
+    "background",
+    "border",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/gallery",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/gallery: text description 1`] = `
+"buildr/gallery - Gallery (media, v1)
+Image grid with a lightbox.
+Props:
+- ariaLabel (text) default "" [bindable, localizable]
+- columns (number) default 3 min 2; max 6 [bindable]
+- aspectRatio (select) default "1:1" one of "1:1" | "4:3" | "3:2" | "16:9" | "auto"
+- lightbox (boolean) default true [bindable]
+Slots:
+- default: buildr/gallery-item, buildr/loop
+Style groups: size, spacing, background, border, effects, visibility
+Renders: div
+Insert into: buildr/page[default]
+Example: {"type":"buildr/gallery","slots":{"default":[{"type":"buildr/gallery-item"},{"type":"buildr/gallery-item"},{"type":"buildr/gallery-item"}]}}"
+`;
+
+exports[`describeComponent over every built-in component > buildr/gallery-item: JSON description 1`] = `
+{
+  "a11y": {
+    "element": "div",
+  },
+  "capabilities": {
+    "draggable": true,
+    "duplicable": true,
+    "insertable": false,
+    "removable": true,
+    "rootOnly": false,
+  },
+  "category": "media",
+  "description": "One linked gallery image.",
+  "example": {
+    "slots": {
+      "default": [
+        {
+          "type": "buildr/gallery-item",
+        },
+      ],
+    },
+    "type": "buildr/gallery",
+  },
+  "label": "Gallery item",
+  "notes": [
+    "It cannot be inserted on its own; include it as a child inside a tree of buildr/gallery, buildr/loop.",
+    "It must be nested inside buildr/gallery.",
+    "It can only be placed directly inside buildr/gallery, buildr/loop.",
+  ],
+  "parentRules": {
+    "allowedParents": [
+      "buildr/gallery",
+      "buildr/loop",
+    ],
+    "requiresAncestor": [
+      "buildr/gallery",
+    ],
+  },
+  "placement": [
+    {
+      "slot": "default",
+      "type": "buildr/page",
+    },
+  ],
+  "props": [
+    {
+      "accept": [
+        "image",
+      ],
+      "bindable": true,
+      "bindsTo": [
+        "media",
+      ],
+      "default": null,
+      "kind": "media",
+      "localizable": false,
+      "name": "image",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "localizable": true,
+      "name": "alt",
+      "required": false,
+    },
+    {
+      "bindable": true,
+      "bindsTo": [
+        "string",
+        "number",
+        "date",
+        "enum",
+        "url",
+      ],
+      "default": "",
+      "kind": "text",
+      "localizable": true,
+      "name": "caption",
+      "required": false,
+    },
+  ],
+  "styleGroups": [
+    "spacing",
+    "border",
+    "effects",
+    "visibility",
+  ],
+  "type": "buildr/gallery-item",
+  "version": 1,
+}
+`;
+
+exports[`describeComponent over every built-in component > buildr/gallery-item: text description 1`] = `
+"buildr/gallery-item - Gallery item (media, v1)
+One linked gallery image.
+Props:
+- image (media) default null accepts image [bindable]
+- alt (text) default "" [bindable, localizable]
+- caption (text) default "" [bindable, localizable]
+Slots: none (a leaf component, it takes no children)
+Note: It cannot be inserted on its own; include it as a child inside a tree of buildr/gallery, buildr/loop.
+Note: It must be nested inside buildr/gallery.
+Note: It can only be placed directly inside buildr/gallery, buildr/loop.
+Style groups: spacing, border, effects, visibility
+Renders: div
+Insert into: buildr/page[default]
+Example: {"type":"buildr/gallery","slots":{"default":[{"type":"buildr/gallery-item"}]}}"
 `;
 
 exports[`describeComponent over every built-in component > buildr/grid: JSON description 1`] = `
@@ -1709,6 +2261,8 @@ exports[`describeComponent over every built-in component > buildr/grid: JSON des
         "buildr/image",
         "buildr/video",
         "buildr/iframe",
+        "buildr/carousel",
+        "buildr/gallery",
         "buildr/icon",
         "buildr/list",
         "buildr/divider",
@@ -1749,7 +2303,7 @@ Lays its children out in columns.
 Props:
 - ariaLabel (text) default "" [bindable, localizable]
 Slots:
-- default: buildr/container, buildr/grid, buildr/spacer, buildr/anchor, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/video, buildr/iframe, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/fieldset, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+- default: buildr/container, buildr/grid, buildr/spacer, buildr/anchor, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/video, buildr/iframe, buildr/carousel, buildr/gallery, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/fieldset, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
 Style groups: layout, size, spacing, background, border, effects, motion, visibility
 Renders: div
 Insert into: buildr/page[default]
@@ -2776,6 +3330,8 @@ exports[`describeComponent over every built-in component > buildr/list-item: JSO
         "buildr/image",
         "buildr/video",
         "buildr/iframe",
+        "buildr/carousel",
+        "buildr/gallery",
         "buildr/icon",
         "buildr/list",
         "buildr/divider",
@@ -2815,7 +3371,7 @@ One entry of a list.
 Props:
 - text (text) default "Item" [bindable, localizable]
 Slots:
-- default: buildr/container, buildr/grid, buildr/spacer, buildr/anchor, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/video, buildr/iframe, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/fieldset, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+- default: buildr/container, buildr/grid, buildr/spacer, buildr/anchor, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/video, buildr/iframe, buildr/carousel, buildr/gallery, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/fieldset, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
 Note: It cannot be inserted on its own; include it as a child inside a tree of buildr/list, buildr/loop.
 Note: It can only be placed directly inside buildr/list, buildr/loop.
 Style groups: typography, spacing, background, border, effects, motion, visibility
@@ -2975,6 +3531,8 @@ exports[`describeComponent over every built-in component > buildr/page: JSON des
         "buildr/image",
         "buildr/video",
         "buildr/iframe",
+        "buildr/carousel",
+        "buildr/gallery",
         "buildr/icon",
         "buildr/list",
         "buildr/divider",
@@ -3009,7 +3567,7 @@ exports[`describeComponent over every built-in component > buildr/page: text des
 The root of a document. Everything else lives inside it.
 Props: none
 Slots:
-- default: buildr/container, buildr/grid, buildr/spacer, buildr/anchor, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/video, buildr/iframe, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/fieldset, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
+- default: buildr/container, buildr/grid, buildr/spacer, buildr/anchor, buildr/heading, buildr/text, buildr/rich-text, buildr/button, buildr/link, buildr/image, buildr/video, buildr/iframe, buildr/carousel, buildr/gallery, buildr/icon, buildr/list, buildr/divider, buildr/badge, buildr/card, buildr/accordion, buildr/loop, buildr/pagination, buildr/form, buildr/fieldset, buildr/input, buildr/textarea, buildr/select, buildr/checkbox
 Note: This is the document root; it exists once and cannot be inserted.
 Note: It cannot be removed.
 Note: It cannot be moved.

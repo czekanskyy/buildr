@@ -82,6 +82,40 @@ describe('block sections', () => {
 });
 
 describe('palette visibility', () => {
+  it('lists carousel and gallery in media and excludes their non-insertable children', () => {
+    const types = [
+      'buildr/carousel',
+      'buildr/gallery',
+      'buildr/carousel-slide',
+      'buildr/gallery-item',
+    ];
+    const components = types.map(
+      (type) =>
+        ({
+          type,
+          label: type,
+          category: 'media',
+          version: 1,
+          props: {},
+          contentCategories: ['flow'],
+          styles: { groups: [] },
+          runtime: 'shared',
+          capabilities: { insertable: !type.endsWith('-slide') && !type.endsWith('-item') },
+        }) as ComponentMeta,
+    );
+    const palette = paletteItems(
+      toManifest(createRegistryMeta({ components, templates: [] })),
+    ).components;
+    const groups = blockSections(palette);
+    expect(groups.map((group) => group.category)).toEqual(['media']);
+    expect(groups[0]?.items.map((entry) => entry.id)).toEqual(types.slice(0, 2));
+    expect(BLOCK_SECTIONS.flatMap(({ types }) => [...types]) as string[]).not.toContain(
+      'buildr/carousel-slide',
+    );
+    expect(BLOCK_SECTIONS.flatMap(({ types }) => [...types]) as string[]).not.toContain(
+      'buildr/gallery-item',
+    );
+  });
   it('filters hidden types and categories before section grouping and search', () => {
     const components = [
       ['buildr/rich-text', 'content'],

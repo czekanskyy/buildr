@@ -1,0 +1,22 @@
+@layer buildr.components {
+  .bc-gallery-item {
+    min-width: 0;
+  }
+  .bc-gallery-item figure {
+    margin: 0;
+  }
+  .bc-gallery-item[data-empty] {
+    min-height: var(--b-space-16);
+    background: var(--b-color-surface-alt);
+  }
+  .bc-gallery-item img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+  .bc-gallery-item__link:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+}

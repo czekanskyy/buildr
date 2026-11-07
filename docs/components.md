@@ -22,7 +22,7 @@ Each entry below is expanded with full detail once its implementation task lands
 
 - **Layout**: Page, Container, Grid, Spacer, Anchor
 - **Content**: Heading, Text, RichText, Link, Button, Icon, List, ListItem, Divider, Badge
-- **Media**: Image, Video, Iframe
+- **Media**: Image, Video, Iframe, Carousel, CarouselSlide, Gallery, GalleryItem
 - **UI**: Card, Accordion, AccordionItem
 - **CMS**: Loop, Pagination
 - **Forms**: Form, Input, Textarea, Select, Checkbox, Fieldset
@@ -49,6 +49,8 @@ Each built-in component has a distinct [lucide](https://lucide.dev) icon (kebab-
 | Video | `video` | Iframe | `globe` |
 | Spacer | `space` | Anchor | `hash` |
 | Fieldset | `group` | | |
+| Carousel | `gallery-horizontal` | CarouselSlide | `rectangle-horizontal` |
+| Gallery | `images` | GalleryItem | `square` |
 
 ## Layout components
 
@@ -238,3 +240,44 @@ An empty span with an ID and a space-16 scroll margin. Canvas mode shows a `#nam
 A form-only container with a default flow-content slot. Renders a native fieldset with its legend before the children. `legend` is bindable and localizable (default empty); `disabled` is bindable, defaults to false and disables descendant controls natively. It requires a `buildr/form` ancestor and replaces the old label palette slot.
 
 PB-160a adds new version-1 types without migrations. Fixtures are registered for all three gallery widths. Docker visual baselines are refreshed in the same branch.
+
+### Carousel (`buildr/carousel`, version 1)
+
+| Prop | CMS contract / default |
+|---|---|
+| `ariaLabel` | Bindable, localizable accessible name; empty uses the localized fallback |
+| `showArrows`, `showDots` | Show navigation controls; both true |
+| `loop`, `autoplay` | Wrap navigation / automatic rotation; both false |
+| `interval` | Bindable milliseconds, 3000–20000; 5000 |
+| `slidesPerView` | Bindable integer, 1–4; 1 |
+
+Bound `interval` and `slidesPerView` values outside their ranges are clamped, not rejected. The horizontal default slot accepts slides or a Loop of slides; default content is three slides. Without JavaScript it is a native scroll-snap track. At viewport widths of 480px or less it shows one slide per view (viewport based, not container based). The enhancer adds arrows, dots, Left/Right navigation outside interactive descendants, and inert off-screen slides. Autoplay is opt-in, never starts under `prefers-reduced-motion: reduce`, pauses on hover and focus, and has a visible pause/play control. Canvas shows the track without controls; selecting an off-screen slide does not scroll it into view in v1.
+
+Deviation from the card: dots represent reachable scroll positions rather than one dot per slide. Slides are `insertable: false`: they are available through parent default content, duplication and parent templates; core rejects moving them individually, including into a Loop.
+
+### CarouselSlide (`buildr/carousel-slide`, version 1)
+
+No props. Its vertical default slot accepts flow content. Its parent must be Carousel or Loop, with a Carousel ancestor. It supplies slide group semantics and a localized slide description; the parent controls visibility and navigation.
+
+### Gallery (`buildr/gallery`, version 1)
+
+| Prop | CMS contract / default |
+|---|---|
+| `ariaLabel` | Bindable, localizable accessible name; empty uses the localized fallback |
+| `columns` | Bindable integer, 2–6; 3 |
+| `aspectRatio` | `1:1` (default), `4:3`, `3:2`, `16:9`, `auto` (original) |
+| `lightbox` | Enable enhanced image preview; true |
+
+A bound `columns` value outside 2–6 is clamped, not rejected. The column count also drops to 2 below 480px and to 1 below 320px of the gallery's own width (a container query, unlike the viewport-based Carousel breakpoint), whatever `columns` says. The default slot accepts gallery items or a Loop of items; default content is three items. ARIA list semantics accommodate Loop wrappers. Links work without JavaScript. The optional lightbox uses a native `<dialog>` with focus entry/return, Escape to close, Left/Right navigation and an image counter; only relative, http and https image URLs open it. External images use `referrerPolicy="no-referrer"` and links use `rel="noreferrer"`. Sites with a Content Security Policy must allow image hosts in `img-src`.
+
+Items are `insertable: false`: they are available through parent default content, duplication and parent templates; core rejects moving them individually, including into a Loop.
+
+### GalleryItem (`buildr/gallery-item`, version 1)
+
+| Prop | CMS contract / default |
+|---|---|
+| `image` | Bindable image media reference; unset |
+| `alt` | Bindable, localizable alternative text; empty falls back to media alt |
+| `caption` | Bindable, localizable figure caption; empty |
+
+A leaf with no slots, parent Gallery or Loop and a required Gallery ancestor. A Loop-bound image needs a stored media snapshot; otherwise the item renders empty with a `render.media-missing` warning. Deviation from the card's linked-figure description: an empty item renders an unlinked placeholder. A populated item links its image inside a figure; the link name falls back from alt to caption to localized "Open image". All four PB-160b types start at version 1 without migrations.
