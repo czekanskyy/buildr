@@ -1,0 +1,48 @@
+@layer buildr.components {
+  .bc-map {
+    --bc-map-ratio: 16 / 9;
+  }
+  .bc-map[data-ratio="4:3"] {
+    --bc-map-ratio: 4 / 3;
+  }
+  .bc-map[data-ratio="1:1"] {
+    --bc-map-ratio: 1;
+  }
+  .bc-map[data-ratio="9:16"] {
+    --bc-map-ratio: 9 / 16;
+  }
+  .bc-map[data-ratio="21:9"] {
+    --bc-map-ratio: 21 / 9;
+  }
+  .bc-map__frame,
+  .bc-map__placeholder {
+    width: 100%;
+    aspect-ratio: var(--bc-map-ratio);
+    border: 0;
+  }
+  .bc-map__placeholder {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: var(--b-space-4);
+    box-sizing: border-box;
+  }
+  .bc-map__notice {
+    max-width: 60ch;
+  }
+  .bc-map__button,
+  .bc-map__link {
+    color: inherit;
+    font: inherit;
+  }
+  .bc-map__link {
+    display: inline-block;
+  }
+  .bc-map__button:focus-visible,
+  .bc-map__link:focus-visible,
+  .bc-map__frame:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+}
