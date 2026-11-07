@@ -126,6 +126,7 @@ import {
   Search,
   Send,
   SeparatorHorizontal,
+  ShieldCheck,
   ShoppingBag,
   ShoppingCart,
   Sigma,
@@ -365,6 +366,7 @@ const COMPONENT_ICONS: Readonly<Record<string, LucideIcon>> = {
   heart: Heart,
   award: Award,
   // form
+  'shield-check': ShieldCheck,
   'square-pen': SquarePen,
   circle: Circle,
   radio: Radio,

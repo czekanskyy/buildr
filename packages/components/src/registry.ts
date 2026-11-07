@@ -5,6 +5,7 @@ import { AccordionItem } from './accordion-item/definition.ts';
 import { Anchor } from './anchor/definition.ts';
 import { Badge } from './badge/definition.ts';
 import { Button } from './button/definition.ts';
+import { Captcha } from './captcha/definition.ts';
 import { Card } from './card/definition.ts';
 import { Carousel } from './carousel/definition.ts';
 import { CarouselSlide } from './carousel-slide/definition.ts';
@@ -72,6 +73,7 @@ export const defaultComponents: readonly ComponentDefinition[] = [
   Textarea,
   Select,
   Checkbox,
+  Captcha,
 ];
 
 /** The marketing, blog and product templates, made only of `defaultComponents`. */
