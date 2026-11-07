@@ -17,6 +17,8 @@ export interface MemoryRateLimiterOptions {
   readonly windowMs: number;
   /** Replaceable clock, for tests. */
   readonly now?: () => number;
+  /** Reject new keys rather than evict live counters (captcha only). */
+  readonly failClosed?: boolean;
 }
 
 /** Entries kept at most: a flood of distinct keys cannot grow the map without bound. */
@@ -33,9 +35,17 @@ export function createMemoryRateLimiter(options: MemoryRateLimiterOptions): Rate
         for (const [candidate, window] of windows) {
           if (window.resetAt <= at) windows.delete(candidate);
         }
+        if (options.failClosed && windows.size >= MAX_KEYS && !windows.has(key)) {
+          let resetAt = at + options.windowMs;
+          for (const window of windows.values()) resetAt = Math.min(resetAt, window.resetAt);
+          return {
+            allowed: false,
+            retryAfterSeconds: Math.max(1, Math.ceil((resetAt - at) / 1000)),
+          };
+        }
         // Still full of live windows: drop the oldest ones.
         for (const candidate of windows.keys()) {
-          if (windows.size < MAX_KEYS) break;
+          if (options.failClosed || windows.size < MAX_KEYS) break;
           windows.delete(candidate);
         }
       }

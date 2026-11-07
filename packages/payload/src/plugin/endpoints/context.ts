@@ -1,6 +1,7 @@
 import type { PayloadRequest } from 'payload';
 import type { SchemaOptions, SchemaSource } from '../../data/index.ts';
 import { type Action, allowed as isAllowed, isApiKeyRequest } from '../access.ts';
+import type { CaptchaGate, CaptchaVerifier } from '../forms/captcha.ts';
 import type { RateLimiter } from '../forms/rate-limit.ts';
 import type { LocaleArgs } from '../locales.ts';
 import type { ResolvedOptions } from '../options.ts';
@@ -17,6 +18,15 @@ export interface EndpointEnv {
   readonly options: ResolvedOptions;
   /** Limits form submissions (present when forms are enabled). */
   readonly rateLimiter?: RateLimiter | undefined;
+  /** Internal dependencies, instantiated once per plugin; never a public verifier option. */
+  readonly captcha?:
+    | {
+        readonly verifier: CaptchaVerifier;
+        readonly rateLimiter: RateLimiter;
+        readonly gate: CaptchaGate;
+        readonly hostnames: readonly string[];
+      }
+    | undefined;
   /** Limits the writes of API-key requests (present when `mcp.enabled`). */
   readonly writeLimiter?: RateLimiter | undefined;
 }
