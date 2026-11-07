@@ -1,5 +1,5 @@
 {
-  "hash": "3e03hsqqubqxd",
+  "hash": "3cwxdu2p83cbz",
   "components": {
     "buildr/page": {
       "type": "buildr/page",
@@ -947,6 +947,66 @@
       },
       "editor": {
         "placeholder": "Enter an address"
+      },
+      "runtime": "shared"
+    },
+    "buildr/map": {
+      "type": "buildr/map",
+      "version": 1,
+      "label": "Map",
+      "description": "Google map.",
+      "keywords": ["map", "mapa"],
+      "category": "media",
+      "icon": "map-pin",
+      "contentCategories": ["flow"],
+      "props": {
+        "query": {
+          "kind": "text",
+          "label": "Query",
+          "bindable": true,
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        },
+        "zoom": {
+          "kind": "number",
+          "label": "Zoom",
+          "localizable": false,
+          "accepts": ["number"],
+          "default": 15,
+          "min": 0,
+          "max": 21
+        },
+        "mapType": {
+          "kind": "select",
+          "label": "Map type",
+          "localizable": false,
+          "accepts": [],
+          "options": ["roadmap", "satellite"],
+          "default": "roadmap"
+        },
+        "title": {
+          "kind": "text",
+          "label": "Accessible name",
+          "bindable": true,
+          "localizable": true,
+          "accepts": ["string", "number", "date", "enum", "url"],
+          "default": ""
+        },
+        "aspectRatio": {
+          "kind": "select",
+          "label": "Aspect ratio",
+          "localizable": false,
+          "accepts": [],
+          "options": ["16:9", "4:3", "1:1", "9:16", "21:9"],
+          "default": "16:9"
+        }
+      },
+      "styles": {
+        "groups": ["size", "spacing", "border", "effects", "visibility"]
+      },
+      "a11y": {
+        "element": "div"
       },
       "runtime": "shared"
     },

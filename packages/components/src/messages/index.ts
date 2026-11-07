@@ -5,6 +5,15 @@
  */
 export const BUILT_IN_MESSAGES = {
   en: {
+    'map.notice':
+      'This map comes from Google. Loading it sends your IP address to Google, which may store data in your browser. See the site privacy policy.',
+    'map.button': 'Show map',
+    'map.link': 'Open in Google Maps',
+    'map.newTab': 'opens in a new tab',
+    'map.title': 'Map: {query}',
+    'map.canvas': 'The map loads only on the published site.',
+    'map.invalid': 'Invalid map query.',
+
     'link.newTab': 'opens in a new tab',
     'pagination.label': 'Pagination',
     'pagination.previous': 'Previous page',
@@ -33,6 +42,15 @@ export const BUILT_IN_MESSAGES = {
     'gallery.openImage': 'Open image',
   },
   pl: {
+    'map.notice':
+      'Mapa pochodzi z Google. Po jej wczytaniu Google otrzyma Twój adres IP i może zapisać dane w przeglądarce. Szczegóły znajdziesz w polityce prywatności witryny.',
+    'map.button': 'Pokaż mapę',
+    'map.link': 'Otwórz w Mapach Google',
+    'map.newTab': 'otwiera się w nowej karcie',
+    'map.title': 'Mapa: {query}',
+    'map.canvas': 'Mapa wczytuje się tylko na opublikowanej stronie.',
+    'map.invalid': 'Nieprawidłowe miejsce mapy.',
+
     'link.newTab': 'otwiera się w nowej karcie',
     'pagination.label': 'Paginacja',
     'pagination.previous': 'Poprzednia strona',

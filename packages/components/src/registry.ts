@@ -25,6 +25,7 @@ import { Link } from './link/definition.ts';
 import { List } from './list/definition.ts';
 import { ListItem } from './list-item/definition.ts';
 import { Loop } from './loop/definition.ts';
+import { Map as MapComponent } from './map/definition.ts';
 import { Page } from './page/definition.ts';
 import { Pagination } from './pagination/definition.ts';
 import { RichText } from './rich-text/definition.ts';
@@ -50,6 +51,7 @@ export const defaultComponents: readonly ComponentDefinition[] = [
   Image,
   Video,
   Iframe,
+  MapComponent,
   Carousel,
   CarouselSlide,
   Gallery,

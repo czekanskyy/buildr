@@ -5,6 +5,28 @@ import { createNextPlatform, isInternalHref } from './platform.tsx';
 const platform = createNextPlatform();
 
 describe('createNextPlatform', () => {
+  it('omits maps when not configured', () => {
+    expect('maps' in platform).toBe(false);
+    expect('maps' in createNextPlatform({})).toBe(false);
+  });
+
+  it.each([undefined, true, false])(
+    'passes maps through unchanged with clickToLoad %s',
+    (clickToLoad) => {
+      const maps = Object.freeze({
+        apiKey: 'public-referrer-restricted-key',
+        ...(clickToLoad === undefined ? {} : { clickToLoad }),
+      });
+      const configured = createNextPlatform({ maps });
+      expect(configured.maps).toBe(maps);
+      expect(configured.maps).toEqual({
+        apiKey: 'public-referrer-restricted-key',
+        ...(clickToLoad === undefined ? {} : { clickToLoad }),
+      });
+      expect(Object.isFrozen(configured.maps)).toBe(true);
+    },
+  );
+
   it('tells internal paths from external URLs', () => {
     for (const href of ['/a', '#top', '?page=2']) expect(isInternalHref(href)).toBe(true);
     for (const href of ['//evil.test', 'https://x.test', 'mailto:a@b.c', 'javascript:0', 'a/b']) {

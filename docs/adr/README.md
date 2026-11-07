@@ -32,5 +32,6 @@ Each ADR follows the same template: **Status, Context, Options, Decision, Conseq
 | [026](ADR-026-trusted-author-code.md) | Trusted author code | Accepted |
 | [027](ADR-027-motion.md) | Motion | Accepted |
 | [028](ADR-028-external-media-and-embeds.md) | External media and embeds | Accepted |
+| [029](ADR-029-provider-embeds-and-form-challenges.md) | Provider embeds and form challenges | Accepted |
 
 To propose a new ADR, see [`docs/ai/architecture-decisions.md`](../ai/architecture-decisions.md).

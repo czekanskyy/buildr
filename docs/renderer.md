@@ -2,6 +2,13 @@
 
 See also [ADR-008](adr/ADR-008-renderer-architecture.md).
 
+## Platform
+
+`Platform.maps` is optional; absent means Maps are off. Its `apiKey` is a public Maps Embed API key,
+restricted by HTTP referrer, never stored in the document or manifest. Click-to-load defaults on;
+only literal `clickToLoad: false` opts out. The canvas Platform must not be given `maps`.
+See [ADR-029](adr/ADR-029-provider-embeds-and-form-challenges.md).
+
 ## Pipeline
 
 ```

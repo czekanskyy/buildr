@@ -1,6 +1,11 @@
 import { withPayload } from '@payloadcms/next/withPayload';
 import type { NextConfig } from 'next';
 
+// biome-ignore lint/complexity/useLiteralKeys: Environment index signature requires bracket access.
+const mapFrameSrc = process.env['GOOGLE_MAPS_EMBED_API_KEY']?.trim()
+  ? '; frame-src https://www.google.com'
+  : '';
+
 const noStore = [
   { key: 'Cache-Control', value: 'private, no-store' },
   { key: 'X-Robots-Tag', value: 'noindex' },
@@ -21,7 +26,7 @@ const nextConfig: NextConfig = {
     },
     {
       source: '/((?!buildr/canvas|buildr/edit).*)',
-      headers: [{ key: 'Content-Security-Policy', value: "frame-ancestors 'self'" }],
+      headers: [{ key: 'Content-Security-Policy', value: `frame-ancestors 'self'${mapFrameSrc}` }],
     },
   ],
   // The workspace packages ship TypeScript sources.
