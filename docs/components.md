@@ -129,6 +129,45 @@ A video file from the media library or an external https URL. Props: `video` (bi
 
 An embedded page. Props: `url` (https only, text), `title` (the accessible name, required) and `aspectRatio`. The frame is always `sandbox="allow-scripts"` (no same-origin, no popups, no top navigation), `referrerpolicy="no-referrer"` and `loading="lazy"`, with no `allow`; nothing in the props widens it. An invalid URL renders nothing; the canvas shows an empty frame marked `data-embed-invalid`.
 
+### Map (`buildr/map`, version 1)
+
+A Google map from the Maps Embed API ([ADR-029](adr/ADR-029-provider-embeds-and-form-challenges.md)). The author enters a place, not a URL.
+
+| Prop | CMS contract / default |
+|---|---|
+| `query` | Bindable text, the place or address; empty |
+| `zoom` | Number 0–21; 15. Rounded and clamped; a non-finite value becomes 15 |
+| `mapType` | `roadmap` (default) or `satellite`; anything else becomes `roadmap` |
+| `title` | Bindable, localizable accessible name; empty uses the localized "Map: {query}" |
+| `aspectRatio` | The Iframe ratios; `16:9` |
+
+The query is normalised: lone surrogates become U+FFFD, whitespace runs become one space, other control characters are removed, then it is trimmed. It may have at most 256 code points. An empty or longer query renders nothing on the site; the canvas shows a placeholder marked `data-embed-invalid`.
+
+URLs are built from fixed templates. Every value goes through `encodeURIComponent` (not `URLSearchParams`, which writes `+` for a space):
+
+- Frame: `https://www.google.com/maps/embed/v1/place?key={K}&q={Q}&zoom={Z}&maptype={M}&language={L}`. `&language={L}` is added only when `env.locale` looks like a language tag.
+- Link: `https://www.google.com/maps/search/?api=1&query={Q}`. It needs no key. It always renders, opens in a new tab with `rel="noopener noreferrer"`, and its text says "opens in a new tab".
+
+Both URLs pass `checkExternalUrl` (in `try`/`catch`: a throw counts as invalid). The frame URL is also checked against `capabilities.iframeHosts`, so a host that sets that list must include `www.google.com`.
+
+The iframe has `sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"`, `referrerpolicy="strict-origin"` and `loading="lazy"`, with no `allow` and no `allowfullscreen`. Its `title` is `title` or the fallback. No prop changes any of this. This is a deliberate, narrow widening of [ADR-028](adr/ADR-028-external-media-and-embeds.md): it holds only for the constant origin above, only when `Platform.maps` is set, and only in this block. `buildr/iframe` keeps `allow-scripts` and `no-referrer`.
+
+Host config is `Platform.maps?: { apiKey: string; clickToLoad?: boolean }` (see [renderer.md](renderer.md#platform) and [nextjs.md](nextjs.md#implemented-api-buildrpage-and-the-next-platform-pb-103)). Absent means off. A key that does not match `^[A-Za-z0-9_-]{20,128}$` counts as absent. The key is public: it appears only in the frame URL, which is in the page HTML and RSC data before the click (no request goes out until the click). The block never stores it in the document or the manifest, and never passes it through the editor or canvas protocol.
+
+| Situation | Output |
+|---|---|
+| No valid key, or host not allowed in `iframeHosts` | The link only |
+| Valid key, click-to-load on (default) | Notice, "Show map" button and the link |
+| Valid key, `clickToLoad: false` | The iframe in the server HTML and the link |
+| Canvas | Placeholder ("The map loads only on the published site.") and the link |
+| Empty or too long query | Nothing (canvas: diagnostic) |
+
+Click-to-load is the default. Only the literal `clickToLoad: false` turns it off, and then the host must make sure consent is given before the page renders. Nothing loads from Google before the click and nothing is remembered afterwards (no cookie, no storage). The notice and the button come from a client enhancer: the button is `hidden` until hydration, so the first client render matches the server HTML. Activating it (click, Enter or Space) swaps in the iframe and moves focus to it. Without JavaScript the visitor sees the notice and the link.
+
+The canvas (`env.mode === 'canvas'`) never loads a provider: no iframe, no script, no preconnect and no URL with a key. The view does not read `platform.maps` in the canvas, and the canvas Platform must not be given `maps`. `preview` and `production` behave the same.
+
+Hosts whose CSP restricts frames must also allow `https://www.google.com` there, restrict the key in Google Cloud, and name Google in their privacy policy; see [security.md](security.md#provider-embeds-map). Only `place` mode is supported: no search, view, directions or street view mode, no markers and no styling. The type starts at version 1 without a migration.
+
 ### External sources ([ADR-028](adr/ADR-028-external-media-and-embeds.md))
 
 A media prop holds either a library reference or `{ external: true, url, mimeType? }`. The renderer checks the latter on every render: https, no credentials, at most 2048 characters, and allowed by the host. The editor's confirmation dialog is feedback only. External media get `data-external-media`; an external `img` also gets `referrerpolicy="no-referrer"`. A `video` or `track` element has no `referrerpolicy` attribute, so an external video, poster or captions track is requested with the page's own referrer policy: a host that allows external video should send a page-level `Referrer-Policy` (for example `no-referrer` or `strict-origin-when-cross-origin`) so the visitor's page URL is not passed to the video host. Hosts restrict sources with `capabilities.externalMediaHosts` (media) and `capabilities.iframeHosts` (iframes): a host and its subdomains; absent means any https host, `[]` none. Only an asset the renderer resolved from `PreparedData.media` is a library asset (the renderer marks it with `markResolvedMedia`, which stored JSON cannot carry); any other object with a `url`, such as a raw value or the snapshot of a reference that was not prepared, is checked like an external source (https and the allowlist) or accepted only as a same-origin path with a single leading `/`. A host list that is present but not an array allows no host. In the canvas an unusable source shows `data-media-invalid` or `data-embed-invalid` with the reason.
@@ -178,7 +217,7 @@ Field ids are derived from the node id, so they are stable between server and cl
 
 ## The default registry
 
-`createDefaultRegistry()` returns a `ReactRegistry` with every component (`defaultComponents`, 26) and every template (`defaultTemplates`, 14) of this package; `defaultTheme` is the theme they are designed against (the core default, re-exported), so an application needs one import. Extend it with `registry.extend({ components, templates })`: each call builds a new registry and nothing is shared or global.
+`createDefaultRegistry()` returns a `ReactRegistry` with every component (`defaultComponents`, 34) and every template (`defaultTemplates`, 14) of this package; `defaultTheme` is the theme they are designed against (the core default, re-exported), so an application needs one import. Extend it with `registry.extend({ components, templates })`: each call builds a new registry and nothing is shared or global.
 
 ```ts
 import { createDefaultRegistry, defaultTheme } from '@next-buildr/components';

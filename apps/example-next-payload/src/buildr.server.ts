@@ -6,11 +6,14 @@ import { getPayload } from 'payload';
 import { contextNames, pluginCollections, queryable } from './buildr.options.ts';
 import { registry, theme } from './buildr.registry.ts';
 
+// biome-ignore lint/complexity/useLiteralKeys: Environment index signature requires bracket access.
+const mapsApiKey = process.env['GOOGLE_MAPS_EMBED_API_KEY']?.trim();
+
 /** Everything `BuildrPage` needs; built once per server process. */
 export const buildr = createBuildrConfig({
   registry,
   theme,
-  platform: createNextPlatform(),
+  platform: createNextPlatform(mapsApiKey ? { maps: { apiKey: mapsApiKey } } : {}),
   // Called per render: a visitor's read of the published content, through the Local API.
   dataSource: async () =>
     createPayloadDataSource({

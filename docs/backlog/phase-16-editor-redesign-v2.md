@@ -14,7 +14,7 @@ The approved [template](../design/template/README.md) guides the editor presenta
 | PB-156 | Documentation, tests and baseline | PB-152–PB-155 | Done |
 | PB-157 | Editor redesign fidelity: every screen, state and control, plus UI-only deferred features | PB-152–PB-156 | Done (reopened 2026-11-05; implemented 2026-11-06; merged in PR #152) |
 | PB-159 | Visual fixes, round 1: Blocks tab (no "Recently used", always-open sections, 2/1 column grid, regrouped palette), square canvas with smaller margins | PB-157 | Done (merged in PR #153) |
-| PB-160 | New palette blocks: Spacer, Anchor, Carousel, Gallery, Google Maps, Captcha | PB-159 | In progress (PB-160a done on `pb-160a/spacer-anchor-fieldset`, visual baselines pending; PB-160b done on `pb-160b/carousel-gallery` 2026-11-07, visual baselines pending; PB-160c and PB-160d not started) |
+| PB-160 | New palette blocks: Spacer, Anchor, Carousel, Gallery, Google Maps, Captcha | PB-159 | In progress (PB-160a done on `pb-160a/spacer-anchor-fieldset`, visual baselines pending; PB-160b done on `pb-160b/carousel-gallery` 2026-11-07, visual baselines pending; PB-160c: Map implemented on `pb-160c/adr-029-map` 2026-11-07, not merged; PB-160d (Captcha) pending) |
 
 ## Template mapping
 
@@ -141,7 +141,7 @@ Missing blocks: Spacer, Anchor, Carousel, Gallery, Google Maps, Captcha. `packag
 |---|---|---|---|
 | PB-160a | Spacer + Anchor + Fieldset | M / normal | Implemented 2026-11-07 (Sol writer, `reviewer` cross-check in two rounds); Docker visual baselines pending |
 | PB-160b | Carousel + Gallery | L / normal | Done on `pb-160b/carousel-gallery` 2026-11-07: reviewed blocks integrated into the library, editor and MCP fixture; Docker visual baselines pending |
-| PB-160c | ADR-029, then Map | M / critical | ADR via planner, `security-reviewer` and Astra; accepted by the user before any code |
+| PB-160c | ADR-029, then Map | M / critical | ADR via planner, `security-reviewer` and Astra; accepted by the user before any code. ADR-029 accepted 2026-11-07; Map implemented on `pb-160c/adr-029-map`, not merged |
 | PB-160d | Captcha | L / critical | Single writer (published API across react, next and payload); depends on 160c and the provider decision |
 
 ### Files

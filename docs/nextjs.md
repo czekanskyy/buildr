@@ -81,6 +81,16 @@ only literal `clickToLoad: false` opts out. If that opt-out depends on consent, 
 and dynamic, uncached rendering: the Next config is created once, static/ISR HTML could serve provider iframes to visitors who never consented.
 The canvas Platform must not be given `maps`. See [ADR-029](adr/ADR-029-provider-embeds-and-form-challenges.md).
 
+```ts
+const key = process.env.GOOGLE_MAPS_EMBED_API_KEY;
+const platform = createNextPlatform({
+  formAction,
+  ...(key ? { maps: { apiKey: key } } : {}),
+});
+```
+
+Set `GOOGLE_MAPS_EMBED_API_KEY` only on the site, never in the editor's client bundle. If the site's CSP restricts frames, add `https://www.google.com` to its `frame-src` (or `default-src`); a CSP that restricts nothing needs no change. Also, `capabilities.iframeHosts`, if set, must list `www.google.com`. Restrict the key in Google Cloud; see [security.md](security.md#provider-embeds-map).
+
 `next` is a peer dependency; it is a devDependency only so the platform can be tested.
 
 ## Implemented API: draft mode and preview (PB-104)

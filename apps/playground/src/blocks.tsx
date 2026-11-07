@@ -1,32 +1,12 @@
-import {
-  createGalleryDataSource,
-  defaultTheme,
-  gallerySampleScopes,
-} from '@next-buildr/components';
 import '@next-buildr/components/styles.css';
 import type { Diagnostic } from '@next-buildr/core';
 import { DocumentRenderer } from '@next-buildr/react/client';
 import { renderDocument } from '@next-buildr/react/server';
-import { demoPlatform } from '@next-buildr/test-utils/demo/components';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { blockEntries } from './blocks-fixtures.ts';
+import { createBlocksOptions } from './blocks-options.ts';
 import { parseBlocksRoute } from './blocks-route.ts';
-import { registry } from './registry.ts';
-
-const createOptions = () => ({
-  registry,
-  theme: defaultTheme,
-  platform: demoPlatform,
-  dataSource: createGalleryDataSource(),
-  context: {
-    scopes: gallerySampleScopes,
-    locale: 'en',
-    locales: { default: 'en', fallback: true, intl: { en: 'English' } },
-    timeZone: 'UTC',
-    mode: 'production' as const,
-  },
-});
 
 /** Insert trusted server output once; this subtree never mounts React enhancers or hydrates. */
 function StaticContent({ html }: { html: string }) {
@@ -44,12 +24,14 @@ function Frame({
   entry,
   width,
   staticMarkup,
+  route,
 }: {
   entry: (typeof blockEntries)[number];
   width: number | undefined;
   staticMarkup: boolean;
+  route: ReturnType<typeof parseBlocksRoute>;
 }) {
-  const options = useMemo(createOptions, []);
+  const options = useMemo(() => createBlocksOptions(route), [route]);
   const [diagnostics, setDiagnostics] = useState<readonly Diagnostic[]>([]);
   const [html, setHtml] = useState<string>();
   useEffect(() => {
@@ -97,7 +79,7 @@ function Frame({
 
 /** Real library fixtures, including a faithful unhydrated server-markup mode. */
 export function Blocks({ search }: { search: string }) {
-  const route = parseBlocksRoute(search);
+  const route = useMemo(() => parseBlocksRoute(search), [search]);
   const entry = blockEntries.find((candidate) => candidate.id === route.entry);
   return (
     <main style={{ fontFamily: 'system-ui, sans-serif', padding: 16 }}>
@@ -120,6 +102,7 @@ export function Blocks({ search }: { search: string }) {
           entry={entry}
           width={route.width}
           staticMarkup={route.staticMarkup}
+          route={route}
         />
       ) : route.entry ? (
         <p role="alert">Unknown entry “{route.entry}”.</p>

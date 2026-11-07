@@ -6,6 +6,8 @@ export function parseBlocksRoute(search: string) {
   return {
     entry: params.get('entry') || undefined,
     width: parseGalleryRoute(search).width,
+    mode: params.get('mode') === 'canvas' ? ('canvas' as const) : ('production' as const),
+    mapKey: params.get('mapKey') === '1',
     staticMarkup: params.get('static') === '1',
   };
 }
